@@ -1,0 +1,105 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.mac.scp.mapper.FileMapper">
+
+    <insert id="insertFile" parameterType="com.mac.scp.domain.FileBean">
+        INSERT ignore INTO file (essayid,albumid,userid, filename,timestampname, fileurl,
+        filepath, extendname, uploadtime, filesize, isdir)
+        VALUES (#{essayid},#{albumid},#{userid}, #{filename},#{timestampname},
+         #{fileurl}, #{filepath}, #{extendname}, #{uploadtime},
+         #{filesize}, #{isdir});
+    </insert>
+
+    <insert id="batchInsertFile" parameterType="java.util.List">
+        INSERT ignore INTO file (essayid,albumid,userid, filename,timestampname, fileurl,
+        filepath, extendname, uploadtime, filesize, isdir)
+        VALUES
+        <foreach collection="list" item="file" index="index" separator=",">
+        (#{file.essayid},#{file.albumid},#{file.userid}, #{file.filename},#{file.timestampname},
+         #{file.fileurl}, #{file.filepath}, #{file.extendname}, #{file.uploadtime},
+         #{file.filesize}, #{file.isdir})
+        </foreach>
+    </insert>
+
+    <update id="updateFile" parameterType="com.mac.scp.domain.FileBean">
+        update file
+        SET filename = #{filename}, uploadtime = #{uploadtime}
+        where fileid = #{fileid}
+    </update>
+
+
+    <update id="updateFilepathByFilepath">
+        UPDATE file SET filepath=REPLACE(filepath, #{param1}, #{param2})
+        WHERE filepath like N'${param1}%'
+    </update>
+
+    <update id="updateFilepathByPathAndName">
+        update file set filepath = #{param2}
+        where filepath = #{param1} and filename = #{param3}
+         <if test="param4 != null">
+         and extendname = #{param4}
+         </if>
+        <if test="param4 == null">
+            and extendname is null
+        </if>
+    </update>
+
+    <select id="selectFileById" parameterType="com.mac.scp.domain.FileBean" resultType="com.mac.scp.domain.FileBean">
+        select * from file
+        where fileid = #{fileid}
+    </select>
+
+    <select id="selectFileList" parameterType="com.mac.scp.domain.FileBean" resultType="com.mac.scp.domain.FileBean">
+        select * from file
+        where filepath = #{filepath} and userid = #{userid}
+    </select>
+
+    <select id="selectFileListByIds" resultType="com.mac.scp.domain.FileBean" parameterType="int">
+        select * from file where fileid in
+        <foreach collection="list" open="(" separator="," close=")" item="fileid">
+            #{fileid}
+        </foreach>
+    </select>
+
+    <select id="selectFileByExtendName" resultType="com.mac.scp.domain.FileBean">
+        select * from file
+        where extendname in
+        <foreach collection="filenameList" open="(" separator="," close=")" item="extendname">
+            #{extendname}
+        </foreach>
+        and userid = #{userid}
+    </select>
+    
+    <select id="selectFileTreeListLikeFilePath" parameterType="com.mac.scp.domain.FileBean" resultType="com.mac.scp.domain.FileBean">
+        select * from file
+        where filepath like N'${filepath}%'
+    </select>
+
+    <delete id="deleteFileById" parameterType="com.mac.scp.domain.FileBean">
+        DELETE FROM file WHERE fileid = #{fileid}
+    </delete>
+
+    <delete id="deleteFileByIds" parameterType="int">
+        delete from file where fileid in
+        <foreach  collection="list" open="(" separator="," close=")" item="fileid">
+            #{fileid}
+        </foreach>
+    </delete>
+
+    <select id="selectFilePathTreeByUserid" parameterType="com.mac.scp.domain.FileBean" resultType="com.mac.scp.domain.FileBean">
+        SELECT * FROM FILE
+        WHERE isdir = 1 and userid=${userid}
+    </select>
+
+<!--    <select id="selectFileByExtendName" resultType="com.mac.scp.domain.FileBean" parameterType="java.lang.String">-->
+<!--        select * from file-->
+<!--        where extendname in-->
+<!--        <foreach collection="list" separator="," open="(" close=")" item="extendname">-->
+<!--            #{extendname}-->
+<!--        </foreach>-->
+<!--    </select>-->
+</mapper>

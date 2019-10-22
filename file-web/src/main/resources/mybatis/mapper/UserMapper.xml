@@ -1,0 +1,160 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.mac.scp.mapper.UserMapper">
+
+    <insert id="insertUser" parameterType="com.mac.scp.domain.UserBean" useGeneratedKeys="true" keyProperty="userId">
+        INSERT INTO user (username, salt, PASSWORD, telephone, sex, openid)
+        VALUES (#{username},#{salt}, #{password}, #{telephone}, #{sex}, #{openid});
+    </insert>
+
+    <insert id="insertUserRole" parameterType="Long">
+        INSERT INTO user_role (userId, roleid)
+        VALUES (#{param1}, #{param2});
+    </insert>
+
+    <select id="selectUser" parameterType="com.mac.scp.domain.UserBean" resultMap="userBeanResultMapId">
+        SELECT *
+        FROM user
+        LEFT JOIN userimage ON userimage.`userid` = user.`userId`
+        WHERE (username=#{username} OR telephone=#{telephone}) AND PASSWORD=#{password};
+    </select>
+
+    <select id="selectAdminUserList" resultMap="userBeanResultMapId">
+        select * from user_role
+        inner join user on user.userId = user_role.userId
+        inner join role on role.roleid = user_role.roleid
+        where role.role = 'admin'
+    </select>
+
+    <resultMap type="com.mac.scp.domain.UserBean" id="userBeanResultMapId">
+        <id property="userId" column="userId"/>
+        <result property="openid" column="openid" />
+        <result property="username" column="username"/>
+        <result property="realname" column="realname"/>
+        <result property="password" column="password"/>
+        <result property="telephone" column="telephone"/>
+        <result property="sex" column="sex"/>
+        <result property="birthday" column="birthday"/>
+        <result property="addrprovince" column="addrprovince"/>
+        <result property="addrcity" column="addrcity"/>
+        <result property="addrarea" column="addrarea"/>
+        <result property="industry" column="industry"/>
+        <result property="position" column="position"/>
+        <result property="intro" column="intro"/>
+        <result property="notReadCount" column="notReadCount"/>
+        <result property="salt" column="salt"/>
+        <collection property="imageBeanList" ofType="com.mac.scp.domain.UserImageBean">
+            <id property="imageid" column="imageid"/>
+            <result property="userid" column="userid"/>
+            <result property="imageurl" column="imageurl"/>
+        </collection>
+        <collection property="roleList" ofType="com.mac.scp.domain.Role">
+            <id property="roleid" column="roleid"/>
+            <result property="role" column="role"/>
+            <result property="description" column="description"/>
+            <result property="available" column="available"/>
+            <collection property="permissions" ofType="com.mac.scp.domain.Permission" column="roleid"
+                        select="com.mac.scp.mapper.UserMapper.getPermissionByRoleid">
+            </collection>
+        </collection>
+    </resultMap>
+
+    <select id="getPermissionByRoleid" parameterType="int" resultType="com.mac.scp.domain.Permission">
+        select * from permission
+        inner join role_permission on role_permission.permissionid = permission.permissionid
+        where permission.permissionid = #{roleid}
+    </select>
+
+    <select id="selectUserById" resultMap="userBeanResultMapId" parameterType="Long">
+        SELECT *
+        FROM user
+        left JOIN userimage ON userimage.`userid` = user.`userId`
+        WHERE user.userId = #{userId}
+    </select>
+
+    <select id="selectUserByopenid" resultMap="userBeanResultMapId" parameterType="java.lang.String">
+        SELECT *
+        FROM user
+        left JOIN userimage ON userimage.`userid` = user.`userId`
+        WHERE user.openid = #{openid}
+    </select>
+
+    <select id="selectAllUserList" resultMap="userBeanResultMapId">
+        SELECT * FROM user
+
+    </select>
+
+    <select id="selectUserListByCondition" resultMap="userBeanResultMapId"
+            parameterType="com.mac.common.domain.TableQueryBean">
+        SELECT * FROM user
+        <if test="key != null">
+            where username LIKE '%${key}%'
+        </if>
+        <if test="field != null and order != null">
+            order by ${field} ${order}
+        </if>
+        limit #{beginCount}, #{limit}
+    </select>
+
+    <select id="selectUserCountByCondition" resultType="int" parameterType="com.mac.common.domain.TableQueryBean">
+        SELECT count(*) FROM user
+        <if test="key != null">
+            where username LIKE '%${key}%'
+        </if>
+        limit #{beginCount}, #{limit}
+    </select>
+
+    <delete id="deleteUserInfo" parameterType="com.mac.scp.domain.UserBean">
+        delete from user where userId = #{userId}
+    </delete>
+
+    <update id="updateUserInfo" parameterType="com.mac.scp.domain.UserBean">
+        update user set
+        username = #{username},
+        realname = #{realname},
+        sex = #{sex},
+        birthday = #{birthday},
+        addrprovince = #{addrprovince},
+        addrcity = #{addrcity},
+        addrarea = #{addrarea},
+        industry = #{industry},
+        position = #{position},
+        intro = #{intro}
+        where userId = #{userId}
+
+    </update>
+
+    <select id="selectUserByUserName" parameterType="com.mac.scp.domain.UserBean" resultMap="userBeanResultMapId">
+        select * from user
+        left join user_role on user_role.userId = user.userId
+        left join role on role.roleid = user_role.roleid
+        where username = #{username} AND openid IS NULL
+    </select>
+
+    <select id="selectUserByTelephone" parameterType="com.mac.scp.domain.UserImageBean"
+            resultType="com.mac.scp.domain.UserImageBean">
+        select * from user where telephone = #{telephone}
+    </select>
+
+    <select id="selectRoleList" resultType="com.mac.scp.domain.Role">
+        SELECT * FROM role
+
+    </select>
+
+    <select id="selectPermissionListByCondition" resultType="com.mac.scp.domain.Permission"
+            parameterType="com.mac.common.domain.TableQueryBean">
+        SELECT * FROM permission
+        <if test="key != null">
+            where permission LIKE '%${key}%'
+        </if>
+        <if test="field != null and order != null">
+            order by ${field} ${order}
+        </if>
+        limit #{beginCount}, #{limit}
+    </select>
+
+</mapper>

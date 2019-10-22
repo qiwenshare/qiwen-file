@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<config xmlns:xsi='http://www.w3.org/2001/XMLSchema-instance'
+        xmlns='http://www.ehcache.org/v3'
+        xsi:schemaLocation="http://www.ehcache.org/v3 http://www.ehcache.org/schema/ehcache-core.xsd">
+    <persistence directory="C://myCache" />
+    <cache alias="MM" uses-template="userCacheTemplate">
+        <key-type>org.springframework.cache.interceptor.SimpleKey</key-type>
+        <value-type>java.lang.String</value-type>
+    </cache>
+    <cache-template name="userCacheTemplate">
+        <key-type>java.lang.String</key-type>
+        <value-type>java.lang.String</value-type>
+        <expiry>
+            <tti>200</tti><!-- time to idle，条目在指定时间段内未被使用，则过期 -->
+            <!--  <ttl>20</ttl> time to live，指定条目的存活时间 -->
+        </expiry>
+        <resources>
+            <heap unit="entries">2000</heap><!--缓存最多可以使用堆空间保存2000条目缓存-->
+            <offheap unit="MB">100</offheap><!--堆外空间 保存500MB-->
+            <disk persistent="true" unit="MB">1000</disk><!--使用磁盘空间 最多1000M-->
+        </resources>
+    </cache-template>
+
+    <!-- 缓存文章分类 -->
+    <cache alias="essay" uses-template="userCacheTemplate">
+        <key-type>java.lang.String</key-type>
+        <value-type>java.lang.String</value-type>
+    </cache>
+</config>

@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.mac.scp.mapper.FiletransferMapper">
+
+    <delete id="deleteUserImageById" parameterType="com.mac.scp.domain.UserImageBean">
+        DELETE FROM userimage WHERE imageid = #{imageid}
+    </delete>
+
+    <resultMap type="com.mac.scp.domain.UserImageBean" id="imageBeanMap">
+        <id property="imageid" column="imageid"/>
+        <result property="userid" column="userid"/>
+        <result property="imageurl" column="imageurl"/>
+    </resultMap>
+    <select id="getUserImageListByUserId" parameterType="int" resultMap="imageBeanMap">
+        SELECT imageid, userid, imageurl FROM userimage
+        where userid = #{userid}
+    </select>
+    <insert id="insertUserImage" parameterType="com.mac.scp.domain.UserImageBean">
+        INSERT INTO userimage (userid, imageurl, uploadtime)
+        VALUES (#{userid}, #{imageurl}, #{uploadtime});
+    </insert>
+
+    <select id="selectUserImage" parameterType="int" resultType="com.mac.scp.domain.UserImageBean">
+        SELECT * FROM userimage where userid = #{userId}
+    </select>
+
+    <select id="selectUserImageByUrl" parameterType="String" resultType="com.mac.scp.domain.UserImageBean">
+        SELECT * FROM userimage WHERE imageurl =#{imageurl}
+    </select>
+
+
+
+    <select id="selectStorageBean" resultType="com.mac.scp.domain.StorageBean" parameterType="com.mac.scp.domain.StorageBean">
+        select * from storage where userid = #{userid};
+    </select>
+
+    <insert id="updateStorageBean" parameterType="com.mac.scp.domain.StorageBean">
+        update storage
+        set storagesize = #{storagesize}
+        where userid = #{userid} and storageid = #{storageid}
+    </insert>
+    <insert id="insertStorageBean" parameterType="com.mac.scp.domain.StorageBean">
+        insert into storage (storageid, userid, storagesize)
+        values (#{storageid}, #{userid}, #{storagesize})
+    </insert>
+    
+    <select id="selectStorageByUser" resultType="com.mac.scp.domain.StorageBean" parameterType="com.mac.scp.domain.StorageBean">
+        select * from storage where userid=#{userid}
+    </select>
+</mapper>
