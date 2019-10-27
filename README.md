@@ -1,7 +1,7 @@
 # 文件管理系统（仿百度网盘）
 
 #### 演示网站
-[请点击查看演示](http://www.qiwenshare.com/essay/detail/53)
+[请点击查看演示](http://www.qiwenshare.com/essay/detail/24)
 
 #### 介绍
 基于springboot + vue 框架开发的Web文件系统，旨在为用户提供一个简单、方便的文件存储方案，目前已经完成了主要的基础功能，能够以完善的目录结构体系，对文件进行管理 。
@@ -27,8 +27,8 @@
 #### 安装教程
 
 1. 下载代码
-2. 导入idea开发工具
-3. 启动
+2. 点击根目录下install.bat进行编译
+3. 编译完成之后会生成release发布包，进去点击startWeb.bat启动
 
 #### 使用说明
 
