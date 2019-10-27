@@ -8,15 +8,13 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.scheduling.annotation.EnableScheduling;
 import org.springframework.web.client.RestTemplate;
 
-@SpringBootApplication//(exclude={DataSourceAutoConfiguration.class})
-//@EnableCaching //开启ehcache缓存
+@SpringBootApplication
 @MapperScan("com.mac.scp.mapper")
 @EnableScheduling  //启用定时任务
 public class FileApplication {
 
     public static void main(String[] args) {
         SpringApplication.run(FileApplication.class, args);
-        //SocketManager.getInstance();
     }
 
 

@@ -4,3 +4,4 @@
 /scp-common/target
 /scp-config/target
 /*.log
+/file-common/target
