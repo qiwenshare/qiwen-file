@@ -21,7 +21,7 @@ public interface IUserService {
      * @param userBean
      * @return
      */
-    RestResult<String> addUser(UserBean userBean);
+    UserBean addUser(UserBean userBean);
 
     /**
      * 用户登陆
@@ -44,7 +44,6 @@ public interface IUserService {
      * @param userBean 用户信息
      */
     void deleteUserInfo(UserBean userBean);
-
 
     /**
      * 获取用户信息
@@ -69,6 +68,8 @@ public interface IUserService {
      */
     UserBean findUserInfoByName(String UserName);
 
+    UserBean findUserInfoByTelephone(String telephone);
+
     /**
      * 通过用户名和密码获取用户信息
      *
@@ -86,6 +87,8 @@ public interface IUserService {
      */
     RestResult<String> updateUserInfo(UserBean userBean);
 
+    void updateEmail(UserBean userBean);
+    void updataImageUrl(UserBean userBean);
     /**
      * 选择所有用户列表
      *

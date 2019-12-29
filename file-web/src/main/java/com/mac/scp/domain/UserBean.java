@@ -28,10 +28,14 @@ public class UserBean{
 
     private String password;
 
+    private String qqpassword;
+
     @Transient
     private String passwordAgain;
 
     private String telephone;
+
+    private String email;
 
     private String sex;
 
@@ -52,6 +56,10 @@ public class UserBean{
     private String salt;//加密密码的盐
     //private byte state;//用户状态,0:创建未认证（比如没有激活，没有输入验证码等等）--等待验证的用户 , 1:正常状态,2：用户被锁定.
 
+    private String imageurl;
+
+    private String registertime;
+
     @ManyToMany(fetch = FetchType.EAGER)//立即从数据库中进行加载数据
     @JoinTable(name = "user_role",
             joinColumns = {@JoinColumn(name = "userId")},
@@ -68,17 +76,11 @@ public class UserBean{
      */
     @Transient
     private int notReadCount;
-
+    /**
+     * 验证码
+     */
     @Transient
-    private List<UserImageBean> imageBeanList;
-
-    public List<UserImageBean> getImageBeanList() {
-        return imageBeanList;
-    }
-
-    public void setImageBeanList(List<UserImageBean> imageBeanList) {
-        this.imageBeanList = imageBeanList;
-    }
+    private String verificationcode;
 
     public int getNotReadCount() {
         return notReadCount;
@@ -88,6 +90,13 @@ public class UserBean{
         this.notReadCount = notReadCount;
     }
 
+    public String getEmail() {
+        return email;
+    }
+
+    public void setEmail(String email) {
+        this.email = email;
+    }
 
     public long getUserId() {
         return userId;
@@ -242,6 +251,14 @@ public class UserBean{
         this.openid = openid;
     }
 
+    public String getVerificationcode() {
+        return verificationcode;
+    }
+
+    public void setVerificationcode(String verificationcode) {
+        this.verificationcode = verificationcode;
+    }
+
     /**
      * 密码盐.
      *
@@ -251,4 +268,29 @@ public class UserBean{
         return this.username + this.salt;
     }
     //重新对盐重新进行了定义，用户名+salt，这样就更加不容易被破解
+
+
+    public String getImageurl() {
+        return imageurl;
+    }
+
+    public void setImageurl(String imageurl) {
+        this.imageurl = imageurl;
+    }
+
+    public String getRegistertime() {
+        return registertime;
+    }
+
+    public void setRegistertime(String registertime) {
+        this.registertime = registertime;
+    }
+
+    public String getQqpassword() {
+        return qqpassword;
+    }
+
+    public void setQqpassword(String qqpassword) {
+        this.qqpassword = qqpassword;
+    }
 }

@@ -11,18 +11,15 @@ import javax.servlet.http.HttpSession;
 /**
  * 全局异常捕获
  */
-//@ControllerAdvice
-//public class MyExceptionHandler {
-//    private static Logger logger = LoggerFactory.getLogger(MyExceptionHandler.class);
-//    @ExceptionHandler(value = Exception.class)
-//    public void defaultExceptionHandler(HttpServletRequest req, HttpSession session,Exception e){
-//        //String errorSource=  session.getAttribute("errorSource").toString();
-//        logger.error(e.getMessage());
-//        //根据抓获的异常类型，做逻辑处理，并打印日志信息
-//
-//        e.printStackTrace();
-//        System.out.println("全局异常捕获中");
-//    }
-//
-//
-//}
+@ControllerAdvice
+public class MyExceptionHandler {
+    private static Logger logger = LoggerFactory.getLogger(MyExceptionHandler.class);
+    @ExceptionHandler(value = Exception.class)
+    public void defaultExceptionHandler(HttpServletRequest req, HttpSession session,Exception e){
+        //String errorSource=  session.getAttribute("errorSource").toString();
+        logger.error("全局异常捕获：" + e);
+        e.printStackTrace();
+    }
+
+
+}

@@ -1,10 +1,10 @@
 package com.mac.scp.config.shiro;
 
-import com.alibaba.fastjson.JSON;
 import com.mac.scp.domain.Permission;
 import com.mac.scp.domain.Role;
 import com.mac.scp.domain.UserBean;
 import com.mac.scp.service.UserService;
+import org.apache.shiro.SecurityUtils;
 import org.apache.shiro.authc.AuthenticationException;
 import org.apache.shiro.authc.AuthenticationInfo;
 import org.apache.shiro.authc.AuthenticationToken;
@@ -43,31 +43,18 @@ public class MyShiroRealm extends AuthorizingRealm {
     @Override
     protected AuthenticationInfo doGetAuthenticationInfo(AuthenticationToken token)
             throws AuthenticationException {
-        System.out.println("MyShiroRealm.doGetAuthenticationInfo()");
+        //设置登录过期时间，永不过期
+        SecurityUtils.getSubject().getSession().setTimeout(-1000L);
         //获取用户的输入的账号.
         String username = (String) token.getPrincipal();
         String password = new String((char[]) token.getCredentials());
-        //String tempsalt = PasswordUtil.getSaltValue();
-        //String newPassword = new SimpleHash("MD5", password, tempsalt, 1024).toHex();
+
         UserBean qquserinfo = qqLoginInfoMap.get(username + password);
         SimpleAuthenticationInfo authenticationInfo = null;
         if (qquserinfo != null){ //qq登录
-            System.out.println(JSON.toJSONString(qquserinfo));
-//            UserBean userInfo = new UserBean();
-//            userInfo.setUsername(qquserinfo.getNickname());
-//            userInfo.setAddrprovince(qquserinfo.getProvince());
-//            userInfo.setAddrcity(qquserinfo.getCity());
-//            userInfo.setBirthday(qquserinfo.getYear());
-//            userInfo.setSex(qquserinfo.getGender());
-//            ByteSource byteSourceSalt = ByteSource.Util.bytes(tempsalt);
-//            authenticationInfo = new SimpleAuthenticationInfo(
-//                    userInfo, //用户名
-//                    newPassword, //密码
-//                    byteSourceSalt,
-//                    getName()  //realm name
-//            );
+            qqLoginInfoMap.remove(username + password);
             UserBean userInfo = userInfoService.selectUserByopenid(password);
-            System.out.println("----->>userInfo=" + userInfo);
+
             if (userInfo == null) {
                 return null;
             }
@@ -75,14 +62,14 @@ public class MyShiroRealm extends AuthorizingRealm {
             ByteSource byteSourceSalt = ByteSource.Util.bytes(userInfo.getSalt());
             authenticationInfo = new SimpleAuthenticationInfo(
                     userInfo, //用户名
-                    userInfo.getPassword(), //密码
+                    userInfo.getQqpassword(), //密码
                     byteSourceSalt,
                     getName()  //realm name
             );
         }else {
 
-            UserBean userInfo = userInfoService.findUserInfoByName(username);
-            System.out.println("----->>userInfo=" + userInfo);
+            UserBean userInfo = userInfoService.findUserInfoByTelephone(username);
+
             if (userInfo == null) {
                 return null;
             }
@@ -95,7 +82,6 @@ public class MyShiroRealm extends AuthorizingRealm {
                     getName()  //realm name
             );
         }
-
 
         //mailService.sendLoginSafeMail(userInfo); //登录邮件
 

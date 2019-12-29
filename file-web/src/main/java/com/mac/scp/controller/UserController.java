@@ -1,30 +1,32 @@
 package com.mac.scp.controller;
 
-import java.util.List;
-import java.util.Map;
+import com.alibaba.fastjson.JSON;
+import com.alibaba.fastjson.serializer.SerializerFeature;
+import com.mac.common.cbb.RestResult;
+import com.mac.common.domain.TableData;
+import com.mac.common.domain.TableQueryBean;
+import com.mac.scp.api.IFiletransferService;
+import com.mac.scp.api.IUserService;
+import com.mac.scp.domain.Permission;
+import com.mac.scp.domain.Role;
+import com.mac.scp.domain.UserBean;
+import org.apache.shiro.SecurityUtils;
+import org.apache.shiro.authc.UsernamePasswordToken;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.ResponseBody;
+import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.servlet.ModelAndView;
 
 import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 //import org.apache.shiro.authz.annotation.RequiresPermissions;
 //import org.codehaus.jackson.type.TypeReference;
 //import org.springframework.stereotype.Controller;
-import com.mac.common.cbb.RestResult;
-import com.mac.common.domain.TableData;
-import com.mac.common.domain.TableQueryBean;
-import com.mac.scp.api.IUserService;
-
-import com.mac.scp.domain.*;
-import org.apache.shiro.SecurityUtils;
-import org.apache.shiro.authc.IncorrectCredentialsException;
-import org.apache.shiro.authc.UnknownAccountException;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.ResponseBody;
-
-import com.alibaba.fastjson.JSON;
-
-import org.springframework.web.bind.annotation.RestController;
-import org.springframework.web.servlet.ModelAndView;
 
 /**
  * 用户控制类
@@ -36,6 +38,11 @@ import org.springframework.web.servlet.ModelAndView;
 public class UserController {
     @Resource
     IUserService userService;
+    @Resource
+    IFiletransferService filetransferService;
+
+
+    public static Map<String, String> verificationCodeMap = new HashMap<>();
 
     public static final int TEXT = 4;
 
@@ -66,48 +73,39 @@ public class UserController {
         return resultJson;
     }
 
-
+    /**
 
     /**
      * 用户登录
      *
-     * @param request
+     * @param userBean
      * @return
      */
     @RequestMapping("/userlogin")
     @ResponseBody
-    public RestResult<UserBean> userLogin(HttpServletRequest request, Map<String, Object> map) {
-        RestResult<UserBean> result = new RestResult<UserBean>();
-
-        System.out.println("HomeController.login()");
-        // 登录失败从request中获取shiro处理的异常信息。
-        //        // shiroLoginFailure:就是shiro异常类的全类名.
-        String exception = (String) request.getAttribute("shiroLoginFailure");
-        System.out.println("exception=" + exception);
-        String msg = "";
-        if (exception != null) { //登录失败
-            if (UnknownAccountException.class.getName().equals(exception)) {
-                msg = "账号不存在";
-            } else if (IncorrectCredentialsException.class.getName().equals(exception)) {
-                msg = "密码不正确";
-            } else if ("kaptchaValidateFailed".equals(exception)) {
-                msg = "验证码错误";
-            } else {
-                msg = exception;
-            }
-            result.setSuccess(false);
-            result.setErrorMessage(msg);
-        }
-        else{
-            //登录成功
-            result.setSuccess(true);
+    public RestResult<UserBean> userLogin(@RequestBody UserBean userBean) {
+        RestResult<UserBean> restResult = new RestResult<UserBean>();
+        restResult.setSuccess(true);
+        try {
+            SecurityUtils.getSubject().login(new UsernamePasswordToken(userBean.getUsername(), userBean.getPassword()));
+        }catch (Exception e){
+            restResult.setSuccess(false);
+            restResult.setErrorMessage("手机号或密码错误！");
         }
 
-        return result;
+        UserBean sessionUserBean = (UserBean) SecurityUtils.getSubject().getPrincipal();
+        if (sessionUserBean != null) {
+            restResult.setData(sessionUserBean);
+            restResult.setSuccess(true);
+        } else {
+            restResult.setSuccess(false);
+            restResult.setErrorMessage("手机号或密码错误！");
+        }
+
+        return restResult;
     }
 
-    /**
-     * 检查用户登录信息
+     /* 检查用户登录信息
      *
      * @return
      */
@@ -124,7 +122,7 @@ public class UserController {
             restResult.setSuccess(false);
             restResult.setErrorMessage("用户暂未登录");
         }
-        return JSON.toJSONString(restResult);
+        return JSON.toJSONString(restResult, SerializerFeature.WriteMapNullValue);
     }
 
     /**
@@ -149,24 +147,6 @@ public class UserController {
         }
         String resultJson = JSON.toJSONString(restResult);
         return resultJson;
-    }
-
-
-    /**
-     * 修改用戶信息
-     *
-     * @param userBean
-     * @return
-     */
-    @RequestMapping("/updateuserinfo")
-    @ResponseBody
-    public RestResult<String> updateUserInfo(HttpServletRequest request, UserBean userBean) {
-        UserBean sessionUserBean = (UserBean) SecurityUtils.getSubject().getPrincipal();
-        userBean.setUserId(sessionUserBean.getUserId());
-        RestResult<String> restResult = userService.updateUserInfo(userBean);
-
-
-        return restResult;
     }
 
     /**

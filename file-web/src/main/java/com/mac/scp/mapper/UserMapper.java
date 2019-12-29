@@ -45,9 +45,12 @@ public interface UserMapper {
 
     UserBean selectUserByUserName(UserBean userBean);
 
+    void updateEmail(UserBean userBean);
+    void updataImageUrl(UserBean userBean);
+
     UserBean selectUserByUserNameAndPassword(UserBean userBean);
 
-    List<UserBean> selectUserByTelephone(UserBean userBean);
+    UserBean selectUserByTelephone(UserBean userBean);
 
     List<UserBean> selectAllUserList();
 
