@@ -33,17 +33,17 @@
 5. 启动完成后即可访问：localhost:8080使用相关功能
 
 #### 目录说明
+
+```
+
 -file-common 公共模块
-
 -file-web 文件代码
-
     |-src
-
         |-main Java代码
-
         |-resources 静态资源
-
             |-static 前台代码
+```
+
 
 前台代码源码：[源码](http://https://gitee.com/qiwen-cloud/qiwen-file-web)
 
