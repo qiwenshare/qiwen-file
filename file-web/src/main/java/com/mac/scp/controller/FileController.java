@@ -34,7 +34,7 @@ public class FileController {
     /**
      * 是否开启共享文件模式
      */
-    public static Boolean isShareFile = true;
+    public static Boolean isShareFile = false;
 
     public static long treeid = 0;
 

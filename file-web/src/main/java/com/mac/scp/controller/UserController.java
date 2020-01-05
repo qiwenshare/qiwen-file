@@ -24,10 +24,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-//import org.apache.shiro.authz.annotation.RequiresPermissions;
-//import org.codehaus.jackson.type.TypeReference;
-//import org.springframework.stereotype.Controller;
-
 /**
  * 用户控制类
  *
