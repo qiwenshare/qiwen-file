@@ -46,6 +46,7 @@ public interface UserMapper {
     UserBean selectUserByUserName(UserBean userBean);
 
     void updateEmail(UserBean userBean);
+    void updateTelephone(UserBean userBean);
     void updataImageUrl(UserBean userBean);
 
     UserBean selectUserByUserNameAndPassword(UserBean userBean);

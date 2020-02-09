@@ -9,9 +9,7 @@ import com.mac.scp.api.IFileService;
 import com.mac.scp.api.IFiletransferService;
 import com.mac.scp.domain.*;
 import org.apache.shiro.SecurityUtils;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.ResponseBody;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
@@ -29,55 +27,17 @@ public class FiletransferController {
     @Resource
     IFileService fileService;
 
-    /**
-     * 删除用户头像
-     *
-     * @param request 请求
-     * @return 删除结果
-     */
-    @RequestMapping("/deleteuserimage")
-    @ResponseBody
-    public String deleteUserImage(HttpServletRequest request, UserImageBean userImageBean) {
-        RestResult<String> result = new RestResult<String>();
-        String servletPath = request.getServletPath();
-        String realPath = request.getSession().getServletContext().getRealPath(servletPath);
-
-        List<UserImageBean> userImageList = filetransferService.selectUserImageByUrl(userImageBean.getImageurl().replace("filetransfer/", ""));
-        if (userImageList.size() <= 0) {
-            result.setSuccess(false);
-            result.setErrorMessage("文件路径不正确");
-            return JSON.toJSONString(result);
-        }
-        String fileRealPath = new File(new File(realPath).getParent()).getParent() + "/" + userImageBean.getImageurl();
-        File file = new File(fileRealPath);
-        filetransferService.deleteUserImageById(userImageBean);
-
-        if (file.isFile() && file.exists()) {
-            boolean isDeleteSuccess = file.delete();
-            if (isDeleteSuccess) {
-                result.setSuccess(true);
-            } else {
-                result.setSuccess(false);
-                result.setErrorMessage("文件删除失败");
-            }
-        } else {
-            result.setSuccess(true);
-            result.setErrorMessage("文件不存在");
-        }
-
-        String resultJson = JSON.toJSONString(result);
-        return resultJson;
-    }
 
     /**
      * 旋转图片
+     *
      * @param direction 方向
-     * @param imageid 图片id
+     * @param imageid   图片id
      * @return 返回结果
      */
-    @RequestMapping("/totationimage")
+    @RequestMapping(value = "/totationimage", method = RequestMethod.POST)
     @ResponseBody
-    public RestResult<String> totationImage(String direction, int imageid){
+    public RestResult<String> totationImage(@RequestBody String direction, @RequestBody int imageid) {
         RestResult<String> result = new RestResult<String>();
         FileBean fileBean = new FileBean();
         fileBean.setFileid(imageid);
@@ -110,9 +70,9 @@ public class FiletransferController {
      *
      * @return
      */
-    @RequestMapping("/deleteimagebyids")
+    @RequestMapping(value = "/deleteimagebyids", method = RequestMethod.POST)
     @ResponseBody
-    public String deleteImageByIds(String imageids) {
+    public String deleteImageByIds(@RequestBody String imageids) {
         RestResult<String> result = new RestResult<String>();
         List<Integer> imageidList = JSON.parseArray(imageids, Integer.class);
         UserBean sessionUserBean = (UserBean) SecurityUtils.getSubject().getPrincipal();
@@ -154,9 +114,9 @@ public class FiletransferController {
      * @param request
      * @return
      */
-    @RequestMapping("/deleteimage")
+    @RequestMapping(value = "/deleteimage", method = RequestMethod.POST)
     @ResponseBody
-    public String deleteImage(HttpServletRequest request, FileBean fileBean) {
+    public String deleteImage(HttpServletRequest request, @RequestBody FileBean fileBean) {
         RestResult<String> result = new RestResult<String>();
         UserBean sessionUserBean = (UserBean) SecurityUtils.getSubject().getPrincipal();
         long sessionUserId = sessionUserBean.getUserId();
@@ -186,15 +146,13 @@ public class FiletransferController {
         return resultJson;
     }
 
-
-
     /**
      * 上传头像
      *
      * @param request
      * @return
      */
-    @RequestMapping("/uploadimg")
+    @RequestMapping(value = "/uploadimg", method = RequestMethod.POST)
     @ResponseBody
     public String uploadImg(HttpServletRequest request) {
         RestResult<String> restResult = filetransferService.uploadUserImage(request);
@@ -208,7 +166,7 @@ public class FiletransferController {
      * @param request
      * @return
      */
-    @RequestMapping("/uploadfile")
+    @RequestMapping(value = "/uploadfile", method = RequestMethod.POST)
     @ResponseBody
     public String uploadFile(HttpServletRequest request, FileBean fileBean) {
         RestResult<String> restResult = new RestResult<String>();
@@ -231,9 +189,9 @@ public class FiletransferController {
      *
      * @return
      */
-    @RequestMapping("/downloadfile")
-    public String downloadFile(HttpServletResponse response, FileBean fileBean){
-        RestResult<String> restResult =  new RestResult<>();
+    @RequestMapping(value = "/downloadfile", method = RequestMethod.GET)
+    public String downloadFile(HttpServletResponse response, FileBean fileBean) {
+        RestResult<String> restResult = new RestResult<>();
         String fileName = null;// 文件名
         try {
             fileName = new String(fileBean.getFilename().getBytes("utf-8"), "ISO-8859-1");
@@ -284,27 +242,13 @@ public class FiletransferController {
 
     }
 
-    /**
-     * 得到用户头像列表
-     *
-     * @return
-     */
-    @RequestMapping("/getuploadimglist")
-    @ResponseBody
-    public RestResult<List<UserImageBean>> getUploadImgList(HttpServletRequest request) {
-        UserBean sessionUserBean = (UserBean) SecurityUtils.getSubject().getPrincipal();
-        RestResult<List<UserImageBean>> restResult = filetransferService.selectUserImage(sessionUserBean.getUserId());
-        restResult.setSuccess(true);
-
-        return restResult;
-    }
 
     /**
      * 获取存储信息
      *
      * @return
      */
-    @RequestMapping("/getstorage")
+    @RequestMapping(value = "/getstorage", method = RequestMethod.GET)
     @ResponseBody
     public RestResult<StorageBean> getStorage() {
         RestResult<StorageBean> restResult = new RestResult<StorageBean>();

@@ -12,10 +12,7 @@ import com.mac.scp.domain.Role;
 import com.mac.scp.domain.UserBean;
 import org.apache.shiro.SecurityUtils;
 import org.apache.shiro.authc.UsernamePasswordToken;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.ResponseBody;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.ModelAndView;
 
 import javax.annotation.Resource;
@@ -60,14 +57,13 @@ public class UserController {
         return mv;
     }
 
-    @RequestMapping("/adduser")
+    @RequestMapping(value = "/adduser", method = RequestMethod.POST)
     @ResponseBody
-    public String addUser(UserBean userBean) {
+    public RestResult<String> addUser(@RequestBody UserBean userBean) {
         RestResult<String> result = userService.registerUser(userBean);
-
-        String resultJson = JSON.toJSONString(result);
-        return resultJson;
+        return result;
     }
+
 
     /**
 
@@ -97,6 +93,23 @@ public class UserController {
             restResult.setSuccess(false);
             restResult.setErrorMessage("手机号或密码错误！");
         }
+
+        return restResult;
+    }
+
+    /**
+            * 用户注销
+     *
+             * @return
+             */
+    @RequestMapping(value = "/userlogout", method = RequestMethod.POST)
+    @ResponseBody
+    public RestResult<String> userLogout() {
+        RestResult<String> restResult = new RestResult<String>();
+
+        SecurityUtils.getSubject().logout();
+        restResult.setSuccess(true);
+        restResult.setData("注销登录成功！");
 
         return restResult;
     }

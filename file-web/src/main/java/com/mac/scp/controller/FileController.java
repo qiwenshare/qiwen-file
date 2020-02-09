@@ -10,9 +10,7 @@ import com.mac.scp.api.IFileService;
 import com.mac.scp.api.IFiletransferService;
 import com.mac.scp.domain.*;
 import org.apache.shiro.SecurityUtils;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.ResponseBody;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.ModelAndView;
 
 import javax.annotation.Resource;
@@ -51,12 +49,11 @@ public class FileController {
     /**
      * 创建文件
      *
-     *
      * @return
      */
-    @RequestMapping("/createfile")
+    @RequestMapping(value = "/createfile", method = RequestMethod.POST)
     @ResponseBody
-    public RestResult<String> createFile(FileBean fileBean) {
+    public RestResult<String> createFile(@RequestBody FileBean fileBean) {
         RestResult<String> restResult = new RestResult<>();
         if (!operationCheck().isSuccess()){
             return operationCheck();
@@ -72,14 +69,14 @@ public class FileController {
         return restResult;
     }
 
-    @RequestMapping("/getfilelist")
+    @RequestMapping(value = "/getfilelist", method = RequestMethod.GET)
     @ResponseBody
     public RestResult<List<FileBean>> getFileList(FileBean fileBean){
         RestResult<List<FileBean>> restResult = new RestResult<>();
-        UserBean sessionUserBean = (UserBean) SecurityUtils.getSubject().getPrincipal();
         if(isShareFile){
             fileBean.setUserid(2);
         }else {
+            UserBean sessionUserBean = (UserBean) SecurityUtils.getSubject().getPrincipal();
             fileBean.setUserid(sessionUserBean.getUserId());
         }
 
@@ -106,12 +103,12 @@ public class FileController {
      *
      * @return
      */
-    @RequestMapping("/batchdeletefile")
+    @RequestMapping(value = "/batchdeletefile", method = RequestMethod.POST)
     @ResponseBody
-    public String deleteImageByIds(String files) {
+    public RestResult<String> deleteImageByIds(@RequestBody String files) {
         RestResult<String> result = new RestResult<String>();
-        if (!operationCheck().isSuccess()){
-            return JSON.toJSONString(operationCheck());
+        if (!operationCheck().isSuccess()) {
+            return operationCheck();
         }
 
         List<FileBean> fileList = JSON.parseArray(files, FileBean.class);
@@ -122,8 +119,7 @@ public class FileController {
 
         result.setData("批量删除文件成功");
         result.setSuccess(true);
-        String resultJson = JSON.toJSONString(result);
-        return resultJson;
+        return result;
     }
 
     /**
@@ -131,9 +127,9 @@ public class FileController {
      *
      * @return
      */
-    @RequestMapping("/deletefile")
+    @RequestMapping(value = "/deletefile", method = RequestMethod.POST)
     @ResponseBody
-    public String deleteFile(FileBean fileBean) {
+    public String deleteFile(@RequestBody FileBean fileBean) {
         RestResult<String> result = new RestResult<String>();
         if (!operationCheck().isSuccess()){
             return JSON.toJSONString(operationCheck());
@@ -151,9 +147,9 @@ public class FileController {
      *
      * @return
      */
-    @RequestMapping("/unzipfile")
+    @RequestMapping(value = "/unzipfile", method = RequestMethod.POST)
     @ResponseBody
-    public String unzipFile(FileBean fileBean){
+    public String unzipFile(@RequestBody FileBean fileBean) {
         RestResult<String> result = new RestResult<String>();
         if (!operationCheck().isSuccess()){
             return JSON.toJSONString(operationCheck());
@@ -203,18 +199,21 @@ public class FileController {
 
     /**
      * 文件移动
-     * @param oldfilepath 源路径
-     * @param newfilepath 目的路径
-     * @param filename 文件名
+     *
+     *
      * @return 返回前台移动结果
      */
-    @RequestMapping("/movefile")
+    @RequestMapping(value = "/movefile", method = RequestMethod.POST)
     @ResponseBody
-    public RestResult<String> moveFile(String oldfilepath, String newfilepath, String filename, String extendname){
+    public RestResult<String> moveFile(@RequestBody FileBean fileBean) {
         RestResult<String> result = new RestResult<String>();
         if (!operationCheck().isSuccess()){
             return operationCheck();
         }
+        String oldfilepath = fileBean.getOldfilepath();
+        String newfilepath = fileBean.getNewfilepath();
+        String filename = fileBean.getFilename();
+        String extendname = fileBean.getExtendname();
 
         fileService.updateFilepathByFilepath(oldfilepath, newfilepath, filename, extendname);
         result.setSuccess(true);
@@ -223,23 +222,26 @@ public class FileController {
 
     /**
      * 批量移动文件
-     * @param newfilepath 目的路径
-     * @param files 需要移动的文件列表
+     *
+     *
      * @return 返回前台移动结果
      */
-    @RequestMapping("/batchmovefile")
+    @RequestMapping(value = "/batchmovefile", method = RequestMethod.POST)
     @ResponseBody
-    public RestResult<String> batchMoveFile(String newfilepath, String files){
+    public RestResult<String> batchMoveFile(@RequestBody FileBean fileBean) {
 
         RestResult<String> result = new RestResult<String>();
-        if (!operationCheck().isSuccess()){
+        if (!operationCheck().isSuccess()) {
             return operationCheck();
         }
 
+        String files = fileBean.getFiles();
+        String newfilepath = fileBean.getNewfilepath();
+
         List<FileBean> fileList = JSON.parseArray(files, FileBean.class);
 
-        for (FileBean fileBean : fileList) {
-            fileService.updateFilepathByFilepath(fileBean.getFilepath(), newfilepath, fileBean.getFilename(), fileBean.getExtendname());
+        for (FileBean file : fileList) {
+            fileService.updateFilepathByFilepath(file.getFilepath(), newfilepath, file.getFilename(), file.getExtendname());
         }
 
         result.setData("批量移动文件成功");
@@ -271,9 +273,9 @@ public class FileController {
      * @param fileType 文件类型
      * @return
      */
-    @RequestMapping("/selectfilebyfiletype")
+    @RequestMapping(value = "/selectfilebyfiletype", method = RequestMethod.GET)
     @ResponseBody
-    public RestResult<List<FileBean>> selectFileByFileType(int fileType){
+    public RestResult<List<FileBean>> selectFileByFileType(@RequestParam int fileType) {
         RestResult<List<FileBean>> result = new RestResult<List<FileBean>>();
         UserBean sessionUserBean = (UserBean) SecurityUtils.getSubject().getPrincipal();
         long userid = sessionUserBean.getUserId();
@@ -290,7 +292,7 @@ public class FileController {
      * 获取文件树
      * @return
      */
-    @RequestMapping("/getfiletree")
+    @RequestMapping(value = "/getfiletree", method = RequestMethod.GET)
     @ResponseBody
     public RestResult<TreeNode> getFileTree(){
         RestResult<TreeNode> result = new RestResult<TreeNode>();

@@ -1,30 +1,64 @@
 package com.mac.scp.domain;
 
 import javax.persistence.*;
-import java.io.Serializable;
 import java.util.List;
 
+/**
+ * 权限实体类
+ */
 @Table(name = "permission")
 @Entity
 public class Permission {
+    /**
+     * 权限id
+     */
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private long permissionid;//主键.
+    /**
+     * 权限名称
+     */
     @Column
     private String name;//名称.
+
+    /**
+     * 资源类型
+     */
     @Column
     private String resourceType;//资源类型，[menu|button]
+
+    /**
+     * 资源路径
+     */
     @Column
     private String url;//资源路径.
+    /**
+     * 权限字符串,menu例子：role:*，button例子：role:create,role:update,role:delete,role:view
+     */
     @Column
-    private String permission; //权限字符串,menu例子：role:*，button例子：role:create,role:update,role:delete,role:view
+    private String permission;
+
+    /**
+     * 父编号
+     */
     @Column
-    private Long parentId; //父编号
+    private Long parentId;
+
+    /**
+     * 父编号列表
+     */
     @Column
-    private String parentIds; //父编号列表
+    private String parentIds;
+
+    /**
+     * 是否生效
+     */
     @Column
     private Boolean available = Boolean.FALSE;
 
+    /**
+     * 角色列表
+     */
     @Transient
     private List<Role> roles;
 

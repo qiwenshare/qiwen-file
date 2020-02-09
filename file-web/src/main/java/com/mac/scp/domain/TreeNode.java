@@ -9,11 +9,30 @@ import java.util.Map;
  * 树节点
  */
 public class TreeNode {
+    /**
+     * 节点id
+     */
     private long id;
+    /**
+     * 节点名
+     */
     private String label;
+    /**
+     * 深度
+     */
     private int depth;
+    /**
+     * 是否被关闭
+     */
     private String state = "closed";
+
+    /**
+     * 属性集合
+     */
     private Map<String, String> attributes = new HashMap<>();
+    /**
+     * 子节点列表
+     */
     private List<TreeNode> children = new ArrayList<>();
 
     public long getId() {

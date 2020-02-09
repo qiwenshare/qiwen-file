@@ -2,15 +2,27 @@ package com.mac.scp.domain;
 
 import javax.persistence.*;
 
+/**
+ * 存储信息类
+ */
 @Table(name = "storage")
 @Entity
 public class StorageBean {
+    /**
+     * 存储id
+     */
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private long storageid;
 
+    /**
+     * 用户id
+     */
     private long userid;
 
+    /**
+     * 存储大小
+     */
     private long storagesize;
 
     public StorageBean() {

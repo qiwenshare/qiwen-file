@@ -3,19 +3,37 @@ package com.mac.scp.domain;
 import javax.persistence.*;
 import java.util.List;
 
+/**
+ * 角色实体信息类
+ */
 @Table(name = "role")
 @Entity
 public class Role {
+    /**
+     * 角色id
+     */
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private long roleid; // 编号
 
+    /**
+     * 角色名
+     */
     private String role; // 角色标识程序中判断使用,如"admin",这个是唯一的:
 
+    /**
+     * 角色描述
+     */
     private String description; // 角色描述,UI界面显示使用
 
+    /**
+     * 是否可用
+     */
     private Boolean available = Boolean.FALSE; // 是否可用,如果不可用将不会添加给用户
 
+    /**
+     * 权限列表
+     */
     @ManyToMany(fetch = FetchType.EAGER)//立即从数据库中进行加载数据
     @JoinTable(name = "role_permission",
             joinColumns = {@JoinColumn(name = "roleid")},
