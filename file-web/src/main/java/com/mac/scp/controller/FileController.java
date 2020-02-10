@@ -77,20 +77,15 @@ public class FileController {
             fileBean.setUserid(2);
         }else {
             UserBean sessionUserBean = (UserBean) SecurityUtils.getSubject().getPrincipal();
+            if (fileBean == null) {
+                restResult.setSuccess(false);
+                return restResult;
+            }
             fileBean.setUserid(sessionUserBean.getUserId());
         }
 
         fileBean.setFilepath(PathUtil.urlDecode(fileBean.getFilepath()));
         List<FileBean> fileList = fileService.selectFileList(fileBean);
-
-        if ("/".equals(fileBean.getFilepath())){
-            FileBean albumFile = new FileBean();
-            albumFile.setFilename("我的相册");
-
-            albumFile.setFilepath("/");
-            albumFile.setIsdir(1);
-            fileList.add(albumFile);
-        }
 
 
         restResult.setData(fileList);
