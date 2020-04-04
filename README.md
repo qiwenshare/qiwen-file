@@ -75,6 +75,12 @@
  **文件在线解压缩**  :green_heart: 
 ![输入图片说明](https://images.gitee.com/uploads/images/2019/1022/210214_c00f5600_947714.png "屏幕截图.png")
 
+## 联系我
+各种问题可扫描加入QQ群进行咨询
+![输入图片说明](https://images.gitee.com/uploads/images/2020/0404/230620_c45ef962_947714.png "屏幕截图.png")
+
+
+
 ## 参与贡献
 
 1.  Fork 本仓库
