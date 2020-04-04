@@ -91,7 +91,7 @@
     </delete>
 
     <select id="selectFilePathTreeByUserid" parameterType="com.mac.scp.domain.FileBean" resultType="com.mac.scp.domain.FileBean">
-        SELECT * FROM FILE
+        SELECT * FROM file
         WHERE isdir = 1 and userid=${userid}
     </select>
 
