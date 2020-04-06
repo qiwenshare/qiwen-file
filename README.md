@@ -77,10 +77,13 @@
 
 ## 联系我
 各种问题可扫描加入QQ群进行咨询
+
 **QQ交流群**请扫描下面二维码
+
 <img width="30%" src="https://images.gitee.com/uploads/images/2020/0406/164832_5121dc5e_947714.png"/>
 
 **微信公众号**请扫描下面二维码
+
 <img width="30%" src="https://images.gitee.com/uploads/images/2020/0406/164833_d99e92ee_947714.png"/>
 
 
