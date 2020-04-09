@@ -79,6 +79,16 @@ public class FileBean {
     private String newfilepath;
     @Transient
     private String files;
+    @Transient
+    private int filetype;
+
+    public int getFiletype() {
+        return filetype;
+    }
+
+    public void setFiletype(int filetype) {
+        this.filetype = filetype;
+    }
 
     public String getOldfilepath() {
         return oldfilepath;

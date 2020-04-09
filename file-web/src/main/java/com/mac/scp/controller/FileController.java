@@ -100,15 +100,15 @@ public class FileController {
      */
     @RequestMapping(value = "/batchdeletefile", method = RequestMethod.POST)
     @ResponseBody
-    public RestResult<String> deleteImageByIds(@RequestBody String files) {
+    public RestResult<String> deleteImageByIds(@RequestBody FileBean fileBean) {
         RestResult<String> result = new RestResult<String>();
         if (!operationCheck().isSuccess()) {
             return operationCheck();
         }
 
-        List<FileBean> fileList = JSON.parseArray(files, FileBean.class);
+        List<FileBean> fileList = JSON.parseArray(fileBean.getFiles(), FileBean.class);
 
-        for (FileBean fileBean : fileList) {
+        for (FileBean file : fileList) {
             fileService.deleteFile(fileBean);
         }
 
@@ -270,14 +270,14 @@ public class FileController {
      */
     @RequestMapping(value = "/selectfilebyfiletype", method = RequestMethod.GET)
     @ResponseBody
-    public RestResult<List<FileBean>> selectFileByFileType(@RequestParam int fileType) {
+    public RestResult<List<FileBean>> selectFileByFileType(FileBean fileBean) {
         RestResult<List<FileBean>> result = new RestResult<List<FileBean>>();
         UserBean sessionUserBean = (UserBean) SecurityUtils.getSubject().getPrincipal();
         long userid = sessionUserBean.getUserId();
         if (isShareFile){
             userid = 2;
         }
-        List<FileBean> file = fileService.selectFileByExtendName(getFileExtendsByType(fileType), userid);
+        List<FileBean> file = fileService.selectFileByExtendName(getFileExtendsByType(fileBean.getFiletype()), userid);
         result.setData(file);
         result.setSuccess(true);
         return result;
