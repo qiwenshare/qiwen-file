@@ -61,19 +61,26 @@
 前台代码源码：[源码](https://gitee.com/qiwen-cloud/qiwen-file-web)
 
 
-
-
 ## 部分功能演示截图
  **主页**  :yellow_heart: 
-![输入图片说明](https://images.gitee.com/uploads/images/2019/1022/205351_b35a50d9_947714.png "屏幕截图.png")
+![新版主页](https://images.gitee.com/uploads/images/2020/0409/182847_8f60ac83_1837873.png "屏幕截图.png")
+
+![新功能](https://images.gitee.com/uploads/images/2020/0409/183222_fa2282c6_1837873.png "屏幕截图.png")
+
+![左侧菜单栏收缩](https://images.gitee.com/uploads/images/2020/0409/183644_a6902a69_1837873.png "屏幕截图.png")
+
  **创建文件夹**  :blue_heart: 
 ![输入图片说明](https://images.gitee.com/uploads/images/2019/1022/205531_b3bf3380_947714.png "屏幕截图.png")
  **操作列展示**  :purple_heart: 
-![输入图片说明](https://images.gitee.com/uploads/images/2019/1022/205841_9544a2ef_947714.png "屏幕截图.png")
+![操作列扩展](https://images.gitee.com/uploads/images/2020/0409/183336_ab936775_1837873.png "屏幕截图.png")
+
+![操作列合并](https://images.gitee.com/uploads/images/2020/0409/183412_6a3ed5e0_1837873.png "屏幕截图.png")
  **文件的复制和移动**  :heart: 
 ![输入图片说明](https://images.gitee.com/uploads/images/2019/1022/210106_d4b619f3_947714.png "屏幕截图.png")
  **文件在线解压缩**  :green_heart: 
 ![输入图片说明](https://images.gitee.com/uploads/images/2019/1022/210214_c00f5600_947714.png "屏幕截图.png")
+
+
 
 ## 联系我
 各种问题可扫描加入QQ群进行咨询
