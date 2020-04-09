@@ -56,6 +56,7 @@
     <select id="selectFileList" parameterType="com.mac.scp.domain.FileBean" resultType="com.mac.scp.domain.FileBean">
         select * from file
         where filepath = #{filepath} and userid = #{userid}
+        order by isdir desc, filename
     </select>
 
     <select id="selectFileListByIds" resultType="com.mac.scp.domain.FileBean" parameterType="int">
