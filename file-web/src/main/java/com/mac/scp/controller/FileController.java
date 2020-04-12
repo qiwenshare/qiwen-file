@@ -109,7 +109,7 @@ public class FileController {
         List<FileBean> fileList = JSON.parseArray(fileBean.getFiles(), FileBean.class);
 
         for (FileBean file : fileList) {
-            fileService.deleteFile(fileBean);
+            fileService.deleteFile(file);
         }
 
         result.setData("批量删除文件成功");
