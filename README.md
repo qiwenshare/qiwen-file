@@ -69,8 +69,10 @@
 
 ![左侧菜单栏收缩](https://images.gitee.com/uploads/images/2020/0409/183644_a6902a69_1837873.png "屏幕截图.png")
 
-文件分类查看:heart: 
+ **文件分类查看** :heart: 
+
 支持三种显示格式进行查看（列表，网格，时间线）
+
 列表
 ![输入图片说明](https://images.gitee.com/uploads/images/2020/0415/001030_f8caf4fb_947714.png "屏幕截图.png")
 网格
