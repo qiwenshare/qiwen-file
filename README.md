@@ -34,10 +34,7 @@
 
 ## 安装教程
 
-1. 拉取代码
-2. 本地创建数据库，名为file，将application.properties中连接数据库的密码替换为自己本地的
-3. 点击根目录下install.bat进行编译
-4. 编译完成之后会生成release发布包，进去点击startWeb.bat启动
+[手把手教你部署奇文网盘](https://www.qiwenshare.com/essay/detail/169)
 
 ## 目录说明
 
