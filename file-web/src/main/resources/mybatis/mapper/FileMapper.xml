@@ -93,7 +93,7 @@
 
     <select id="selectFilePathTreeByUserid" parameterType="com.mac.scp.domain.FileBean" resultType="com.mac.scp.domain.FileBean">
         SELECT * FROM file
-        WHERE isdir = 1 and userid=${userid}
+        WHERE isdir = 1 and userid=#{userid}
     </select>
 
 <!--    <select id="selectFileByExtendName" resultType="com.mac.scp.domain.FileBean" parameterType="java.lang.String">-->

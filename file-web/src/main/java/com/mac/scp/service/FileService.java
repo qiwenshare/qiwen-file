@@ -74,6 +74,11 @@ public class FileService implements IFileService {
     @Override
     public List<FileBean> selectFileTreeListLikeFilePath(String filePath) {
         FileBean fileBean = new FileBean();
+        filePath = filePath.replace("\\", "\\\\\\\\");
+        filePath = filePath.replace("'", "\\'");
+        filePath = filePath.replace("%", "\\%");
+        filePath = filePath.replace("_", "\\_");
+
         fileBean.setFilepath(filePath);
 
         return fileMapper.selectFileTreeListLikeFilePath(fileBean);
@@ -141,6 +146,11 @@ public class FileService implements IFileService {
         //移动子目录
         oldfilepath = oldfilepath + filename + "/";
         newfilepath = newfilepath + filename + "/";
+
+        oldfilepath = oldfilepath.replace("\\", "\\\\\\\\");
+        oldfilepath = oldfilepath.replace("'", "\\'");
+        oldfilepath = oldfilepath.replace("%", "\\%");
+        oldfilepath = oldfilepath.replace("_", "\\_");
 
         if (extendname == null) { //为null说明是目录，则需要移动子目录
             fileMapper.updateFilepathByFilepath(oldfilepath, newfilepath);
