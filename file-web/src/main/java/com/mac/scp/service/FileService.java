@@ -28,7 +28,21 @@ public class FileService implements IFileService {
 
     @Override
     public void batchInsertFile(List<FileBean> fileBeanList) {
+        UserBean sessionUserBean = (UserBean) SecurityUtils.getSubject().getPrincipal();
+        StorageBean storageBean = filetransferService.selectStorageBean(new StorageBean(sessionUserBean.getUserId()));
+        long fileSizeSum = 0;
+        for (FileBean fileBean : fileBeanList) {
+            if (fileBean.getIsdir() == 0) {
+                fileSizeSum += fileBean.getFilesize();
+            }
+        }
         fileMapper.batchInsertFile(fileBeanList);
+        if (storageBean != null) {
+            long updateFileSize = storageBean.getStoragesize() + fileSizeSum;
+
+            storageBean.setStoragesize(updateFileSize);
+            filetransferService.updateStorageBean(storageBean);
+        }
     }
 
     @Override
