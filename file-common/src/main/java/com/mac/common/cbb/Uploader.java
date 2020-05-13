@@ -23,21 +23,18 @@ import java.util.*;
  * 文件上传辅助类
  */
 public class Uploader {
-    private static final Logger LOG = LoggerFactory.getLogger(Uploader.class);
-
-
     public static final String ROOT_PATH = "upload";
-
-    private StandardMultipartHttpServletRequest request = null;
-
-    // 文件允许格式
-    private String[] allowFiles = {".rar", ".doc", ".docx", ".zip", ".pdf", ".txt", ".swf", ".wmv", ".gif", ".png", ".jpg", ".jpeg", ".bmp", "blob", ".mp4"};
-
-
-    // 文件大小限制，单位KB
-    private int maxSize = 10000000;
-
+    private static final Logger LOG = LoggerFactory.getLogger(Uploader.class);
     List<UploadFile> saveUploadFileList = new ArrayList<UploadFile>();
+    private StandardMultipartHttpServletRequest request = null;
+    /**
+     * 文件允许格式
+     */
+    private String[] allowFiles = {".rar", ".doc", ".docx", ".zip", ".pdf", ".txt", ".swf", ".wmv", ".gif", ".png", ".jpg", ".jpeg", ".bmp", "blob", ".mp4"};
+    /**
+     * 文件大小限制，单位KB
+     */
+    private int maxSize = 10000000;
 
     public Uploader(HttpServletRequest request) {
         this.request = (StandardMultipartHttpServletRequest) request;
@@ -46,7 +43,7 @@ public class Uploader {
 
     public List<UploadFile> upload() {
 
-        // 判断enctype属性是否为multipart/form-data 
+        // 判断enctype属性是否为multipart/form-data
         boolean isMultipart = ServletFileUpload.isMultipartContent(this.request);
         if (!isMultipart) {
             UploadFile uploadFile = new UploadFile();
@@ -55,11 +52,13 @@ public class Uploader {
             saveUploadFileList.add(uploadFile);
             return saveUploadFileList;
         }
-        DiskFileItemFactory dff = new DiskFileItemFactory();//1、创建工厂
+        //1、创建工厂
+        DiskFileItemFactory dff = new DiskFileItemFactory();
         String savePath = getSaveFilePath(ROOT_PATH);
         dff.setRepository(new File(savePath));
         try {
-            ServletFileUpload sfu = new ServletFileUpload(dff);//2、创建文件上传解析器
+            //2、创建文件上传解析器
+            ServletFileUpload sfu = new ServletFileUpload(dff);
             sfu.setSizeMax(this.maxSize * 1024L);
             sfu.setHeaderEncoding("utf-8");//3、解决文件名的中文乱码
             Iterator<String> iter = this.request.getFileNames();
@@ -96,7 +95,7 @@ public class Uploader {
                     out = new FileOutputStream(file);
                     output = new BufferedOutputStream(out);
                     Streams.copy(in, output, true);
-                    if (FileUtil.isImageFile(uploadFile.getFileType())){
+                    if (FileUtil.isImageFile(uploadFile.getFileType())) {
                         ImageOperation.thumbnailsImage(file, minFile, 300);
                     }
 
@@ -123,7 +122,6 @@ public class Uploader {
 
         return saveUploadFileList;
     }
-
 
 
     private void closeStream(BufferedInputStream in, FileOutputStream out,
@@ -157,8 +155,7 @@ public class Uploader {
     }
 
 
-
-    private String getFileName(String fileName){
+    private String getFileName(String fileName) {
         return fileName.substring(0, fileName.lastIndexOf("."));
     }
 

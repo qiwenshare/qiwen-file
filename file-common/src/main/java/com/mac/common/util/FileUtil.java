@@ -1,6 +1,5 @@
 package com.mac.common.util;
 
-import java.io.*;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -58,17 +57,16 @@ public class FileUtil {
     }
 
 
-
     public static String pathSplitFormat(String filePath) {
-        String path = filePath.replace("///", "/")
+        return filePath.replace("///", "/")
                 .replace("//", "/")
                 .replace("\\\\\\", "\\")
                 .replace("\\\\", "\\");
-        return path;
     }
 
     /**
      * 获取文件扩展名
+     *
      * @param fileName 文件名
      * @return 文件扩展名
      */

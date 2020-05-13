@@ -1,10 +1,17 @@
 package com.mac.scp.domain;
 
+import lombok.Data;
+import lombok.NoArgsConstructor;
+import lombok.experimental.Accessors;
+
 import javax.persistence.*;
 
 /**
  * 存储信息类
  */
+@Data
+@Accessors(chain = true)
+@NoArgsConstructor
 @Table(name = "storage")
 @Entity
 public class StorageBean {
@@ -25,35 +32,7 @@ public class StorageBean {
      */
     private long storagesize;
 
-    public StorageBean() {
-
-    }
-
     public StorageBean(long userid) {
         this.userid = userid;
-    }
-
-    public long getStorageid() {
-        return storageid;
-    }
-
-    public void setStorageid(long storageid) {
-        this.storageid = storageid;
-    }
-
-    public long getUserid() {
-        return userid;
-    }
-
-    public void setUserid(long userid) {
-        this.userid = userid;
-    }
-
-    public long getStoragesize() {
-        return storagesize;
-    }
-
-    public void setStoragesize(long storagesize) {
-        this.storagesize = storagesize;
     }
 }

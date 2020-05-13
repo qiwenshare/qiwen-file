@@ -1,6 +1,7 @@
 package com.mac.scp.config.shiro;
 
 import com.mac.scp.config.cors.MyCorsRegistration;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.shiro.authc.credential.HashedCredentialsMatcher;
 import org.apache.shiro.mgt.SecurityManager;
 import org.apache.shiro.spring.security.interceptor.AuthorizationAttributeSourceAdvisor;
@@ -17,11 +18,12 @@ import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Properties;
 
+@Slf4j
 @Configuration
 public class ShiroConfig {
     @Bean
     public ShiroFilterFactoryBean shirFilter(SecurityManager securityManager) {
-        System.out.println("ShiroConfiguration.shirFilter()" + "mac");
+        log.info("ShiroConfiguration.shirFilter()" + "mac");
         ShiroFilterFactoryBean shiroFilterFactoryBean = new ShiroFilterFactoryBean();
         shiroFilterFactoryBean.setSecurityManager(securityManager);
         //拦截器.
@@ -54,8 +56,10 @@ public class ShiroConfig {
     @Bean
     public HashedCredentialsMatcher hashedCredentialsMatcher() {
         HashedCredentialsMatcher hashedCredentialsMatcher = new HashedCredentialsMatcher();
-        hashedCredentialsMatcher.setHashAlgorithmName("md5");//散列算法:这里使用MD5算法;
-        hashedCredentialsMatcher.setHashIterations(1024);//散列的次数，比如散列两次，相当于 md5(md5(""));
+        //散列算法:这里使用MD5算法;
+        hashedCredentialsMatcher.setHashAlgorithmName("md5");
+        //散列的次数，比如散列两次，相当于 md5(md5(""));
+        hashedCredentialsMatcher.setHashIterations(1024);
         return hashedCredentialsMatcher;
     }
 
@@ -100,11 +104,15 @@ public class ShiroConfig {
     createSimpleMappingExceptionResolver() {
         SimpleMappingExceptionResolver r = new SimpleMappingExceptionResolver();
         Properties mappings = new Properties();
-        mappings.setProperty("DatabaseException", "databaseError");//数据库异常处理
+        //数据库异常处理
+        mappings.setProperty("DatabaseException", "databaseError");
         mappings.setProperty("UnauthorizedException", "403");
-        r.setExceptionMappings(mappings);  // None by default
-        r.setDefaultErrorView("error");    // No default
-        r.setExceptionAttribute("ex");     // Default is "exception"
+        // None by default
+        r.setExceptionMappings(mappings);
+        // No default
+        r.setDefaultErrorView("error");
+        // Default is "exception"
+        r.setExceptionAttribute("ex");
         //r.setWarnLogCategory("example.MvcLogger");     // No default
         return r;
     }

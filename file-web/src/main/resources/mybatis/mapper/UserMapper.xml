@@ -20,7 +20,7 @@
         <result property="position" column="position"/>
         <result property="intro" column="intro"/>
         <result property="notReadCount" column="notReadCount"/>
-        <result property="imageurl" column="imageurl" />
+        <result property="imageurl" column="imageurl"/>
         <collection property="roleList" ofType="com.mac.scp.domain.Role">
             <id property="roleid" column="roleid"/>
             <result property="role" column="role"/>

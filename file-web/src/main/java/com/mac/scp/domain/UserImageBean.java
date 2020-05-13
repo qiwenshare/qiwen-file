@@ -1,5 +1,8 @@
 package com.mac.scp.domain;
 
+import lombok.Data;
+import lombok.experimental.Accessors;
+
 import javax.persistence.*;
 import java.io.Serializable;
 
@@ -8,6 +11,8 @@ import java.io.Serializable;
  *
  * @author ma116
  */
+@Data
+@Accessors(chain = true)
 @Table(name = "userimage")
 @Entity
 public class UserImageBean implements Serializable {
@@ -24,43 +29,6 @@ public class UserImageBean implements Serializable {
     private String imageurl;
     @Column
     private String uploadtime;
-
-
-    public String getUploadtime() {
-        return uploadtime;
-    }
-
-    public void setUploadtime(String uploadtime) {
-        this.uploadtime = uploadtime;
-    }
-
-    public static long getSerialVersionUID() {
-        return serialVersionUID;
-    }
-
-    public long getImageid() {
-        return imageid;
-    }
-
-    public void setImageid(long imageid) {
-        this.imageid = imageid;
-    }
-
-    public long getUserid() {
-        return userid;
-    }
-
-    public void setUserid(long userid) {
-        this.userid = userid;
-    }
-
-    public String getImageurl() {
-        return imageurl;
-    }
-
-    public void setImageurl(String imageurl) {
-        this.imageurl = imageurl;
-    }
 
 
 }

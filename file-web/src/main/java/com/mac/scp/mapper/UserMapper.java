@@ -1,7 +1,9 @@
 package com.mac.scp.mapper;
 
 import com.mac.common.domain.TableQueryBean;
-import com.mac.scp.domain.*;
+import com.mac.scp.domain.Permission;
+import com.mac.scp.domain.Role;
+import com.mac.scp.domain.UserBean;
 
 import java.util.List;
 
@@ -24,6 +26,7 @@ public interface UserMapper {
 
     /**
      * 通過openid得到用戶信息
+     *
      * @param openid
      * @return
      */
@@ -46,7 +49,9 @@ public interface UserMapper {
     UserBean selectUserByUserName(UserBean userBean);
 
     void updateEmail(UserBean userBean);
+
     void updateTelephone(UserBean userBean);
+
     void updataImageUrl(UserBean userBean);
 
     UserBean selectUserByUserNameAndPassword(UserBean userBean);

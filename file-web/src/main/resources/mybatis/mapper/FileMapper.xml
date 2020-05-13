@@ -19,9 +19,9 @@
         filepath, extendname, uploadtime, filesize, isdir)
         VALUES
         <foreach collection="list" item="file" index="index" separator=",">
-        (#{file.essayid},#{file.albumid},#{file.userid}, #{file.filename},#{file.timestampname},
-         #{file.fileurl}, #{file.filepath}, #{file.extendname}, #{file.uploadtime},
-         #{file.filesize}, #{file.isdir})
+            (#{file.essayid},#{file.albumid},#{file.userid}, #{file.filename},#{file.timestampname},
+            #{file.fileurl}, #{file.filepath}, #{file.extendname}, #{file.uploadtime},
+            #{file.filesize}, #{file.isdir})
         </foreach>
     </insert>
 
@@ -40,9 +40,9 @@
     <update id="updateFilepathByPathAndName">
         update file set filepath = #{param2}
         where filepath = #{param1} and filename = #{param3}
-         <if test="param4 != null">
-         and extendname = #{param4}
-         </if>
+        <if test="param4 != null">
+            and extendname = #{param4}
+        </if>
         <if test="param4 == null">
             and extendname is null
         </if>
@@ -74,8 +74,9 @@
         </foreach>
         and userid = #{userid}
     </select>
-    
-    <select id="selectFileTreeListLikeFilePath" parameterType="com.mac.scp.domain.FileBean" resultType="com.mac.scp.domain.FileBean">
+
+    <select id="selectFileTreeListLikeFilePath" parameterType="com.mac.scp.domain.FileBean"
+            resultType="com.mac.scp.domain.FileBean">
         select * from file
         where filepath like N'${filepath}%'
     </select>
@@ -86,21 +87,22 @@
 
     <delete id="deleteFileByIds" parameterType="int">
         delete from file where fileid in
-        <foreach  collection="list" open="(" separator="," close=")" item="fileid">
+        <foreach collection="list" open="(" separator="," close=")" item="fileid">
             #{fileid}
         </foreach>
     </delete>
 
-    <select id="selectFilePathTreeByUserid" parameterType="com.mac.scp.domain.FileBean" resultType="com.mac.scp.domain.FileBean">
+    <select id="selectFilePathTreeByUserid" parameterType="com.mac.scp.domain.FileBean"
+            resultType="com.mac.scp.domain.FileBean">
         SELECT * FROM file
         WHERE isdir = 1 and userid=#{userid}
     </select>
 
-<!--    <select id="selectFileByExtendName" resultType="com.mac.scp.domain.FileBean" parameterType="java.lang.String">-->
-<!--        select * from file-->
-<!--        where extendname in-->
-<!--        <foreach collection="list" separator="," open="(" close=")" item="extendname">-->
-<!--            #{extendname}-->
-<!--        </foreach>-->
-<!--    </select>-->
+    <!--    <select id="selectFileByExtendName" resultType="com.mac.scp.domain.FileBean" parameterType="java.lang.String">-->
+    <!--        select * from file-->
+    <!--        where extendname in-->
+    <!--        <foreach collection="list" separator="," open="(" close=")" item="extendname">-->
+    <!--            #{extendname}-->
+    <!--        </foreach>-->
+    <!--    </select>-->
 </mapper>

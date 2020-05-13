@@ -2,7 +2,7 @@
 <config xmlns:xsi='http://www.w3.org/2001/XMLSchema-instance'
         xmlns='http://www.ehcache.org/v3'
         xsi:schemaLocation="http://www.ehcache.org/v3 http://www.ehcache.org/schema/ehcache-core.xsd">
-    <persistence directory="C://myCache" />
+    <persistence directory="C://myCache"/>
     <cache alias="MM" uses-template="userCacheTemplate">
         <key-type>org.springframework.cache.interceptor.SimpleKey</key-type>
         <value-type>java.lang.String</value-type>

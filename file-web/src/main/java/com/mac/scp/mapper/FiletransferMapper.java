@@ -1,7 +1,7 @@
 package com.mac.scp.mapper;
 
-import com.mac.scp.domain.*;
-import org.springframework.boot.autoconfigure.mongo.embedded.EmbeddedMongoProperties;
+import com.mac.scp.domain.StorageBean;
+import com.mac.scp.domain.UserImageBean;
 
 import java.util.List;
 

@@ -13,7 +13,6 @@ public class PasswordUtil {
                 sb.append("0");
             }
         }
-        String salt = sb.toString();
-        return salt;
+        return sb.toString();
     }
 }
