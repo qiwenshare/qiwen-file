@@ -19,5 +19,4 @@ public class UploadFile {
     private String message;
     private String url;
 
-
 }

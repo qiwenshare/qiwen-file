@@ -187,7 +187,7 @@ public class Uploader {
         SimpleDateFormat formater = new SimpleDateFormat("yyyyMMdd");
         path = File.separator + path + File.separator + formater.format(new Date());
         File dir = new File(PathUtil.getStaticPath() + path);
-        LOG.error(PathUtil.getStaticPath() + path);
+        LOG.info(PathUtil.getStaticPath() + path);
         if (!dir.exists()) {
             try {
                 boolean isSuccessMakeDir = dir.mkdirs();

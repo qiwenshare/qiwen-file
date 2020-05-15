@@ -1,5 +1,6 @@
 package com.mac.scp.mapper;
 
+import com.baomidou.mybatisplus.core.mapper.BaseMapper;
 import com.mac.common.domain.TableQueryBean;
 import com.mac.scp.domain.Permission;
 import com.mac.scp.domain.Role;
@@ -7,66 +8,61 @@ import com.mac.scp.domain.UserBean;
 
 import java.util.List;
 
-public interface UserMapper {
-    int insertUser(UserBean userBean);
+public interface UserMapper extends BaseMapper<UserBean> {
+	int insertUser(UserBean userBean);
 
-    int insertUserRole(long userId, long roleid);
+	int insertUserRole(long userId, long roleid);
 
-    UserBean selectUser(UserBean userBean);
+	UserBean selectUser(UserBean userBean);
 
-    List<UserBean> selectAdminUserList();
+	List<UserBean> selectAdminUserList();
 
-    /**
-     * 通過id得到用戶信息
-     *
-     * @param userId
-     * @return
-     */
-    UserBean selectUserById(long userId);
+	/**
+	 * 通過id得到用戶信息
+	 *
+	 * @param userId
+	 * @return
+	 */
+	UserBean selectUserById(long userId);
 
-    /**
-     * 通過openid得到用戶信息
-     *
-     * @param openid
-     * @return
-     */
-    UserBean selectUserByopenid(String openid);
+	/**
+	 * 通過openid得到用戶信息
+	 *
+	 * @param openid
+	 * @return
+	 */
+	UserBean selectUserByopenid(String openid);
 
-    /**
-     * 批量删除用户信息
-     *
-     * @param userBean
-     */
-    void deleteUserInfo(UserBean userBean);
+	/**
+	 * 批量删除用户信息
+	 *
+	 * @param userBean
+	 */
+	void deleteUserInfo(UserBean userBean);
 
-    /**
-     * 修改用戶信息
-     *
-     * @param userBean
-     */
-    void updateUserInfo(UserBean userBean);
+	/**
+	 * 修改用戶信息
+	 *
+	 * @param userBean
+	 */
+	void updateUserInfo(UserBean userBean);
 
-    UserBean selectUserByUserName(UserBean userBean);
+	UserBean selectUserByUserName(UserBean userBean);
 
-    void updateEmail(UserBean userBean);
+	void updateEmail(UserBean userBean);
 
-    void updateTelephone(UserBean userBean);
+	void updataImageUrl(UserBean userBean);
 
-    void updataImageUrl(UserBean userBean);
+	UserBean selectUserByTelephone(UserBean userBean);
 
-    UserBean selectUserByUserNameAndPassword(UserBean userBean);
+	List<UserBean> selectAllUserList();
 
-    UserBean selectUserByTelephone(UserBean userBean);
+	List<UserBean> selectUserListByCondition(TableQueryBean tableQueryBean);
 
-    List<UserBean> selectAllUserList();
+	List<Role> selectRoleList();
 
-    List<UserBean> selectUserListByCondition(TableQueryBean tableQueryBean);
+	List<Permission> selectPermissionListByCondition(TableQueryBean tableQueryBean);
 
-    List<Role> selectRoleList();
+	int selectUserCountByCondition(TableQueryBean tableQueryBean);
 
-    List<Permission> selectPermissionListByCondition(TableQueryBean tableQueryBean);
-
-    int selectUserCountByCondition(TableQueryBean tableQueryBean);
-
-    List<Permission> getPermissionByRole(int roleid);
 }

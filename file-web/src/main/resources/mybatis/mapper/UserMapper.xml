@@ -91,7 +91,8 @@
         limit #{beginCount}, #{limit}
     </select>
 
-    <select id="selectUserCountByCondition" resultType="int" parameterType="com.mac.common.domain.TableQueryBean">
+    <select id="selectUserCountByCondition" resultType="java.lang.Integer"
+            parameterType="com.mac.common.domain.TableQueryBean">
         SELECT count(*) FROM user
         <if test="key != null">
             where username LIKE '%${key}%'

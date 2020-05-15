@@ -7,13 +7,11 @@ import com.mac.common.operation.FileOperation;
 import com.mac.common.util.FileUtil;
 import com.mac.common.util.PathUtil;
 import com.mac.scp.api.IFileService;
-import com.mac.scp.api.IFiletransferService;
 import com.mac.scp.domain.FileBean;
 import com.mac.scp.domain.TreeNode;
 import com.mac.scp.domain.UserBean;
 import org.apache.shiro.SecurityUtils;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.web.servlet.ModelAndView;
 
 import javax.annotation.Resource;
 import java.io.File;
@@ -32,23 +30,14 @@ public class FileController {
 	public static long treeid = 0;
 	@Resource
 	IFileService fileService;
-	@Resource
-	IFiletransferService filetransferService;
 
-	/**
-	 * @return
-	 */
-	@RequestMapping("/fileindex")
-	@ResponseBody
-	public ModelAndView essayIndex() {
-		return new ModelAndView("/file/fileIndex.html");
-	}
 
 	/**
 	 * 创建文件
 	 *
 	 * @return
 	 */
+	// TODO 创建文件
 	@PostMapping("/createfile")
 	@ResponseBody
 	public RestResult<String> createFile(@RequestBody FileBean fileBean) {
@@ -67,6 +56,7 @@ public class FileController {
 		return restResult;
 	}
 
+	// TODO 获取文件列表
 	@GetMapping("/getfilelist")
 	@ResponseBody
 	public RestResult<List<FileBean>> getFileList(FileBean fileBean) {
@@ -96,6 +86,7 @@ public class FileController {
 	 *
 	 * @return
 	 */
+	// TODO 批量删除文件
 	@PostMapping("/batchdeletefile")
 	@ResponseBody
 	public RestResult<String> deleteImageByIds(@RequestBody FileBean fileBean) {
@@ -104,7 +95,9 @@ public class FileController {
 			return operationCheck();
 		}
 
-		List<FileBean> fileList = JSON.parseArray(fileBean.getFiles(), FileBean.class);
+
+		String files = fileBean.getFiles();
+		List<FileBean> fileList = JSON.parseArray(files, FileBean.class);
 
 		for (FileBean file : fileList) {
 			fileService.deleteFile(file);
@@ -120,19 +113,17 @@ public class FileController {
 	 *
 	 * @return
 	 */
+	// TODO 删除文件
 	@PostMapping("/deletefile")
 	@ResponseBody
-	public String deleteFile(@RequestBody FileBean fileBean) {
+	public RestResult<String> deleteFile(@RequestBody FileBean fileBean) {
 		RestResult<String> result = new RestResult<String>();
 		if (!operationCheck().isSuccess()) {
-			return JSON.toJSONString(operationCheck());
+			return operationCheck();
 		}
-
 		fileService.deleteFile(fileBean);
-
 		result.setSuccess(true);
-		String resultJson = JSON.toJSONString(result);
-		return resultJson;
+		return result;
 	}
 
 	/**
@@ -140,12 +131,13 @@ public class FileController {
 	 *
 	 * @return
 	 */
+	// TODO 解压文件
 	@PostMapping("/unzipfile")
 	@ResponseBody
-	public String unzipFile(@RequestBody FileBean fileBean) {
+	public RestResult<String> unzipFile(@RequestBody FileBean fileBean) {
 		RestResult<String> result = new RestResult<String>();
 		if (!operationCheck().isSuccess()) {
-			return JSON.toJSONString(operationCheck());
+			return operationCheck();
 		}
 
 		String zipFileUrl = PathUtil.getStaticPath() + fileBean.getFileurl();
@@ -156,8 +148,7 @@ public class FileController {
 
 		List<FileBean> fileBeanList = new ArrayList<>();
 		UserBean sessionUserBean = (UserBean) SecurityUtils.getSubject().getPrincipal();
-		for (int i = 0; i < fileEntryNameList.size(); i++) {
-			String entryName = fileEntryNameList.get(i);
+		for (String entryName : fileEntryNameList) {
 			String totalFileUrl = unzipUrl + entryName;
 			File currentFile = FileOperation.newFile(totalFileUrl);
 
@@ -186,8 +177,7 @@ public class FileController {
 		}
 		fileService.batchInsertFile(fileBeanList);
 		result.setSuccess(true);
-		String resultJson = JSON.toJSONString(result);
-		return resultJson;
+		return result;
 	}
 
 	/**
@@ -195,6 +185,7 @@ public class FileController {
 	 *
 	 * @return 返回前台移动结果
 	 */
+	// TODO  移动文件
 	@PostMapping("/movefile")
 	@ResponseBody
 	public RestResult<String> moveFile(@RequestBody FileBean fileBean) {
@@ -217,15 +208,14 @@ public class FileController {
 	 *
 	 * @return 返回前台移动结果
 	 */
+	// TODO 批量移动文件
 	@PostMapping("/batchmovefile")
 	@ResponseBody
 	public RestResult<String> batchMoveFile(@RequestBody FileBean fileBean) {
-
 		RestResult<String> result = new RestResult<String>();
 		if (!operationCheck().isSuccess()) {
 			return operationCheck();
 		}
-
 		String files = fileBean.getFiles();
 		String newfilepath = fileBean.getNewfilepath();
 
@@ -265,6 +255,7 @@ public class FileController {
 	 * @param fileBean 文件类型
 	 * @return
 	 */
+	// TODO 通过文件类型选择文件
 	@GetMapping("/selectfilebyfiletype")
 	@ResponseBody
 	public RestResult<List<FileBean>> selectFileByFileType(FileBean fileBean) {
@@ -285,6 +276,7 @@ public class FileController {
 	 *
 	 * @return
 	 */
+	// TODO 获取文件的树结构
 	@GetMapping("/getfiletree")
 	@ResponseBody
 	public RestResult<TreeNode> getFileTree() {

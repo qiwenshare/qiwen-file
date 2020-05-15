@@ -1,14 +1,11 @@
 package com.mac.scp.service;
 
+import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.mac.common.cbb.DateUtil;
-import com.mac.common.cbb.MiniuiUtil;
 import com.mac.common.cbb.RestResult;
-import com.mac.common.domain.TableQueryBean;
 import com.mac.common.util.PasswordUtil;
 import com.mac.scp.api.IUserService;
 import com.mac.scp.controller.UserController;
-import com.mac.scp.domain.Permission;
-import com.mac.scp.domain.Role;
 import com.mac.scp.domain.UserBean;
 import com.mac.scp.domain.UserImageBean;
 import com.mac.scp.mapper.UserMapper;
@@ -16,8 +13,6 @@ import org.apache.shiro.crypto.hash.SimpleHash;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
-import java.util.List;
-import java.util.Objects;
 import java.util.regex.Pattern;
 
 @Service
@@ -87,31 +82,14 @@ public class UserServiceImpl implements IUserService {
 		userImageBean.setUserid(userBean.getUserId());
 		if (result == 1) {
 			restResult.setSuccess(true);
-			return restResult;
 		} else {
 			restResult.setSuccess(false);
 			restResult.setErrorCode("100000");
 			restResult.setErrorMessage("注册用户失败，请检查输入信息！");
-			return restResult;
 		}
+		return restResult;
 	}
 
-	/**
-	 * 添加用户
-	 */
-	@Override
-	public UserBean addUser(UserBean userBean) {
-
-		String salt = PasswordUtil.getSaltValue();
-		String newPassword = new SimpleHash("MD5", userBean.getOpenid(), salt, 1024).toHex();
-
-		userBean.setSalt(salt);
-		userBean.setQqpassword(newPassword);
-
-		userMapper.insertUser(userBean);
-		userMapper.insertUserRole(userBean.getUserId(), 2);
-		return userBean;
-	}
 
 	/**
 	 * 检测用户名是否存在
@@ -120,11 +98,7 @@ public class UserServiceImpl implements IUserService {
 	 */
 	private Boolean isUserNameExit(UserBean userBean) {
 		UserBean result = userMapper.selectUserByUserName(userBean);
-		if (result != null) {
-			return true;
-		} else {
-			return false;
-		}
+		return result != null;
 	}
 
 	/**
@@ -144,19 +118,6 @@ public class UserServiceImpl implements IUserService {
 	}
 
 	/**
-	 * 通过用户名获取用户信息
-	 *
-	 * @param userName
-	 * @return
-	 */
-	@Override
-	public UserBean findUserInfoByName(String userName) {
-		UserBean userinfo = new UserBean();
-		userinfo.setUsername(userName);
-		return userMapper.selectUserByUserName(userinfo);
-	}
-
-	/**
 	 * 通过手机号获取用户信息
 	 *
 	 * @param telephone
@@ -164,118 +125,20 @@ public class UserServiceImpl implements IUserService {
 	 */
 	@Override
 	public UserBean findUserInfoByTelephone(String telephone) {
-		UserBean userinfo = new UserBean();
-		userinfo.setTelephone(telephone);
-		return userMapper.selectUserByTelephone(userinfo);
-	}
+		return userMapper.selectOne(new LambdaQueryWrapper<UserBean>().eq(UserBean::getTelephone, telephone));
 
-	/**
-	 * 通过用户名获取用户信息
-	 *
-	 * @param userName
-	 * @return
-	 */
-	@Override
-	public UserBean findUserInfoByNameAndPassword(String userName, String password) {
-		UserBean userinfo = new UserBean();
-		userinfo.setUsername(userName);
-		return userMapper.selectUserByUserName(userinfo);
-	}
-
-	/**
-	 * 用户登录
-	 */
-	@Override
-	public UserBean loginUser(UserBean userBean) {
-		RestResult<UserBean> restResult = new RestResult<UserBean>();
-		if (Objects.isNull(userBean.getUsername()) && Objects.nonNull(userBean.getTelephone())) {
-			userBean.setUsername(userBean.getTelephone());
-		}
-		if (userBean.getUsername() != null && userBean.getTelephone() == null) {
-			userBean.setTelephone(userBean.getUsername());
-		}
-
-		return userMapper.selectUser(userBean);
-	}
-
-	@Override
-	public List<UserBean> selectAdminUserList() {
-		return userMapper.selectAdminUserList();
 	}
 
 
 	@Override
 	public UserBean getUserInfoById(long userId) {
-		UserBean userBean = userMapper.selectUserById(userId);
-
-		return userBean;
+		return userMapper.selectUserById(userId);
 	}
 
 	@Override
 	public UserBean selectUserByopenid(String openid) {
-		UserBean userBean = userMapper.selectUserByopenid(openid);
-		return userBean;
+		return userMapper.selectUserByopenid(openid);
 	}
 
-
-	/**
-	 * 修改用户信息
-	 */
-	@Override
-	public RestResult<String> updateUserInfo(UserBean userBean) {
-		RestResult<String> restResult = new RestResult<String>();
-		userMapper.updateUserInfo(userBean);
-
-		restResult.setSuccess(true);
-		return restResult;
-	}
-
-	@Override
-	public void updateEmail(UserBean userBean) {
-		userMapper.updateEmail(userBean);
-	}
-
-	@Override
-	public void updataImageUrl(UserBean userBean) {
-		userMapper.updataImageUrl(userBean);
-	}
-
-	/**
-	 * 查询所有的用户
-	 */
-	@Override
-	public List<UserBean> selectAllUserList() {
-		return userMapper.selectAllUserList();
-	}
-
-	@Override
-	public List<UserBean> selectUserList(TableQueryBean tableQueryBean) {
-		TableQueryBean tablePageQuery = MiniuiUtil.getMiniuiTablePageQuery(tableQueryBean);
-		return userMapper.selectUserListByCondition(tablePageQuery);
-	}
-
-	@Override
-	public List<Role> selectRoleList() {
-		//TableQueryBean tablePageQuery = MiniuiUtil.getMiniuiTablePageQuery(tableQueryBean);
-		return userMapper.selectRoleList();
-	}
-
-	@Override
-	public List<Permission> selectPermissionList(TableQueryBean tableQueryBean) {
-		TableQueryBean tablePageQuery = MiniuiUtil.getMiniuiTablePageQuery(tableQueryBean);
-		return userMapper.selectPermissionListByCondition(tablePageQuery);
-	}
-
-
-	@Override
-	public int selectUserCountByCondition(TableQueryBean tableQueryBean) {
-		return userMapper.selectUserCountByCondition(tableQueryBean);
-	}
-
-	@Override
-	public void deleteUserInfo(UserBean userBean) {
-		userMapper.deleteUserInfo(userBean);
-
-	}
 
 }

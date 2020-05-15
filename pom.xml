@@ -14,8 +14,19 @@
     <artifactId>file</artifactId>
     <version>1.0-SNAPSHOT</version>
     <packaging>pom</packaging>
-
     <dependencies>
+        <!--Swagger Start-->
+        <dependency>
+            <groupId>io.springfox</groupId>
+            <artifactId>springfox-swagger2</artifactId>
+            <version>2.9.2</version>
+        </dependency>
+        <dependency>
+            <groupId>com.github.xiaoymin</groupId>
+            <artifactId>knife4j-spring-boot-starter</artifactId>
+            <version>2.0.2</version>
+        </dependency>
+        <!--Swagger End-->
         <!-- fastjson  -->
         <dependency>
             <groupId>com.alibaba</groupId>
@@ -29,11 +40,6 @@
             <scope>runtime</scope>
         </dependency>
 
-        <!-- 添加Hibernate依赖 -->
-        <dependency>
-            <groupId>org.hibernate</groupId>
-            <artifactId>hibernate-core</artifactId>
-        </dependency>
         <!--jpa-->
         <dependency>
             <groupId>org.springframework.boot</groupId>
@@ -49,43 +55,17 @@
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-aop</artifactId>
         </dependency>
-        <dependency><!--aspectjrt和aspectjweaver是与aspectj相关的包,用来支持切面编程的；-->
-            <groupId>org.aspectj</groupId>
-            <artifactId>aspectjrt</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>org.aspectj</groupId>
-            <artifactId>aspectjweaver</artifactId>
-        </dependency>
-        <dependency><!--cglib包是用来动态代理用的,基于类的代理；-->
-            <groupId>cglib</groupId>
-            <artifactId>cglib</artifactId>
-            <version>3.2.10</version>
-        </dependency>
-        <dependency>
-            <groupId>org.springframework</groupId>
-            <artifactId>spring-aop</artifactId>
-        </dependency>
-        <!--引入aop  end-->
+
         <!--邮件服务-->
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-mail</artifactId>
         </dependency>
+
         <dependency>
-            <groupId>com.sun.mail</groupId>
-            <artifactId>javax.mail</artifactId>
-            <version>RELEASE</version>
-        </dependency>
-        <dependency>
-            <groupId>commons-io</groupId>
-            <artifactId>commons-io</artifactId>
-            <version>2.6</version>
-        </dependency>
-        <!-- https://mvnrepository.com/artifact/org.apache.commons/commons-dbcp2 -->
-        <dependency>
-            <groupId>org.apache.commons</groupId>
-            <artifactId>commons-dbcp2</artifactId>
+            <groupId>cn.hutool</groupId>
+            <artifactId>hutool-all</artifactId>
+            <version>5.3.4</version>
         </dependency>
         <dependency>
             <groupId>org.projectlombok</groupId>

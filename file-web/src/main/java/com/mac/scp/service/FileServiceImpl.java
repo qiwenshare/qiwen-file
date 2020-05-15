@@ -1,6 +1,5 @@
 package com.mac.scp.service;
 
-import com.mac.common.cbb.DateUtil;
 import com.mac.common.operation.FileOperation;
 import com.mac.common.util.PathUtil;
 import com.mac.scp.api.IFileService;
@@ -13,6 +12,7 @@ import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
 import java.util.List;
+import java.util.Objects;
 
 
 @Service
@@ -47,16 +47,6 @@ public class FileServiceImpl implements IFileService {
 		}
 	}
 
-	@Override
-	public void updateFile(FileBean fileBean) {
-		fileBean.setUploadtime(DateUtil.getCurrentTime());
-		fileMapper.updateFile(fileBean);
-	}
-
-	@Override
-	public FileBean selectFileById(FileBean fileBean) {
-		return fileMapper.selectFileById(fileBean);
-	}
 
 	@Override
 	public List<FileBean> selectFilePathTreeByUserid(FileBean fileBean) {
@@ -68,10 +58,6 @@ public class FileServiceImpl implements IFileService {
 		return fileMapper.selectFileList(fileBean);
 	}
 
-	@Override
-	public List<FileBean> selectFileListByIds(List<Integer> fileidList) {
-		return fileMapper.selectFileListByIds(fileidList);
-	}
 
 	@Override
 	public List<FileBean> selectFileTreeListLikeFilePath(String filePath) {
@@ -130,11 +116,6 @@ public class FileServiceImpl implements IFileService {
 		}
 	}
 
-	@Override
-	public void deleteFileByIds(List<Integer> fileidList) {
-		fileMapper.deleteFileByIds(fileidList);
-	}
-
 
 	@Override
 	public void updateFilepathByFilepath(String oldfilepath, String newfilepath, String filename, String extendname) {
@@ -152,8 +133,8 @@ public class FileServiceImpl implements IFileService {
 		oldfilepath = oldfilepath.replace("'", "\\'");
 		oldfilepath = oldfilepath.replace("%", "\\%");
 		oldfilepath = oldfilepath.replace("_", "\\_");
-
-		if (extendname == null) { //为null说明是目录，则需要移动子目录
+		//为null说明是目录，则需要移动子目录
+		if (Objects.isNull(extendname)) {
 			fileMapper.updateFilepathByFilepath(oldfilepath, newfilepath);
 		}
 

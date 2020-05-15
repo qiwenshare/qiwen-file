@@ -1,5 +1,7 @@
 package com.mac.scp.domain;
 
+import com.baomidou.mybatisplus.annotation.TableField;
+import com.baomidou.mybatisplus.annotation.TableName;
 import lombok.Data;
 import lombok.experimental.Accessors;
 
@@ -18,6 +20,7 @@ import java.util.List;
 		@UniqueConstraint(name = "openidIndex", columnNames = {"openid"})
 })
 @Entity
+@TableName("user")
 public class UserBean {
 	/**
 	 * 用户id
@@ -54,6 +57,7 @@ public class UserBean {
 	/**
 	 * 重复密码
 	 */
+	@TableField(exist = false)
 	@Transient
 	private String passwordAgain;
 
@@ -129,6 +133,7 @@ public class UserBean {
 	 * @ManyToMany(fetch = FetchType.EAGER) //立即从数据库中进行加载数据
 	 * // 一个用户具有多个角色
 	 */
+	@TableField(exist = false)
 	@ManyToMany(fetch = FetchType.EAGER)
 	@JoinTable(name = "user_role",
 			joinColumns = {@JoinColumn(name = "userId")},
@@ -137,23 +142,27 @@ public class UserBean {
 	/**
 	 * 与某个客户端的连接会话，需要通过它来给客户端发送数据
 	 */
+	@TableField(exist = false)
 	@Transient
 	private Session session;
 
 	/**
 	 * 消息未读数
 	 */
+	@TableField(exist = false)
 	@Transient
 	private int notReadCount;
 
 	/**
 	 * 文章数量
 	 */
+	@TableField(exist = false)
 	@Transient
 	private int essaycount;
 	/**
 	 * 验证码
 	 */
+	@TableField(exist = false)
 	@Transient
 	private String verificationcode;
 

@@ -14,37 +14,37 @@ import java.util.Map;
 @Data
 @Accessors(chain = true)
 public class TreeNode {
-    /**
-     * 节点id
-     */
-    private long id;
-    /**
-     * 节点名
-     */
-    private String label;
-    /**
-     * 深度
-     */
-    private int depth;
-    /**
-     * 是否被关闭
-     */
-    private String state = "closed";
+	/**
+	 * 节点id
+	 */
+	private long id;
+	/**
+	 * 节点名
+	 */
+	private String label;
+	/**
+	 * 深度
+	 */
+	private int depth;
+	/**
+	 * 是否被关闭
+	 */
+	private String state = "closed";
 
-    /**
-     * 属性集合
-     */
-    private Map<String, String> attributes = new HashMap<>();
-    /**
-     * 子节点列表
-     */
-    private List<TreeNode> children = new ArrayList<>();
+	/**
+	 * 属性集合
+	 */
+	private Map<String, String> attributes = new HashMap<>();
+	/**
+	 * 子节点列表
+	 */
+	private List<TreeNode> children = new ArrayList<>();
 
-    public void setNodeName(String nodeName) {
-        this.label = nodeName;
-    }
+	public void setNodeName(String nodeName) {
+		this.label = nodeName;
+	}
 
-    public void setChildNode(List<TreeNode> childNode) {
-        this.children = childNode;
-    }
+	public void setChildNode(List<TreeNode> childNode) {
+		this.children = childNode;
+	}
 }

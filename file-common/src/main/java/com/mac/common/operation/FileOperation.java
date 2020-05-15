@@ -21,8 +21,7 @@ public class FileOperation {
      * @return 新文件
      */
     public static File newFile(String fileUrl) {
-        File file = new File(fileUrl);
-        return file;
+        return new File(fileUrl);
     }
 
     /**
@@ -215,7 +214,7 @@ public class FileOperation {
             zipFile = new ZipFile(file);
             Enumeration<? extends ZipEntry> entries = zipFile.entries();
             while (entries.hasMoreElements()) {
-                ZipEntry entry = (ZipEntry) entries.nextElement();
+                ZipEntry entry = entries.nextElement();
 
                 String[] nameStrArr = entry.getName().split("/");
                 String nameStr = "/";

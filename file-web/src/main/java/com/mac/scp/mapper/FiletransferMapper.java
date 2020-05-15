@@ -7,26 +7,25 @@ import java.util.List;
 
 public interface FiletransferMapper {
 
-    void deleteUserImageById(UserImageBean userImageBean);
+	void deleteUserImageById(UserImageBean userImageBean);
 
-    /**
-     * 插入用户头像
-     *
-     * @param userImageBean
-     */
-    void insertUserImage(UserImageBean userImageBean);
+	/**
+	 * 插入用户头像
+	 *
+	 * @param userImageBean
+	 */
+	void insertUserImage(UserImageBean userImageBean);
 
-    List<UserImageBean> selectUserImage(long userId);
+	List<UserImageBean> selectUserImage(long userId);
 
-    List<UserImageBean> selectUserImageByUrl(String url);
+	List<UserImageBean> selectUserImageByUrl(String url);
 
-    void deleteUserImageByIds(List<Integer> imageidList);
 
-    StorageBean selectStorageBean(StorageBean storageBean);
+	StorageBean selectStorageBean(StorageBean storageBean);
 
-    void insertStorageBean(StorageBean storageBean);
+	void insertStorageBean(StorageBean storageBean);
 
-    void updateStorageBean(StorageBean storageBean);
+	void updateStorageBean(StorageBean storageBean);
 
-    StorageBean selectStorageByUser(StorageBean storageBean);
+	StorageBean selectStorageByUser(StorageBean storageBean);
 }

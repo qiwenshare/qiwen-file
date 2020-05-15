@@ -16,19 +16,19 @@ import java.io.Serializable;
 @Table(name = "userimage")
 @Entity
 public class UserImageBean implements Serializable {
-    /**
-     * 序列id
-     */
-    private static final long serialVersionUID = 1L;
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private long imageid;
-    @Column
-    private long userid;
-    @Column
-    private String imageurl;
-    @Column
-    private String uploadtime;
+	/**
+	 * 序列id
+	 */
+	private static final long serialVersionUID = 1L;
+	@Id
+	@GeneratedValue(strategy = GenerationType.IDENTITY)
+	private long imageid;
+	@Column
+	private long userid;
+	@Column
+	private String imageurl;
+	@Column
+	private String uploadtime;
 
 
 }
