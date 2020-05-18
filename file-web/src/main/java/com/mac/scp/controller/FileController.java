@@ -5,6 +5,7 @@ import com.mac.common.cbb.DateUtil;
 import com.mac.common.cbb.RestResult;
 import com.mac.common.exception.UnifiedException;
 import com.mac.common.operation.FileOperation;
+import com.mac.common.operation.ImageOperation;
 import com.mac.common.util.FileUtil;
 import com.mac.common.util.PathUtil;
 import com.mac.scp.api.IFileService;
@@ -19,6 +20,7 @@ import org.springframework.web.bind.annotation.*;
 
 import javax.annotation.Resource;
 import java.io.File;
+import java.io.IOException;
 import java.util.*;
 
 import static com.mac.common.util.FileUtil.getFileExtendsByType;
@@ -175,12 +177,21 @@ public class FileController {
 			} else {
 
 				tempFileBean.setIsdir(0);
-
-				tempFileBean.setExtendname(FileUtil.getFileType(totalFileUrl));
+				String fileType = FileUtil.getFileType(totalFileUrl);
+				tempFileBean.setExtendname(fileType);
 				tempFileBean.setFilename(FileUtil.getFileNameNotExtend(currentFile.getName()));
 				tempFileBean.setFilesize(currentFile.length());
 				tempFileBean.setTimestampname(FileUtil.getFileNameNotExtend(currentFile.getName()));
 				tempFileBean.setFileurl(File.separator + (currentFile.getPath()).replace(PathUtil.getStaticPath(), ""));
+				if (FileUtil.isImageFile(fileType)){
+					String minFileUrl = totalFileUrl.replace("." + fileType, "_min." + fileType);
+					File minFile = FileOperation.newFile(minFileUrl);
+					try {
+						ImageOperation.thumbnailsImage(currentFile, minFile, 300);
+					} catch (IOException e) {
+						e.printStackTrace();
+					}
+				}
 			}
 			fileBeanList.add(tempFileBean);
 		}
