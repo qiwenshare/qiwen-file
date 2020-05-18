@@ -5,9 +5,11 @@ import com.mac.common.domain.TableQueryBean;
 import com.mac.scp.domain.Permission;
 import com.mac.scp.domain.Role;
 import com.mac.scp.domain.UserBean;
+import org.apache.ibatis.annotations.Mapper;
 
 import java.util.List;
 
+@Mapper
 public interface UserMapper extends BaseMapper<UserBean> {
 	int insertUser(UserBean userBean);
 

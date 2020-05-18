@@ -3,6 +3,7 @@ package com.mac.scp.controller;
 import com.alibaba.fastjson.JSON;
 import com.mac.common.cbb.DateUtil;
 import com.mac.common.cbb.RestResult;
+import com.mac.common.exception.UnifiedException;
 import com.mac.common.operation.FileOperation;
 import com.mac.common.util.FileUtil;
 import com.mac.common.util.PathUtil;
@@ -10,7 +11,10 @@ import com.mac.scp.api.IFileService;
 import com.mac.scp.domain.FileBean;
 import com.mac.scp.domain.TreeNode;
 import com.mac.scp.domain.UserBean;
-import org.apache.shiro.SecurityUtils;
+import com.mac.scp.mapper.UserMapper;
+import com.mac.scp.session.SessionFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpHeaders;
 import org.springframework.web.bind.annotation.*;
 
 import javax.annotation.Resource;
@@ -31,6 +35,9 @@ public class FileController {
 	@Resource
 	IFileService fileService;
 
+	@Autowired
+	@SuppressWarnings("all")
+	private UserMapper userMapper;
 
 	/**
 	 * 创建文件
@@ -40,14 +47,16 @@ public class FileController {
 	// TODO 创建文件
 	@PostMapping("/createfile")
 	@ResponseBody
-	public RestResult<String> createFile(@RequestBody FileBean fileBean) {
+	public RestResult<String> createFile(@RequestBody FileBean fileBean, @RequestHeader(name = HttpHeaders.AUTHORIZATION) String token) {
 		RestResult<String> restResult = new RestResult<>();
-		if (!operationCheck().isSuccess()) {
-			return operationCheck();
+		if (!operationCheck(SessionFactory.getSession().get(token)).isSuccess()) {
+			return operationCheck(SessionFactory.getSession().get(token));
 		}
-
-		UserBean sessionUserBean = (UserBean) SecurityUtils.getSubject().getPrincipal();
-		fileBean.setUserid(sessionUserBean.getUserId());
+		Long id = SessionFactory.getSession().get(token);
+		if (Objects.isNull(id)) {
+			throw new UnifiedException("token错误");
+		}
+		fileBean.setUserid(id);
 
 		fileBean.setUploadtime(DateUtil.getCurrentTime());
 
@@ -59,17 +68,17 @@ public class FileController {
 	// TODO 获取文件列表
 	@GetMapping("/getfilelist")
 	@ResponseBody
-	public RestResult<List<FileBean>> getFileList(FileBean fileBean) {
+	public RestResult<List<FileBean>> getFileList(FileBean fileBean, @RequestHeader(name = HttpHeaders.AUTHORIZATION) String token) {
 		RestResult<List<FileBean>> restResult = new RestResult<>();
 		if (isShareFile) {
 			fileBean.setUserid(2);
 		} else {
-			UserBean sessionUserBean = (UserBean) SecurityUtils.getSubject().getPrincipal();
+
 			if (fileBean == null) {
 				restResult.setSuccess(false);
 				return restResult;
 			}
-			fileBean.setUserid(sessionUserBean.getUserId());
+			fileBean.setUserid(SessionFactory.getSession().get(token));
 		}
 
 		fileBean.setFilepath(PathUtil.urlDecode(fileBean.getFilepath()));
@@ -89,10 +98,10 @@ public class FileController {
 	// TODO 批量删除文件
 	@PostMapping("/batchdeletefile")
 	@ResponseBody
-	public RestResult<String> deleteImageByIds(@RequestBody FileBean fileBean) {
+	public RestResult<String> deleteImageByIds(@RequestBody FileBean fileBean, @RequestHeader(name = HttpHeaders.AUTHORIZATION) String token) {
 		RestResult<String> result = new RestResult<String>();
-		if (!operationCheck().isSuccess()) {
-			return operationCheck();
+		if (!operationCheck(SessionFactory.getSession().get(token)).isSuccess()) {
+			return operationCheck(SessionFactory.getSession().get(token));
 		}
 
 
@@ -100,7 +109,7 @@ public class FileController {
 		List<FileBean> fileList = JSON.parseArray(files, FileBean.class);
 
 		for (FileBean file : fileList) {
-			fileService.deleteFile(file);
+			fileService.deleteFile(file, token);
 		}
 
 		result.setData("批量删除文件成功");
@@ -116,12 +125,12 @@ public class FileController {
 	// TODO 删除文件
 	@PostMapping("/deletefile")
 	@ResponseBody
-	public RestResult<String> deleteFile(@RequestBody FileBean fileBean) {
+	public RestResult<String> deleteFile(@RequestBody FileBean fileBean, @RequestHeader(name = HttpHeaders.AUTHORIZATION) String token) {
 		RestResult<String> result = new RestResult<String>();
-		if (!operationCheck().isSuccess()) {
-			return operationCheck();
+		if (!operationCheck(SessionFactory.getSession().get(token)).isSuccess()) {
+			return operationCheck(SessionFactory.getSession().get(token));
 		}
-		fileService.deleteFile(fileBean);
+		fileService.deleteFile(fileBean, token);
 		result.setSuccess(true);
 		return result;
 	}
@@ -134,10 +143,10 @@ public class FileController {
 	// TODO 解压文件
 	@PostMapping("/unzipfile")
 	@ResponseBody
-	public RestResult<String> unzipFile(@RequestBody FileBean fileBean) {
+	public RestResult<String> unzipFile(@RequestBody FileBean fileBean, @RequestHeader(name = HttpHeaders.AUTHORIZATION) String token) {
 		RestResult<String> result = new RestResult<String>();
-		if (!operationCheck().isSuccess()) {
-			return operationCheck();
+		if (!operationCheck(SessionFactory.getSession().get(token)).isSuccess()) {
+			return operationCheck(SessionFactory.getSession().get(token));
 		}
 
 		String zipFileUrl = PathUtil.getStaticPath() + fileBean.getFileurl();
@@ -147,14 +156,14 @@ public class FileController {
 		List<String> fileEntryNameList = FileOperation.unzip(file, unzipUrl);
 
 		List<FileBean> fileBeanList = new ArrayList<>();
-		UserBean sessionUserBean = (UserBean) SecurityUtils.getSubject().getPrincipal();
+
 		for (String entryName : fileEntryNameList) {
 			String totalFileUrl = unzipUrl + entryName;
 			File currentFile = FileOperation.newFile(totalFileUrl);
 
 			FileBean tempFileBean = new FileBean();
 			tempFileBean.setUploadtime(DateUtil.getCurrentTime());
-			tempFileBean.setUserid(sessionUserBean.getUserId());
+			tempFileBean.setUserid(SessionFactory.getSession().get(token));
 			tempFileBean.setFilepath(FileUtil.pathSplitFormat(fileBean.getFilepath() + entryName.replace(currentFile.getName(), "")));
 			if (currentFile.isDirectory()) {
 
@@ -175,7 +184,7 @@ public class FileController {
 			}
 			fileBeanList.add(tempFileBean);
 		}
-		fileService.batchInsertFile(fileBeanList);
+		fileService.batchInsertFile(fileBeanList, token);
 		result.setSuccess(true);
 		return result;
 	}
@@ -188,10 +197,10 @@ public class FileController {
 	// TODO  移动文件
 	@PostMapping("/movefile")
 	@ResponseBody
-	public RestResult<String> moveFile(@RequestBody FileBean fileBean) {
+	public RestResult<String> moveFile(@RequestBody FileBean fileBean, @RequestHeader(name = HttpHeaders.AUTHORIZATION) String token) {
 		RestResult<String> result = new RestResult<String>();
-		if (!operationCheck().isSuccess()) {
-			return operationCheck();
+		if (!operationCheck(SessionFactory.getSession().get(token)).isSuccess()) {
+			return operationCheck(SessionFactory.getSession().get(token));
 		}
 		String oldfilepath = fileBean.getOldfilepath();
 		String newfilepath = fileBean.getNewfilepath();
@@ -211,10 +220,11 @@ public class FileController {
 	// TODO 批量移动文件
 	@PostMapping("/batchmovefile")
 	@ResponseBody
-	public RestResult<String> batchMoveFile(@RequestBody FileBean fileBean) {
+	public RestResult<String> batchMoveFile(@RequestBody FileBean fileBean, @RequestHeader(name = HttpHeaders.AUTHORIZATION) String token) {
 		RestResult<String> result = new RestResult<String>();
-		if (!operationCheck().isSuccess()) {
-			return operationCheck();
+
+		if (!operationCheck(SessionFactory.getSession().get(token)).isSuccess()) {
+			return operationCheck(SessionFactory.getSession().get(token));
 		}
 		String files = fileBean.getFiles();
 		String newfilepath = fileBean.getNewfilepath();
@@ -230,9 +240,9 @@ public class FileController {
 		return result;
 	}
 
-	public RestResult<String> operationCheck() {
+	public RestResult<String> operationCheck(Long id) {
 		RestResult<String> result = new RestResult<String>();
-		UserBean sessionUserBean = (UserBean) SecurityUtils.getSubject().getPrincipal();
+		UserBean sessionUserBean = userMapper.selectById(id);
 		if (sessionUserBean == null) {
 			result.setSuccess(false);
 			result.setErrorMessage("未登录");
@@ -258,10 +268,10 @@ public class FileController {
 	// TODO 通过文件类型选择文件
 	@GetMapping("/selectfilebyfiletype")
 	@ResponseBody
-	public RestResult<List<FileBean>> selectFileByFileType(FileBean fileBean) {
+	public RestResult<List<FileBean>> selectFileByFileType(FileBean fileBean, @RequestHeader(name = HttpHeaders.AUTHORIZATION) String token) {
 		RestResult<List<FileBean>> result = new RestResult<List<FileBean>>();
-		UserBean sessionUserBean = (UserBean) SecurityUtils.getSubject().getPrincipal();
-		long userid = sessionUserBean.getUserId();
+
+		long userid = SessionFactory.getSession().get(token);
 		if (isShareFile) {
 			userid = 2;
 		}
@@ -279,14 +289,13 @@ public class FileController {
 	// TODO 获取文件的树结构
 	@GetMapping("/getfiletree")
 	@ResponseBody
-	public RestResult<TreeNode> getFileTree() {
+	public RestResult<TreeNode> getFileTree(@RequestHeader(name = HttpHeaders.AUTHORIZATION) String token) {
 		RestResult<TreeNode> result = new RestResult<TreeNode>();
 		FileBean fileBean = new FileBean();
-		UserBean sessionUserBean = (UserBean) SecurityUtils.getSubject().getPrincipal();
 		if (isShareFile) {
 			fileBean.setUserid(2);
 		} else {
-			fileBean.setUserid(sessionUserBean.getUserId());
+			fileBean.setUserid(SessionFactory.getSession().get(token));
 		}
 
 		List<FileBean> filePathList = fileService.selectFilePathTreeByUserid(fileBean);

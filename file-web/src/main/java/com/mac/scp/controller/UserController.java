@@ -1,16 +1,23 @@
 package com.mac.scp.controller;
 
+import cn.hutool.core.util.IdUtil;
+import cn.hutool.json.JSONUtil;
+import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.mac.common.cbb.RestResult;
+import com.mac.common.exception.UnifiedException;
 import com.mac.scp.api.IUserService;
 import com.mac.scp.domain.UserBean;
-import org.apache.shiro.SecurityUtils;
-import org.apache.shiro.authc.UsernamePasswordToken;
+import com.mac.scp.mapper.UserMapper;
+import com.mac.scp.session.SessionFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpHeaders;
 import org.springframework.web.bind.annotation.*;
 
 import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Objects;
 
 /**
  * 用户控制类
@@ -30,6 +37,10 @@ public class UserController {
 	IUserService userService;
 
 
+	@Autowired
+	@SuppressWarnings("all")
+	private UserMapper userMapper;
+
 	// TODO 用户注册
 	@PostMapping("/adduser")
 	@ResponseBody
@@ -39,34 +50,28 @@ public class UserController {
 
 
 	/**
-	 * /**
 	 * 用户登录
 	 *
-	 * @param userBean
+	 * @param userBean JSON 格式  {"username":"15999522810","password":"123456"}
 	 * @return
 	 */
-	// TODO 用户登录
 	@RequestMapping("/userlogin")
 	@ResponseBody
-	public RestResult<UserBean> userLogin(@RequestBody UserBean userBean) {
-		RestResult<UserBean> restResult = new RestResult<UserBean>();
+	public RestResult userLogin(@RequestBody UserBean userBean) {
+		RestResult restResult = new RestResult<>();
 		restResult.setSuccess(true);
-		try {
-			SecurityUtils.getSubject().login(new UsernamePasswordToken(userBean.getUsername(), userBean.getPassword()));
-		} catch (Exception e) {
-			restResult.setSuccess(false);
-			restResult.setErrorMessage("手机号或密码错误！");
+		UserBean user = userMapper.selectOne(new LambdaQueryWrapper<UserBean>()
+				.eq(UserBean::getTelephone, userBean.getUsername()));
+		if (Objects.isNull(user)) {
+			throw new UnifiedException("该用户不存在");
 		}
 
-		UserBean sessionUserBean = (UserBean) SecurityUtils.getSubject().getPrincipal();
-		if (sessionUserBean != null) {
-			restResult.setData(sessionUserBean);
-			restResult.setSuccess(true);
-		} else {
-			restResult.setSuccess(false);
-			restResult.setErrorMessage("手机号或密码错误！");
+		if (!user.getPassword().equals(userBean.getPassword())) {
+			throw new UnifiedException("密码错误");
 		}
-
+		String token = IdUtil.fastSimpleUUID();
+		SessionFactory.getSession().put(token, user.getUserId());
+		restResult.setData(JSONUtil.parseObj(user).put("token", token));
 		return restResult;
 	}
 
@@ -78,10 +83,9 @@ public class UserController {
 	// TODO 退出登录
 	@PostMapping("/userlogout")
 	@ResponseBody
-	public RestResult<String> userLogout() {
+	public RestResult<String> userLogout(@RequestHeader(name = HttpHeaders.AUTHORIZATION) String token) {
 		RestResult<String> restResult = new RestResult<String>();
-
-		SecurityUtils.getSubject().logout();
+		SessionFactory.getSession().remove(token);
 		restResult.setSuccess(true);
 		restResult.setData("注销登录成功！");
 
@@ -96,17 +100,17 @@ public class UserController {
 	// TODO 检查用户登录信息
 	@RequestMapping("/checkuserlogininfo")
 	@ResponseBody
-	public RestResult<UserBean> checkUserLoginInfo(HttpServletRequest request) {
+	public RestResult<UserBean> checkUserLoginInfo(HttpServletRequest request, @RequestHeader(name = HttpHeaders.AUTHORIZATION) String token) {
 		RestResult<UserBean> restResult = new RestResult<UserBean>();
-		UserBean sessionUserBean = (UserBean) SecurityUtils.getSubject().getPrincipal();
-		if (sessionUserBean != null) {
-			UserBean userInfo = userService.getUserInfoById(sessionUserBean.getUserId());
-			restResult.setData(userInfo);
-			restResult.setSuccess(true);
-		} else {
-			restResult.setSuccess(false);
-			restResult.setErrorMessage("用户暂未登录");
+		Long s = SessionFactory.getSession().get(token);
+		if (Objects.isNull(s)) {
+			throw new UnifiedException("token错误");
 		}
+		UserBean userBean = userMapper.selectById(s);
+		if (Objects.isNull(userBean)) {
+			throw new UnifiedException("token 异常");
+		}
+		restResult.setData(userBean);
 		return restResult;
 	}
 

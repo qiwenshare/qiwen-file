@@ -9,7 +9,6 @@ import com.mac.scp.controller.UserController;
 import com.mac.scp.domain.UserBean;
 import com.mac.scp.domain.UserImageBean;
 import com.mac.scp.mapper.UserMapper;
-import org.apache.shiro.crypto.hash.SimpleHash;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
@@ -28,12 +27,6 @@ public class UserServiceImpl implements IUserService {
 		RestResult<String> restResult = new RestResult<String>();
 		//判断验证码
 		String telephone = userBean.getTelephone();
-//        String saveVerificationCode = UserController.verificationCodeMap.get(telephone);
-//        if (!saveVerificationCode.equals(userBean.getVerificationcode())){
-//            restResult.setSuccess(false);
-//            restResult.setErrorMessage("验证码错误！");
-//            return restResult;
-//        }
 		UserController.verificationCodeMap.remove(telephone);
 		if (userBean.getTelephone() == null || "".equals(userBean.getTelephone())) {
 			restResult.setSuccess(false);
@@ -69,11 +62,10 @@ public class UserServiceImpl implements IUserService {
 
 
 		String salt = PasswordUtil.getSaltValue();
-		String newPassword = new SimpleHash("MD5", userBean.getPassword(), salt, 1024).toHex();
 
 		userBean.setSalt(salt);
 
-		userBean.setPassword(newPassword);
+		userBean.setPassword(userBean.getPassword());
 		userBean.setRegistertime(DateUtil.getCurrentTime());
 		int result = userMapper.insertUser(userBean);
 		userMapper.insertUserRole(userBean.getUserId(), 2);

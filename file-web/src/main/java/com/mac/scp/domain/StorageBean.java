@@ -15,24 +15,24 @@ import javax.persistence.*;
 @Table(name = "storage")
 @Entity
 public class StorageBean {
-    /**
-     * 存储id
-     */
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private long storageid;
+	/**
+	 * 存储id
+	 */
+	@Id
+	@GeneratedValue(strategy = GenerationType.IDENTITY)
+	private long storageid;
 
-    /**
-     * 用户id
-     */
-    private long userid;
+	/**
+	 * 用户id
+	 */
+	private long userid;
 
-    /**
-     * 存储大小
-     */
-    private long storagesize;
+	/**
+	 * 存储大小
+	 */
+	private long storagesize;
 
-    public StorageBean(long userid) {
-        this.userid = userid;
-    }
+	public StorageBean(long userid) {
+		this.userid = userid;
+	}
 }

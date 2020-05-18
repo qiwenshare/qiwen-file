@@ -1,13 +1,15 @@
 package com.mac.scp.controller;
 
 import com.mac.common.cbb.RestResult;
+import com.mac.common.exception.UnifiedException;
 import com.mac.common.operation.FileOperation;
 import com.mac.common.util.PathUtil;
 import com.mac.scp.api.IFiletransferService;
 import com.mac.scp.domain.FileBean;
 import com.mac.scp.domain.StorageBean;
-import com.mac.scp.domain.UserBean;
-import org.apache.shiro.SecurityUtils;
+import com.mac.scp.session.SessionFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpHeaders;
 import org.springframework.web.bind.annotation.*;
 
 import javax.annotation.Resource;
@@ -15,6 +17,7 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.*;
 import java.nio.charset.StandardCharsets;
+import java.util.Objects;
 
 @RestController
 @RequestMapping("/filetransfer")
@@ -22,7 +25,8 @@ public class FiletransferController {
 
 	@Resource
 	IFiletransferService filetransferService;
-
+	@Autowired
+	private FileController fileController;
 
 	/**
 	 * 上传文件
@@ -32,15 +36,18 @@ public class FiletransferController {
 	 */
 	@PostMapping("/uploadfile")
 	@ResponseBody
-	public RestResult<String> uploadFile(HttpServletRequest request, FileBean fileBean) {
+	public RestResult<String> uploadFile(HttpServletRequest request, FileBean fileBean, @RequestHeader(name = HttpHeaders.AUTHORIZATION) String token) {
 		RestResult<String> restResult = new RestResult<String>();
-		UserBean sessionUserBean = (UserBean) SecurityUtils.getSubject().getPrincipal();
-		RestResult<String> operationCheckResult = new FileController().operationCheck();
+		Long s = SessionFactory.getSession().get(token);
+		if (Objects.isNull(s)) {
+			throw new UnifiedException("token错误");
+		}
+		RestResult<String> operationCheckResult = fileController.operationCheck(s);
 		if (!operationCheckResult.isSuccess()) {
 			return operationCheckResult;
 		}
 
-		fileBean.setUserid(sessionUserBean.getUserId());
+		fileBean.setUserid(s);
 
 		filetransferService.uploadFile(request, fileBean);
 
@@ -111,14 +118,17 @@ public class FiletransferController {
 	// TODO 获取存储占用
 	@GetMapping("/getstorage")
 	@ResponseBody
-	public RestResult<StorageBean> getStorage() {
+	public RestResult<StorageBean> getStorage(@RequestHeader(name = HttpHeaders.AUTHORIZATION) String token) {
 		RestResult<StorageBean> restResult = new RestResult<StorageBean>();
-		UserBean sessionUserBean = (UserBean) SecurityUtils.getSubject().getPrincipal();
+		Long id = SessionFactory.getSession().get(token);
+		if (Objects.isNull(id)) {
+			throw new UnifiedException("token 错误");
+		}
 		StorageBean storageBean = new StorageBean();
 		if (FileController.isShareFile) {
 			storageBean.setUserid(2);
 		} else {
-			storageBean.setUserid(sessionUserBean.getUserId());
+			storageBean.setUserid(id);
 		}
 
 		StorageBean storage = filetransferService.selectStorageByUser(storageBean);

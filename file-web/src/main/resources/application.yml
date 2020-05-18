@@ -45,6 +45,7 @@ logging:
     #    console: "%d{yyyy-MM-dd HH:mm:ss.SSS} %highlight(%-5level) %boldYellow(%thread) | %boldGreen(%logger) | %msg%n"
     console: "%d{HH:mm:ss.SSS} %highlight(%-5level) | %highlight(%thread) | %replace(%caller{1}){'at| |\t|Caller.{1}0|\r|\n', ''} %highlight(%msg) %n"
     file: "%d{yyyy-MM-dd HH:mm:ss.SSS} = [%thread] = %-5level = %logger{50} - %msg%n"
+  config:
 
 mybatis-plus:
   type-aliases-package: com.mac.scp.domain

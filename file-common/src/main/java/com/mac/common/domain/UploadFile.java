@@ -11,12 +11,12 @@ import lombok.experimental.Accessors;
 @Data
 @Accessors(chain = true)
 public class UploadFile {
-    private String fileName;
-    private String fileType;
-    private long fileSize;
-    private String timeStampName;
-    private int success;
-    private String message;
-    private String url;
+	private String fileName;
+	private String fileType;
+	private long fileSize;
+	private String timeStampName;
+	private int success;
+	private String message;
+	private String url;
 
 }

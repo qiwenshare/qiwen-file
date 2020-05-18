@@ -6,10 +6,10 @@ import com.mac.common.domain.UploadFile;
 import com.mac.scp.api.IFiletransferService;
 import com.mac.scp.domain.FileBean;
 import com.mac.scp.domain.StorageBean;
-import com.mac.scp.domain.UserBean;
 import com.mac.scp.mapper.FileMapper;
 import com.mac.scp.mapper.FiletransferMapper;
-import org.apache.shiro.SecurityUtils;
+import com.mac.scp.session.SessionFactory;
+import org.springframework.http.HttpHeaders;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
@@ -17,6 +17,9 @@ import javax.servlet.http.HttpServletRequest;
 import java.util.List;
 
 
+/**
+ * @author WeiHongBin
+ */
 @Service
 public class FiletransferServiceImpl implements IFiletransferService {
 
@@ -43,9 +46,8 @@ public class FiletransferServiceImpl implements IFiletransferService {
 
 
 			synchronized (FiletransferServiceImpl.class) {
-				UserBean sessionUserBean = (UserBean) SecurityUtils.getSubject().getPrincipal();
-
-				long sessionUserId = sessionUserBean.getUserId();
+				String token = request.getHeader(HttpHeaders.AUTHORIZATION);
+				Long sessionUserId = SessionFactory.getSession().get(token);
 				StorageBean storageBean = selectStorageBean(new StorageBean(sessionUserId));
 				if (storageBean == null) {
 					StorageBean storage = new StorageBean(sessionUserId);

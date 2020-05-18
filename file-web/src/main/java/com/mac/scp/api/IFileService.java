@@ -8,7 +8,7 @@ public interface IFileService {
 
 	void insertFile(FileBean fileBean);
 
-	void batchInsertFile(List<FileBean> fileBeanList);
+	void batchInsertFile(List<FileBean> fileBeanList, String token);
 
 	List<FileBean> selectFilePathTreeByUserid(FileBean fileBean);
 
@@ -16,7 +16,7 @@ public interface IFileService {
 
 	List<FileBean> selectFileTreeListLikeFilePath(String filePath);
 
-	void deleteFile(FileBean fileBean);
+	void deleteFile(FileBean fileBean, String token);
 
 	void updateFilepathByFilepath(String oldfilepath, String newfilepath, String filename, String extendname);
 

@@ -5,9 +5,8 @@ import com.mac.common.util.PathUtil;
 import com.mac.scp.api.IFileService;
 import com.mac.scp.domain.FileBean;
 import com.mac.scp.domain.StorageBean;
-import com.mac.scp.domain.UserBean;
 import com.mac.scp.mapper.FileMapper;
-import org.apache.shiro.SecurityUtils;
+import com.mac.scp.session.SessionFactory;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
@@ -29,9 +28,8 @@ public class FileServiceImpl implements IFileService {
 	}
 
 	@Override
-	public void batchInsertFile(List<FileBean> fileBeanList) {
-		UserBean sessionUserBean = (UserBean) SecurityUtils.getSubject().getPrincipal();
-		StorageBean storageBean = filetransferService.selectStorageBean(new StorageBean(sessionUserBean.getUserId()));
+	public void batchInsertFile(List<FileBean> fileBeanList, String token) {
+		StorageBean storageBean = filetransferService.selectStorageBean(new StorageBean(SessionFactory.getSession().get(token)));
 		long fileSizeSum = 0;
 		for (FileBean fileBean : fileBeanList) {
 			if (fileBean.getIsdir() == 0) {
@@ -73,9 +71,8 @@ public class FileServiceImpl implements IFileService {
 	}
 
 	@Override
-	public void deleteFile(FileBean fileBean) {
-		UserBean sessionUserBean = (UserBean) SecurityUtils.getSubject().getPrincipal();
-		StorageBean storageBean = filetransferService.selectStorageBean(new StorageBean(sessionUserBean.getUserId()));
+	public void deleteFile(FileBean fileBean, String token) {
+		StorageBean storageBean = filetransferService.selectStorageBean(new StorageBean(SessionFactory.getSession().get(token)));
 		long deleteSize = 0;
 		String fileUrl = PathUtil.getStaticPath() + fileBean.getFileurl();
 		if (fileBean.getIsdir() == 1) {
