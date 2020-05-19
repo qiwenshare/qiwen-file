@@ -1,5 +1,6 @@
 package com.mac.scp.service;
 
+import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.mac.common.cbb.DateUtil;
 import com.mac.common.cbb.Uploader;
 import com.mac.common.domain.UploadFile;
@@ -40,8 +41,7 @@ public class FiletransferServiceImpl implements IFiletransferService {
 				fileBean.setExtendname(uploadFile.getFileType());
 				fileBean.setTimestampname(uploadFile.getTimeStampName());
 				fileBean.setUploadtime(DateUtil.getCurrentTime());
-
-				fileMapper.insertFile(fileBean);
+				fileMapper.insert(fileBean);
 			}
 
 
@@ -64,21 +64,21 @@ public class FiletransferServiceImpl implements IFiletransferService {
 
 	@Override
 	public StorageBean selectStorageBean(StorageBean storageBean) {
-		return filetransferMapper.selectStorageBean(storageBean);
+		return filetransferMapper.selectOne(new LambdaQueryWrapper<StorageBean>().eq(StorageBean::getUserid, storageBean.getUserid()));
 	}
 
 	@Override
 	public void insertStorageBean(StorageBean storageBean) {
-		filetransferMapper.insertStorageBean(storageBean);
+		filetransferMapper.insert(storageBean);
 	}
 
 	@Override
 	public void updateStorageBean(StorageBean storageBean) {
-		filetransferMapper.updateStorageBean(storageBean);
+		filetransferMapper.updateById(storageBean);
 	}
 
 	@Override
 	public StorageBean selectStorageByUser(StorageBean storageBean) {
-		return filetransferMapper.selectStorageByUser(storageBean);
+		return filetransferMapper.selectOne(new LambdaQueryWrapper<StorageBean>().eq(StorageBean::getUserid, storageBean.getUserid()));
 	}
 }

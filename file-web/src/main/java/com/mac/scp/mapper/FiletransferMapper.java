@@ -1,31 +1,9 @@
 package com.mac.scp.mapper;
 
+import com.baomidou.mybatisplus.core.mapper.BaseMapper;
 import com.mac.scp.domain.StorageBean;
-import com.mac.scp.domain.UserImageBean;
 
-import java.util.List;
-
-public interface FiletransferMapper {
-
-	void deleteUserImageById(UserImageBean userImageBean);
-
-	/**
-	 * 插入用户头像
-	 *
-	 * @param userImageBean
-	 */
-	void insertUserImage(UserImageBean userImageBean);
-
-	List<UserImageBean> selectUserImage(long userId);
-
-	List<UserImageBean> selectUserImageByUrl(String url);
+public interface FiletransferMapper extends BaseMapper<StorageBean> {
 
 
-	StorageBean selectStorageBean(StorageBean storageBean);
-
-	void insertStorageBean(StorageBean storageBean);
-
-	void updateStorageBean(StorageBean storageBean);
-
-	StorageBean selectStorageByUser(StorageBean storageBean);
 }

@@ -14,21 +14,4 @@ public interface IUserService {
 	RestResult<String> registerUser(UserBean userBean);
 
 
-	/**
-	 * 获取用户信息
-	 *
-	 * @param userId 用户id
-	 * @return 用户信息
-	 */
-	UserBean getUserInfoById(long userId);
-
-	/**
-	 * 通過openid得到用戶信息
-	 *
-	 * @param openid
-	 * @return
-	 */
-	UserBean selectUserByopenid(String openid);
-
-	UserBean findUserInfoByTelephone(String telephone);
 }

@@ -3,11 +3,10 @@ package com.mac.scp.service;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.mac.common.cbb.DateUtil;
 import com.mac.common.cbb.RestResult;
-import com.mac.common.util.PasswordUtil;
+import com.mac.common.util.BCryptPasswordEncoder;
 import com.mac.scp.api.IUserService;
 import com.mac.scp.controller.UserController;
 import com.mac.scp.domain.UserBean;
-import com.mac.scp.domain.UserImageBean;
 import com.mac.scp.mapper.UserMapper;
 import org.springframework.stereotype.Service;
 
@@ -61,17 +60,10 @@ public class UserServiceImpl implements IUserService {
 		}
 
 
-		String salt = PasswordUtil.getSaltValue();
-
-		userBean.setSalt(salt);
-
-		userBean.setPassword(userBean.getPassword());
+		String encodePwd = new BCryptPasswordEncoder().encode(userBean.getPassword());
+		userBean.setPassword(encodePwd);
 		userBean.setRegistertime(DateUtil.getCurrentTime());
-		int result = userMapper.insertUser(userBean);
-		userMapper.insertUserRole(userBean.getUserId(), 2);
-		UserImageBean userImageBean = new UserImageBean();
-		userImageBean.setImageurl("");
-		userImageBean.setUserid(userBean.getUserId());
+		int result = userMapper.insert(userBean);
 		if (result == 1) {
 			restResult.setSuccess(true);
 		} else {
@@ -89,7 +81,7 @@ public class UserServiceImpl implements IUserService {
 	 * @param userBean
 	 */
 	private Boolean isUserNameExit(UserBean userBean) {
-		UserBean result = userMapper.selectUserByUserName(userBean);
+		UserBean result = userMapper.selectOne(new LambdaQueryWrapper<UserBean>().eq(UserBean::getUsername, userBean.getUsername()));
 		return result != null;
 	}
 
@@ -100,36 +92,13 @@ public class UserServiceImpl implements IUserService {
 	 * @return
 	 */
 	private Boolean isPhoneExit(UserBean userBean) {
-		UserBean result = userMapper.selectUserByTelephone(userBean);
+		UserBean result = userMapper.selectOne(new LambdaQueryWrapper<UserBean>().eq(UserBean::getTelephone, userBean.getTelephone()));
 		return result != null;
 	}
 
 	private Boolean isPhoneFormatRight(String phone) {
 		String regex = "^1\\d{10}";
 		return Pattern.matches(regex, phone);
-	}
-
-	/**
-	 * 通过手机号获取用户信息
-	 *
-	 * @param telephone
-	 * @return
-	 */
-	@Override
-	public UserBean findUserInfoByTelephone(String telephone) {
-		return userMapper.selectOne(new LambdaQueryWrapper<UserBean>().eq(UserBean::getTelephone, telephone));
-
-	}
-
-
-	@Override
-	public UserBean getUserInfoById(long userId) {
-		return userMapper.selectUserById(userId);
-	}
-
-	@Override
-	public UserBean selectUserByopenid(String openid) {
-		return userMapper.selectUserByopenid(openid);
 	}
 
 

@@ -3,18 +3,20 @@ package com.mac.scp.controller;
 import cn.hutool.core.util.IdUtil;
 import cn.hutool.json.JSONUtil;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
+import com.mac.common.annotations.PassToken;
 import com.mac.common.cbb.RestResult;
 import com.mac.common.exception.UnifiedException;
+import com.mac.common.util.BCryptPasswordEncoder;
 import com.mac.scp.api.IUserService;
 import com.mac.scp.domain.UserBean;
 import com.mac.scp.mapper.UserMapper;
 import com.mac.scp.session.SessionFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
 
 import javax.annotation.Resource;
-import javax.servlet.http.HttpServletRequest;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
@@ -41,7 +43,13 @@ public class UserController {
 	@SuppressWarnings("all")
 	private UserMapper userMapper;
 
-	// TODO 用户注册
+	/**
+	 * 用户注册
+	 *
+	 * @param userBean
+	 * @return
+	 */
+	@PassToken
 	@PostMapping("/adduser")
 	@ResponseBody
 	public RestResult<String> addUser(@RequestBody UserBean userBean) {
@@ -55,7 +63,8 @@ public class UserController {
 	 * @param userBean JSON 格式  {"username":"15999522810","password":"123456"}
 	 * @return
 	 */
-	@RequestMapping("/userlogin")
+	@PassToken
+	@PostMapping("/userlogin")
 	@ResponseBody
 	public RestResult userLogin(@RequestBody UserBean userBean) {
 		RestResult restResult = new RestResult<>();
@@ -66,7 +75,7 @@ public class UserController {
 			throw new UnifiedException("该用户不存在");
 		}
 
-		if (!user.getPassword().equals(userBean.getPassword())) {
+		if (!new BCryptPasswordEncoder().matches(userBean.getPassword(), user.getPassword())) {
 			throw new UnifiedException("密码错误");
 		}
 		String token = IdUtil.fastSimpleUUID();
@@ -98,17 +107,17 @@ public class UserController {
 	 * @return
 	 */
 	// TODO 检查用户登录信息
-	@RequestMapping("/checkuserlogininfo")
+	@GetMapping("/checkuserlogininfo")
 	@ResponseBody
-	public RestResult<UserBean> checkUserLoginInfo(HttpServletRequest request, @RequestHeader(name = HttpHeaders.AUTHORIZATION) String token) {
+	public RestResult<UserBean> checkUserLoginInfo(@RequestHeader(name = HttpHeaders.AUTHORIZATION) String token) {
 		RestResult<UserBean> restResult = new RestResult<UserBean>();
 		Long s = SessionFactory.getSession().get(token);
 		if (Objects.isNull(s)) {
-			throw new UnifiedException("token错误");
+			throw new UnifiedException(HttpStatus.UNAUTHORIZED, "token错误");
 		}
 		UserBean userBean = userMapper.selectById(s);
 		if (Objects.isNull(userBean)) {
-			throw new UnifiedException("token 异常");
+			throw new UnifiedException(HttpStatus.UNAUTHORIZED, "token 异常");
 		}
 		restResult.setData(userBean);
 		return restResult;

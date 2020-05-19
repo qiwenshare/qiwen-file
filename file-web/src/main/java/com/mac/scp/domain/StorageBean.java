@@ -1,5 +1,8 @@
 package com.mac.scp.domain;
 
+import com.baomidou.mybatisplus.annotation.IdType;
+import com.baomidou.mybatisplus.annotation.TableId;
+import com.baomidou.mybatisplus.annotation.TableName;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import lombok.experimental.Accessors;
@@ -13,6 +16,7 @@ import javax.persistence.*;
 @Accessors(chain = true)
 @NoArgsConstructor
 @Table(name = "storage")
+@TableName("storage")
 @Entity
 public class StorageBean {
 	/**
@@ -20,6 +24,7 @@ public class StorageBean {
 	 */
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
+	@TableId(type = IdType.AUTO)
 	private long storageid;
 
 	/**

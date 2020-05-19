@@ -8,8 +8,6 @@ import lombok.Data;
 import lombok.experimental.Accessors;
 
 import javax.persistence.*;
-import javax.websocket.Session;
-import java.util.List;
 
 /**
  * 用户基础信息类
@@ -18,9 +16,7 @@ import java.util.List;
  */
 @Data
 @Accessors(chain = true)
-@Table(name = "user", uniqueConstraints = {
-		@UniqueConstraint(name = "openidIndex", columnNames = {"openid"})
-})
+@Table(name = "user")
 @Entity
 @TableName("user")
 public class UserBean {
@@ -31,11 +27,6 @@ public class UserBean {
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	@TableId(type = IdType.AUTO)
 	private long userId;
-
-	/**
-	 * openid qq登录使用
-	 */
-	private String openid;
 
 	/**
 	 * 用户名称
@@ -52,10 +43,6 @@ public class UserBean {
 	 */
 	private String password;
 
-	/**
-	 * qq密码
-	 */
-	private String qqpassword;
 
 	/**
 	 * 重复密码
@@ -84,41 +71,6 @@ public class UserBean {
 	 */
 	private String birthday;
 
-	/**
-	 * 省
-	 */
-	private String addrprovince;
-
-	/**
-	 * 市
-	 */
-	private String addrcity;
-
-	/**
-	 * 区
-	 */
-	private String addrarea;
-
-	/**
-	 * 行业
-	 */
-	private String industry;
-
-	/**
-	 * 职位
-	 */
-	private String position;
-
-	/**
-	 * 介绍
-	 */
-	private String intro;
-
-	/**
-	 * 盐值
-	 */
-	private String salt;
-	//private byte state;//用户状态,0:创建未认证（比如没有激活，没有输入验证码等等）--等待验证的用户 , 1:正常状态,2：用户被锁定.
 
 	/**
 	 * 用户头像URL
@@ -129,56 +81,6 @@ public class UserBean {
 	 * 注册时间
 	 */
 	private String registertime;
-
-	/**
-	 * 角色列表
-	 *
-	 * @ManyToMany(fetch = FetchType.EAGER) //立即从数据库中进行加载数据
-	 * // 一个用户具有多个角色
-	 */
-	@TableField(exist = false)
-	@ManyToMany(fetch = FetchType.EAGER)
-	@JoinTable(name = "user_role",
-			joinColumns = {@JoinColumn(name = "userId")},
-			inverseJoinColumns = {@JoinColumn(name = "roleid")})
-	private List<Role> roleList;
-	/**
-	 * 与某个客户端的连接会话，需要通过它来给客户端发送数据
-	 */
-	@TableField(exist = false)
-	@Transient
-	private Session session;
-
-	/**
-	 * 消息未读数
-	 */
-	@TableField(exist = false)
-	@Transient
-	private int notReadCount;
-
-	/**
-	 * 文章数量
-	 */
-	@TableField(exist = false)
-	@Transient
-	private int essaycount;
-	/**
-	 * 验证码
-	 */
-	@TableField(exist = false)
-	@Transient
-	private String verificationcode;
-
-
-	/**
-	 * 密码盐.
-	 *
-	 * @return
-	 */
-	public String getCredentialsSalt() {
-		return this.username + this.salt;
-	}
-	//重新对盐重新进行了定义，用户名+salt，这样就更加不容易被破解
 
 
 }

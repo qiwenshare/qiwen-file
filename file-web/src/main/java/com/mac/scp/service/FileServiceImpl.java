@@ -1,5 +1,7 @@
 package com.mac.scp.service;
 
+import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
+import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
 import com.mac.common.operation.FileOperation;
 import com.mac.common.util.PathUtil;
 import com.mac.scp.api.IFileService;
@@ -8,6 +10,7 @@ import com.mac.scp.domain.StorageBean;
 import com.mac.scp.mapper.FileMapper;
 import com.mac.scp.session.SessionFactory;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import javax.annotation.Resource;
 import java.util.List;
@@ -24,10 +27,11 @@ public class FileServiceImpl implements IFileService {
 
 	@Override
 	public void insertFile(FileBean fileBean) {
-		fileMapper.insertFile(fileBean);
+		fileMapper.insert(fileBean);
 	}
 
 	@Override
+	@Transactional(rollbackFor = Exception.class)
 	public void batchInsertFile(List<FileBean> fileBeanList, String token) {
 		StorageBean storageBean = filetransferService.selectStorageBean(new StorageBean(SessionFactory.getSession().get(token)));
 		long fileSizeSum = 0;
@@ -36,7 +40,7 @@ public class FileServiceImpl implements IFileService {
 				fileSizeSum += fileBean.getFilesize();
 			}
 		}
-		fileMapper.batchInsertFile(fileBeanList);
+		fileBeanList.forEach(f -> fileMapper.insert(f));
 		if (storageBean != null) {
 			long updateFileSize = storageBean.getStoragesize() + fileSizeSum;
 
@@ -48,12 +52,13 @@ public class FileServiceImpl implements IFileService {
 
 	@Override
 	public List<FileBean> selectFilePathTreeByUserid(FileBean fileBean) {
-		return fileMapper.selectFilePathTreeByUserid(fileBean);
+		return fileMapper.selectList(new LambdaQueryWrapper<FileBean>().eq(FileBean::getIsdir, 1).eq(FileBean::getUserid, fileBean.getUserid()));
 	}
 
 	@Override
 	public List<FileBean> selectFileList(FileBean fileBean) {
-		return fileMapper.selectFileList(fileBean);
+		return fileMapper.selectList(new LambdaQueryWrapper<FileBean>().eq(FileBean::getFilepath, fileBean.getFilepath())
+				.eq(FileBean::getUserid, fileBean.getUserid()).orderByDesc(FileBean::getIsdir));
 	}
 
 
@@ -66,8 +71,9 @@ public class FileServiceImpl implements IFileService {
 		filePath = filePath.replace("_", "\\_");
 
 		fileBean.setFilepath(filePath);
-
-		return fileMapper.selectFileTreeListLikeFilePath(fileBean);
+		return fileMapper.selectList(new LambdaQueryWrapper<FileBean>()
+				.likeRight(FileBean::getFilepath, fileBean.getFilepath())
+		);
 	}
 
 	@Override
@@ -82,7 +88,7 @@ public class FileServiceImpl implements IFileService {
 
 			for (FileBean file : fileList) {
 				//1.1、删除数据库文件
-				fileMapper.deleteFileById(file);
+				fileMapper.deleteById(file.getFileid());
 				//1.2、如果是文件，需要记录文件大小
 				if (file.getIsdir() != 1) {
 					deleteSize += file.getFilesize();
@@ -93,9 +99,9 @@ public class FileServiceImpl implements IFileService {
 				}
 			}
 			//2、根目录单独删除
-			fileMapper.deleteFileById(fileBean);
+			fileMapper.deleteById(fileBean.getFileid());
 		} else {
-			fileMapper.deleteFileById(fileBean);
+			fileMapper.deleteById(fileBean.getFileid());
 			deleteSize = FileOperation.getFileSize(fileUrl);
 			//删除服务器文件
 			if (fileBean.getFileurl() != null && fileBean.getFileurl().contains("upload")) {
@@ -120,8 +126,15 @@ public class FileServiceImpl implements IFileService {
 			extendname = null;
 		}
 		//移动根目录
-		fileMapper.updateFilepathByPathAndName(oldfilepath, newfilepath, filename, extendname);
+		LambdaUpdateWrapper<FileBean> updateWrapper = new LambdaUpdateWrapper<FileBean>()
+				.set(FileBean::getFilepath, newfilepath)
+				.eq(FileBean::getFilepath, oldfilepath)
+				.eq(FileBean::getFilename, filename);
+		updateWrapper = Objects.isNull(extendname) ?
+				updateWrapper.isNull(FileBean::getExtendname) :
+				updateWrapper.eq(FileBean::getExtendname, extendname);
 
+		fileMapper.update(null, updateWrapper);
 		//移动子目录
 		oldfilepath = oldfilepath + filename + "/";
 		newfilepath = newfilepath + filename + "/";
@@ -132,13 +145,18 @@ public class FileServiceImpl implements IFileService {
 		oldfilepath = oldfilepath.replace("_", "\\_");
 		//为null说明是目录，则需要移动子目录
 		if (Objects.isNull(extendname)) {
-			fileMapper.updateFilepathByFilepath(oldfilepath, newfilepath);
+			fileMapper.update(null, new LambdaUpdateWrapper<FileBean>()
+					.setSql("filepath=REPLACE(filepath,'" + oldfilepath + "', '" + newfilepath + "')")
+					.likeRight(FileBean::getFilepath, oldfilepath)
+			);
 		}
 
 	}
 
 	@Override
 	public List<FileBean> selectFileByExtendName(List<String> filenameList, long userid) {
-		return fileMapper.selectFileByExtendName(filenameList, userid);
+		return fileMapper.selectList(new LambdaQueryWrapper<FileBean>()
+				.eq(FileBean::getUserid, userid)
+				.in(FileBean::getExtendname, filenameList));
 	}
 }

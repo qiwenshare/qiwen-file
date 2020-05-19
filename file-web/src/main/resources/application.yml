@@ -8,7 +8,7 @@ spring:
     url: jdbc:mysql://localhost:3306/file?serverTimezone=GMT%2B8&useUnicode=true&characterEncoding=utf-8
     username: root
     password: password123
-    data: classpath:database/data.sql
+    #    data: classpath:database/data.sql
     sql-script-encoding: utf-8
     initialization-mode: ALWAYS
   jpa:

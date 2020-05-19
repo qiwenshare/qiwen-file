@@ -1,5 +1,9 @@
 package com.mac.scp.domain;
 
+import com.baomidou.mybatisplus.annotation.IdType;
+import com.baomidou.mybatisplus.annotation.TableField;
+import com.baomidou.mybatisplus.annotation.TableId;
+import com.baomidou.mybatisplus.annotation.TableName;
 import lombok.Data;
 import lombok.experimental.Accessors;
 
@@ -15,12 +19,14 @@ import javax.persistence.*;
 @Table(name = "file", uniqueConstraints = {
 		@UniqueConstraint(name = "fileindex", columnNames = {"filename", "filepath", "extendname"})})
 @Entity
+@TableName("file")
 public class FileBean {
 	/**
 	 * 文件id
 	 */
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
+	@TableId(type = IdType.AUTO)
 	private long fileid;
 
 	/**
@@ -78,12 +84,16 @@ public class FileBean {
 	 */
 	private int isdir;
 
+	@TableField(exist = false)
 	@Transient
 	private String oldfilepath;
+	@TableField(exist = false)
 	@Transient
 	private String newfilepath;
+	@TableField(exist = false)
 	@Transient
 	private String files;
+	@TableField(exist = false)
 	@Transient
 	private int filetype;
 }

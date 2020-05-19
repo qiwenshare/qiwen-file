@@ -183,7 +183,7 @@ public class FileController {
 				tempFileBean.setFilesize(currentFile.length());
 				tempFileBean.setTimestampname(FileUtil.getFileNameNotExtend(currentFile.getName()));
 				tempFileBean.setFileurl(File.separator + (currentFile.getPath()).replace(PathUtil.getStaticPath(), ""));
-				if (FileUtil.isImageFile(fileType)){
+				if (FileUtil.isImageFile(fileType)) {
 					String minFileUrl = totalFileUrl.replace("." + fileType, "_min." + fileType);
 					File minFile = FileOperation.newFile(minFileUrl);
 					try {
