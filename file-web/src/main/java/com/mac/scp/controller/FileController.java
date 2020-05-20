@@ -11,10 +11,8 @@ import com.mac.common.util.PathUtil;
 import com.mac.scp.api.IFileService;
 import com.mac.scp.domain.FileBean;
 import com.mac.scp.domain.TreeNode;
-import com.mac.scp.domain.UserBean;
-import com.mac.scp.mapper.UserMapper;
+import com.mac.scp.entity.User;
 import com.mac.scp.session.SessionFactory;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpHeaders;
 import org.springframework.web.bind.annotation.*;
 
@@ -37,9 +35,6 @@ public class FileController {
 	@Resource
 	IFileService fileService;
 
-	@Autowired
-	@SuppressWarnings("all")
-	private UserMapper userMapper;
 
 	/**
 	 * 创建文件
@@ -253,14 +248,14 @@ public class FileController {
 
 	public RestResult<String> operationCheck(Long id) {
 		RestResult<String> result = new RestResult<String>();
-		UserBean sessionUserBean = userMapper.selectById(id);
-		if (sessionUserBean == null) {
+		User sessionUser = new User().selectById(id);
+		if (sessionUser == null) {
 			result.setSuccess(false);
 			result.setErrorMessage("未登录");
 			return result;
 		}
 		if (isShareFile) {
-			if (sessionUserBean.getUserId() > 2) {
+			if (sessionUser.getId() > 2) {
 				result.setSuccess(false);
 				result.setErrorMessage("没权限，请联系管理员！");
 				return result;

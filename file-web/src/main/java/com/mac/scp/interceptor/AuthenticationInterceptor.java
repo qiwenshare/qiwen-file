@@ -5,10 +5,8 @@ import com.google.common.collect.Lists;
 import com.mac.common.annotations.PassToken;
 import com.mac.common.exception.UnifiedException;
 import com.mac.common.util.UrlUtil;
-import com.mac.scp.mapper.UserMapper;
 import com.mac.scp.session.SessionFactory;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
@@ -45,9 +43,7 @@ public class AuthenticationInterceptor implements HandlerInterceptor {
 			".*?/error.*",
 			".*?/actuator.*"
 	);
-	@Autowired
-	@SuppressWarnings("all")
-	private UserMapper userMapper;
+
 	@Value("${print-header:false}")
 	private boolean printHeader;
 

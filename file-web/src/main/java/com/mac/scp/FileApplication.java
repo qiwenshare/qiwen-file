@@ -5,6 +5,11 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.scheduling.annotation.EnableScheduling;
 
+/**
+ * 奇文网盘
+ *
+ * @author WeiHongBin
+ */
 @SpringBootApplication
 @ComponentScan(basePackages = {"com.mac.common", "com.mac.scp"})
 @EnableScheduling
@@ -13,6 +18,5 @@ public class FileApplication {
 	public static void main(String[] args) {
 		SpringApplication.run(FileApplication.class, args);
 	}
-
 
 }

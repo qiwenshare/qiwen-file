@@ -16,8 +16,9 @@ import javax.persistence.*;
  */
 @Data
 @Accessors(chain = true)
-@Table(name = "file", uniqueConstraints = {
-		@UniqueConstraint(name = "fileindex", columnNames = {"filename", "filepath", "extendname"})})
+@Table(name = "file",
+		uniqueConstraints = {
+				@UniqueConstraint(name = "fileindex", columnNames = {"filename", "filepath", "extendname"})})
 @Entity
 @TableName("file")
 public class FileBean {

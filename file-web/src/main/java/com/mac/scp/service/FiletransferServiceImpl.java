@@ -43,8 +43,6 @@ public class FiletransferServiceImpl implements IFiletransferService {
 				fileBean.setUploadtime(DateUtil.getCurrentTime());
 				fileMapper.insert(fileBean);
 			}
-
-
 			synchronized (FiletransferServiceImpl.class) {
 				String token = request.getHeader(HttpHeaders.AUTHORIZATION);
 				Long sessionUserId = SessionFactory.getSession().get(token);

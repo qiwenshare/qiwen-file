@@ -30,7 +30,7 @@ public class Result<T> {
 	 */
 	public Result() {
 		this.code = HttpStatus.OK.value();
-		this.msg = HttpStatus.OK.toString();
+		this.msg = HttpStatus.OK.name();
 	}
 
 	/**
@@ -40,7 +40,7 @@ public class Result<T> {
 	 */
 	public Result(T data) {
 		this.code = HttpStatus.OK.value();
-		this.msg = HttpStatus.OK.toString();
+		this.msg = HttpStatus.OK.name();
 		this.data = data;
 	}
 

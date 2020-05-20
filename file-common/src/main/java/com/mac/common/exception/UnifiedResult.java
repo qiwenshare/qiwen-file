@@ -6,6 +6,7 @@ import com.mac.common.vo.Result;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.MethodParameter;
+import org.springframework.http.HttpMethod;
 import org.springframework.http.MediaType;
 import org.springframework.http.server.ServerHttpRequest;
 import org.springframework.http.server.ServerHttpResponse;
@@ -39,7 +40,7 @@ public class UnifiedResult implements ResponseBodyAdvice {
 		String declaringClassName = declaringClass.getName();
 		String classPackageName = declaringClassPackage.getName();
 		log.info("UnifiedResult:[ {}#{} ]", declaringClassName, simpleMethodName);
-		return false;
+		return "com.mac.scp.controller.UserController".equals(declaringClassName);
 	}
 
 	/**
@@ -60,16 +61,18 @@ public class UnifiedResult implements ResponseBodyAdvice {
 	                              Class selectedConverterType,
 	                              ServerHttpRequest request,
 	                              ServerHttpResponse response) {
+		HttpMethod method = request.getMethod();
+		String path = request.getURI().getPath();
 		if (Objects.isNull(body)) {
 			return new Result<>();
 		}
 		if (body instanceof String) {
 			// 响应 String 类型在底层并不会json转换，必须手动json转换,否则会触发类型转换异常
-			log.debug("统一返回,封装数据-String:{}", jsonUtil.writeValueAsString(body));
+			log.debug("Method:[{}] Path:[{}] 响应数据-String:{}", method, path, jsonUtil.writeValueAsString(body));
 			return jsonUtil.writeValueAsString(new Result<>(body));
 		}
 		if (!StringUtils.isEmpty(body)) {
-			log.debug("统一返回,封装数据:{}", jsonUtil.writeValueAsString(body));
+			log.debug("Method:[{}] Path:[{}] 响应数据:{}", method, path, jsonUtil.writeValueAsString(body));
 		}
 		return new Result<>(body);
 	}
