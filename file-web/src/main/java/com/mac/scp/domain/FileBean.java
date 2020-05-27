@@ -22,6 +22,8 @@ import javax.persistence.*;
 @Entity
 @TableName("file")
 public class FileBean {
+
+
 	/**
 	 * 文件id
 	 */
@@ -29,16 +31,6 @@ public class FileBean {
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	@TableId(type = IdType.AUTO)
 	private long fileid;
-
-	/**
-	 * 相册id
-	 */
-	private long albumid;
-
-	/**
-	 * 文章id
-	 */
-	private long essayid;
 
 	/**
 	 * 用户id
@@ -83,7 +75,7 @@ public class FileBean {
 	/**
 	 * 是否是目录
 	 */
-	private int isdir;
+	private Boolean isdir;
 
 	@TableField(exist = false)
 	@Transient

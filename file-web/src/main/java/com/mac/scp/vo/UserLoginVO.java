@@ -1,7 +1,6 @@
 package com.mac.scp.vo;
 
-import io.swagger.annotations.ApiModel;
-import io.swagger.annotations.ApiModelProperty;
+import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.experimental.Accessors;
@@ -14,9 +13,9 @@ import lombok.experimental.Accessors;
 @EqualsAndHashCode(callSuper = true)
 @Data
 @Accessors(chain = true)
-@ApiModel("用户登录VO")
+@Schema(name = "用户登录VO")
 public class UserLoginVO extends UserVO {
 
-	@ApiModelProperty("Token 接口访问凭证")
+	@Schema(description = "Token 接口访问凭证")
 	private String token;
 }

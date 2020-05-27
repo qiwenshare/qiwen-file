@@ -1,7 +1,6 @@
 package com.mac.scp.vo;
 
-import io.swagger.annotations.ApiModel;
-import io.swagger.annotations.ApiModelProperty;
+import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Data;
 import lombok.experimental.Accessors;
 
@@ -14,27 +13,27 @@ import java.time.LocalDate;
  */
 @Data
 @Accessors(chain = true)
-@ApiModel("用户VO")
+@Schema(name = "用户VO")
 public class UserVO {
 
-	@ApiModelProperty(value = "用户名")
+	@Schema(description = "用户名")
 	private String username;
 
-	@ApiModelProperty("用户昵称，用于替换用户名显示")
+	@Schema(description = "用户昵称，用于替换用户名显示")
 	private String nickname;
 
-	@ApiModelProperty("手机号码")
+	@Schema(description = "手机号码")
 	private String phone;
 
-	@ApiModelProperty("邮箱")
+	@Schema(description = "邮箱")
 	private String email;
 
-	@ApiModelProperty("性别")
+	@Schema(description = "性别")
 	private String sex;
 
-	@ApiModelProperty("生日")
+	@Schema(description = "生日")
 	private LocalDate birthday;
 
-	@ApiModelProperty("用户头像URL")
+	@Schema(description = "用户头像URL")
 	private String avatarUrl;
 }

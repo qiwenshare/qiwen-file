@@ -41,6 +41,7 @@ public class FiletransferServiceImpl implements IFiletransferService {
 				fileBean.setExtendname(uploadFile.getFileType());
 				fileBean.setTimestampname(uploadFile.getTimeStampName());
 				fileBean.setUploadtime(DateUtil.getCurrentTime());
+
 				fileMapper.insert(fileBean);
 			}
 			synchronized (FiletransferServiceImpl.class) {

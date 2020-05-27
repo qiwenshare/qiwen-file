@@ -36,7 +36,7 @@ public class FileServiceImpl implements IFileService {
 		StorageBean storageBean = filetransferService.selectStorageBean(new StorageBean(SessionFactory.getSession().get(token)));
 		long fileSizeSum = 0;
 		for (FileBean fileBean : fileBeanList) {
-			if (fileBean.getIsdir() == 0) {
+			if (fileBean.getIsdir() == false) {
 				fileSizeSum += fileBean.getFilesize();
 			}
 		}
@@ -81,7 +81,7 @@ public class FileServiceImpl implements IFileService {
 		StorageBean storageBean = filetransferService.selectStorageBean(new StorageBean(SessionFactory.getSession().get(token)));
 		long deleteSize = 0;
 		String fileUrl = PathUtil.getStaticPath() + fileBean.getFileurl();
-		if (fileBean.getIsdir() == 1) {
+		if (fileBean.getIsdir() == true) {
 			//1、先删除子目录
 			String filePath = fileBean.getFilepath() + fileBean.getFilename() + "/";
 			List<FileBean> fileList = selectFileTreeListLikeFilePath(filePath);
@@ -90,7 +90,7 @@ public class FileServiceImpl implements IFileService {
 				//1.1、删除数据库文件
 				fileMapper.deleteById(file.getFileid());
 				//1.2、如果是文件，需要记录文件大小
-				if (file.getIsdir() != 1) {
+				if (file.getIsdir() != true) {
 					deleteSize += file.getFilesize();
 					//1.3、删除服务器文件，只删除文件，目录是虚拟的
 					if (file.getFileurl() != null && file.getFileurl().contains("upload")) {

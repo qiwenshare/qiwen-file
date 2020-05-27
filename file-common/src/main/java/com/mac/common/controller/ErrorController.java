@@ -2,6 +2,7 @@ package com.mac.common.controller;
 
 
 import com.mac.common.exception.UnifiedException;
+import io.swagger.v3.oas.annotations.Hidden;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.web.servlet.error.BasicErrorController;
 import org.springframework.http.HttpStatus;
@@ -9,7 +10,6 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RestController;
-import springfox.documentation.annotations.ApiIgnore;
 
 import javax.servlet.http.HttpServletRequest;
 import java.util.Map;
@@ -20,8 +20,7 @@ import java.util.Objects;
  *
  * @author WeiHongBin
  */
-
-@ApiIgnore
+@Hidden
 @RestController
 @RequestMapping("/error")
 public class ErrorController {

@@ -1,7 +1,6 @@
 package com.mac.common.vo;
 
-import io.swagger.annotations.ApiModel;
-import io.swagger.annotations.ApiModelProperty;
+import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Data;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Component;
@@ -11,18 +10,18 @@ import org.springframework.stereotype.Component;
  *
  * @author WeiHongBin
  */
-@ApiModel(description = "响应数据对象")
+@Schema(name = "响应数据对象")
 @Component
 @Data
 public class Result<T> {
 
-	@ApiModelProperty(value = "响应状态码")
+	@Schema(description = "响应状态码")
 	private Integer code;
 
-	@ApiModelProperty(value = "响应消息")
+	@Schema(description = "响应消息")
 	private String msg;
 
-	@ApiModelProperty(value = "响应对象")
+	@Schema(description = "响应对象")
 	private T data;
 
 	/**

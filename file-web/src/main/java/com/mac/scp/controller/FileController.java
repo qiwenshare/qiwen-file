@@ -12,7 +12,9 @@ import com.mac.scp.api.IFileService;
 import com.mac.scp.domain.FileBean;
 import com.mac.scp.domain.TreeNode;
 import com.mac.scp.entity.User;
+import com.mac.scp.mapper.FileMapper;
 import com.mac.scp.session.SessionFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpHeaders;
 import org.springframework.web.bind.annotation.*;
 
@@ -34,7 +36,9 @@ public class FileController {
 	public static long treeid = 0;
 	@Resource
 	IFileService fileService;
-
+	@Autowired
+	@SuppressWarnings("all")
+	private FileMapper fileMapper;
 
 	/**
 	 * 创建文件
@@ -164,14 +168,14 @@ public class FileController {
 			tempFileBean.setFilepath(FileUtil.pathSplitFormat(fileBean.getFilepath() + entryName.replace(currentFile.getName(), "")));
 			if (currentFile.isDirectory()) {
 
-				tempFileBean.setIsdir(1);
+				tempFileBean.setIsdir(true);
 
 				tempFileBean.setFilename(currentFile.getName());
 				tempFileBean.setTimestampname(currentFile.getName());
 				//tempFileBean.setFileurl(File.separator + (file.getParent() + File.separator + currentFile.getName()).replace(PathUtil.getStaticPath(), ""));
 			} else {
 
-				tempFileBean.setIsdir(0);
+				tempFileBean.setIsdir(false);
 				String fileType = FileUtil.getFileType(totalFileUrl);
 				tempFileBean.setExtendname(fileType);
 				tempFileBean.setFilename(FileUtil.getFileNameNotExtend(currentFile.getName()));
@@ -348,8 +352,6 @@ public class FileController {
 		if (!isExistPath(childrenTreeNodes, currentNodeName)) {
 			//插入
 			TreeNode resultTreeNode = new TreeNode();
-
-
 			resultTreeNode.setAttributes(map);
 			resultTreeNode.setNodeName(nodeNameQueue.poll());
 			resultTreeNode.setId(treeid++);
@@ -396,6 +398,8 @@ public class FileController {
 
 		return isExistPath;
 	}
+
+
 
 
 }

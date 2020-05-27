@@ -16,7 +16,9 @@ public class ImageOperation {
 	 */
 	public static void leftTotation(File inFile, File outFile, int angle) throws IOException {
 		Thumbnails.of(inFile).scale(1).outputQuality(1).rotate(-angle).toFile(outFile);
+
 	}
+
 
 	/**
 	 * 右旋

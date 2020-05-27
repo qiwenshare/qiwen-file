@@ -15,13 +15,11 @@
 
     <dependencies>
 
-
         <!-- spring boot依赖包-->
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-web</artifactId>
         </dependency>
-
 
         <dependency>
             <groupId>commons-fileupload</groupId>
@@ -33,14 +31,8 @@
         <dependency>
             <groupId>net.coobird</groupId>
             <artifactId>thumbnailator</artifactId>
-            <version>0.4.8</version>
+            <version>0.4.11</version>
         </dependency>
-
-        <dependency>
-            <groupId>net.sourceforge.htmlunit</groupId>
-            <artifactId>htmlunit</artifactId>
-        </dependency>
-
 
     </dependencies>
 

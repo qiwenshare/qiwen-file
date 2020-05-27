@@ -1,13 +1,10 @@
 package com.mac.scp.config;
 
-import com.github.xiaoymin.knife4j.spring.annotations.EnableKnife4j;
+import io.swagger.v3.oas.models.OpenAPI;
+import io.swagger.v3.oas.models.info.Info;
+import org.springdoc.core.GroupedOpenApi;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import springfox.documentation.builders.PathSelectors;
-import springfox.documentation.builders.RequestHandlerSelectors;
-import springfox.documentation.spi.DocumentationType;
-import springfox.documentation.spring.web.plugins.Docket;
-import springfox.documentation.swagger2.annotations.EnableSwagger2;
 
 /**
  * SwaggerUI 配置
@@ -15,16 +12,22 @@ import springfox.documentation.swagger2.annotations.EnableSwagger2;
  * @author WeiHongBin
  */
 @Configuration
-@EnableKnife4j
-@EnableSwagger2
 public class SwaggerConfiguration {
 
 	@Bean
-	public Docket createRestApi() {
-		return new Docket(DocumentationType.SWAGGER_2)
-				.select().apis(RequestHandlerSelectors.basePackage("com.mac.scp.controller"))
-				.paths(PathSelectors.any())
+	public GroupedOpenApi userApi() {
+		return GroupedOpenApi.builder().setGroup("奇文网盘")
+				.pathsToMatch("/**")
 				.build();
+	}
+
+	@Bean
+	public OpenAPI customOpenAPI() {
+		return new OpenAPI()
+				.info(new Info()
+						.title("奇文网盘API")
+						.version("1.0")
+						.description("奇文网盘 接口文档"));
 	}
 
 

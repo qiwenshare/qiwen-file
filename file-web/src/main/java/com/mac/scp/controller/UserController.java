@@ -12,8 +12,8 @@ import com.mac.scp.entity.User;
 import com.mac.scp.session.SessionFactory;
 import com.mac.scp.vo.UserLoginVO;
 import com.mac.scp.vo.UserVO;
-import io.swagger.annotations.Api;
-import io.swagger.annotations.ApiOperation;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.validation.annotation.Validated;
@@ -26,12 +26,12 @@ import java.util.Objects;
  *
  * @author ma116
  */
-@Api(tags = "用户 前端控制器")
+@Tag(name = "用户 前端控制器")
 @RestController
 @RequestMapping("/user")
 public class UserController {
 
-	@ApiOperation("用户注册")
+	@Operation(summary = "用户注册")
 	@PassToken
 	@PostMapping("register")
 	public boolean register(@Validated @RequestBody UserRegisterDTO dto) {
@@ -51,7 +51,7 @@ public class UserController {
 		return user.insert();
 	}
 
-	@ApiOperation("用户登录")
+	@Operation(summary = "用户登录")
 	@PassToken
 	@PostMapping
 	public UserLoginVO login(@Validated @RequestBody UserLoginDTO dto) {
@@ -71,13 +71,13 @@ public class UserController {
 		return userVO;
 	}
 
-	@ApiOperation("退出登录")
+	@Operation(summary = "退出登录")
 	@PostMapping("/logout")
 	public void logout(@RequestHeader(name = HttpHeaders.AUTHORIZATION) String token) {
 		SessionFactory.getSession().remove(token);
 	}
 
-	@ApiOperation("检查Token")
+	@Operation(summary = "检查Token")
 	@GetMapping("/check-token")
 	public UserVO checkUserLoginInfo(@RequestHeader(name = HttpHeaders.AUTHORIZATION) String token) {
 		Long userId = SessionFactory.getSession().get(token);

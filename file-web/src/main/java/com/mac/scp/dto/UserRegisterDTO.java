@@ -1,7 +1,6 @@
 package com.mac.scp.dto;
 
-import io.swagger.annotations.ApiModel;
-import io.swagger.annotations.ApiModelProperty;
+import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Data;
 import lombok.experimental.Accessors;
 
@@ -16,20 +15,20 @@ import javax.validation.constraints.Size;
  */
 @Data
 @Accessors(chain = true)
-@ApiModel("用户注册DTO")
+@Schema(name = "用户注册DTO")
 public class UserRegisterDTO {
 
-	@ApiModelProperty(value = "用户名")
+	@Schema(description = "用户名")
 	@NotBlank
 	@Size(min = 6, max = 20, message = "用户名最少6位，最多20位")
 	private String username;
 
-	@ApiModelProperty(value = "密码")
+	@Schema(description = "密码")
 	@NotBlank
 	@Size(min = 6, max = 20, message = "密码最少6位，最多20位")
 	private String password;
 
-	@ApiModelProperty(value = "手机号码")
+	@Schema(description = "手机号码")
 	@NotBlank
 	@Pattern(regexp = "^1[3456789]\\d{9}$", message = "手机号码输入有误")
 	private String phone;
