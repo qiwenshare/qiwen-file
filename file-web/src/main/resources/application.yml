@@ -26,8 +26,8 @@ spring:
     static-locations: classpath:/static
   servlet:
     multipart:
-      max-file-size: 2048MB
-      max-request-size: 2048MB
+      max-file-size: 10GB
+      max-request-size: 10GB
       enabled: true
   main:
     allow-bean-definition-overriding: true

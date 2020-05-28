@@ -1,0 +1,9 @@
+{
+  "properties": [
+    {
+      "name": "file.store.path",
+      "type": "java.lang.String",
+      "description": "文件存储路径."
+    }
+  ]
+}
