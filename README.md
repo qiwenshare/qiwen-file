@@ -57,7 +57,7 @@
 2、如果你需要前台代码进行学习或者完善，可以访问该地址进行拉取
 前台代码源码：[源码](https://gitee.com/qiwen-cloud/qiwen-file-web)
 
-3. 文件默认保存位置：如果你是用IDEA启动的，默认保存位置在target下的upload；如果是打包成jar部署在服务器，默认保存位置在根目录的release/static/upload 下
+3、文件默认保存位置：如果你是用IDEA启动的，默认保存位置在target下的upload；如果是打包成jar部署在服务器，默认保存位置在根目录的release/static/upload 下
 
 
 ## 部分功能演示截图
