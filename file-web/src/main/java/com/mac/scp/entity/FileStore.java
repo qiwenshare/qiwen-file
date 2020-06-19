@@ -31,7 +31,7 @@ public class FileStore extends Model<FileStore> {
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	@TableId(type = IdType.AUTO)
-	private long id;
+	private Long id;
 
 	private String md5;
 
@@ -42,18 +42,7 @@ public class FileStore extends Model<FileStore> {
 	 */
 	private String name;
 
-	private long size;
-
-	private String contentType;
-
-	/**
-	 * 存储JSON格式
-	 * 元数据
-	 * 在下载的时候写入 response 的 Header中
-	 * H2 中定义数据类似 json 格式会转义处理，所以这个存储 text 格式
-	 */
-	@Column(columnDefinition = "text")
-	private String metadata;
+	private Long size;
 
 	/**
 	 * 创建时间

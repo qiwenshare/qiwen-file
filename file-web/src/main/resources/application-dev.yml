@@ -14,6 +14,16 @@ logging:
       mac:
         common:
           exception: debug
+management:
+  endpoint:
+    health:
+      show-details: always
+  endpoints:
+    web:
+      exposure:
+        include: "*"
 file:
   store:
     path: D:\abc\
+server:
+  port: 18080

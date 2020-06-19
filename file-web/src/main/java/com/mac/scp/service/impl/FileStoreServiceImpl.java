@@ -38,7 +38,7 @@ public class FileStoreServiceImpl extends ServiceImpl<FileStoreMapper, FileStore
 	private String basePath;
 
 	@Override
-	public void saveFile(MultipartFile file, Map<String, String> metadata) {
+	public void saveFile(MultipartFile file) {
 		ReentrantLock reentrantLock = new ReentrantLock();
 		reentrantLock.lock();
 		try {
@@ -52,17 +52,12 @@ public class FileStoreServiceImpl extends ServiceImpl<FileStoreMapper, FileStore
 				throw new UnifiedException("文件已存在");
 			}
 			String name = file.getOriginalFilename();
-			String contentType = file.getContentType();
 			String suffix = name.substring(name.lastIndexOf(".") + 1);
 			String time = DateTimeFormatter.ofPattern("yyyyMMdd").format(LocalDate.now());
 			String fileKey = time + "\\" + IdWorker.getId() + "." + suffix;
-			String pathname = basePath + fileKey;
-			File file1 = FileUtil.touch(pathname);
+			File file1 = FileUtil.touch(basePath + fileKey);
 			file.transferTo(file1);
-			String metadataJson = JSONUtil.parse(metadata).toString();
 			boolean insert = new FileStore()
-					.setMetadata(metadataJson)
-					.setContentType(contentType)
 					.setSize(size)
 					.setName(fileKey)
 					.setMd5(md5Hex).insert();
@@ -78,22 +73,20 @@ public class FileStoreServiceImpl extends ServiceImpl<FileStoreMapper, FileStore
 
 	@SneakyThrows
 	@Override
-	public void downloadFile(Long fileStoreId, HttpServletResponse response) {
+	public void downloadFile(com.mac.scp.entity.File file, HttpServletResponse response) {
 		try (ServletOutputStream outputStream = response.getOutputStream()) {
-			FileStore fileStore = new FileStore().selectById(fileStoreId);
-			response.setContentType(fileStore.getContentType());
+			FileStore fileStore = new FileStore().selectById(file.getFileStoreId());
+			response.setContentType(file.getContentType());
 			response.setHeader("Content-Disposition", "fileName=" + fileStore.getName());
 			response.setContentLengthLong(fileStore.getSize());
 			response.setHeader("ETag", fileStore.getMd5());
-			String metadata = fileStore.getMetadata();
+			String metadata = file.getMetadata();
 			Optional.ofNullable(metadata).ifPresent(m -> {
 				Map<String, String> map = JSONUtil.parse(m).toBean(new TypeReference<Map<String, String>>() {
 				});
 				map.forEach(response::setHeader);
 			});
-			System.out.println(response.getHeaderNames());
 			FileUtil.writeToStream(basePath + fileStore.getName(), outputStream);
 		}
 	}
-
 }

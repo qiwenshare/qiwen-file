@@ -31,7 +31,7 @@ public class User extends Model<User> {
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	@TableId(type = IdType.AUTO)
-	private long id;
+	private Long id;
 
 	/**
 	 * 用户名称 可以作为登录
