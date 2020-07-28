@@ -4,9 +4,9 @@
         PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
         "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 
-<mapper namespace="com.mac.scp.mapper.FileMapper">
+<mapper namespace="com.qiwenshare.file.mapper.FileMapper">
 
-    <insert id="insertFile" parameterType="com.mac.scp.domain.FileBean">
+    <insert id="insertFile" parameterType="com.qiwenshare.file.domain.FileBean">
         INSERT ignore INTO file (essayid,albumid,userid, filename,timestampname, fileurl,
         filepath, extendname, uploadtime, filesize, isdir)
         VALUES (#{essayid},#{albumid},#{userid}, #{filename},#{timestampname},
@@ -25,7 +25,7 @@
         </foreach>
     </insert>
 
-    <update id="updateFile" parameterType="com.mac.scp.domain.FileBean">
+    <update id="updateFile" parameterType="com.qiwenshare.file.domain.FileBean">
         update file
         SET filename = #{filename}, uploadtime = #{uploadtime}
         where fileid = #{fileid}
@@ -48,25 +48,25 @@
         </if>
     </update>
 
-    <select id="selectFileById" parameterType="com.mac.scp.domain.FileBean" resultType="com.mac.scp.domain.FileBean">
+    <select id="selectFileById" parameterType="com.qiwenshare.file.domain.FileBean" resultType="com.qiwenshare.file.domain.FileBean">
         select * from file
         where fileid = #{fileid}
     </select>
 
-    <select id="selectFileList" parameterType="com.mac.scp.domain.FileBean" resultType="com.mac.scp.domain.FileBean">
+    <select id="selectFileList" parameterType="com.qiwenshare.file.domain.FileBean" resultType="com.qiwenshare.file.domain.FileBean">
         select * from file
         where filepath = #{filepath} and userid = #{userid}
         order by isdir desc, filename
     </select>
 
-    <select id="selectFileListByIds" resultType="com.mac.scp.domain.FileBean" parameterType="int">
+    <select id="selectFileListByIds" resultType="com.qiwenshare.file.domain.FileBean" parameterType="int">
         select * from file where fileid in
         <foreach collection="list" open="(" separator="," close=")" item="fileid">
             #{fileid}
         </foreach>
     </select>
 
-    <select id="selectFileByExtendName" resultType="com.mac.scp.domain.FileBean">
+    <select id="selectFileByExtendName" resultType="com.qiwenshare.file.domain.FileBean">
         select * from file
         where extendname in
         <foreach collection="filenameList" open="(" separator="," close=")" item="extendname">
@@ -75,12 +75,12 @@
         and userid = #{userid}
     </select>
     
-    <select id="selectFileTreeListLikeFilePath" parameterType="com.mac.scp.domain.FileBean" resultType="com.mac.scp.domain.FileBean">
+    <select id="selectFileTreeListLikeFilePath" parameterType="com.qiwenshare.file.domain.FileBean" resultType="com.qiwenshare.file.domain.FileBean">
         select * from file
         where filepath like N'${filepath}%'
     </select>
 
-    <delete id="deleteFileById" parameterType="com.mac.scp.domain.FileBean">
+    <delete id="deleteFileById" parameterType="com.qiwenshare.file.domain.FileBean">
         DELETE FROM file WHERE fileid = #{fileid}
     </delete>
 
@@ -91,12 +91,12 @@
         </foreach>
     </delete>
 
-    <select id="selectFilePathTreeByUserid" parameterType="com.mac.scp.domain.FileBean" resultType="com.mac.scp.domain.FileBean">
+    <select id="selectFilePathTreeByUserid" parameterType="com.qiwenshare.file.domain.FileBean" resultType="com.qiwenshare.file.domain.FileBean">
         SELECT * FROM file
         WHERE isdir = 1 and userid=#{userid}
     </select>
 
-<!--    <select id="selectFileByExtendName" resultType="com.mac.scp.domain.FileBean" parameterType="java.lang.String">-->
+<!--    <select id="selectFileByExtendName" resultType="FileBean" parameterType="java.lang.String">-->
 <!--        select * from file-->
 <!--        where extendname in-->
 <!--        <foreach collection="list" separator="," open="(" close=")" item="extendname">-->

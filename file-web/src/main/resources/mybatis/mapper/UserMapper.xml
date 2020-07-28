@@ -4,9 +4,9 @@
         PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
         "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 
-<mapper namespace="com.mac.scp.mapper.UserMapper">
+<mapper namespace="com.qiwenshare.file.mapper.UserMapper">
 
-    <resultMap type="com.mac.scp.domain.UserBean" id="userBeanResultMapId">
+    <resultMap type="com.qiwenshare.file.domain.UserBean" id="userBeanResultMapId">
         <id property="userId" column="userId"/>
         <result property="username" column="username"/>
         <result property="realname" column="realname"/>
@@ -21,18 +21,18 @@
         <result property="intro" column="intro"/>
         <result property="notReadCount" column="notReadCount"/>
         <result property="imageurl" column="imageurl" />
-        <collection property="roleList" ofType="com.mac.scp.domain.Role">
+        <collection property="roleList" ofType="com.qiwenshare.file.domain.Role">
             <id property="roleid" column="roleid"/>
             <result property="role" column="role"/>
             <result property="description" column="description"/>
             <result property="available" column="available"/>
-            <collection property="permissions" ofType="com.mac.scp.domain.Permission" column="roleid"
-                        select="com.mac.scp.mapper.UserMapper.getPermissionByRoleid">
+            <collection property="permissions" ofType="com.qiwenshare.file.domain.Permission" column="roleid"
+                        select="com.qiwenshare.file.mapper.UserMapper.getPermissionByRoleid">
             </collection>
         </collection>
     </resultMap>
 
-    <insert id="insertUser" parameterType="com.mac.scp.domain.UserBean" useGeneratedKeys="true" keyProperty="userId">
+    <insert id="insertUser" parameterType="com.qiwenshare.file.domain.UserBean" useGeneratedKeys="true" keyProperty="userId">
         INSERT INTO user (username, salt, PASSWORD, qqpassword, telephone, sex, openid, imageurl, registertime)
         VALUES (#{username},#{salt}, #{password}, #{qqpassword}, #{telephone}, #{sex}, #{openid}, #{imageurl}, #{registertime});
     </insert>
@@ -42,7 +42,7 @@
         VALUES (#{param1}, #{param2});
     </insert>
 
-    <select id="selectUser" parameterType="com.mac.scp.domain.UserBean" resultMap="userBeanResultMapId">
+    <select id="selectUser" parameterType="com.qiwenshare.file.domain.UserBean" resultMap="userBeanResultMapId">
         SELECT *
         FROM user
         WHERE (username=#{username} OR telephone=#{telephone}) AND PASSWORD=#{password};
@@ -56,7 +56,7 @@
     </select>
 
 
-    <select id="getPermissionByRoleid" parameterType="int" resultType="com.mac.scp.domain.Permission">
+    <select id="getPermissionByRoleid" parameterType="int" resultType="com.qiwenshare.file.domain.Permission">
         select * from permission
         inner join role_permission on role_permission.permissionid = permission.permissionid
         where permission.permissionid = #{roleid}
@@ -68,7 +68,7 @@
         WHERE user.userId = #{userId}
     </select>
 
-    <select id="selectUserByopenid" resultType="com.mac.scp.domain.UserBean" parameterType="java.lang.String">
+    <select id="selectUserByopenid" resultType="com.qiwenshare.file.domain.UserBean" parameterType="java.lang.String">
         SELECT *
         FROM user
         WHERE user.openid = #{openid}
@@ -80,7 +80,7 @@
     </select>
 
     <select id="selectUserListByCondition" resultMap="userBeanResultMapId"
-            parameterType="com.mac.common.domain.TableQueryBean">
+            parameterType="com.qiwenshare.common.domain.TableQueryBean">
         SELECT * FROM user
         <if test="key != null">
             where username LIKE '%${key}%'
@@ -91,7 +91,7 @@
         limit #{beginCount}, #{limit}
     </select>
 
-    <select id="selectUserCountByCondition" resultType="int" parameterType="com.mac.common.domain.TableQueryBean">
+    <select id="selectUserCountByCondition" resultType="int" parameterType="com.qiwenshare.common.domain.TableQueryBean">
         SELECT count(*) FROM user
         <if test="key != null">
             where username LIKE '%${key}%'
@@ -99,11 +99,11 @@
         limit #{beginCount}, #{limit}
     </select>
 
-    <delete id="deleteUserInfo" parameterType="com.mac.scp.domain.UserBean">
+    <delete id="deleteUserInfo" parameterType="com.qiwenshare.file.domain.UserBean">
         delete from user where userId = #{userId}
     </delete>
 
-    <update id="updateUserInfo" parameterType="com.mac.scp.domain.UserBean">
+    <update id="updateUserInfo" parameterType="com.qiwenshare.file.domain.UserBean">
         update user set
         username = #{username},
         realname = #{realname},
@@ -119,37 +119,37 @@
 
     </update>
 
-    <update id="updateEmail" parameterType="com.mac.scp.domain.UserBean">
+    <update id="updateEmail" parameterType="com.qiwenshare.file.domain.UserBean">
         update user set
         email = #{email}
         where userId = #{userId}
 
     </update>
-    <update id="updataImageUrl" parameterType="com.mac.scp.domain.UserBean">
+    <update id="updataImageUrl" parameterType="com.qiwenshare.file.domain.UserBean">
         update user set
         imageurl = #{imageurl}
         where userId = #{userId}
     </update>
 
-    <select id="selectUserByUserName" parameterType="com.mac.scp.domain.UserBean" resultMap="userBeanResultMapId">
+    <select id="selectUserByUserName" parameterType="com.qiwenshare.file.domain.UserBean" resultMap="userBeanResultMapId">
         select * from user
         left join user_role on user_role.userId = user.userId
         left join role on role.roleid = user_role.roleid
         where (username = #{username}) AND openid IS NULL
     </select>
 
-    <select id="selectUserByTelephone" parameterType="com.mac.scp.domain.UserBean"
-            resultType="com.mac.scp.domain.UserBean">
+    <select id="selectUserByTelephone" parameterType="com.qiwenshare.file.domain.UserBean"
+            resultType="com.qiwenshare.file.domain.UserBean">
         select * from user where telephone = #{telephone}
     </select>
 
-    <select id="selectRoleList" resultType="com.mac.scp.domain.Role">
+    <select id="selectRoleList" resultType="com.qiwenshare.file.domain.Role">
         SELECT * FROM role
 
     </select>
 
-    <select id="selectPermissionListByCondition" resultType="com.mac.scp.domain.Permission"
-            parameterType="com.mac.common.domain.TableQueryBean">
+    <select id="selectPermissionListByCondition" resultType="com.qiwenshare.file.domain.Permission"
+            parameterType="com.qiwenshare.common.domain.TableQueryBean">
         SELECT * FROM permission
         <if test="key != null">
             where permission LIKE '%${key}%'

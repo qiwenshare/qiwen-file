@@ -3,14 +3,14 @@
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
     <parent>
-        <groupId>com.qiwen</groupId>
+        <groupId>com.qiwenshare</groupId>
         <artifactId>file</artifactId>
         <version>1.0-SNAPSHOT</version>
     </parent>
-    <groupId>com.qiwen</groupId>
+    <groupId>com.qiwenshare</groupId>
     <artifactId>file-web</artifactId>
     <version>0.0.1-SNAPSHOT</version>
-    <name>web</name>
+    <name>file-web</name>
     <description>www.qiwenshare.com/file</description>
     <packaging>jar</packaging>
     <properties>
@@ -91,7 +91,7 @@
             <version>1.3.3</version>
         </dependency>
         <dependency>
-            <groupId>com.qiwen</groupId>
+            <groupId>com.qiwenshare</groupId>
             <artifactId>file-common</artifactId>
             <version>0.0.1-SNAPSHOT</version>
         </dependency>
@@ -155,8 +155,9 @@
                         <configuration>
                             <target>
                                 <copy file="target/${app-name}.jar" tofile="${release-path}/app/${project.artifactId}/${app-name}.jar" />
-                                <copy file="target/classes/script/startWeb.bat" tofile="${release-path}/startWeb.bat" />
-
+                                <copy file="target/classes/script/startup.bat" tofile="${release-path}/startup.bat"/>
+                                <copy file="target/classes/script/startup.sh" tofile="${release-path}/startup.sh"/>
+                                <copy file="target/classes/script/stop.sh" tofile="${release-path}/stop.sh"/>
                                 <copy todir="${release-path}">
                                     <fileset dir="target/classes">
                                         <include name="**/static/**" />
