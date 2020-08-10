@@ -1,11 +1,32 @@
-# 文件管理系统（仿百度网盘）
 
-## 演示网站
-[网站地址](http://www.qiwenshare.com)
-[介绍说明](http://www.qiwenshare.com/essay/detail/24)
+<p align="center">
+	<a href="http://fileos.qiwenshare.com/"><img width="30%" src="https://images.gitee.com/uploads/images/2020/0810/131432_e00bbf82_947714.png" ></a>
+</p>
+<p align="center">
+	<strong>基于springboot + vue 框架开发的Web文件系统，旨在为用户提供一个简单、方便的文件存储方案，能够以完善的目录结构体系，对文件进行管理 。</strong>
+</p>
+<p align="center">
+	<a target="_blank" href="https://baike.baidu.com/item/MIT%E8%AE%B8%E5%8F%AF%E8%AF%81/6671281?fr=aladdin">
+        <img src="https://img.shields.io/:license-MIT-blue.svg" />
+	</a>
+	<a target="_blank" href="https://www.oracle.com/technetwork/java/javase/downloads/index.html">
+		<img src="https://img.shields.io/badge/JDK-8+-green.svg" />
+	</a>
+	<a target="_blank" href="https://gitee.com/mingSoft/MCMS/stargazers">
+		<img src="https://gitee.com/qiwen-cloud/qiwen-file/badge/star.svg?theme=dark" alt='gitee star'/>
+	</a>
+	
+</p>
+<p align="center">
+	<a href="http://fileos.qiwenshare.com/" target="_blank">在线演示环境</a> 
+	<a href="https://www.qiwenshare.com/essay/detail/24"  target="_blank">软件介绍</a> 
+	<a href="https://www.qiwenshare.com/essay/detail/169"  target="_blank">安装指导</a>
+</p>
+-------------------------------------------------------------------------------
 
-## 介绍
-基于springboot + vue 框架开发的Web文件系统，旨在为用户提供一个简单、方便的文件存储方案，目前已经完成了主要的基础功能，能够以完善的目录结构体系，对文件进行管理 。
+## 开源说明
+系统100%开源
+本软件遵循MIT开源协议
 
  **您可以在其基础上继续进行开发来完善其功能，成为本项目的贡献者之一** 
 
