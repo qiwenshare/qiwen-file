@@ -19,7 +19,6 @@
 </p>
 <p align="center">
 	<a href="http://fileos.qiwenshare.com/" target="_blank">在线演示环境</a> 
-	<a href="https://www.qiwenshare.com/essay/detail/24"  target="_blank">软件介绍</a> 
 	<a href="https://www.qiwenshare.com/essay/detail/169"  target="_blank">安装指导</a>
 </p>
 
