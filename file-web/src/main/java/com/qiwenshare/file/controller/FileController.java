@@ -145,17 +145,38 @@ public class FileController {
      */
     @RequestMapping(value = "/unzipfile", method = RequestMethod.POST)
     @ResponseBody
-    public String unzipFile(@RequestBody FileBean fileBean) {
+    public RestResult<String> unzipFile(@RequestBody FileBean fileBean) {
         RestResult<String> result = new RestResult<String>();
         if (!operationCheck().isSuccess()){
-            return JSON.toJSONString(operationCheck());
+            return operationCheck();
         }
 
         String zipFileUrl = PathUtil.getStaticPath() + fileBean.getFileurl();
         File file = FileOperation.newFile(zipFileUrl);
         String unzipUrl = file.getParent();
-
-        List<String> fileEntryNameList = FileOperation.unzip(file, unzipUrl);
+        String[] arr = fileBean.getFileurl().split("\\.");
+        if (arr.length <= 1) {
+            result.setErrorMessage("文件名格式错误！");
+            result.setSuccess(false);
+            return result;
+        }
+        List<String> fileEntryNameList = new ArrayList<>();
+        if ("zip".equals(arr[1])) {
+            fileEntryNameList = FileOperation.unzip(file, unzipUrl);
+        } else if ("rar".equals(arr[1])) {
+            try {
+                fileEntryNameList = FileOperation.unrar(file, unzipUrl);
+            } catch (Exception e) {
+                e.printStackTrace();
+                result.setErrorMessage("rar解压失败！");
+                result.setSuccess(false);
+                return result;
+            }
+        } else {
+            result.setErrorMessage("不支持的文件格式！");
+            result.setSuccess(false);
+            return result;
+        }
 
         List<FileBean> fileBeanList = new ArrayList<>();
         UserBean sessionUserBean = (UserBean) SecurityUtils.getSubject().getPrincipal();
@@ -167,7 +188,7 @@ public class FileController {
             FileBean tempFileBean = new FileBean();
             tempFileBean.setUploadtime(DateUtil.getCurrentTime());
             tempFileBean.setUserid(sessionUserBean.getUserId());
-            tempFileBean.setFilepath(FileUtil.pathSplitFormat(fileBean.getFilepath() + entryName.replace(currentFile.getName(), "")));
+            tempFileBean.setFilepath(FileUtil.pathSplitFormat(fileBean.getFilepath() + entryName.replace(currentFile.getName(), "")).replace("\\", "/"));
             if (currentFile.isDirectory()){
 
                 tempFileBean.setIsdir(1);
@@ -189,8 +210,8 @@ public class FileController {
         }
         fileService.batchInsertFile(fileBeanList);
         result.setSuccess(true);
-        String resultJson = JSON.toJSONString(result);
-        return resultJson;
+
+        return result;
     }
 
     /**

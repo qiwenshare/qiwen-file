@@ -8,6 +8,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.*;
+import java.nio.charset.Charset;
 import java.util.*;
 
 import java.util.zip.ZipEntry;
@@ -217,7 +218,7 @@ public class FileOperation {
         // set.add("/");
         List<String> fileEntryNameList = new ArrayList<>();
         try {
-            zipFile = new ZipFile(sourceFile);
+            zipFile = new ZipFile(sourceFile, Charset.forName("GBK"));
             Enumeration<? extends ZipEntry> entries = zipFile.entries();
             while (entries.hasMoreElements()) {
                 ZipEntry entry = (ZipEntry) entries.nextElement();
@@ -284,8 +285,9 @@ public class FileOperation {
      * @param destDirPath 目的路径
      * @throws Exception
      */
-    public static void unrar(File sourceFile, String destDirPath) throws Exception {
+    public static List<String> unrar(File sourceFile, String destDirPath) throws Exception {
         File destDir = new File(destDirPath);
+        Set<String> set = new HashSet<String>();
         Archive archive = null;
         FileOutputStream fos = null;
         System.out.println("Starting 开始解压...");
@@ -295,6 +297,7 @@ public class FileOperation {
             int count = 0;
             File destFileName = null;
             while (fh != null) {
+                set.add("/" + fh.getFileName());
                 System.out.println((++count) + ") " + fh.getFileName());
                 String compressFileName = fh.getFileName().trim();
                 destFileName = new File(destDir.getAbsolutePath() + "/" + compressFileName);
@@ -337,6 +340,17 @@ public class FileOperation {
                 } catch (Exception e) {
                 }
             }
+        }
+        List<String> res = new ArrayList<>(set);
+        return res;
+    }
+
+    public static void main(String[] args) {
+        try {
+//            unrar(new File("C:\\Users\\MACHAOP\\Desktop\\Oracle资料.rar"), "C:\\Users\\MACHAOP\\Desktop\\123");
+            unzip(new File("C:\\Users\\MACHAOP\\Desktop\\123.zip"),  "C:\\Users\\MACHAOP\\Desktop\\123");
+        } catch (Exception e) {
+            e.printStackTrace();
         }
     }
 
