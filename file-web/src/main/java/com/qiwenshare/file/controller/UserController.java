@@ -7,8 +7,6 @@ import com.qiwenshare.common.domain.TableData;
 import com.qiwenshare.common.domain.TableQueryBean;
 import com.qiwenshare.file.api.IFiletransferService;
 import com.qiwenshare.file.api.IUserService;
-import com.qiwenshare.file.domain.Permission;
-import com.qiwenshare.file.domain.Role;
 import com.qiwenshare.file.domain.UserBean;
 import org.apache.shiro.SecurityUtils;
 import org.apache.shiro.authc.UsernamePasswordToken;
@@ -137,15 +135,15 @@ public class UserController {
     /**
      * 得到用户信息通过id
      *
-     * @param userid
+     * @param userId
      * @return
      */
     @RequestMapping("/getuserinfobyid")
     @ResponseBody
-    public String getUserInfoById(int userid) {
+    public String getUserInfoById(int userId) {
         RestResult<UserBean> restResult = new RestResult<UserBean>();
 
-        UserBean userBean = userService.getUserInfoById(userid);
+        UserBean userBean = userService.getUserInfoById(userId);
         if (userBean == null) {
             restResult.setSuccess(false);
             restResult.setErrorCode("100001");
@@ -202,32 +200,6 @@ public class UserController {
         return resultJson;
     }
 
-    /**
-     * 得到所有的角色
-     *
-     * @return
-     */
-    @RequestMapping("/selectrolelist")
-    @ResponseBody
-    public TableData<List<Role>> selectRoleList() {
-        TableData<List<Role>> miniuiTableData = new TableData<List<Role>>();
-        List<Role> result = userService.selectRoleList();
-        miniuiTableData.setData(result);
-        return miniuiTableData;
-    }
 
-    /**
-     * 得到所有的权限
-     *
-     * @return
-     */
-    @RequestMapping("/selectpermissionlist")
-    @ResponseBody
-    public TableData<List<Permission>> selectPermissionList(TableQueryBean tableQueryBean) {
-        TableData<List<Permission>> miniuiTableData = new TableData<List<Permission>>();
-        List<Permission> result = userService.selectPermissionList(tableQueryBean);
-        miniuiTableData.setData(result);
-        return miniuiTableData;
-    }
 
 }

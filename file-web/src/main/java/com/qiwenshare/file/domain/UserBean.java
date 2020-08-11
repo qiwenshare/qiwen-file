@@ -10,7 +10,7 @@ import java.util.List;
  * @author ma116
  */
 @Table(name = "user", uniqueConstraints = {
-        @UniqueConstraint(name = "openidIndex", columnNames = {"openid"})
+        @UniqueConstraint(name = "openIdIndex", columnNames = {"openId"})
 })
 @Entity
 public class UserBean {
@@ -22,9 +22,9 @@ public class UserBean {
     private long userId;
 
     /**
-     * openid qq登录使用
+     * openId qq登录使用
      */
-    private String openid;
+    private String openId;
 
     /**
      * 用户名称
@@ -44,7 +44,7 @@ public class UserBean {
     /**
      * qq密码
      */
-    private String qqpassword;
+    private String qqPassword;
 
     /**
      * 重复密码
@@ -75,17 +75,17 @@ public class UserBean {
     /**
      * 省
      */
-    private String addrprovince;
+    private String addrProvince;
 
     /**
      * 市
      */
-    private String addrcity;
+    private String addrCity;
 
     /**
      * 区
      */
-    private String addrarea;
+    private String addrArea;
 
     /**
      * 行业
@@ -111,21 +111,14 @@ public class UserBean {
     /**
      * 用户头像URL
      */
-    private String imageurl;
+    private String imageUrl;
 
     /**
      * 注册时间
      */
-    private String registertime;
+    private String registerTime;
 
-    /**
-     * 角色列表
-     */
-    @ManyToMany(fetch = FetchType.EAGER)//立即从数据库中进行加载数据
-    @JoinTable(name = "user_role",
-            joinColumns = {@JoinColumn(name = "userId")},
-            inverseJoinColumns = {@JoinColumn(name = "roleid")})
-    private List<Role> roleList;// 一个用户具有多个角色
+
     /**
      * 与某个客户端的连接会话，需要通过它来给客户端发送数据
      */
@@ -139,40 +132,90 @@ public class UserBean {
     private int notReadCount;
 
     /**
-     * 文章数量
-     */
-    @Transient
-    private int essaycount;
-    /**
      * 验证码
      */
     @Transient
-    private String verificationcode;
+    private String verificationCode;
 
+    /**
+     * 角色列表
+     */
+    @ManyToMany(fetch = FetchType.EAGER)//立即从数据库中进行加载数据
+    @JoinTable(name = "user_role",
+            joinColumns = {@JoinColumn(name = "userId")},
+            inverseJoinColumns = {@JoinColumn(name = "roleid")})
+    private List<Role> roleList;// 一个用户具有多个角色
 
-
-    public int getEssaycount() {
-        return essaycount;
+    public String getOpenId() {
+        return openId;
     }
 
-    public void setEssaycount(int essaycount) {
-        this.essaycount = essaycount;
+    public void setOpenId(String openId) {
+        this.openId = openId;
     }
 
-    public int getNotReadCount() {
-        return notReadCount;
+    public String getQqPassword() {
+        return qqPassword;
     }
 
-    public void setNotReadCount(int notReadCount) {
-        this.notReadCount = notReadCount;
+    public void setQqPassword(String qqPassword) {
+        this.qqPassword = qqPassword;
     }
 
-    public String getEmail() {
-        return email;
+    public String getAddrProvince() {
+        return addrProvince;
     }
 
-    public void setEmail(String email) {
-        this.email = email;
+    public void setAddrProvince(String addrProvince) {
+        this.addrProvince = addrProvince;
+    }
+
+    public String getAddrCity() {
+        return addrCity;
+    }
+
+    public void setAddrCity(String addrCity) {
+        this.addrCity = addrCity;
+    }
+
+    public String getAddrArea() {
+        return addrArea;
+    }
+
+    public void setAddrArea(String addrArea) {
+        this.addrArea = addrArea;
+    }
+
+    public String getImageUrl() {
+        return imageUrl;
+    }
+
+    public void setImageUrl(String imageUrl) {
+        this.imageUrl = imageUrl;
+    }
+
+    public String getRegisterTime() {
+        return registerTime;
+    }
+
+    public void setRegisterTime(String registerTime) {
+        this.registerTime = registerTime;
+    }
+
+    public String getVerificationCode() {
+        return verificationCode;
+    }
+
+    public void setVerificationCode(String verificationCode) {
+        this.verificationCode = verificationCode;
+    }
+
+    public List<Role> getRoleList() {
+        return roleList;
+    }
+
+    public void setRoleList(List<Role> roleList) {
+        this.roleList = roleList;
     }
 
     public long getUserId() {
@@ -183,36 +226,20 @@ public class UserBean {
         this.userId = userId;
     }
 
+    public String getOpenid() {
+        return openId;
+    }
+
+    public void setOpenid(String openId) {
+        this.openId = openId;
+    }
+
     public String getUsername() {
         return username;
     }
 
     public void setUsername(String username) {
         this.username = username;
-    }
-
-    public String getPassword() {
-        return password;
-    }
-
-    public void setPassword(String password) {
-        this.password = password;
-    }
-
-    public String getTelephone() {
-        return telephone;
-    }
-
-    public void setTelephone(String telephone) {
-        this.telephone = telephone;
-    }
-
-    public String getSex() {
-        return sex;
-    }
-
-    public void setSex(String sex) {
-        this.sex = sex;
     }
 
     public String getRealname() {
@@ -223,6 +250,54 @@ public class UserBean {
         this.realname = realname;
     }
 
+    public String getPassword() {
+        return password;
+    }
+
+    public void setPassword(String password) {
+        this.password = password;
+    }
+
+    public String getQqpassword() {
+        return qqPassword;
+    }
+
+    public void setQqpassword(String qqPassword) {
+        this.qqPassword = qqPassword;
+    }
+
+    public String getPasswordAgain() {
+        return passwordAgain;
+    }
+
+    public void setPasswordAgain(String passwordAgain) {
+        this.passwordAgain = passwordAgain;
+    }
+
+    public String getTelephone() {
+        return telephone;
+    }
+
+    public void setTelephone(String telephone) {
+        this.telephone = telephone;
+    }
+
+    public String getEmail() {
+        return email;
+    }
+
+    public void setEmail(String email) {
+        this.email = email;
+    }
+
+    public String getSex() {
+        return sex;
+    }
+
+    public void setSex(String sex) {
+        this.sex = sex;
+    }
+
     public String getBirthday() {
         return birthday;
     }
@@ -231,20 +306,28 @@ public class UserBean {
         this.birthday = birthday;
     }
 
-    public String getAddrcity() {
-        return addrcity;
+    public String getAddrprovince() {
+        return addrProvince;
     }
 
-    public void setAddrcity(String addrcity) {
-        this.addrcity = addrcity;
+    public void setAddrprovince(String addrProvince) {
+        this.addrProvince = addrProvince;
+    }
+
+    public String getAddrcity() {
+        return addrCity;
+    }
+
+    public void setAddrcity(String addrCity) {
+        this.addrCity = addrCity;
     }
 
     public String getAddrarea() {
-        return addrarea;
+        return addrArea;
     }
 
-    public void setAddrarea(String addrarea) {
-        this.addrarea = addrarea;
+    public void setAddrarea(String addrArea) {
+        this.addrArea = addrArea;
     }
 
     public String getIndustry() {
@@ -271,12 +354,28 @@ public class UserBean {
         this.intro = intro;
     }
 
-    public String getAddrprovince() {
-        return addrprovince;
+    public String getSalt() {
+        return salt;
     }
 
-    public void setAddrprovince(String addrprovince) {
-        this.addrprovince = addrprovince;
+    public void setSalt(String salt) {
+        this.salt = salt;
+    }
+
+    public String getImageurl() {
+        return imageUrl;
+    }
+
+    public void setImageurl(String imageUrl) {
+        this.imageUrl = imageUrl;
+    }
+
+    public String getRegistertime() {
+        return registerTime;
+    }
+
+    public void setRegistertime(String registerTime) {
+        this.registerTime = registerTime;
     }
 
     public Session getSession() {
@@ -287,87 +386,19 @@ public class UserBean {
         this.session = session;
     }
 
-    public String getSalt() {
-        return salt;
+    public int getNotReadCount() {
+        return notReadCount;
     }
 
-    public void setSalt(String salt) {
-        this.salt = salt;
-    }
-
-
-//    public byte getState() {
-//        return state;
-//    }
-//
-//    public void setState(byte state) {
-//        this.state = state;
-//    }
-
-    public List<Role> getRoleList() {
-        return roleList;
-    }
-
-    public void setRoleList(List<Role> roleList) {
-        this.roleList = roleList;
-    }
-
-    public String getPasswordAgain() {
-        return passwordAgain;
-    }
-
-    public void setPasswordAgain(String passwordAgain) {
-        this.passwordAgain = passwordAgain;
-    }
-
-    public String getOpenid() {
-        return openid;
-    }
-
-    public void setOpenid(String openid) {
-        this.openid = openid;
+    public void setNotReadCount(int notReadCount) {
+        this.notReadCount = notReadCount;
     }
 
     public String getVerificationcode() {
-        return verificationcode;
+        return verificationCode;
     }
 
-    public void setVerificationcode(String verificationcode) {
-        this.verificationcode = verificationcode;
-    }
-
-    /**
-     * 密码盐.
-     *
-     * @return
-     */
-    public String getCredentialsSalt() {
-        return this.username + this.salt;
-    }
-    //重新对盐重新进行了定义，用户名+salt，这样就更加不容易被破解
-
-
-    public String getImageurl() {
-        return imageurl;
-    }
-
-    public void setImageurl(String imageurl) {
-        this.imageurl = imageurl;
-    }
-
-    public String getRegistertime() {
-        return registertime;
-    }
-
-    public void setRegistertime(String registertime) {
-        this.registertime = registertime;
-    }
-
-    public String getQqpassword() {
-        return qqpassword;
-    }
-
-    public void setQqpassword(String qqpassword) {
-        this.qqpassword = qqpassword;
+    public void setVerificationcode(String verificationCode) {
+        this.verificationCode = verificationCode;
     }
 }

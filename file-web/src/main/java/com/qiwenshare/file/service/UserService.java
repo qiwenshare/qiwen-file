@@ -7,10 +7,7 @@ import com.qiwenshare.common.domain.TableQueryBean;
 import com.qiwenshare.common.util.PasswordUtil;
 import com.qiwenshare.file.api.IUserService;
 import com.qiwenshare.file.controller.UserController;
-import com.qiwenshare.file.domain.Permission;
-import com.qiwenshare.file.domain.Role;
 import com.qiwenshare.file.domain.UserBean;
-import com.qiwenshare.file.domain.UserImageBean;
 import com.qiwenshare.file.mapper.UserMapper;
 import org.apache.shiro.crypto.hash.SimpleHash;
 import org.springframework.stereotype.Service;
@@ -82,9 +79,9 @@ public class UserService implements IUserService {
         userBean.setRegistertime(DateUtil.getCurrentTime());
         int result = userMapper.insertUser(userBean);
         userMapper.insertUserRole(userBean.getUserId(), 2);
-        UserImageBean userImageBean = new UserImageBean();
-        userImageBean.setImageurl("");
-        userImageBean.setUserid(userBean.getUserId());
+//        UserImageBean userImageBean = new UserImageBean();
+//        userImageBean.setImageUrl("");
+//        userImageBean.setUserId(userBean.getUserId());
         if (result == 1) {
             restResult.setSuccess(true);
             return restResult;
@@ -216,8 +213,8 @@ public class UserService implements IUserService {
     }
 
     @Override
-    public UserBean selectUserByopenid(String openid) {
-        UserBean userBean = userMapper.selectUserByopenid(openid);
+    public UserBean selectUserByopenId(String openId) {
+        UserBean userBean = userMapper.selectUserByopenId(openId);
         return userBean;
     }
 
@@ -256,18 +253,6 @@ public class UserService implements IUserService {
     public List<UserBean> selectUserList(TableQueryBean tableQueryBean) {
         TableQueryBean tablePageQuery = MiniuiUtil.getMiniuiTablePageQuery(tableQueryBean);
         return userMapper.selectUserListByCondition(tablePageQuery);
-    }
-
-    @Override
-    public List<Role> selectRoleList() {
-        //TableQueryBean tablePageQuery = MiniuiUtil.getMiniuiTablePageQuery(tableQueryBean);
-        return userMapper.selectRoleList();
-    }
-
-    @Override
-    public List<Permission> selectPermissionList(TableQueryBean tableQueryBean) {
-        TableQueryBean tablePageQuery = MiniuiUtil.getMiniuiTablePageQuery(tableQueryBean);
-        return userMapper.selectPermissionListByCondition(tablePageQuery);
     }
 
 

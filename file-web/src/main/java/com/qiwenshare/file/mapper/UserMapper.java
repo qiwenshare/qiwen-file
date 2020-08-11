@@ -2,8 +2,6 @@ package com.qiwenshare.file.mapper;
 
 import com.qiwenshare.common.domain.TableQueryBean;
 
-import com.qiwenshare.file.domain.Permission;
-import com.qiwenshare.file.domain.Role;
 import com.qiwenshare.file.domain.UserBean;
 
 import java.util.List;
@@ -11,7 +9,7 @@ import java.util.List;
 public interface UserMapper {
     int insertUser(UserBean userBean);
 
-    int insertUserRole(long userId, long roleid);
+    int insertUserRole(long userId, long roleId);
 
     UserBean selectUser(UserBean userBean);
 
@@ -26,11 +24,11 @@ public interface UserMapper {
     UserBean selectUserById(long userId);
 
     /**
-     * 通過openid得到用戶信息
-     * @param openid
+     * 通過openId得到用戶信息
+     * @param openId
      * @return
      */
-    UserBean selectUserByopenid(String openid);
+    UserBean selectUserByopenId(String openId);
 
     /**
      * 批量删除用户信息
@@ -60,11 +58,7 @@ public interface UserMapper {
 
     List<UserBean> selectUserListByCondition(TableQueryBean tableQueryBean);
 
-    List<Role> selectRoleList();
-
-    List<Permission> selectPermissionListByCondition(TableQueryBean tableQueryBean);
 
     int selectUserCountByCondition(TableQueryBean tableQueryBean);
 
-    List<Permission> getPermissionByRole(int roleid);
 }

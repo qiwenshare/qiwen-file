@@ -41,10 +41,10 @@ public class FiletransferController {
     public RestResult<String> totationImage(@RequestBody String direction, @RequestBody int imageid) {
         RestResult<String> result = new RestResult<String>();
         FileBean fileBean = new FileBean();
-        fileBean.setFileid(imageid);
+        fileBean.setFileId(imageid);
         fileBean = fileService.selectFileById(fileBean);
-        String imageUrl = fileBean.getFileurl();
-        String extendName = fileBean.getExtendname();
+        String imageUrl = fileBean.getFileUrl();
+        String extendName = fileBean.getExtendName();
         File file = FileOperation.newFile(PathUtil.getStaticPath() + imageUrl);
         File minfile = FileOperation.newFile(PathUtil.getStaticPath() + imageUrl.replace("." + extendName, "_min." + extendName));
         if ("left".equals(direction)){
@@ -86,19 +86,19 @@ public class FiletransferController {
         fileService.deleteFileByIds(imageidList);
         long totalFileSize = 0;
         for (FileBean fileBean : fileList) {
-            String imageUrl = PathUtil.getStaticPath() + fileBean.getFileurl();
-            String minImageUrl = imageUrl.replace("." + fileBean.getExtendname(), "_min." + fileBean.getExtendname());
+            String imageUrl = PathUtil.getStaticPath() + fileBean.getFileUrl();
+            String minImageUrl = imageUrl.replace("." + fileBean.getExtendName(), "_min." + fileBean.getExtendName());
             totalFileSize += FileOperation.getFileSize(imageUrl);
             FileOperation.deleteFile(imageUrl);
             FileOperation.deleteFile(minImageUrl);
         }
         StorageBean storageBean = filetransferService.selectStorageBean(new StorageBean(sessionUserId));
         if (storageBean != null){
-            long updateFileSize = storageBean.getStoragesize() - totalFileSize;
+            long updateFileSize = storageBean.getStorageSize() - totalFileSize;
             if (updateFileSize < 0){
                 updateFileSize = 0;
             }
-            storageBean.setStoragesize(updateFileSize);
+            storageBean.setStorageSize(updateFileSize);
             filetransferService.updateStorageBean(storageBean);
 
         }
@@ -121,10 +121,10 @@ public class FiletransferController {
         RestResult<String> result = new RestResult<String>();
         UserBean sessionUserBean = (UserBean) SecurityUtils.getSubject().getPrincipal();
         long sessionUserId = sessionUserBean.getUserId();
-        String imageUrl = PathUtil.getStaticPath() + fileBean.getFileurl();
-        String minImageUrl = imageUrl.replace("." + fileBean.getExtendname(), "_min." + fileBean.getExtendname());
+        String imageUrl = PathUtil.getStaticPath() + fileBean.getFileUrl();
+        String minImageUrl = imageUrl.replace("." + fileBean.getExtendName(), "_min." + fileBean.getExtendName());
         long fileSize = FileOperation.getFileSize(imageUrl);
-        fileBean.setIsdir(0);
+        fileBean.setIsDir(0);
         //filetransferService.deleteImageById(fileBean);
         fileService.deleteFile(fileBean);
 
@@ -134,11 +134,11 @@ public class FiletransferController {
 
         StorageBean storageBean = filetransferService.selectStorageBean(new StorageBean(sessionUserId));
         if (storageBean != null){
-            long updateFileSize = storageBean.getStoragesize() - fileSize;
+            long updateFileSize = storageBean.getStorageSize() - fileSize;
             if (updateFileSize < 0){
                 updateFileSize = 0;
             }
-            storageBean.setStoragesize(updateFileSize);
+            storageBean.setStorageSize(updateFileSize);
             filetransferService.updateStorageBean(storageBean);
 
         }
@@ -147,19 +147,6 @@ public class FiletransferController {
         return resultJson;
     }
 
-    /**
-     * 上传头像
-     *
-     * @param request
-     * @return
-     */
-    @RequestMapping(value = "/uploadimg", method = RequestMethod.POST)
-    @ResponseBody
-    public String uploadImg(HttpServletRequest request) {
-        RestResult<String> restResult = filetransferService.uploadUserImage(request);
-        String resultJson = JSON.toJSONString(restResult);
-        return resultJson;
-    }
 
     /**
      * 上传文件
@@ -177,7 +164,7 @@ public class FiletransferController {
             return JSON.toJSONString(operationCheckResult);
         }
 
-        fileBean.setUserid(sessionUserBean.getUserId());
+        fileBean.setUserId(sessionUserBean.getUserId());
 
         filetransferService.uploadFile(request, fileBean);
 
@@ -195,14 +182,14 @@ public class FiletransferController {
         RestResult<String> restResult = new RestResult<>();
         String fileName = null;// 文件名
         try {
-            fileName = new String(fileBean.getFilename().getBytes("utf-8"), "ISO-8859-1");
+            fileName = new String(fileBean.getFileName().getBytes("utf-8"), "ISO-8859-1");
         } catch (UnsupportedEncodingException e) {
             e.printStackTrace();
         }
         if (fileName != null) {
-            fileName = fileName + "." + fileBean.getExtendname();
+            fileName = fileName + "." + fileBean.getExtendName();
             //设置文件路径
-            File file = FileOperation.newFile(PathUtil.getStaticPath() + fileBean.getFileurl());
+            File file = FileOperation.newFile(PathUtil.getStaticPath() + fileBean.getFileUrl());
             if (file.exists()) {
                 response.setContentType("application/force-download");// 设置强制下载不打开
                 response.addHeader("Content-Disposition", "attachment;fileName=" + fileName);// 设置文件名
@@ -256,9 +243,9 @@ public class FiletransferController {
         UserBean sessionUserBean = (UserBean) SecurityUtils.getSubject().getPrincipal();
         StorageBean storageBean = new StorageBean();
         if (FileController.isShareFile){
-            storageBean.setUserid(2);
+            storageBean.setUserId(2);
         }else{
-            storageBean.setUserid(sessionUserBean.getUserId());
+            storageBean.setUserId(sessionUserBean.getUserId());
         }
 
         StorageBean storage = filetransferService.selectStorageByUser(storageBean);

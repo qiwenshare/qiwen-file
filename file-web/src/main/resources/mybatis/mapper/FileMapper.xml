@@ -7,100 +7,100 @@
 <mapper namespace="com.qiwenshare.file.mapper.FileMapper">
 
     <insert id="insertFile" parameterType="com.qiwenshare.file.domain.FileBean">
-        INSERT ignore INTO file (essayid,albumid,userid, filename,timestampname, fileurl,
-        filepath, extendname, uploadtime, filesize, isdir)
-        VALUES (#{essayid},#{albumid},#{userid}, #{filename},#{timestampname},
-         #{fileurl}, #{filepath}, #{extendname}, #{uploadtime},
-         #{filesize}, #{isdir});
+        INSERT ignore INTO file (albumId,userId, fileName,timeStampName, fileUrl,
+        filePath, extendName, uploadTime, fileSize, isDir)
+        VALUES (#{albumId},#{userId}, #{fileName},#{timeStampName},
+         #{fileUrl}, #{filePath}, #{extendName}, #{uploadTime},
+         #{fileSize}, #{isDir});
     </insert>
 
     <insert id="batchInsertFile" parameterType="java.util.List">
-        INSERT ignore INTO file (essayid,albumid,userid, filename,timestampname, fileurl,
-        filepath, extendname, uploadtime, filesize, isdir)
+        INSERT ignore INTO file (albumId,userId, fileName,timeStampName, fileUrl,
+        filePath, extendName, uploadTime, fileSize, isDir)
         VALUES
         <foreach collection="list" item="file" index="index" separator=",">
-        (#{file.essayid},#{file.albumid},#{file.userid}, #{file.filename},#{file.timestampname},
-         #{file.fileurl}, #{file.filepath}, #{file.extendname}, #{file.uploadtime},
-         #{file.filesize}, #{file.isdir})
+        (#{file.albumId},#{file.userId}, #{file.fileName},#{file.timeStampName},
+         #{file.fileUrl}, #{file.filePath}, #{file.extendName}, #{file.uploadTime},
+         #{file.fileSize}, #{file.isDir})
         </foreach>
     </insert>
 
     <update id="updateFile" parameterType="com.qiwenshare.file.domain.FileBean">
         update file
-        SET filename = #{filename}, uploadtime = #{uploadtime}
-        where fileid = #{fileid}
+        SET fileName = #{fileName}, uploadTime = #{uploadTime}
+        where fileId = #{fileId}
     </update>
 
 
     <update id="updateFilepathByFilepath">
-        UPDATE file SET filepath=REPLACE(filepath, #{param1}, #{param2})
-        WHERE filepath like N'${param1}%'
+        UPDATE file SET filePath=REPLACE(filePath, #{param1}, #{param2})
+        WHERE filePath like N'${param1}%'
     </update>
 
     <update id="updateFilepathByPathAndName">
-        update file set filepath = #{param2}
-        where filepath = #{param1} and filename = #{param3}
+        update file set filePath = #{param2}
+        where filePath = #{param1} and fileName = #{param3}
          <if test="param4 != null">
-         and extendname = #{param4}
+         and extendName = #{param4}
          </if>
         <if test="param4 == null">
-            and extendname is null
+            and extendName is null
         </if>
     </update>
 
     <select id="selectFileById" parameterType="com.qiwenshare.file.domain.FileBean" resultType="com.qiwenshare.file.domain.FileBean">
         select * from file
-        where fileid = #{fileid}
+        where fileId = #{fileId}
     </select>
 
     <select id="selectFileList" parameterType="com.qiwenshare.file.domain.FileBean" resultType="com.qiwenshare.file.domain.FileBean">
         select * from file
-        where filepath = #{filepath} and userid = #{userid}
-        order by isdir desc, filename
+        where filePath = #{filePath} and userId = #{userId}
+        order by isDir desc, fileName
     </select>
 
     <select id="selectFileListByIds" resultType="com.qiwenshare.file.domain.FileBean" parameterType="int">
-        select * from file where fileid in
-        <foreach collection="list" open="(" separator="," close=")" item="fileid">
-            #{fileid}
+        select * from file where fileId in
+        <foreach collection="list" open="(" separator="," close=")" item="fileId">
+            #{fileId}
         </foreach>
     </select>
 
     <select id="selectFileByExtendName" resultType="com.qiwenshare.file.domain.FileBean">
         select * from file
-        where extendname in
-        <foreach collection="filenameList" open="(" separator="," close=")" item="extendname">
-            #{extendname}
+        where extendName in
+        <foreach collection="fileNameList" open="(" separator="," close=")" item="extendName">
+            #{extendName}
         </foreach>
-        and userid = #{userid}
+        and userId = #{userId}
     </select>
     
     <select id="selectFileTreeListLikeFilePath" parameterType="com.qiwenshare.file.domain.FileBean" resultType="com.qiwenshare.file.domain.FileBean">
         select * from file
-        where filepath like N'${filepath}%'
+        where filePath like N'${filePath}%'
     </select>
 
     <delete id="deleteFileById" parameterType="com.qiwenshare.file.domain.FileBean">
-        DELETE FROM file WHERE fileid = #{fileid}
+        DELETE FROM file WHERE fileId = #{fileId}
     </delete>
 
     <delete id="deleteFileByIds" parameterType="int">
-        delete from file where fileid in
-        <foreach  collection="list" open="(" separator="," close=")" item="fileid">
-            #{fileid}
+        delete from file where fileId in
+        <foreach  collection="list" open="(" separator="," close=")" item="fileId">
+            #{fileId}
         </foreach>
     </delete>
 
-    <select id="selectFilePathTreeByUserid" parameterType="com.qiwenshare.file.domain.FileBean" resultType="com.qiwenshare.file.domain.FileBean">
+    <select id="selectFilePathTreeByUserId" parameterType="com.qiwenshare.file.domain.FileBean" resultType="com.qiwenshare.file.domain.FileBean">
         SELECT * FROM file
-        WHERE isdir = 1 and userid=#{userid}
+        WHERE isDir = 1 and userId=#{userId}
     </select>
 
 <!--    <select id="selectFileByExtendName" resultType="FileBean" parameterType="java.lang.String">-->
 <!--        select * from file-->
-<!--        where extendname in-->
-<!--        <foreach collection="list" separator="," open="(" close=")" item="extendname">-->
-<!--            #{extendname}-->
+<!--        where extendName in-->
+<!--        <foreach collection="list" separator="," open="(" close=")" item="extendName">-->
+<!--            #{extendName}-->
 <!--        </foreach>-->
 <!--    </select>-->
 </mapper>

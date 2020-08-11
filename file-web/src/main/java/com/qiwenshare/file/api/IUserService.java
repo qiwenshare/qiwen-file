@@ -2,8 +2,6 @@ package com.qiwenshare.file.api;
 
 import com.qiwenshare.common.cbb.RestResult;
 import com.qiwenshare.common.domain.TableQueryBean;
-import com.qiwenshare.file.domain.Permission;
-import com.qiwenshare.file.domain.Role;
 import com.qiwenshare.file.domain.UserBean;
 
 import java.util.List;
@@ -56,11 +54,11 @@ public interface IUserService {
     UserBean getUserInfoById(long userId);
 
     /**
-     * 通過openid得到用戶信息
-     * @param openid
+     * 通過openId得到用戶信息
+     * @param openId
      * @return
      */
-    UserBean selectUserByopenid(String openid);
+    UserBean selectUserByopenId(String openId);
 
     /**
      * 通过用户名获取用户信息
@@ -104,20 +102,6 @@ public interface IUserService {
      * @return 用户列表
      */
     List<UserBean> selectUserList(TableQueryBean tableQueryBean);
-
-    /**
-     * 选择所有用户角色
-     *
-     * @return 角色列表
-     */
-    List<Role> selectRoleList();
-
-    /**
-     * 选择所有用户角色
-     * @param tableQueryBean 查询条件
-     * @return 权限列表
-     */
-    List<Permission> selectPermissionList(TableQueryBean tableQueryBean);
 
     /**
      * 获取用户数量

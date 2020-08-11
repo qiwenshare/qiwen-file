@@ -34,22 +34,22 @@ public class FileService implements IFileService {
         StorageBean storageBean = filetransferService.selectStorageBean(new StorageBean(sessionUserBean.getUserId()));
         long fileSizeSum = 0;
         for (FileBean fileBean : fileBeanList) {
-            if (fileBean.getIsdir() == 0) {
-                fileSizeSum += fileBean.getFilesize();
+            if (fileBean.getIsDir() == 0) {
+                fileSizeSum += fileBean.getFileSize();
             }
         }
         fileMapper.batchInsertFile(fileBeanList);
         if (storageBean != null) {
-            long updateFileSize = storageBean.getStoragesize() + fileSizeSum;
+            long updateFileSize = storageBean.getStorageSize() + fileSizeSum;
 
-            storageBean.setStoragesize(updateFileSize);
+            storageBean.setStorageSize(updateFileSize);
             filetransferService.updateStorageBean(storageBean);
         }
     }
 
     @Override
     public void updateFile(FileBean fileBean) {
-        fileBean.setUploadtime(DateUtil.getCurrentTime());
+        fileBean.setUploadTime(DateUtil.getCurrentTime());
         fileMapper.updateFile(fileBean);
     }
 
@@ -59,8 +59,8 @@ public class FileService implements IFileService {
     }
 
     @Override
-    public List<FileBean> selectFilePathTreeByUserid(FileBean fileBean) {
-        return fileMapper.selectFilePathTreeByUserid(fileBean);
+    public List<FileBean> selectFilePathTreeByUserId(FileBean fileBean) {
+        return fileMapper.selectFilePathTreeByUserId(fileBean);
     }
 
     @Override
@@ -69,8 +69,8 @@ public class FileService implements IFileService {
     }
 
     @Override
-    public List<FileBean> selectFileListByIds(List<Integer> fileidList) {
-        return fileMapper.selectFileListByIds(fileidList);
+    public List<FileBean> selectFileListByIds(List<Integer> fileIdList) {
+        return fileMapper.selectFileListByIds(fileIdList);
     }
 
     @Override
@@ -81,7 +81,7 @@ public class FileService implements IFileService {
         filePath = filePath.replace("%", "\\%");
         filePath = filePath.replace("_", "\\_");
 
-        fileBean.setFilepath(filePath);
+        fileBean.setFilePath(filePath);
 
         return fileMapper.selectFileTreeListLikeFilePath(fileBean);
     }
@@ -91,10 +91,10 @@ public class FileService implements IFileService {
         UserBean sessionUserBean = (UserBean) SecurityUtils.getSubject().getPrincipal();
         StorageBean storageBean = filetransferService.selectStorageBean(new StorageBean(sessionUserBean.getUserId()));
         long deleteSize = 0;
-        String fileUrl = PathUtil.getStaticPath() + fileBean.getFileurl();
-        if (fileBean.getIsdir() == 1) {
+        String fileUrl = PathUtil.getStaticPath() + fileBean.getFileUrl();
+        if (fileBean.getIsDir() == 1) {
             //1、先删除子目录
-            String filePath = fileBean.getFilepath() + fileBean.getFilename() + "/";
+            String filePath = fileBean.getFilePath() + fileBean.getFileName() + "/";
             List<FileBean> fileList = selectFileTreeListLikeFilePath(filePath);
 
             for (int i = 0; i < fileList.size(); i++){
@@ -102,11 +102,11 @@ public class FileService implements IFileService {
                 //1.1、删除数据库文件
                 fileMapper.deleteFileById(file);
                 //1.2、如果是文件，需要记录文件大小
-                if (file.getIsdir() != 1){
-                    deleteSize += file.getFilesize();
+                if (file.getIsDir() != 1){
+                    deleteSize += file.getFileSize();
                     //1.3、删除服务器文件，只删除文件，目录是虚拟的
-                    if (file.getFileurl() != null && file.getFileurl().indexOf("upload") != -1){
-                        FileOperation.deleteFile(PathUtil.getStaticPath() + file.getFileurl());
+                    if (file.getFileUrl() != null && file.getFileUrl().indexOf("upload") != -1){
+                        FileOperation.deleteFile(PathUtil.getStaticPath() + file.getFileUrl());
                     }
                 }
             }
@@ -116,52 +116,52 @@ public class FileService implements IFileService {
             fileMapper.deleteFileById(fileBean);
             deleteSize = FileOperation.getFileSize(fileUrl);
             //删除服务器文件
-            if (fileBean.getFileurl() != null && fileBean.getFileurl().indexOf("upload") != -1){
+            if (fileBean.getFileUrl() != null && fileBean.getFileUrl().indexOf("upload") != -1){
                 FileOperation.deleteFile(fileUrl);
             }
         }
 
         if (storageBean != null) {
-            long updateFileSize = storageBean.getStoragesize() - deleteSize;
+            long updateFileSize = storageBean.getStorageSize() - deleteSize;
             if (updateFileSize < 0) {
                 updateFileSize = 0;
             }
-            storageBean.setStoragesize(updateFileSize);
+            storageBean.setStorageSize(updateFileSize);
             filetransferService.updateStorageBean(storageBean);
         }
     }
 
     @Override
-    public void deleteFileByIds(List<Integer> fileidList) {
-        fileMapper.deleteFileByIds(fileidList);
+    public void deleteFileByIds(List<Integer> fileIdList) {
+        fileMapper.deleteFileByIds(fileIdList);
     }
 
 
     @Override
-    public void updateFilepathByFilepath(String oldfilepath, String newfilepath, String filename, String extendname) {
-        if ("null".equals(extendname)){
-            extendname = null;
+    public void updateFilepathByFilepath(String oldfilePath, String newfilePath, String fileName, String extendName) {
+        if ("null".equals(extendName)){
+            extendName = null;
         }
         //移动根目录
-        fileMapper.updateFilepathByPathAndName(oldfilepath, newfilepath, filename, extendname);
+        fileMapper.updateFilepathByPathAndName(oldfilePath, newfilePath, fileName, extendName);
 
         //移动子目录
-        oldfilepath = oldfilepath + filename + "/";
-        newfilepath = newfilepath + filename + "/";
+        oldfilePath = oldfilePath + fileName + "/";
+        newfilePath = newfilePath + fileName + "/";
 
-        oldfilepath = oldfilepath.replace("\\", "\\\\\\\\");
-        oldfilepath = oldfilepath.replace("'", "\\'");
-        oldfilepath = oldfilepath.replace("%", "\\%");
-        oldfilepath = oldfilepath.replace("_", "\\_");
+        oldfilePath = oldfilePath.replace("\\", "\\\\\\\\");
+        oldfilePath = oldfilePath.replace("'", "\\'");
+        oldfilePath = oldfilePath.replace("%", "\\%");
+        oldfilePath = oldfilePath.replace("_", "\\_");
 
-        if (extendname == null) { //为null说明是目录，则需要移动子目录
-            fileMapper.updateFilepathByFilepath(oldfilepath, newfilepath);
+        if (extendName == null) { //为null说明是目录，则需要移动子目录
+            fileMapper.updateFilepathByFilepath(oldfilePath, newfilePath);
         }
 
     }
 
     @Override
-    public List<FileBean> selectFileByExtendName(List<String> filenameList, long userid) {
-        return fileMapper.selectFileByExtendName(filenameList, userid);
+    public List<FileBean> selectFileByExtendName(List<String> fileNameList, long userId) {
+        return fileMapper.selectFileByExtendName(fileNameList, userId);
     }
 }

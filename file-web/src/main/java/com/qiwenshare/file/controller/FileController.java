@@ -61,9 +61,9 @@ public class FileController {
         }
 
         UserBean sessionUserBean = (UserBean) SecurityUtils.getSubject().getPrincipal();
-        fileBean.setUserid(sessionUserBean.getUserId());
+        fileBean.setUserId(sessionUserBean.getUserId());
 
-        fileBean.setUploadtime(DateUtil.getCurrentTime());
+        fileBean.setUploadTime(DateUtil.getCurrentTime());
 
         fileService.insertFile(fileBean);
         restResult.setSuccess(true);
@@ -75,17 +75,17 @@ public class FileController {
     public RestResult<List<FileBean>> getFileList(FileBean fileBean){
         RestResult<List<FileBean>> restResult = new RestResult<>();
         if(isShareFile){
-            fileBean.setUserid(2);
+            fileBean.setUserId(2);
         }else {
             UserBean sessionUserBean = (UserBean) SecurityUtils.getSubject().getPrincipal();
             if (fileBean == null) {
                 restResult.setSuccess(false);
                 return restResult;
             }
-            fileBean.setUserid(sessionUserBean.getUserId());
+            fileBean.setUserId(sessionUserBean.getUserId());
         }
 
-        fileBean.setFilepath(PathUtil.urlDecode(fileBean.getFilepath()));
+        fileBean.setFilePath(PathUtil.urlDecode(fileBean.getFilePath()));
         List<FileBean> fileList = fileService.selectFileList(fileBean);
 
 
@@ -151,10 +151,10 @@ public class FileController {
             return operationCheck();
         }
 
-        String zipFileUrl = PathUtil.getStaticPath() + fileBean.getFileurl();
+        String zipFileUrl = PathUtil.getStaticPath() + fileBean.getFileUrl();
         File file = FileOperation.newFile(zipFileUrl);
         String unzipUrl = file.getParent();
-        String[] arr = fileBean.getFileurl().split("\\.");
+        String[] arr = fileBean.getFileUrl().split("\\.");
         if (arr.length <= 1) {
             result.setErrorMessage("文件名格式错误！");
             result.setSuccess(false);
@@ -186,25 +186,25 @@ public class FileController {
             File currentFile = FileOperation.newFile(totalFileUrl);
 
             FileBean tempFileBean = new FileBean();
-            tempFileBean.setUploadtime(DateUtil.getCurrentTime());
-            tempFileBean.setUserid(sessionUserBean.getUserId());
-            tempFileBean.setFilepath(FileUtil.pathSplitFormat(fileBean.getFilepath() + entryName.replace(currentFile.getName(), "")).replace("\\", "/"));
+            tempFileBean.setUploadTime(DateUtil.getCurrentTime());
+            tempFileBean.setUserId(sessionUserBean.getUserId());
+            tempFileBean.setFilePath(FileUtil.pathSplitFormat(fileBean.getFilePath() + entryName.replace(currentFile.getName(), "")).replace("\\", "/"));
             if (currentFile.isDirectory()){
 
-                tempFileBean.setIsdir(1);
+                tempFileBean.setIsDir(1);
 
-                tempFileBean.setFilename(currentFile.getName());
-                tempFileBean.setTimestampname(currentFile.getName());
-                //tempFileBean.setFileurl(File.separator + (file.getParent() + File.separator + currentFile.getName()).replace(PathUtil.getStaticPath(), ""));
+                tempFileBean.setFileName(currentFile.getName());
+                tempFileBean.setTimeStampName(currentFile.getName());
+                //tempFileBean.setFileUrl(File.separator + (file.getParent() + File.separator + currentFile.getName()).replace(PathUtil.getStaticPath(), ""));
             }else{
 
-                tempFileBean.setIsdir(0);
+                tempFileBean.setIsDir(0);
 
-                tempFileBean.setExtendname(FileUtil.getFileType(totalFileUrl));
-                tempFileBean.setFilename(FileUtil.getFileNameNotExtend(currentFile.getName()));
-                tempFileBean.setFilesize(currentFile.length());
-                tempFileBean.setTimestampname(FileUtil.getFileNameNotExtend(currentFile.getName()));
-                tempFileBean.setFileurl(File.separator + (currentFile.getPath()).replace(PathUtil.getStaticPath(), ""));
+                tempFileBean.setExtendName(FileUtil.getFileType(totalFileUrl));
+                tempFileBean.setFileName(FileUtil.getFileNameNotExtend(currentFile.getName()));
+                tempFileBean.setFileSize(currentFile.length());
+                tempFileBean.setTimeStampName(FileUtil.getFileNameNotExtend(currentFile.getName()));
+                tempFileBean.setFileUrl(File.separator + (currentFile.getPath()).replace(PathUtil.getStaticPath(), ""));
             }
             fileBeanList.add(tempFileBean);
         }
@@ -227,12 +227,12 @@ public class FileController {
         if (!operationCheck().isSuccess()){
             return operationCheck();
         }
-        String oldfilepath = fileBean.getOldfilepath();
-        String newfilepath = fileBean.getNewfilepath();
-        String filename = fileBean.getFilename();
-        String extendname = fileBean.getExtendname();
+        String oldfilePath = fileBean.getOldFilePath();
+        String newfilePath = fileBean.getNewFilePath();
+        String fileName = fileBean.getFileName();
+        String extendName = fileBean.getExtendName();
 
-        fileService.updateFilepathByFilepath(oldfilepath, newfilepath, filename, extendname);
+        fileService.updateFilepathByFilepath(oldfilePath, newfilePath, fileName, extendName);
         result.setSuccess(true);
         return result;
     }
@@ -253,12 +253,12 @@ public class FileController {
         }
 
         String files = fileBean.getFiles();
-        String newfilepath = fileBean.getNewfilepath();
+        String newfilePath = fileBean.getNewFilePath();
 
         List<FileBean> fileList = JSON.parseArray(files, FileBean.class);
 
         for (FileBean file : fileList) {
-            fileService.updateFilepathByFilepath(file.getFilepath(), newfilepath, file.getFilename(), file.getExtendname());
+            fileService.updateFilepathByFilepath(file.getFilePath(), newfilePath, file.getFileName(), file.getExtendName());
         }
 
         result.setData("批量移动文件成功");
@@ -287,7 +287,7 @@ public class FileController {
 
     /**
      * 通过文件类型选择文件
-     * @param fileType 文件类型
+     *
      * @return
      */
     @RequestMapping(value = "/selectfilebyfiletype", method = RequestMethod.GET)
@@ -295,11 +295,11 @@ public class FileController {
     public RestResult<List<FileBean>> selectFileByFileType(FileBean fileBean) {
         RestResult<List<FileBean>> result = new RestResult<List<FileBean>>();
         UserBean sessionUserBean = (UserBean) SecurityUtils.getSubject().getPrincipal();
-        long userid = sessionUserBean.getUserId();
+        long userId = sessionUserBean.getUserId();
         if (isShareFile){
-            userid = 2;
+            userId = 2;
         }
-        List<FileBean> file = fileService.selectFileByExtendName(getFileExtendsByType(fileBean.getFiletype()), userid);
+        List<FileBean> file = fileService.selectFileByExtendName(getFileExtendsByType(fileBean.getFileType()), userId);
         result.setData(file);
         result.setSuccess(true);
         return result;
@@ -316,17 +316,17 @@ public class FileController {
         FileBean fileBean = new FileBean();
         UserBean sessionUserBean = (UserBean) SecurityUtils.getSubject().getPrincipal();
         if (isShareFile){
-            fileBean.setUserid(2);
+            fileBean.setUserId(2);
         }else{
-            fileBean.setUserid(sessionUserBean.getUserId());
+            fileBean.setUserId(sessionUserBean.getUserId());
         }
 
-        List<FileBean> filePathList = fileService.selectFilePathTreeByUserid(fileBean);
+        List<FileBean> filePathList = fileService.selectFilePathTreeByUserId(fileBean);
         TreeNode resultTreeNode = new TreeNode();
         resultTreeNode.setNodeName("/");
 
         for (int i = 0; i < filePathList.size(); i++){
-            String filePath = filePathList.get(i).getFilepath() + filePathList.get(i).getFilename() + "/";
+            String filePath = filePathList.get(i).getFilePath() + filePathList.get(i).getFileName() + "/";
 
             Queue<String> queue = new LinkedList<>();
 
@@ -350,7 +350,7 @@ public class FileController {
 
     }
 
-    public TreeNode insertTreeNode(TreeNode treeNode, String filepath, Queue<String> nodeNameQueue){
+    public TreeNode insertTreeNode(TreeNode treeNode, String filePath, Queue<String> nodeNameQueue){
 
         List<TreeNode> childrenTreeNodes = treeNode.getChildren();
         String currentNodeName = nodeNameQueue.peek();
@@ -359,8 +359,8 @@ public class FileController {
         }
 
         Map<String, String> map = new HashMap<>();
-        filepath = filepath + currentNodeName + "/";
-        map.put("filepath", filepath);
+        filePath = filePath + currentNodeName + "/";
+        map.put("filePath", filePath);
 
         if (!isExistPath(childrenTreeNodes, currentNodeName)){  //1、判断有没有该子节点，如果没有则插入
             //插入
@@ -382,7 +382,7 @@ public class FileController {
 
                 TreeNode childrenTreeNode = childrenTreeNodes.get(i);
                 if (currentNodeName.equals(childrenTreeNode.getLabel())){
-                    childrenTreeNode = insertTreeNode(childrenTreeNode, filepath, nodeNameQueue);
+                    childrenTreeNode = insertTreeNode(childrenTreeNode, filePath, nodeNameQueue);
                     childrenTreeNodes.remove(i);
                     childrenTreeNodes.add(childrenTreeNode);
                     treeNode.setChildNode(childrenTreeNodes);

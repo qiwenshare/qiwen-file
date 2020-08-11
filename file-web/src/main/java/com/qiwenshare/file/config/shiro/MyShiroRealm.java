@@ -1,7 +1,5 @@
 package com.qiwenshare.file.config.shiro;
 
-import com.qiwenshare.file.domain.Permission;
-import com.qiwenshare.file.domain.Role;
 import com.qiwenshare.file.domain.UserBean;
 import com.qiwenshare.file.service.UserService;
 import org.apache.shiro.SecurityUtils;
@@ -29,13 +27,8 @@ public class MyShiroRealm extends AuthorizingRealm {
     protected AuthorizationInfo doGetAuthorizationInfo(PrincipalCollection principals) {
         System.out.println("权限配置-->MyShiroRealm.doGetAuthorizationInfo()");
         SimpleAuthorizationInfo authorizationInfo = new SimpleAuthorizationInfo();
-        UserBean userInfo = (UserBean) principals.getPrimaryPrincipal();
-        for (Role role : userInfo.getRoleList()) {
-            authorizationInfo.addRole(role.getRole());
-            for (Permission p : role.getPermissions()) {
-                authorizationInfo.addStringPermission(p.getPermission());
-            }
-        }
+
+
         return authorizationInfo;
     }
 
@@ -53,7 +46,7 @@ public class MyShiroRealm extends AuthorizingRealm {
         SimpleAuthenticationInfo authenticationInfo = null;
         if (qquserinfo != null){ //qq登录
             qqLoginInfoMap.remove(username + password);
-            UserBean userInfo = userInfoService.selectUserByopenid(password);
+            UserBean userInfo = userInfoService.selectUserByopenId(password);
 
             if (userInfo == null) {
                 return null;

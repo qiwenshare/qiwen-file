@@ -8,7 +8,7 @@ import javax.persistence.*;
  * @author ma116
  */
 @Table(name = "file", uniqueConstraints = {
-        @UniqueConstraint(name = "fileindex", columnNames = {"filename", "filepath", "extendname"})})
+        @UniqueConstraint(name = "fileindex", columnNames = {"fileName", "filePath", "extendName"})})
 @Entity
 public class FileBean {
     /**
@@ -16,94 +16,170 @@ public class FileBean {
      */
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private long fileid;
+    private long fileId;
 
     /**
      * 相册id
      */
-    private long albumid;
+    private long albumId;
 
-    /**
-     * 文章id
-     */
-    private long essayid;
 
     /**
      * 用户id
      */
-    private long userid;
+    private long userId;
 
     /**
      * 文件URL
      */
-    private String fileurl;
+    private String fileUrl;
 
     /**
      * 文件路径
      */
-    private String filepath;
+    private String filePath;
 
     /**
      * 上传时间
      */
-    private String uploadtime;
+    private String uploadTime;
 
     /**
      * 时间戳名称
      */
-    private String timestampname;
+    private String timeStampName;
 
     /**
      * 扩展名
      */
-    private String extendname;
+    private String extendName;
 
     /**
      * 文件名
      */
-    private String filename;
+    private String fileName;
 
     /**
      * 文件大小
      */
-    private long filesize;
+    private long fileSize;
 
     /**
      * 是否是目录
      */
-    private int isdir;
+    private int isDir;
 
     @Transient
-    private String oldfilepath;
+    private String oldFilePath;
     @Transient
-    private String newfilepath;
+    private String newFilePath;
     @Transient
     private String files;
     @Transient
-    private int filetype;
+    private int fileType;
 
-    public int getFiletype() {
-        return filetype;
+    public long getFileId() {
+        return fileId;
     }
 
-    public void setFiletype(int filetype) {
-        this.filetype = filetype;
+    public void setFileId(long fileId) {
+        this.fileId = fileId;
     }
 
-    public String getOldfilepath() {
-        return oldfilepath;
+    public long getAlbumId() {
+        return albumId;
     }
 
-    public void setOldfilepath(String oldfilepath) {
-        this.oldfilepath = oldfilepath;
+    public void setAlbumId(long albumId) {
+        this.albumId = albumId;
     }
 
-    public String getNewfilepath() {
-        return newfilepath;
+    public long getUserId() {
+        return userId;
     }
 
-    public void setNewfilepath(String newfilepath) {
-        this.newfilepath = newfilepath;
+    public void setUserId(long userId) {
+        this.userId = userId;
+    }
+
+    public String getFileUrl() {
+        return fileUrl;
+    }
+
+    public void setFileUrl(String fileUrl) {
+        this.fileUrl = fileUrl;
+    }
+
+    public String getFilePath() {
+        return filePath;
+    }
+
+    public void setFilePath(String filePath) {
+        this.filePath = filePath;
+    }
+
+    public String getUploadTime() {
+        return uploadTime;
+    }
+
+    public void setUploadTime(String uploadTime) {
+        this.uploadTime = uploadTime;
+    }
+
+    public String getTimeStampName() {
+        return timeStampName;
+    }
+
+    public void setTimeStampName(String timeStampName) {
+        this.timeStampName = timeStampName;
+    }
+
+    public String getExtendName() {
+        return extendName;
+    }
+
+    public void setExtendName(String extendName) {
+        this.extendName = extendName;
+    }
+
+    public String getFileName() {
+        return fileName;
+    }
+
+    public void setFileName(String fileName) {
+        this.fileName = fileName;
+    }
+
+    public long getFileSize() {
+        return fileSize;
+    }
+
+    public void setFileSize(long fileSize) {
+        this.fileSize = fileSize;
+    }
+
+    public int getIsDir() {
+        return isDir;
+    }
+
+    public void setIsDir(int isDir) {
+        this.isDir = isDir;
+    }
+
+    public String getOldFilePath() {
+        return oldFilePath;
+    }
+
+    public void setOldFilePath(String oldFilePath) {
+        this.oldFilePath = oldFilePath;
+    }
+
+    public String getNewFilePath() {
+        return newFilePath;
+    }
+
+    public void setNewFilePath(String newFilePath) {
+        this.newFilePath = newFilePath;
     }
 
     public String getFiles() {
@@ -114,99 +190,11 @@ public class FileBean {
         this.files = files;
     }
 
-    public long getAlbumid() {
-        return albumid;
+    public int getFileType() {
+        return fileType;
     }
 
-    public void setAlbumid(long albumid) {
-        this.albumid = albumid;
-    }
-
-    public String getFilepath() {
-        return filepath;
-    }
-
-    public void setFilepath(String filepath) {
-        this.filepath = filepath;
-    }
-
-    public int getIsdir() {
-        return isdir;
-    }
-
-    public void setIsdir(int isdir) {
-        this.isdir = isdir;
-    }
-
-    public long getUserid() {
-        return userid;
-    }
-
-    public void setUserid(long userid) {
-        this.userid = userid;
-    }
-
-    public long getEssayid() {
-        return essayid;
-    }
-
-    public void setEssayid(long essayid) {
-        this.essayid = essayid;
-    }
-
-    public long getFileid() {
-        return fileid;
-    }
-
-    public void setFileid(long fileid) {
-        this.fileid = fileid;
-    }
-
-    public String getFileurl() {
-        return fileurl;
-    }
-
-    public void setFileurl(String fileurl) {
-        this.fileurl = fileurl;
-    }
-
-    public String getUploadtime() {
-        return uploadtime;
-    }
-
-    public void setUploadtime(String uploadtime) {
-        this.uploadtime = uploadtime;
-    }
-
-    public String getTimestampname() {
-        return timestampname;
-    }
-
-    public void setTimestampname(String timestampname) {
-        this.timestampname = timestampname;
-    }
-
-    public String getExtendname() {
-        return extendname;
-    }
-
-    public void setExtendname(String extendname) {
-        this.extendname = extendname;
-    }
-
-    public String getFilename() {
-        return filename;
-    }
-
-    public void setFilename(String filename) {
-        this.filename = filename;
-    }
-
-    public long getFilesize() {
-        return filesize;
-    }
-
-    public void setFilesize(long filesize) {
-        this.filesize = filesize;
+    public void setFileType(int fileType) {
+        this.fileType = fileType;
     }
 }

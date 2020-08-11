@@ -16,7 +16,6 @@ import com.qiwenshare.file.mapper.FiletransferMapper;
 import com.qiwenshare.file.domain.FileBean;
 import com.qiwenshare.file.domain.StorageBean;
 import com.qiwenshare.file.domain.UserBean;
-import com.qiwenshare.file.domain.UserImageBean;
 import org.apache.shiro.SecurityUtils;
 import org.springframework.stereotype.Service;
 
@@ -30,78 +29,6 @@ public class FiletransferService implements IFiletransferService {
     FileMapper fileMapper;
 
 
-    @Override
-    public void deleteUserImageById(UserImageBean userImageBean) {
-        filetransferMapper.deleteUserImageById(userImageBean);
-
-    }
-
-
-    /**
-     * 添加用户头像
-     */
-    @Override
-    public RestResult<String> insertUserImage(UserImageBean userImageBean) {
-        RestResult<String> restResult = new RestResult<String>();
-        filetransferMapper.insertUserImage(userImageBean);
-
-        restResult.setSuccess(true);
-        return restResult;
-    }
-
-    /**
-     * 查找用户头像
-     */
-    @Override
-    public RestResult<List<UserImageBean>> selectUserImage(long userId) {
-        RestResult<List<UserImageBean>> restResult = new RestResult<List<UserImageBean>>();
-        List<UserImageBean> result = filetransferMapper.selectUserImage(userId);
-        if (result == null) {
-            restResult.setSuccess(false);
-            restResult.setErrorMessage("没有头像");
-        } else {
-            restResult.setSuccess(true);
-            restResult.setData(result);
-        }
-        return restResult;
-    }
-
-    /**
-     * 上传用户头像
-     */
-    @Override
-    public RestResult<String> uploadUserImage(HttpServletRequest request) {
-        RestResult<String> restResult = new RestResult<String>();
-        UserBean sessionUserBean = (UserBean) SecurityUtils.getSubject().getPrincipal();
-        UserImageBean userImageBean = new UserImageBean();
-        UserBean userBean = null;
-        //判断用户是否登陆
-        if (sessionUserBean == null) {
-            restResult.setErrorCode("用户未登陆");
-            restResult.setSuccess(false);
-        } else {
-            Uploader uploader = null;
-            uploader = new Uploader(request);
-            List<UploadFile> uploadFile = uploader.upload();
-
-            String imageurl = uploadFile.get(0).getUrl();
-            userBean = sessionUserBean;
-            userImageBean.setUserid(userBean.getUserId());
-            userImageBean.setImageurl(imageurl);
-            userImageBean.setUploadtime(DateUtil.getCurrentTime());
-            insertUserImage(userImageBean);
-            restResult.setData("filetransfer/" + imageurl);
-            restResult.setSuccess(true);
-        }
-
-        return restResult;
-    }
-
-    @Override
-    public List<UserImageBean> selectUserImageByUrl(String url) {
-        List<UserImageBean> result = filetransferMapper.selectUserImageByUrl(url);
-        return result;
-    }
 
 
     @Override
@@ -123,12 +50,12 @@ public class FiletransferService implements IFiletransferService {
         for (int i = 0; i < uploadFileList.size(); i++){
             UploadFile uploadFile = uploadFileList.get(i);
             if (uploadFile.getSuccess() == 1){
-                fileBean.setFileurl(uploadFile.getUrl());
-                fileBean.setFilesize(uploadFile.getFileSize());
-                fileBean.setFilename(uploadFile.getFileName());
-                fileBean.setExtendname(uploadFile.getFileType());
-                fileBean.setTimestampname(uploadFile.getTimeStampName());
-                fileBean.setUploadtime(DateUtil.getCurrentTime());
+                fileBean.setFileUrl(uploadFile.getUrl());
+                fileBean.setFileSize(uploadFile.getFileSize());
+                fileBean.setFileName(uploadFile.getFileName());
+                fileBean.setExtendName(uploadFile.getFileType());
+                fileBean.setTimeStampName(uploadFile.getTimeStampName());
+                fileBean.setUploadTime(DateUtil.getCurrentTime());
 
                 fileMapper.insertFile(fileBean);
             }
@@ -141,10 +68,10 @@ public class FiletransferService implements IFiletransferService {
                 StorageBean storageBean = selectStorageBean(new StorageBean(sessionUserId));
                 if (storageBean == null) {
                     StorageBean storage = new StorageBean(sessionUserId);
-                    storage.setStoragesize(fileBean.getFilesize());
+                    storage.setStorageSize(fileBean.getFileSize());
                     insertStorageBean(storage);
                 } else {
-                    storageBean.setStoragesize(storageBean.getStoragesize() + uploadFile.getFileSize());
+                    storageBean.setStorageSize(storageBean.getStorageSize() + uploadFile.getFileSize());
                     updateStorageBean(storageBean);
                 }
             }

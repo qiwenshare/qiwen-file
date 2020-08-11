@@ -13,47 +13,47 @@ public class StorageBean {
      */
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private long storageid;
+    private long storageId;
 
     /**
      * 用户id
      */
-    private long userid;
+    private long userId;
 
     /**
      * 存储大小
      */
-    private long storagesize;
+    private long storageSize;
 
     public StorageBean() {
 
     }
 
-    public StorageBean(long userid) {
-        this.userid = userid;
+    public StorageBean(long userId) {
+        this.userId = userId;
     }
 
-    public long getStorageid() {
-        return storageid;
+    public long getStorageId() {
+        return storageId;
     }
 
-    public void setStorageid(long storageid) {
-        this.storageid = storageid;
+    public void setStorageId(long storageId) {
+        this.storageId = storageId;
     }
 
-    public long getUserid() {
-        return userid;
+    public long getUserId() {
+        return userId;
     }
 
-    public void setUserid(long userid) {
-        this.userid = userid;
+    public void setUserId(long userId) {
+        this.userId = userId;
     }
 
-    public long getStoragesize() {
-        return storagesize;
+    public long getStorageSize() {
+        return storageSize;
     }
 
-    public void setStoragesize(long storagesize) {
-        this.storagesize = storagesize;
+    public void setStorageSize(long storageSize) {
+        this.storageSize = storageSize;
     }
 }

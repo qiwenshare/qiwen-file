@@ -1,20 +1,29 @@
 package com.qiwenshare.file.domain;
 
+//import com.baomidou.mybatisplus.annotation.IdType;
+//import com.baomidou.mybatisplus.annotation.TableField;
+//import com.baomidou.mybatisplus.annotation.TableId;
+//import com.baomidou.mybatisplus.annotation.TableName;
+import lombok.Data;
+
 import javax.persistence.*;
 import java.util.List;
 
 /**
  * 权限实体类
  */
+@Data
 @Table(name = "permission")
 @Entity
+//@TableName("permission")
 public class Permission {
     /**
      * 权限id
      */
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private long permissionid;//主键.
+//    @TableId(type = IdType.AUTO)
+    private long permissionId;//主键.
     /**
      * 权限名称
      */
@@ -60,77 +69,7 @@ public class Permission {
      * 角色列表
      */
     @Transient
+//    @TableField(exist = false)
     private List<Role> roles;
 
-    public long getPermissionid() {
-        return permissionid;
-    }
-
-    public void setPermissionid(long permissionid) {
-        this.permissionid = permissionid;
-    }
-
-    public String getName() {
-        return name;
-    }
-
-    public void setName(String name) {
-        this.name = name;
-    }
-
-    public String getResourceType() {
-        return resourceType;
-    }
-
-    public void setResourceType(String resourceType) {
-        this.resourceType = resourceType;
-    }
-
-    public String getUrl() {
-        return url;
-    }
-
-    public void setUrl(String url) {
-        this.url = url;
-    }
-
-    public String getPermission() {
-        return permission;
-    }
-
-    public void setPermission(String permission) {
-        this.permission = permission;
-    }
-
-    public Long getParentId() {
-        return parentId;
-    }
-
-    public void setParentId(Long parentId) {
-        this.parentId = parentId;
-    }
-
-    public String getParentIds() {
-        return parentIds;
-    }
-
-    public void setParentIds(String parentIds) {
-        this.parentIds = parentIds;
-    }
-
-    public Boolean getAvailable() {
-        return available;
-    }
-
-    public void setAvailable(Boolean available) {
-        this.available = available;
-    }
-
-    public List<Role> getRoles() {
-        return roles;
-    }
-
-    public void setRoles(List<Role> roles) {
-        this.roles = roles;
-    }
 }

@@ -1,20 +1,28 @@
 package com.qiwenshare.file.domain;
 
+//import com.baomidou.mybatisplus.annotation.IdType;
+//import com.baomidou.mybatisplus.annotation.TableId;
+//import com.baomidou.mybatisplus.annotation.TableName;
+import lombok.Data;
+
 import javax.persistence.*;
 import java.util.List;
 
 /**
  * 角色实体信息类
  */
+@Data
 @Table(name = "role")
 @Entity
+//@TableName("role")
 public class Role {
     /**
      * 角色id
      */
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private long roleid; // 编号
+//    @TableId(type = IdType.AUTO)
+    private long roleId; // 编号
 
     /**
      * 角色名
@@ -36,62 +44,14 @@ public class Role {
      */
     @ManyToMany(fetch = FetchType.EAGER)//立即从数据库中进行加载数据
     @JoinTable(name = "role_permission",
-            joinColumns = {@JoinColumn(name = "roleid")},
-            inverseJoinColumns = {@JoinColumn(name = "permissionid")})
+            joinColumns = {@JoinColumn(name = "roleId")},
+            inverseJoinColumns = {@JoinColumn(name = "permissionId")})
     private List<Permission> permissions;
 
 //    @ManyToMany
 //    @JoinTable(name = "role_permission",
-//            joinColumns = {@JoinColumn(name="roleid")},
-//            inverseJoinColumns = {@JoinColumn(name="permissionid")})
+//            joinColumns = {@JoinColumn(name="roleId")},
+//            inverseJoinColumns = {@JoinColumn(name="permissionId")})
 //    private List<UserBean> userList;// 一个角色对应多个用户
 
-
-    public long getRoleid() {
-        return roleid;
-    }
-
-    public void setRoleid(long roleid) {
-        this.roleid = roleid;
-    }
-
-    public String getRole() {
-        return role;
-    }
-
-    public void setRole(String role) {
-        this.role = role;
-    }
-
-    public String getDescription() {
-        return description;
-    }
-
-    public void setDescription(String description) {
-        this.description = description;
-    }
-
-    public Boolean getAvailable() {
-        return available;
-    }
-
-    public void setAvailable(Boolean available) {
-        this.available = available;
-    }
-
-    public List<Permission> getPermissions() {
-        return permissions;
-    }
-
-    public void setPermissions(List<Permission> permissions) {
-        this.permissions = permissions;
-    }
-
-//    public List<UserBean> getUserList() {
-//        return userList;
-//    }
-//
-//    public void setUserList(List<UserBean> userList) {
-//        this.userList = userList;
-//    }
 }
