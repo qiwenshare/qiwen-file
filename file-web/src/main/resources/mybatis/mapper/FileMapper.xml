@@ -26,9 +26,19 @@
     </insert>
 
     <update id="updateFile" parameterType="com.qiwenshare.file.domain.FileBean">
-        update file
-        SET fileName = #{fileName}, uploadTime = #{uploadTime}
-        where fileId = #{fileId}
+        <choose>
+            <when test="isDir == 1">
+                UPDATE file SET filename=#{fileName}, uploadTime = #{uploadTime}
+                where fileId = #{fileId};
+                UPDATE file SET filepath=REPLACE(filepath, #{oldFilePath}, #{filePath}) WHERE filepath LIKE N'${oldFilePath}%';
+            </when>
+            <otherwise>
+                update file
+                SET fileName = #{fileName}, uploadTime = #{uploadTime}
+                where fileId = #{fileId}
+            </otherwise>
+        </choose>
+
     </update>
 
 
@@ -95,6 +105,14 @@
         SELECT * FROM file
         WHERE isDir = 1 and userId=#{userId}
     </select>
+
+    <select id="selectFileByNameAndPath" parameterType="com.qiwenshare.file.domain.FileBean"
+        resultType="com.qiwenshare.file.domain.FileBean">
+        SELECT * FROM file
+        WHERE filename = #{fileName} AND filepath = #{filePath}
+    </select>
+    
+
 
 <!--    <select id="selectFileByExtendName" resultType="FileBean" parameterType="java.lang.String">-->
 <!--        select * from file-->

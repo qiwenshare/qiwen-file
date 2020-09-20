@@ -9,6 +9,7 @@ public interface IFileService {
     void insertFile(FileBean fileBean);
     void batchInsertFile(List<FileBean> fileBeanList);
     void updateFile(FileBean fileBean);
+    List<FileBean> selectFileByNameAndPath(FileBean fileBean);
     FileBean selectFileById(FileBean fileBean);
     List<FileBean> selectFilePathTreeByUserId(FileBean fileBean);
     List<FileBean> selectFileList(FileBean fileBean);

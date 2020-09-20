@@ -54,6 +54,11 @@ public class FileService implements IFileService {
     }
 
     @Override
+    public List<FileBean> selectFileByNameAndPath(FileBean fileBean) {
+        return fileMapper.selectFileByNameAndPath(fileBean);
+    }
+
+    @Override
     public FileBean selectFileById(FileBean fileBean) {
         return fileMapper.selectFileById(fileBean);
     }

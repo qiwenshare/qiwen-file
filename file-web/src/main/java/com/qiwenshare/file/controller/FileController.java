@@ -27,8 +27,6 @@ public class FileController {
 
     @Resource
     IFileService fileService;
-    @Resource
-    IFiletransferService filetransferService;
 
     /**
      * 是否开启共享文件模式
@@ -36,16 +34,6 @@ public class FileController {
     public static Boolean isShareFile = false;
 
     public static long treeid = 0;
-
-    /**
-     * @return
-     */
-    @RequestMapping("/fileindex")
-    @ResponseBody
-    public ModelAndView essayIndex() {
-        ModelAndView mv = new ModelAndView("/file/fileIndex.html");
-        return mv;
-    }
 
     /**
      * 创建文件
@@ -59,13 +47,49 @@ public class FileController {
         if (!operationCheck().isSuccess()){
             return operationCheck();
         }
-
+        List<FileBean> fileBeans = fileService.selectFileByNameAndPath(fileBean);
+        if (fileBeans != null && !fileBeans.isEmpty()) {
+            restResult.setErrorMessage("同名文件已存在");
+            restResult.setSuccess(false);
+            return restResult;
+        }
         UserBean sessionUserBean = (UserBean) SecurityUtils.getSubject().getPrincipal();
         fileBean.setUserId(sessionUserBean.getUserId());
 
         fileBean.setUploadTime(DateUtil.getCurrentTime());
 
         fileService.insertFile(fileBean);
+        restResult.setSuccess(true);
+        return restResult;
+    }
+
+    /**
+     * 文件重命名
+     *
+     * @return
+     */
+    @RequestMapping(value = "/renamefile", method = RequestMethod.POST)
+    @ResponseBody
+    public RestResult<String> renameFile(@RequestBody FileBean fileBean) {
+        RestResult<String> restResult = new RestResult<>();
+        if (!operationCheck().isSuccess()){
+            return operationCheck();
+        }
+
+        UserBean sessionUserBean = (UserBean) SecurityUtils.getSubject().getPrincipal();
+        fileBean.setUserId(sessionUserBean.getUserId());
+        fileBean.setUploadTime(DateUtil.getCurrentTime());
+        List<FileBean> fileBeans = fileService.selectFileByNameAndPath(fileBean);
+        if (fileBeans != null && !fileBeans.isEmpty()) {
+            restResult.setErrorMessage("同名文件已存在");
+            restResult.setSuccess(false);
+            return restResult;
+        }
+        if (1 == fileBean.getIsDir()) {
+            fileBean.setOldFilePath(fileBean.getFilePath() + fileBean.getOldFileName() + "/");
+            fileBean.setFilePath(fileBean.getFilePath() + fileBean.getFileName() + "/");
+        }
+        fileService.updateFile(fileBean);
         restResult.setSuccess(true);
         return restResult;
     }
@@ -228,7 +252,7 @@ public class FileController {
             return operationCheck();
         }
         String oldfilePath = fileBean.getOldFilePath();
-        String newfilePath = fileBean.getNewFilePath();
+        String newfilePath = fileBean.getFilePath();
         String fileName = fileBean.getFileName();
         String extendName = fileBean.getExtendName();
 
@@ -253,7 +277,7 @@ public class FileController {
         }
 
         String files = fileBean.getFiles();
-        String newfilePath = fileBean.getNewFilePath();
+        String newfilePath = fileBean.getFilePath();
 
         List<FileBean> fileList = JSON.parseArray(files, FileBean.class);
 

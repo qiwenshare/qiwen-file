@@ -71,12 +71,22 @@ public class FileBean {
 
     @Transient
     private String oldFilePath;
+//    @Transient
+//    private String newFilePath;
     @Transient
-    private String newFilePath;
+    private String oldFileName;
     @Transient
     private String files;
     @Transient
     private int fileType;
+
+    public String getOldFileName() {
+        return oldFileName;
+    }
+
+    public void setOldFileName(String oldFileName) {
+        this.oldFileName = oldFileName;
+    }
 
     public long getFileId() {
         return fileId;
@@ -174,13 +184,13 @@ public class FileBean {
         this.oldFilePath = oldFilePath;
     }
 
-    public String getNewFilePath() {
-        return newFilePath;
-    }
-
-    public void setNewFilePath(String newFilePath) {
-        this.newFilePath = newFilePath;
-    }
+//    public String getNewFilePath() {
+//        return newFilePath;
+//    }
+//
+//    public void setNewFilePath(String newFilePath) {
+//        this.newFilePath = newFilePath;
+//    }
 
     public String getFiles() {
         return files;
