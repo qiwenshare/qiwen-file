@@ -1,5 +1,6 @@
 package com.qiwenshare.file.service;
 
+import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.qiwenshare.common.cbb.DateUtil;
 import com.qiwenshare.common.operation.FileOperation;
 import com.qiwenshare.common.util.PathUtil;
@@ -16,7 +17,7 @@ import java.util.List;
 
 
 @Service
-public class FileService implements IFileService {
+public class FileService extends ServiceImpl<FileMapper, FileBean> implements IFileService {
 
     @Resource
     FileMapper fileMapper;

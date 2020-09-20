@@ -55,7 +55,7 @@ public class MyShiroRealm extends AuthorizingRealm {
             ByteSource byteSourceSalt = ByteSource.Util.bytes(userInfo.getSalt());
             authenticationInfo = new SimpleAuthenticationInfo(
                     userInfo, //用户名
-                    userInfo.getQqpassword(), //密码
+                    userInfo.getQqPassword(), //密码
                     byteSourceSalt,
                     getName()  //realm name
             );

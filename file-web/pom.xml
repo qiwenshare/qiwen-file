@@ -38,11 +38,11 @@
             <scope>test</scope>
         </dependency>
 
-<!--        <dependency>-->
-<!--            <groupId>com.baomidou</groupId>-->
-<!--            <artifactId>mybatis-plus-boot-starter</artifactId>-->
-<!--            <version>3.3.1.tmp</version>-->
-<!--        </dependency>-->
+        <dependency>
+            <groupId>com.baomidou</groupId>
+            <artifactId>mybatis-plus-boot-starter</artifactId>
+            <version>3.3.1.tmp</version>
+        </dependency>
 
 
         <!-- spring boot依赖包 -->
@@ -53,9 +53,7 @@
         <dependency>
             <groupId>org.mybatis.spring.boot</groupId>
             <artifactId>mybatis-spring-boot-starter</artifactId>
-            <version>2.0.0</version>
         </dependency>
-
 
         <!--登陆认证和权限管理-->
         <dependency>
@@ -64,34 +62,17 @@
             <version>1.4.0</version>
         </dependency>
 
-
         <dependency>
             <groupId>com.qiwenshare</groupId>
             <artifactId>file-common</artifactId>
             <version>1.0.0-SNAPSHOT</version>
         </dependency>
 
-
-
     </dependencies>
-
-    <dependencyManagement>
-        <dependencies>
-            <dependency>
-                <groupId>org.springframework.cloud</groupId>
-                <artifactId>spring-cloud-dependencies</artifactId>
-                <version>${spring-cloud.version}</version>
-                <type>pom</type>
-                <scope>import</scope>
-            </dependency>
-        </dependencies>
-    </dependencyManagement>
 
 
 
     <build>
-
-
         <plugins>
             <plugin>
                 <groupId>org.springframework.boot</groupId>
@@ -134,27 +115,6 @@
                     </execution>
                 </executions>
             </plugin>
-
-
-            <!-- Docker maven plugin -->
-
-            <plugin>
-                <groupId>com.spotify</groupId>
-                <artifactId>docker-maven-plugin</artifactId>
-                <version>1.0.0</version>
-                <configuration>
-                    <imageName>${docker.image.prefix}/${project.artifactId}</imageName>
-                    <dockerDirectory>src/main/docker</dockerDirectory>
-                    <resources>
-                        <resource>
-                            <targetPath>/</targetPath>
-                            <directory>${project.build.directory}</directory>
-                            <include>${project.build.finalName}.jar</include>
-                        </resource>
-                    </resources>
-                </configuration>
-            </plugin>
-            <!-- Docker maven plugin -->
 
         </plugins>
 

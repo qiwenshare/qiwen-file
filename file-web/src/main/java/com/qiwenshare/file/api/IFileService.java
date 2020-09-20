@@ -1,10 +1,11 @@
 package com.qiwenshare.file.api;
 
+import com.baomidou.mybatisplus.extension.service.IService;
 import com.qiwenshare.file.domain.FileBean;
 
 import java.util.List;
 
-public interface IFileService {
+public interface IFileService  extends IService<FileBean> {
 
     void insertFile(FileBean fileBean);
     void batchInsertFile(List<FileBean> fileBeanList);

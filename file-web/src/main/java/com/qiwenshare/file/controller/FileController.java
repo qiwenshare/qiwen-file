@@ -99,7 +99,7 @@ public class FileController {
     public RestResult<List<FileBean>> getFileList(FileBean fileBean){
         RestResult<List<FileBean>> restResult = new RestResult<>();
         if(isShareFile){
-            fileBean.setUserId(2);
+            fileBean.setUserId(2L);
         }else {
             UserBean sessionUserBean = (UserBean) SecurityUtils.getSubject().getPrincipal();
             if (fileBean == null) {
@@ -340,14 +340,14 @@ public class FileController {
         FileBean fileBean = new FileBean();
         UserBean sessionUserBean = (UserBean) SecurityUtils.getSubject().getPrincipal();
         if (isShareFile){
-            fileBean.setUserId(2);
+            fileBean.setUserId(2L);
         }else{
             fileBean.setUserId(sessionUserBean.getUserId());
         }
 
         List<FileBean> filePathList = fileService.selectFilePathTreeByUserId(fileBean);
         TreeNode resultTreeNode = new TreeNode();
-        resultTreeNode.setNodeName("/");
+        resultTreeNode.setLabel("/");
 
         for (int i = 0; i < filePathList.size(); i++){
             String filePath = filePathList.get(i).getFilePath() + filePathList.get(i).getFileName() + "/";
@@ -392,7 +392,7 @@ public class FileController {
 
 
             resultTreeNode.setAttributes(map);
-            resultTreeNode.setNodeName(nodeNameQueue.poll());
+            resultTreeNode.setLabel(nodeNameQueue.poll());
             resultTreeNode.setId(treeid++);
 
             childrenTreeNodes.add(resultTreeNode);
@@ -409,12 +409,12 @@ public class FileController {
                     childrenTreeNode = insertTreeNode(childrenTreeNode, filePath, nodeNameQueue);
                     childrenTreeNodes.remove(i);
                     childrenTreeNodes.add(childrenTreeNode);
-                    treeNode.setChildNode(childrenTreeNodes);
+                    treeNode.setChildren(childrenTreeNodes);
                 }
 
             }
         }else{
-            treeNode.setChildNode(childrenTreeNodes);
+            treeNode.setChildren(childrenTreeNodes);
         }
 
         return treeNode;

@@ -3,6 +3,7 @@ package com.qiwenshare.file.domain;
 //import com.baomidou.mybatisplus.annotation.IdType;
 //import com.baomidou.mybatisplus.annotation.TableId;
 //import com.baomidou.mybatisplus.annotation.TableName;
+import com.baomidou.mybatisplus.annotation.TableName;
 import lombok.Data;
 
 import javax.persistence.*;
@@ -14,7 +15,7 @@ import java.util.List;
 @Data
 @Table(name = "role")
 @Entity
-//@TableName("role")
+@TableName("role")
 public class Role {
     /**
      * 角色id
@@ -22,7 +23,7 @@ public class Role {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
 //    @TableId(type = IdType.AUTO)
-    private long roleId; // 编号
+    private Long roleId; // 编号
 
     /**
      * 角色名

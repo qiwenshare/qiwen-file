@@ -29,42 +29,7 @@ public class FiletransferController {
     IFileService fileService;
 
 
-    /**
-     * 旋转图片
-     *
-     * @param direction 方向
-     * @param imageid   图片id
-     * @return 返回结果
-     */
-    @RequestMapping(value = "/totationimage", method = RequestMethod.POST)
-    @ResponseBody
-    public RestResult<String> totationImage(@RequestBody String direction, @RequestBody int imageid) {
-        RestResult<String> result = new RestResult<String>();
-        FileBean fileBean = new FileBean();
-        fileBean.setFileId(imageid);
-        fileBean = fileService.selectFileById(fileBean);
-        String imageUrl = fileBean.getFileUrl();
-        String extendName = fileBean.getExtendName();
-        File file = FileOperation.newFile(PathUtil.getStaticPath() + imageUrl);
-        File minfile = FileOperation.newFile(PathUtil.getStaticPath() + imageUrl.replace("." + extendName, "_min." + extendName));
-        if ("left".equals(direction)){
-            try {
-                ImageOperation.leftTotation(file, file, 90);
-                ImageOperation.leftTotation(minfile, minfile, 90);
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
-        }else if ("right".equals(direction)){
-            try {
-                ImageOperation.rightTotation(file, file, 90);
-                ImageOperation.rightTotation(minfile, minfile, 90);
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
-        }
-        result.setSuccess(true);
-        return result;
-    }
+
 
     /**
      * 批量删除图片
@@ -243,7 +208,7 @@ public class FiletransferController {
         UserBean sessionUserBean = (UserBean) SecurityUtils.getSubject().getPrincipal();
         StorageBean storageBean = new StorageBean();
         if (FileController.isShareFile){
-            storageBean.setUserId(2);
+            storageBean.setUserId(2L);
         }else{
             storageBean.setUserId(sessionUserBean.getUserId());
         }

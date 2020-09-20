@@ -7,19 +7,19 @@
 <mapper namespace="com.qiwenshare.file.mapper.FileMapper">
 
     <insert id="insertFile" parameterType="com.qiwenshare.file.domain.FileBean">
-        INSERT ignore INTO file (albumId,userId, fileName,timeStampName, fileUrl,
+        INSERT ignore INTO file (userId, fileName,timeStampName, fileUrl,
         filePath, extendName, uploadTime, fileSize, isDir)
-        VALUES (#{albumId},#{userId}, #{fileName},#{timeStampName},
+        VALUES (#{userId}, #{fileName},#{timeStampName},
          #{fileUrl}, #{filePath}, #{extendName}, #{uploadTime},
          #{fileSize}, #{isDir});
     </insert>
 
     <insert id="batchInsertFile" parameterType="java.util.List">
-        INSERT ignore INTO file (albumId,userId, fileName,timeStampName, fileUrl,
+        INSERT ignore INTO file (userId, fileName,timeStampName, fileUrl,
         filePath, extendName, uploadTime, fileSize, isDir)
         VALUES
         <foreach collection="list" item="file" index="index" separator=",">
-        (#{file.albumId},#{file.userId}, #{file.fileName},#{file.timeStampName},
+        (#{file.userId}, #{file.fileName},#{file.timeStampName},
          #{file.fileUrl}, #{file.filePath}, #{file.extendName}, #{file.uploadTime},
          #{file.fileSize}, #{file.isDir})
         </foreach>

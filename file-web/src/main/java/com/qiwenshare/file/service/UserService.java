@@ -1,5 +1,6 @@
 package com.qiwenshare.file.service;
 
+import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.qiwenshare.common.cbb.DateUtil;
 import com.qiwenshare.common.cbb.MiniuiUtil;
 import com.qiwenshare.common.cbb.RestResult;
@@ -17,7 +18,7 @@ import java.util.List;
 import java.util.regex.Pattern;
 
 @Service
-public class UserService implements IUserService {
+public class UserService extends ServiceImpl<UserMapper, UserBean> implements IUserService {
     //private static final Logger log= Logger.getLogger(EssayService.class);
     @Resource
     UserMapper userMapper;
@@ -76,7 +77,7 @@ public class UserService implements IUserService {
         userBean.setSalt(salt);
 
         userBean.setPassword(newPassword);
-        userBean.setRegistertime(DateUtil.getCurrentTime());
+        userBean.setRegisterTime(DateUtil.getCurrentTime());
         int result = userMapper.insertUser(userBean);
         userMapper.insertUserRole(userBean.getUserId(), 2);
 //        UserImageBean userImageBean = new UserImageBean();
@@ -100,10 +101,10 @@ public class UserService implements IUserService {
     public UserBean addUser(UserBean userBean) {
 
         String salt = PasswordUtil.getSaltValue();
-        String newPassword = new SimpleHash("MD5", userBean.getOpenid(), salt, 1024).toHex();
+        String newPassword = new SimpleHash("MD5", userBean.getOpenId(), salt, 1024).toHex();
 
         userBean.setSalt(salt);
-        userBean.setQqpassword(newPassword);
+        userBean.setQqPassword(newPassword);
 
         userMapper.insertUser(userBean);
         userMapper.insertUserRole(userBean.getUserId(), 2);

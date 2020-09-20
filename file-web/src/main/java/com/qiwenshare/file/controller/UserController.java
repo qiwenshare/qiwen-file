@@ -118,7 +118,7 @@ public class UserController {
      */
     @RequestMapping("/checkuserlogininfo")
     @ResponseBody
-    public String checkUserLoginInfo(HttpServletRequest request) {
+    public RestResult<UserBean> checkUserLoginInfo(HttpServletRequest request) {
         RestResult<UserBean> restResult = new RestResult<UserBean>();
         UserBean sessionUserBean = (UserBean) SecurityUtils.getSubject().getPrincipal();
         if (sessionUserBean != null) {
@@ -129,7 +129,7 @@ public class UserController {
             restResult.setSuccess(false);
             restResult.setErrorMessage("用户暂未登录");
         }
-        return JSON.toJSONString(restResult, SerializerFeature.WriteMapNullValue);
+        return restResult;
     }
 
     /**

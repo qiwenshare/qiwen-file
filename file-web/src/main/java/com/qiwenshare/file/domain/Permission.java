@@ -4,6 +4,7 @@ package com.qiwenshare.file.domain;
 //import com.baomidou.mybatisplus.annotation.TableField;
 //import com.baomidou.mybatisplus.annotation.TableId;
 //import com.baomidou.mybatisplus.annotation.TableName;
+import com.baomidou.mybatisplus.annotation.TableName;
 import lombok.Data;
 
 import javax.persistence.*;
@@ -15,7 +16,7 @@ import java.util.List;
 @Data
 @Table(name = "permission")
 @Entity
-//@TableName("permission")
+@TableName("permission")
 public class Permission {
     /**
      * 权限id
@@ -23,7 +24,7 @@ public class Permission {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
 //    @TableId(type = IdType.AUTO)
-    private long permissionId;//主键.
+    private Long permissionId;//主键.
     /**
      * 权限名称
      */
