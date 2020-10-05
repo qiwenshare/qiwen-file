@@ -8,10 +8,14 @@ import com.qiwenshare.common.util.FileUtil;
 import com.qiwenshare.common.util.PathUtil;
 import com.qiwenshare.file.api.IFileService;
 import com.qiwenshare.file.api.IFiletransferService;
+import com.qiwenshare.file.api.IRemoteUserService;
+import com.qiwenshare.file.config.QiwenFileConfig;
 import com.qiwenshare.file.domain.FileBean;
 import com.qiwenshare.file.domain.TreeNode;
 import com.qiwenshare.file.domain.UserBean;
 import org.apache.shiro.SecurityUtils;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpHeaders;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.ModelAndView;
 
@@ -27,11 +31,15 @@ public class FileController {
 
     @Resource
     IFileService fileService;
+    @Autowired
+    IRemoteUserService remoteUserService;
+    @Autowired
+    QiwenFileConfig qiwenFileConfig;
 
     /**
      * 是否开启共享文件模式
      */
-    public static Boolean isShareFile = false;
+    public static Boolean isShareFile = true;
 
     public static long treeid = 0;
 
@@ -42,10 +50,10 @@ public class FileController {
      */
     @RequestMapping(value = "/createfile", method = RequestMethod.POST)
     @ResponseBody
-    public RestResult<String> createFile(@RequestBody FileBean fileBean) {
+    public RestResult<String> createFile(@RequestBody FileBean fileBean, @RequestHeader("token") String token) {
         RestResult<String> restResult = new RestResult<>();
-        if (!operationCheck().isSuccess()){
-            return operationCheck();
+        if (!operationCheck(token).isSuccess()){
+            return operationCheck(token);
         }
         List<FileBean> fileBeans = fileService.selectFileByNameAndPath(fileBean);
         if (fileBeans != null && !fileBeans.isEmpty()) {
@@ -53,7 +61,16 @@ public class FileController {
             restResult.setSuccess(false);
             return restResult;
         }
-        UserBean sessionUserBean = (UserBean) SecurityUtils.getSubject().getPrincipal();
+        UserBean sessionUserBean = new UserBean();
+        boolean isRemoteLogin = qiwenFileConfig.isRemoteLogin();
+        if (isRemoteLogin) {
+
+            RestResult<UserBean> restUserBean = remoteUserService.checkUserLoginInfo(token);
+            sessionUserBean = restUserBean.getData();
+        } else {
+            sessionUserBean = (UserBean) SecurityUtils.getSubject().getPrincipal();
+        }
+
         fileBean.setUserId(sessionUserBean.getUserId());
 
         fileBean.setUploadTime(DateUtil.getCurrentTime());
@@ -70,13 +87,21 @@ public class FileController {
      */
     @RequestMapping(value = "/renamefile", method = RequestMethod.POST)
     @ResponseBody
-    public RestResult<String> renameFile(@RequestBody FileBean fileBean) {
+    public RestResult<String> renameFile(@RequestBody FileBean fileBean, @RequestHeader("token") String token) {
         RestResult<String> restResult = new RestResult<>();
-        if (!operationCheck().isSuccess()){
-            return operationCheck();
+        if (!operationCheck(token).isSuccess()){
+            return operationCheck(token);
         }
+        UserBean sessionUserBean = new UserBean();
+        boolean isRemoteLogin = qiwenFileConfig.isRemoteLogin();
+        if (isRemoteLogin) {
 
-        UserBean sessionUserBean = (UserBean) SecurityUtils.getSubject().getPrincipal();
+            RestResult<UserBean> restUserBean = remoteUserService.checkUserLoginInfo(token);
+            sessionUserBean = restUserBean.getData();
+        } else {
+            sessionUserBean = (UserBean) SecurityUtils.getSubject().getPrincipal();
+        }
+        //UserBean sessionUserBean = (UserBean) SecurityUtils.getSubject().getPrincipal();
         fileBean.setUserId(sessionUserBean.getUserId());
         fileBean.setUploadTime(DateUtil.getCurrentTime());
         List<FileBean> fileBeans = fileService.selectFileByNameAndPath(fileBean);
@@ -96,12 +121,21 @@ public class FileController {
 
     @RequestMapping(value = "/getfilelist", method = RequestMethod.GET)
     @ResponseBody
-    public RestResult<List<FileBean>> getFileList(FileBean fileBean){
+    public RestResult<List<FileBean>> getFileList(FileBean fileBean, @RequestHeader("token") String token){
         RestResult<List<FileBean>> restResult = new RestResult<>();
         if(isShareFile){
             fileBean.setUserId(2L);
         }else {
-            UserBean sessionUserBean = (UserBean) SecurityUtils.getSubject().getPrincipal();
+            //UserBean sessionUserBean = (UserBean) SecurityUtils.getSubject().getPrincipal();
+            UserBean sessionUserBean = new UserBean();
+            boolean isRemoteLogin = qiwenFileConfig.isRemoteLogin();
+            if (isRemoteLogin) {
+
+                RestResult<UserBean> restUserBean = remoteUserService.checkUserLoginInfo(token);
+                sessionUserBean = restUserBean.getData();
+            } else {
+                sessionUserBean = (UserBean) SecurityUtils.getSubject().getPrincipal();
+            }
             if (fileBean == null) {
                 restResult.setSuccess(false);
                 return restResult;
@@ -111,7 +145,6 @@ public class FileController {
 
         fileBean.setFilePath(PathUtil.urlDecode(fileBean.getFilePath()));
         List<FileBean> fileList = fileService.selectFileList(fileBean);
-
 
         restResult.setData(fileList);
         restResult.setSuccess(true);
@@ -125,16 +158,24 @@ public class FileController {
      */
     @RequestMapping(value = "/batchdeletefile", method = RequestMethod.POST)
     @ResponseBody
-    public RestResult<String> deleteImageByIds(@RequestBody FileBean fileBean) {
+    public RestResult<String> deleteImageByIds(@RequestBody FileBean fileBean, @RequestHeader("token") String token) {
         RestResult<String> result = new RestResult<String>();
-        if (!operationCheck().isSuccess()) {
-            return operationCheck();
+        if (!operationCheck(token).isSuccess()) {
+            return operationCheck(token);
         }
+        UserBean sessionUserBean = new UserBean();
+        boolean isRemoteLogin = qiwenFileConfig.isRemoteLogin();
+        if (isRemoteLogin) {
 
+            RestResult<UserBean> restUserBean = remoteUserService.checkUserLoginInfo(token);
+            sessionUserBean = restUserBean.getData();
+        } else {
+            sessionUserBean = (UserBean) SecurityUtils.getSubject().getPrincipal();
+        }
         List<FileBean> fileList = JSON.parseArray(fileBean.getFiles(), FileBean.class);
 
         for (FileBean file : fileList) {
-            fileService.deleteFile(file);
+            fileService.deleteFile(file,sessionUserBean);
         }
 
         result.setData("批量删除文件成功");
@@ -149,13 +190,21 @@ public class FileController {
      */
     @RequestMapping(value = "/deletefile", method = RequestMethod.POST)
     @ResponseBody
-    public String deleteFile(@RequestBody FileBean fileBean) {
+    public String deleteFile(@RequestBody FileBean fileBean, @RequestHeader("token") String token) {
         RestResult<String> result = new RestResult<String>();
-        if (!operationCheck().isSuccess()){
-            return JSON.toJSONString(operationCheck());
+        if (!operationCheck(token).isSuccess()){
+            return JSON.toJSONString(operationCheck(token));
         }
+        UserBean sessionUserBean = new UserBean();
+        boolean isRemoteLogin = qiwenFileConfig.isRemoteLogin();
+        if (isRemoteLogin) {
 
-        fileService.deleteFile(fileBean);
+            RestResult<UserBean> restUserBean = remoteUserService.checkUserLoginInfo(token);
+            sessionUserBean = restUserBean.getData();
+        } else {
+            sessionUserBean = (UserBean) SecurityUtils.getSubject().getPrincipal();
+        }
+        fileService.deleteFile(fileBean, sessionUserBean);
 
         result.setSuccess(true);
         String resultJson = JSON.toJSONString(result);
@@ -169,10 +218,10 @@ public class FileController {
      */
     @RequestMapping(value = "/unzipfile", method = RequestMethod.POST)
     @ResponseBody
-    public RestResult<String> unzipFile(@RequestBody FileBean fileBean) {
+    public RestResult<String> unzipFile(@RequestBody FileBean fileBean, @RequestHeader("token") String token) {
         RestResult<String> result = new RestResult<String>();
-        if (!operationCheck().isSuccess()){
-            return operationCheck();
+        if (!operationCheck(token).isSuccess()){
+            return operationCheck(token);
         }
 
         String zipFileUrl = PathUtil.getStaticPath() + fileBean.getFileUrl();
@@ -203,7 +252,16 @@ public class FileController {
         }
 
         List<FileBean> fileBeanList = new ArrayList<>();
-        UserBean sessionUserBean = (UserBean) SecurityUtils.getSubject().getPrincipal();
+        //UserBean sessionUserBean = (UserBean) SecurityUtils.getSubject().getPrincipal();
+        UserBean sessionUserBean = new UserBean();
+        boolean isRemoteLogin = qiwenFileConfig.isRemoteLogin();
+        if (isRemoteLogin) {
+
+            RestResult<UserBean> restUserBean = remoteUserService.checkUserLoginInfo(token);
+            sessionUserBean = restUserBean.getData();
+        } else {
+            sessionUserBean = (UserBean) SecurityUtils.getSubject().getPrincipal();
+        }
         for (int i = 0; i < fileEntryNameList.size(); i++){
             String entryName = fileEntryNameList.get(i);
             String totalFileUrl = unzipUrl + entryName;
@@ -246,10 +304,10 @@ public class FileController {
      */
     @RequestMapping(value = "/movefile", method = RequestMethod.POST)
     @ResponseBody
-    public RestResult<String> moveFile(@RequestBody FileBean fileBean) {
+    public RestResult<String> moveFile(@RequestBody FileBean fileBean, @RequestHeader("token") String token) {
         RestResult<String> result = new RestResult<String>();
-        if (!operationCheck().isSuccess()){
-            return operationCheck();
+        if (!operationCheck(token).isSuccess()){
+            return operationCheck(token);
         }
         String oldfilePath = fileBean.getOldFilePath();
         String newfilePath = fileBean.getFilePath();
@@ -269,11 +327,11 @@ public class FileController {
      */
     @RequestMapping(value = "/batchmovefile", method = RequestMethod.POST)
     @ResponseBody
-    public RestResult<String> batchMoveFile(@RequestBody FileBean fileBean) {
+    public RestResult<String> batchMoveFile(@RequestBody FileBean fileBean, @RequestHeader("token") String token) {
 
         RestResult<String> result = new RestResult<String>();
-        if (!operationCheck().isSuccess()) {
-            return operationCheck();
+        if (!operationCheck(token).isSuccess()) {
+            return operationCheck(token);
         }
 
         String files = fileBean.getFiles();
@@ -290,9 +348,18 @@ public class FileController {
         return result;
     }
 
-    public RestResult<String> operationCheck(){
+    public RestResult<String> operationCheck(String token){
         RestResult<String> result = new RestResult<String>();
-        UserBean sessionUserBean = (UserBean) SecurityUtils.getSubject().getPrincipal();
+        //UserBean sessionUserBean = (UserBean) SecurityUtils.getSubject().getPrincipal();
+        UserBean sessionUserBean = new UserBean();
+        boolean isRemoteLogin = qiwenFileConfig.isRemoteLogin();
+        if (isRemoteLogin) {
+
+            RestResult<UserBean> restUserBean = remoteUserService.checkUserLoginInfo(token);
+            sessionUserBean = restUserBean.getData();
+        } else {
+            sessionUserBean = (UserBean) SecurityUtils.getSubject().getPrincipal();
+        }
         if (sessionUserBean == null){
             result.setSuccess(false);
             result.setErrorMessage("未登录");
@@ -316,9 +383,18 @@ public class FileController {
      */
     @RequestMapping(value = "/selectfilebyfiletype", method = RequestMethod.GET)
     @ResponseBody
-    public RestResult<List<FileBean>> selectFileByFileType(FileBean fileBean) {
+    public RestResult<List<FileBean>> selectFileByFileType(FileBean fileBean, @RequestHeader("token") String token) {
         RestResult<List<FileBean>> result = new RestResult<List<FileBean>>();
-        UserBean sessionUserBean = (UserBean) SecurityUtils.getSubject().getPrincipal();
+        //UserBean sessionUserBean = (UserBean) SecurityUtils.getSubject().getPrincipal();
+        UserBean sessionUserBean = new UserBean();
+        boolean isRemoteLogin = qiwenFileConfig.isRemoteLogin();
+        if (isRemoteLogin) {
+
+            RestResult<UserBean> restUserBean = remoteUserService.checkUserLoginInfo(token);
+            sessionUserBean = restUserBean.getData();
+        } else {
+            sessionUserBean = (UserBean) SecurityUtils.getSubject().getPrincipal();
+        }
         long userId = sessionUserBean.getUserId();
         if (isShareFile){
             userId = 2;
@@ -335,10 +411,19 @@ public class FileController {
      */
     @RequestMapping(value = "/getfiletree", method = RequestMethod.GET)
     @ResponseBody
-    public RestResult<TreeNode> getFileTree(){
+    public RestResult<TreeNode> getFileTree(@RequestHeader("token") String token){
         RestResult<TreeNode> result = new RestResult<TreeNode>();
         FileBean fileBean = new FileBean();
-        UserBean sessionUserBean = (UserBean) SecurityUtils.getSubject().getPrincipal();
+        //UserBean sessionUserBean = (UserBean) SecurityUtils.getSubject().getPrincipal();
+        UserBean sessionUserBean = new UserBean();
+        boolean isRemoteLogin = qiwenFileConfig.isRemoteLogin();
+        if (isRemoteLogin) {
+
+            RestResult<UserBean> restUserBean = remoteUserService.checkUserLoginInfo(token);
+            sessionUserBean = restUserBean.getData();
+        } else {
+            sessionUserBean = (UserBean) SecurityUtils.getSubject().getPrincipal();
+        }
         if (isShareFile){
             fileBean.setUserId(2L);
         }else{

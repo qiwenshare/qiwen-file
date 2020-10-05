@@ -93,8 +93,8 @@ public class FileService extends ServiceImpl<FileMapper, FileBean> implements IF
     }
 
     @Override
-    public void deleteFile(FileBean fileBean) {
-        UserBean sessionUserBean = (UserBean) SecurityUtils.getSubject().getPrincipal();
+    public void deleteFile(FileBean fileBean, UserBean sessionUserBean) {
+        //UserBean sessionUserBean = (UserBean) SecurityUtils.getSubject().getPrincipal();
         StorageBean storageBean = filetransferService.selectStorageBean(new StorageBean(sessionUserBean.getUserId()));
         long deleteSize = 0;
         String fileUrl = PathUtil.getStaticPath() + fileBean.getFileUrl();

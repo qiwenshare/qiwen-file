@@ -44,7 +44,7 @@ public class FiletransferService implements IFiletransferService {
 //    }
 
     @Override
-    public void uploadFile(HttpServletRequest request, FileBean fileBean) {
+    public void uploadFile(HttpServletRequest request, FileBean fileBean, UserBean sessionUserBean) {
         Uploader uploader = new Uploader(request);
         List<UploadFile> uploadFileList = uploader.upload();
         for (int i = 0; i < uploadFileList.size(); i++){
@@ -62,7 +62,7 @@ public class FiletransferService implements IFiletransferService {
 
 
             synchronized (FiletransferService.class) {
-                UserBean sessionUserBean = (UserBean) SecurityUtils.getSubject().getPrincipal();
+//                UserBean sessionUserBean = (UserBean) SecurityUtils.getSubject().getPrincipal();
 
                 long sessionUserId = sessionUserBean.getUserId();
                 StorageBean storageBean = selectStorageBean(new StorageBean(sessionUserId));

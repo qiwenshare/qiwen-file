@@ -7,10 +7,14 @@ import com.qiwenshare.common.cbb.RestResult;
 import com.qiwenshare.common.operation.ImageOperation;
 import com.qiwenshare.file.api.IFileService;
 import com.qiwenshare.file.api.IFiletransferService;
+import com.qiwenshare.file.api.IRemoteUserService;
+import com.qiwenshare.file.config.QiwenFileConfig;
 import com.qiwenshare.file.domain.FileBean;
 import com.qiwenshare.file.domain.StorageBean;
 import com.qiwenshare.file.domain.UserBean;
 import org.apache.shiro.SecurityUtils;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpHeaders;
 import org.springframework.web.bind.annotation.*;
 
 import javax.annotation.Resource;
@@ -28,90 +32,13 @@ public class FiletransferController {
     @Resource
     IFileService fileService;
 
+    @Resource
+    FileController fileController;
 
-
-
-    /**
-     * 批量删除图片
-     *
-     * @return
-     */
-    @RequestMapping(value = "/deleteimagebyids", method = RequestMethod.POST)
-    @ResponseBody
-    public String deleteImageByIds(@RequestBody String imageids) {
-        RestResult<String> result = new RestResult<String>();
-        List<Integer> imageidList = JSON.parseArray(imageids, Integer.class);
-        UserBean sessionUserBean = (UserBean) SecurityUtils.getSubject().getPrincipal();
-
-        long sessionUserId = sessionUserBean.getUserId();
-
-//        List<ImageBean> imageBeanList = filetransferService.selectUserImageByIds(imageidList);
-//        filetransferService.deleteUserImageByIds(imageidList);
-        List<FileBean> fileList = fileService.selectFileListByIds(imageidList);
-        fileService.deleteFileByIds(imageidList);
-        long totalFileSize = 0;
-        for (FileBean fileBean : fileList) {
-            String imageUrl = PathUtil.getStaticPath() + fileBean.getFileUrl();
-            String minImageUrl = imageUrl.replace("." + fileBean.getExtendName(), "_min." + fileBean.getExtendName());
-            totalFileSize += FileOperation.getFileSize(imageUrl);
-            FileOperation.deleteFile(imageUrl);
-            FileOperation.deleteFile(minImageUrl);
-        }
-        StorageBean storageBean = filetransferService.selectStorageBean(new StorageBean(sessionUserId));
-        if (storageBean != null){
-            long updateFileSize = storageBean.getStorageSize() - totalFileSize;
-            if (updateFileSize < 0){
-                updateFileSize = 0;
-            }
-            storageBean.setStorageSize(updateFileSize);
-            filetransferService.updateStorageBean(storageBean);
-
-        }
-
-        result.setData("删除文件成功");
-        result.setSuccess(true);
-        String resultJson = JSON.toJSONString(result);
-        return resultJson;
-    }
-
-    /**
-     * 删除图片
-     *
-     * @param request
-     * @return
-     */
-    @RequestMapping(value = "/deleteimage", method = RequestMethod.POST)
-    @ResponseBody
-    public String deleteImage(HttpServletRequest request, @RequestBody FileBean fileBean) {
-        RestResult<String> result = new RestResult<String>();
-        UserBean sessionUserBean = (UserBean) SecurityUtils.getSubject().getPrincipal();
-        long sessionUserId = sessionUserBean.getUserId();
-        String imageUrl = PathUtil.getStaticPath() + fileBean.getFileUrl();
-        String minImageUrl = imageUrl.replace("." + fileBean.getExtendName(), "_min." + fileBean.getExtendName());
-        long fileSize = FileOperation.getFileSize(imageUrl);
-        fileBean.setIsDir(0);
-        //filetransferService.deleteImageById(fileBean);
-        fileService.deleteFile(fileBean);
-
-        FileOperation.deleteFile(imageUrl);
-        FileOperation.deleteFile(minImageUrl);
-
-
-        StorageBean storageBean = filetransferService.selectStorageBean(new StorageBean(sessionUserId));
-        if (storageBean != null){
-            long updateFileSize = storageBean.getStorageSize() - fileSize;
-            if (updateFileSize < 0){
-                updateFileSize = 0;
-            }
-            storageBean.setStorageSize(updateFileSize);
-            filetransferService.updateStorageBean(storageBean);
-
-        }
-
-        String resultJson = JSON.toJSONString(result);
-        return resultJson;
-    }
-
+    @Autowired
+    IRemoteUserService remoteUserService;
+    @Autowired
+    QiwenFileConfig qiwenFileConfig;
 
     /**
      * 上传文件
@@ -121,17 +48,31 @@ public class FiletransferController {
      */
     @RequestMapping(value = "/uploadfile", method = RequestMethod.POST)
     @ResponseBody
-    public String uploadFile(HttpServletRequest request, FileBean fileBean) {
+    public String uploadFile(HttpServletRequest request, FileBean fileBean, @RequestHeader("token") String token) {
         RestResult<String> restResult = new RestResult<String>();
-        UserBean sessionUserBean = (UserBean) SecurityUtils.getSubject().getPrincipal();
-        RestResult<String> operationCheckResult = new FileController().operationCheck();
+        //UserBean sessionUserBean = (UserBean) SecurityUtils.getSubject().getPrincipal();
+        UserBean sessionUserBean = new UserBean();
+        boolean isRemoteLogin = qiwenFileConfig.isRemoteLogin();
+        if (isRemoteLogin) {
+
+            RestResult<UserBean> restUserBean = remoteUserService.checkUserLoginInfo(token);
+            sessionUserBean = restUserBean.getData();
+        } else {
+            sessionUserBean = (UserBean) SecurityUtils.getSubject().getPrincipal();
+        }
+        if (sessionUserBean == null){
+            restResult.setSuccess(false);
+            restResult.setErrorMessage("未登录");
+            return JSON.toJSONString(restResult);
+        }
+        RestResult<String> operationCheckResult = fileController.operationCheck(token);
         if (!operationCheckResult.isSuccess()){
             return JSON.toJSONString(operationCheckResult);
         }
 
         fileBean.setUserId(sessionUserBean.getUserId());
 
-        filetransferService.uploadFile(request, fileBean);
+        filetransferService.uploadFile(request, fileBean, sessionUserBean);
 
         restResult.setSuccess(true);
         String resultJson = JSON.toJSONString(restResult);

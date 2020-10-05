@@ -142,6 +142,9 @@ public class UserBean {
     @Transient
     private String verificationCode;
 
+    @Transient
+    private String token;
+
     /**
      * 角色列表
      */

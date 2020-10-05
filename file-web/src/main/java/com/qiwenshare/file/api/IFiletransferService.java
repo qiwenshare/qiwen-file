@@ -3,6 +3,7 @@ package com.qiwenshare.file.api;
 import com.qiwenshare.common.cbb.RestResult;
 import com.qiwenshare.file.domain.FileBean;
 import com.qiwenshare.file.domain.StorageBean;
+import com.qiwenshare.file.domain.UserBean;
 
 import java.util.List;
 
@@ -19,7 +20,7 @@ public interface IFiletransferService {
      * @param request 请求
      * @param fileBean 文件信息
      */
-    void uploadFile(HttpServletRequest request, FileBean fileBean);
+    void uploadFile(HttpServletRequest request, FileBean fileBean, UserBean sessionUserBean);
 
 
 
