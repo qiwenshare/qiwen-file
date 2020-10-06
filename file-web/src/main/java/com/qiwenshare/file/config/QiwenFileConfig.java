@@ -8,6 +8,16 @@ import org.springframework.stereotype.Component;
 public class QiwenFileConfig {
     private boolean remoteLogin;
 
+    private boolean shareMode;
+
+    public boolean isShareMode() {
+        return shareMode;
+    }
+
+    public void setShareMode(boolean shareMode) {
+        this.shareMode = shareMode;
+    }
+
     public boolean isRemoteLogin() {
         return remoteLogin;
     }

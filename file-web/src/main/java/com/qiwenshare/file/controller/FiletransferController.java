@@ -29,8 +29,6 @@ public class FiletransferController {
 
     @Resource
     IFiletransferService filetransferService;
-    @Resource
-    IFileService fileService;
 
     @Resource
     FileController fileController;
@@ -148,7 +146,7 @@ public class FiletransferController {
         RestResult<StorageBean> restResult = new RestResult<StorageBean>();
         UserBean sessionUserBean = (UserBean) SecurityUtils.getSubject().getPrincipal();
         StorageBean storageBean = new StorageBean();
-        if (FileController.isShareFile){
+        if (qiwenFileConfig.isShareMode()){
             storageBean.setUserId(2L);
         }else{
             storageBean.setUserId(sessionUserBean.getUserId());

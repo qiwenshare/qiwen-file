@@ -36,11 +36,6 @@ public class FileController {
     @Autowired
     QiwenFileConfig qiwenFileConfig;
 
-    /**
-     * 是否开启共享文件模式
-     */
-    public static Boolean isShareFile = true;
-
     public static long treeid = 0;
 
     /**
@@ -123,7 +118,7 @@ public class FileController {
     @ResponseBody
     public RestResult<List<FileBean>> getFileList(FileBean fileBean, @RequestHeader("token") String token){
         RestResult<List<FileBean>> restResult = new RestResult<>();
-        if(isShareFile){
+        if(qiwenFileConfig.isShareMode()){
             fileBean.setUserId(2L);
         }else {
             //UserBean sessionUserBean = (UserBean) SecurityUtils.getSubject().getPrincipal();
@@ -365,7 +360,7 @@ public class FileController {
             result.setErrorMessage("未登录");
             return result;
         }
-        if (isShareFile){
+        if (qiwenFileConfig.isShareMode()){
             if (sessionUserBean.getUserId() > 2){
                 result.setSuccess(false);
                 result.setErrorMessage("没权限，请联系管理员！");
@@ -396,7 +391,7 @@ public class FileController {
             sessionUserBean = (UserBean) SecurityUtils.getSubject().getPrincipal();
         }
         long userId = sessionUserBean.getUserId();
-        if (isShareFile){
+        if (qiwenFileConfig.isShareMode()){
             userId = 2;
         }
         List<FileBean> file = fileService.selectFileByExtendName(getFileExtendsByType(fileBean.getFileType()), userId);
@@ -424,7 +419,7 @@ public class FileController {
         } else {
             sessionUserBean = (UserBean) SecurityUtils.getSubject().getPrincipal();
         }
-        if (isShareFile){
+        if (qiwenFileConfig.isShareMode()){
             fileBean.setUserId(2L);
         }else{
             fileBean.setUserId(sessionUserBean.getUserId());

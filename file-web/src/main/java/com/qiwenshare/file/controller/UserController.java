@@ -33,8 +33,7 @@ import java.util.Map;
 public class UserController {
     @Resource
     IUserService userService;
-    @Resource
-    IFiletransferService filetransferService;
+
     @Autowired
     IRemoteUserService remoteUserService;
     @Autowired
