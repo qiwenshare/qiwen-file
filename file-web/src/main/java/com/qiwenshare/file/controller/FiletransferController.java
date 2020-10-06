@@ -142,9 +142,18 @@ public class FiletransferController {
      */
     @RequestMapping(value = "/getstorage", method = RequestMethod.GET)
     @ResponseBody
-    public RestResult<StorageBean> getStorage() {
+    public RestResult<StorageBean> getStorage(@RequestHeader("token") String token) {
         RestResult<StorageBean> restResult = new RestResult<StorageBean>();
-        UserBean sessionUserBean = (UserBean) SecurityUtils.getSubject().getPrincipal();
+        //UserBean sessionUserBean = (UserBean) SecurityUtils.getSubject().getPrincipal();
+        UserBean sessionUserBean = new UserBean();
+        boolean isRemoteLogin = qiwenFileConfig.isRemoteLogin();
+        if (isRemoteLogin) {
+
+            RestResult<UserBean> restUserBean = remoteUserService.checkUserLoginInfo(token);
+            sessionUserBean = restUserBean.getData();
+        } else {
+            sessionUserBean = (UserBean) SecurityUtils.getSubject().getPrincipal();
+        }
         StorageBean storageBean = new StorageBean();
         if (qiwenFileConfig.isShareMode()){
             storageBean.setUserId(2L);
