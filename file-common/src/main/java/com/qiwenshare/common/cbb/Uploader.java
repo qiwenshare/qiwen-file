@@ -85,6 +85,7 @@ public class Uploader {
     private void doUpload(String savePath, Iterator<String> iter) throws IOException {
         UploadFile uploadFile = new UploadFile();
         MultipartFile multipartfile = this.request.getFile(iter.next());
+
         InputStream inputStream = multipartfile.getInputStream();
         String timeStampName = getTimeStampName();
 
@@ -136,7 +137,7 @@ public class Uploader {
 
         uploadFile.setSuccess(1);
         uploadFile.setMessage("上传成功");
-        uploadFile.setFileSize(file.length());
+        uploadFile.setFileSize(request.getContentLengthLong());
         saveUploadFileList.add(uploadFile);
     }
 
