@@ -127,12 +127,6 @@ public class UserController {
             UserBean sessionUserBean = (UserBean) SecurityUtils.getSubject().getPrincipal();
             if (sessionUserBean != null) {
                 UserBean userInfo = userService.getUserInfoById(sessionUserBean.getUserId());
-                AliyunOSS oss = qiwenFileConfig.getAliyun().getOss();
-                String domain = oss.getDomain();
-                userInfo.setViewDomain(domain);
-                String bucketName = oss.getBucketName();
-                String endPoint = oss.getEndpoint();
-                userInfo.setDownloadDomain(bucketName + "." + endPoint);
 
                 restResult.setData(userInfo);
                 restResult.setSuccess(true);
@@ -141,6 +135,13 @@ public class UserController {
                 restResult.setErrorMessage("用户暂未登录");
             }
         }
+
+        AliyunOSS oss = qiwenFileConfig.getAliyun().getOss();
+        String domain = oss.getDomain();
+        restResult.getData().setViewDomain(domain);
+        String bucketName = oss.getBucketName();
+        String endPoint = oss.getEndpoint();
+        restResult.getData().setDownloadDomain(bucketName + "." + endPoint);
 
         return restResult;
     }
