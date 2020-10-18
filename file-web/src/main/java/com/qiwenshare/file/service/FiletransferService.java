@@ -6,17 +6,17 @@ import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
 
 import com.qiwenshare.common.cbb.DateUtil;
-import com.qiwenshare.common.cbb.RestResult;
 import com.qiwenshare.common.cbb.Uploader;
 import com.qiwenshare.common.domain.UploadFile;
 import com.qiwenshare.file.api.IFiletransferService;
 
+import com.qiwenshare.common.domain.AliyunOSS;
+import com.qiwenshare.file.config.QiwenFileConfig;
 import com.qiwenshare.file.mapper.FileMapper;
 import com.qiwenshare.file.mapper.FiletransferMapper;
 import com.qiwenshare.file.domain.FileBean;
 import com.qiwenshare.file.domain.StorageBean;
 import com.qiwenshare.file.domain.UserBean;
-import org.apache.shiro.SecurityUtils;
 import org.springframework.stereotype.Service;
 
 
@@ -28,8 +28,8 @@ public class FiletransferService implements IFiletransferService {
     @Resource
     FileMapper fileMapper;
 
-
-
+    @Resource
+    QiwenFileConfig qiwenFileConfig;
 
     @Override
     public void deleteUserImageByIds(List<Integer> imageidList) {
@@ -37,14 +37,10 @@ public class FiletransferService implements IFiletransferService {
     }
 
 
-
-
-//    public void insertFile(FileBean fileBean){
-//        filetransferMapper.insertFile(fileBean);
-//    }
-
     @Override
     public void uploadFile(HttpServletRequest request, FileBean fileBean, UserBean sessionUserBean) {
+        AliyunOSS oss = qiwenFileConfig.getAliyun().getOss();
+        request.setAttribute("oss", oss);
         Uploader uploader = new Uploader(request);
         List<UploadFile> uploadFileList = uploader.upload();
         for (int i = 0; i < uploadFileList.size(); i++){
@@ -56,8 +52,10 @@ public class FiletransferService implements IFiletransferService {
                 fileBean.setExtendName(uploadFile.getFileType());
                 fileBean.setTimeStampName(uploadFile.getTimeStampName());
                 fileBean.setUploadTime(DateUtil.getCurrentTime());
-
-                fileMapper.insertFile(fileBean);
+                fileBean.setIsOSS(uploadFile.getIsOSS());
+                fileBean.setIsDir(0);
+                fileMapper.insert(fileBean);
+                //fileMapper.insertFile(fileBean);
             }
 
 

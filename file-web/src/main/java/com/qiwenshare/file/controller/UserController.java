@@ -1,11 +1,8 @@
 package com.qiwenshare.file.controller;
 
 import com.alibaba.fastjson.JSON;
-import com.alibaba.fastjson.serializer.SerializerFeature;
 import com.qiwenshare.common.cbb.RestResult;
-import com.qiwenshare.common.domain.TableData;
-import com.qiwenshare.common.domain.TableQueryBean;
-import com.qiwenshare.file.api.IFiletransferService;
+import com.qiwenshare.common.domain.AliyunOSS;
 import com.qiwenshare.file.api.IRemoteUserService;
 import com.qiwenshare.file.api.IUserService;
 import com.qiwenshare.file.config.QiwenFileConfig;
@@ -13,14 +10,10 @@ import com.qiwenshare.file.domain.UserBean;
 import org.apache.shiro.SecurityUtils;
 import org.apache.shiro.authc.UsernamePasswordToken;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpHeaders;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.web.servlet.ModelAndView;
 
 import javax.annotation.Resource;
-import javax.servlet.http.HttpServletRequest;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 
 /**
@@ -134,6 +127,13 @@ public class UserController {
             UserBean sessionUserBean = (UserBean) SecurityUtils.getSubject().getPrincipal();
             if (sessionUserBean != null) {
                 UserBean userInfo = userService.getUserInfoById(sessionUserBean.getUserId());
+                AliyunOSS oss = qiwenFileConfig.getAliyun().getOss();
+                String domain = oss.getDomain();
+                userInfo.setViewDomain(domain);
+                String bucketName = oss.getBucketName();
+                String endPoint = oss.getEndpoint();
+                userInfo.setDownloadDomain(bucketName + "." + endPoint);
+
                 restResult.setData(userInfo);
                 restResult.setSuccess(true);
             } else {

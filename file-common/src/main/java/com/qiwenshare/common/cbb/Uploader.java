@@ -1,7 +1,9 @@
 package com.qiwenshare.common.cbb;
 
+import com.qiwenshare.common.domain.AliyunOSS;
 import com.qiwenshare.common.domain.UploadFile;
 import com.qiwenshare.common.operation.ImageOperation;
+import com.qiwenshare.common.oss.AliyunOSSUpload;
 import com.qiwenshare.common.util.FileUtil;
 import com.qiwenshare.common.util.PathUtil;
 import org.apache.commons.fileupload.disk.DiskFileItemFactory;
@@ -28,10 +30,14 @@ public class Uploader {
 
     public static final String ROOT_PATH = "upload";
 
+    public static final String FILE_SEPARATOR = "/";
+
     private StandardMultipartHttpServletRequest request = null;
 
+    private AliyunOSS aliyunOSS;
+
     // 文件允许格式
-    private String[] allowFiles = {".rar", ".doc", ".docx", ".zip", ".pdf", ".txt", ".swf", ".wmv", ".gif", ".png", ".jpg", ".jpeg", ".bmp", "blob", ".mp4"};
+    //private String[] allowFiles = {".rar", ".doc", ".docx", ".zip", ".pdf", ".txt", ".swf", ".wmv", ".gif", ".png", ".jpg", ".jpeg", ".bmp", "blob", ".mp4"};
 
 
     // 文件大小限制，单位KB
@@ -40,6 +46,7 @@ public class Uploader {
     List<UploadFile> saveUploadFileList = new ArrayList<UploadFile>();
 
     public Uploader(HttpServletRequest request) {
+        aliyunOSS = (AliyunOSS) request.getAttribute("oss");
         this.request = (StandardMultipartHttpServletRequest) request;
         saveUploadFileList = new ArrayList<>();
     }
@@ -63,56 +70,7 @@ public class Uploader {
             sfu.setSizeMax(this.maxSize * 1024L);
             sfu.setHeaderEncoding("utf-8");//3、解决文件名的中文乱码
             Iterator<String> iter = this.request.getFileNames();
-            while (iter.hasNext()) {
-                UploadFile uploadFile = new UploadFile();
-                MultipartFile multipartfile = this.request.getFile(iter.next());
-                InputStream inputStream = multipartfile.getInputStream();
-
-                String originalName = multipartfile.getOriginalFilename();
-//                if (!this.checkFileType(originalName)) {
-//                    uploadFile.setSuccess(0);
-//                    uploadFile.setMessage("未包含文件上传域");
-//                    saveUploadFileList.add(uploadFile);
-//                    continue;
-//                }
-                String fileName = getFileName(originalName);
-                String timeStampName = getTimeStampName();
-                String fileType = FileUtil.getFileType(originalName);
-                uploadFile.setFileName(fileName);
-                uploadFile.setFileType(fileType);
-                uploadFile.setTimeStampName(timeStampName);
-
-                String saveFilePath = savePath + File.separator + timeStampName + "." + fileType;
-                String minFilePath = savePath + File.separator + timeStampName + "_min" + "." + fileType;
-                uploadFile.setUrl(saveFilePath);
-                File file = new File(PathUtil.getStaticPath() + File.separator + saveFilePath);
-                File minFile = new File(PathUtil.getStaticPath() + File.separator + minFilePath);
-                BufferedInputStream in = null;
-                FileOutputStream out = null;
-                BufferedOutputStream output = null;
-
-                try {
-                    in = new BufferedInputStream(inputStream);
-                    out = new FileOutputStream(file);
-                    output = new BufferedOutputStream(out);
-                    Streams.copy(in, output, true);
-                    if (FileUtil.isImageFile(uploadFile.getFileType())){
-                        ImageOperation.thumbnailsImage(file, minFile, 300);
-                    }
-
-                } catch (FileNotFoundException e) {
-                    LOG.error("文件没有发现" + e);
-                } catch (IOException e) {
-                    LOG.error("文件读取失败" + e);
-                } finally {
-                    closeStream(in, out, output);
-                }
-                uploadFile.setSuccess(1);
-                uploadFile.setMessage("上传成功");
-                uploadFile.setFileSize(file.length());
-                saveUploadFileList.add(uploadFile);
-
-            }
+            while (iter.hasNext()) doUpload(savePath, iter);
         } catch (IOException e) {
             UploadFile uploadFile = new UploadFile();
             uploadFile.setSuccess(1);
@@ -124,6 +82,63 @@ public class Uploader {
         return saveUploadFileList;
     }
 
+    private void doUpload(String savePath, Iterator<String> iter) throws IOException {
+        UploadFile uploadFile = new UploadFile();
+        MultipartFile multipartfile = this.request.getFile(iter.next());
+        InputStream inputStream = multipartfile.getInputStream();
+        String timeStampName = getTimeStampName();
+
+
+        String originalName = multipartfile.getOriginalFilename();
+
+        String fileName = getFileName(originalName);
+
+        String fileType = FileUtil.getFileType(originalName);
+        uploadFile.setFileName(fileName);
+        uploadFile.setFileType(fileType);
+        uploadFile.setTimeStampName(timeStampName);
+
+        String saveFilePath = savePath + FILE_SEPARATOR + timeStampName + "." + fileType;
+        String minFilePath = savePath + FILE_SEPARATOR + timeStampName + "_min" + "." + fileType;
+        String ossFilePath = savePath + FILE_SEPARATOR + timeStampName + FILE_SEPARATOR + fileName +"." + fileType;
+
+        File file = new File(PathUtil.getStaticPath() + FILE_SEPARATOR + saveFilePath);
+        File minFile = new File(PathUtil.getStaticPath() + FILE_SEPARATOR + minFilePath);
+        if (aliyunOSS.isEnabled()) {
+            AliyunOSSUpload.StreamUpload(inputStream, aliyunOSS, ossFilePath.substring(1));
+            uploadFile.setIsOSS(1);
+            uploadFile.setUrl(ossFilePath);
+        } else {
+            uploadFile.setIsOSS(0);
+            uploadFile.setUrl(saveFilePath);
+            BufferedInputStream in = null;
+            FileOutputStream out = null;
+            BufferedOutputStream output = null;
+
+            try {
+                in = new BufferedInputStream(inputStream);
+                out = new FileOutputStream(file);
+                output = new BufferedOutputStream(out);
+                Streams.copy(in, output, true);
+                if (FileUtil.isImageFile(uploadFile.getFileType())){
+                    ImageOperation.thumbnailsImage(file, minFile, 300);
+                }
+
+            } catch (FileNotFoundException e) {
+                LOG.error("文件没有发现" + e);
+            } catch (IOException e) {
+                LOG.error("文件读取失败" + e);
+            } finally {
+                closeStream(in, out, output);
+            }
+        }
+
+
+        uploadFile.setSuccess(1);
+        uploadFile.setMessage("上传成功");
+        uploadFile.setFileSize(file.length());
+        saveUploadFileList.add(uploadFile);
+    }
 
 
     private void closeStream(BufferedInputStream in, FileOutputStream out,
@@ -138,25 +153,6 @@ public class Uploader {
             output.close();
         }
     }
-
-    /**
-     * 文件类型判断
-     *
-     * @param fileName
-     * @return
-     */
-    private boolean checkFileType(String fileName) {
-        Iterator<String> type = Arrays.asList(this.allowFiles).iterator();
-        while (type.hasNext()) {
-            String ext = type.next();
-            if (fileName.toLowerCase().endsWith(ext)) {
-                return true;
-            }
-        }
-        return false;
-    }
-
-
 
     private String getFileName(String fileName){
         return fileName.substring(0, fileName.lastIndexOf("."));
@@ -188,14 +184,14 @@ public class Uploader {
      */
     private String getSaveFilePath(String path) {
         SimpleDateFormat formater = new SimpleDateFormat("yyyyMMdd");
-        path = File.separator + path + File.separator + formater.format(new Date());
+        path = FILE_SEPARATOR + path + FILE_SEPARATOR + formater.format(new Date());
         File dir = new File(PathUtil.getStaticPath() + path);
-        LOG.error(PathUtil.getStaticPath() + path);
+        //LOG.error(PathUtil.getStaticPath() + path);
         if (!dir.exists()) {
             try {
                 boolean isSuccessMakeDir = dir.mkdirs();
                 if (!isSuccessMakeDir) {
-                    LOG.error("文件创建失败:" + PathUtil.getStaticPath() + path);
+                    LOG.error("目录创建失败:" + PathUtil.getStaticPath() + path);
                 }
             } catch (Exception e) {
                 LOG.error("目录创建失败" + PathUtil.getStaticPath() + path);

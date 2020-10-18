@@ -144,6 +144,10 @@ public class UserBean {
 
     @Transient
     private String token;
+    @Transient
+    private String downloadDomain;
+    @Transient
+    private String viewDomain;
 
     /**
      * 角色列表

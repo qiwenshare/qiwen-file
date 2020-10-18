@@ -3,8 +3,11 @@ package com.qiwenshare.file.service;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.qiwenshare.common.cbb.DateUtil;
 import com.qiwenshare.common.operation.FileOperation;
+import com.qiwenshare.common.oss.AliyunOSSDelete;
 import com.qiwenshare.common.util.PathUtil;
 import com.qiwenshare.file.api.IFileService;
+import com.qiwenshare.file.config.AliyunConfig;
+import com.qiwenshare.file.config.QiwenFileConfig;
 import com.qiwenshare.file.mapper.FileMapper;
 import com.qiwenshare.file.domain.FileBean;
 import com.qiwenshare.file.domain.StorageBean;
@@ -23,6 +26,8 @@ public class FileService extends ServiceImpl<FileMapper, FileBean> implements IF
     FileMapper fileMapper;
     @Resource
     FiletransferService filetransferService;
+    @Resource
+    QiwenFileConfig qiwenFileConfig;
 
     @Override
     public void insertFile(FileBean fileBean) {
@@ -112,7 +117,12 @@ public class FileService extends ServiceImpl<FileMapper, FileBean> implements IF
                     deleteSize += file.getFileSize();
                     //1.3、删除服务器文件，只删除文件，目录是虚拟的
                     if (file.getFileUrl() != null && file.getFileUrl().indexOf("upload") != -1){
-                        FileOperation.deleteFile(PathUtil.getStaticPath() + file.getFileUrl());
+                        if (file.getIsOSS() == 1) {
+                            AliyunOSSDelete.deleteObject(qiwenFileConfig.getAliyun().getOss(), file.getFileUrl().substring(1));
+                        } else {
+                            FileOperation.deleteFile(PathUtil.getStaticPath() + file.getFileUrl());
+                        }
+
                     }
                 }
             }
@@ -123,7 +133,11 @@ public class FileService extends ServiceImpl<FileMapper, FileBean> implements IF
             deleteSize = FileOperation.getFileSize(fileUrl);
             //删除服务器文件
             if (fileBean.getFileUrl() != null && fileBean.getFileUrl().indexOf("upload") != -1){
-                FileOperation.deleteFile(fileUrl);
+                if (fileBean.getIsOSS() == 1) {
+                    AliyunOSSDelete.deleteObject(qiwenFileConfig.getAliyun().getOss(), fileBean.getFileUrl().substring(1));
+                } else {
+                    FileOperation.deleteFile(fileUrl);
+                }
             }
         }
 

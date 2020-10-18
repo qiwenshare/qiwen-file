@@ -73,6 +73,8 @@ public class FileBean {
      */
     private Integer isDir;
 
+    private Integer isOSS;
+
     @Transient
     @TableField(exist = false)
     private String oldFilePath;

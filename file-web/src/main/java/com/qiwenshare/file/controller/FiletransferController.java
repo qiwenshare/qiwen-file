@@ -1,7 +1,10 @@
 package com.qiwenshare.file.controller;
 
 import com.alibaba.fastjson.JSON;
+import com.aliyun.oss.OSS;
+import com.aliyun.oss.model.OSSObject;
 import com.qiwenshare.common.operation.FileOperation;
+import com.qiwenshare.common.oss.AliyunOSSDownload;
 import com.qiwenshare.common.util.PathUtil;
 import com.qiwenshare.common.cbb.RestResult;
 import com.qiwenshare.common.operation.ImageOperation;
@@ -37,6 +40,8 @@ public class FiletransferController {
     IRemoteUserService remoteUserService;
     @Autowired
     QiwenFileConfig qiwenFileConfig;
+    @Resource
+    IFileService fileService;
 
     /**
      * 上传文件
@@ -90,16 +95,47 @@ public class FiletransferController {
         } catch (UnsupportedEncodingException e) {
             e.printStackTrace();
         }
-        if (fileName != null) {
-            fileName = fileName + "." + fileBean.getExtendName();
+        fileName = fileName + "." + fileBean.getExtendName();
+        response.setContentType("application/force-download");// 设置强制下载不打开
+        response.addHeader("Content-Disposition", "attachment;fileName=" + fileName);// 设置文件名
+        byte[] buffer = new byte[1024];
+        BufferedInputStream bis = null;
+        FileBean fileBean1 = fileService.getById(fileBean.getFileId());
+        if (fileBean1.getIsOSS() != null && fileBean1.getIsOSS() == 1) {
+
+            AliyunOSSDownload aliyunOSSDownload= new AliyunOSSDownload();
+            OSS ossClient = aliyunOSSDownload.createOSSClient(qiwenFileConfig.getAliyun().getOss());
+            OSSObject ossObject = ossClient.getObject(qiwenFileConfig.getAliyun().getOss().getBucketName(), fileBean1.getTimeStampName());
+            InputStream inputStream = ossObject.getObjectContent();
+            try {
+                bis = new BufferedInputStream(inputStream);
+                OutputStream os = response.getOutputStream();
+                int i = bis.read(buffer);
+                while (i != -1) {
+                    os.write(buffer, 0, i);
+                    i = bis.read(buffer);
+                }
+            } catch (IOException e) {
+                e.printStackTrace();
+            } finally {
+                if (bis != null) {
+                    try {
+                        bis.close();
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                    }
+                }
+
+            }
+            ossClient.shutdown();
+        } else {
             //设置文件路径
             File file = FileOperation.newFile(PathUtil.getStaticPath() + fileBean.getFileUrl());
             if (file.exists()) {
-                response.setContentType("application/force-download");// 设置强制下载不打开
-                response.addHeader("Content-Disposition", "attachment;fileName=" + fileName);// 设置文件名
-                byte[] buffer = new byte[1024];
+
+
                 FileInputStream fis = null;
-                BufferedInputStream bis = null;
+
                 try {
                     fis = new FileInputStream(file);
                     bis = new BufferedInputStream(fis);
@@ -120,15 +156,9 @@ public class FiletransferController {
                             e.printStackTrace();
                         }
                     }
-                    if (fis != null) {
-                        try {
-                            fis.close();
-                        } catch (IOException e) {
-                            e.printStackTrace();
-                        }
-                    }
                 }
             }
+
         }
         return null;
 

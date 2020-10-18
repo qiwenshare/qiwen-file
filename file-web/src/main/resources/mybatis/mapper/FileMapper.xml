@@ -34,7 +34,17 @@
             </when>
             <otherwise>
                 update file
-                SET fileName = #{fileName}, uploadTime = #{uploadTime}
+                <set>
+                    <if test="fileName != null">
+                        fileName = #{fileName},
+                    </if>
+                    <if test="uploadTime != null">
+                        uploadTime = #{uploadTime},
+                    </if>
+                    <if test="fileUrl != null">
+                        fileUrl = #{fileUrl},
+                    </if>
+                </set>
                 where fileId = #{fileId}
             </otherwise>
         </choose>

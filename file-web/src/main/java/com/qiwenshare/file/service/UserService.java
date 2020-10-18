@@ -2,7 +2,6 @@ package com.qiwenshare.file.service;
 
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.qiwenshare.common.cbb.DateUtil;
-import com.qiwenshare.common.cbb.MiniuiUtil;
 import com.qiwenshare.common.cbb.RestResult;
 import com.qiwenshare.common.domain.TableQueryBean;
 import com.qiwenshare.common.util.PasswordUtil;
@@ -250,11 +249,7 @@ public class UserService extends ServiceImpl<UserMapper, UserBean> implements IU
         return userMapper.selectAllUserList();
     }
 
-    @Override
-    public List<UserBean> selectUserList(TableQueryBean tableQueryBean) {
-        TableQueryBean tablePageQuery = MiniuiUtil.getMiniuiTablePageQuery(tableQueryBean);
-        return userMapper.selectUserListByCondition(tablePageQuery);
-    }
+
 
 
     @Override

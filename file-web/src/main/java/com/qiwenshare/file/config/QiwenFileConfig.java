@@ -1,8 +1,11 @@
 package com.qiwenshare.file.config;
 
+import lombok.Data;
 import org.springframework.boot.context.properties.ConfigurationProperties;
+import org.springframework.boot.context.properties.NestedConfigurationProperty;
 import org.springframework.stereotype.Component;
 
+@Data
 @Component
 @ConfigurationProperties(prefix = "qiwen-file")
 public class QiwenFileConfig {
@@ -10,19 +13,6 @@ public class QiwenFileConfig {
 
     private boolean shareMode;
 
-    public boolean isShareMode() {
-        return shareMode;
-    }
+    private AliyunConfig aliyun = new AliyunConfig();
 
-    public void setShareMode(boolean shareMode) {
-        this.shareMode = shareMode;
-    }
-
-    public boolean isRemoteLogin() {
-        return remoteLogin;
-    }
-
-    public void setRemoteLogin(boolean remoteLogin) {
-        this.remoteLogin = remoteLogin;
-    }
 }

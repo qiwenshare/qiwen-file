@@ -98,12 +98,7 @@ public interface IUserService extends IService<UserBean> {
      */
     List<UserBean> selectAllUserList();
 
-    /**
-     * 选择所有用户列表
-     * @param tableQueryBean 查询条件
-     * @return 用户列表
-     */
-    List<UserBean> selectUserList(TableQueryBean tableQueryBean);
+
 
     /**
      * 获取用户数量

@@ -4,6 +4,8 @@ import com.alibaba.fastjson.JSON;
 import com.qiwenshare.common.cbb.DateUtil;
 import com.qiwenshare.common.cbb.RestResult;
 import com.qiwenshare.common.operation.FileOperation;
+import com.qiwenshare.common.oss.AliyunOSSDelete;
+import com.qiwenshare.common.oss.AliyunOSSRename;
 import com.qiwenshare.common.util.FileUtil;
 import com.qiwenshare.common.util.PathUtil;
 import com.qiwenshare.file.api.IFileService;
@@ -33,7 +35,7 @@ public class FileController {
     IFileService fileService;
     @Autowired
     IRemoteUserService remoteUserService;
-    @Autowired
+    @Resource
     QiwenFileConfig qiwenFileConfig;
 
     public static long treeid = 0;
@@ -108,6 +110,15 @@ public class FileController {
         if (1 == fileBean.getIsDir()) {
             fileBean.setOldFilePath(fileBean.getFilePath() + fileBean.getOldFileName() + "/");
             fileBean.setFilePath(fileBean.getFilePath() + fileBean.getFileName() + "/");
+        }
+        if (fileBean.getIsOSS() == 1) {
+            FileBean file = fileService.getById(fileBean.getFileId());
+            String fileUrl = file.getFileUrl();
+            String newFileUrl = fileUrl.replace(file.getFileName(), fileBean.getFileName());
+            fileBean.setFileUrl(newFileUrl);
+            AliyunOSSRename.rename(qiwenFileConfig.getAliyun().getOss(),
+                    fileUrl.substring(1),
+                    newFileUrl.substring(1));
         }
         fileService.updateFile(fileBean);
         restResult.setSuccess(true);
