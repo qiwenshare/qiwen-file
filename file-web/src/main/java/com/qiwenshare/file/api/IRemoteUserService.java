@@ -5,7 +5,7 @@ import com.qiwenshare.file.domain.UserBean;
 import org.springframework.cloud.openfeign.FeignClient;
 import org.springframework.web.bind.annotation.*;
 
-@FeignClient(name = "qiwenshare") // 服务名
+@FeignClient(name = "qiwen-auth") // 服务名
 public interface IRemoteUserService {
 
     @PostMapping("/user/userlogin")
