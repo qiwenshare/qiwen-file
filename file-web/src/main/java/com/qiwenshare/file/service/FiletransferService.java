@@ -5,47 +5,41 @@ import java.util.List;
 import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
 
+import org.springframework.beans.BeanUtils;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+
 import com.qiwenshare.common.cbb.DateUtil;
 import com.qiwenshare.common.cbb.Uploader;
-import com.qiwenshare.common.domain.UploadFile;
-import com.qiwenshare.file.api.IFiletransferService;
-
 import com.qiwenshare.common.domain.AliyunOSS;
+import com.qiwenshare.common.domain.UploadFile;
+import com.qiwenshare.common.util.IDUtils;
 import com.qiwenshare.file.config.QiwenFileConfig;
-import com.qiwenshare.file.mapper.FileMapper;
-import com.qiwenshare.file.mapper.FiletransferMapper;
+import com.qiwenshare.file.dao.FileDao;
+import com.qiwenshare.file.dao.StorageDao;
+import com.qiwenshare.file.dao.entity.File;
+import com.qiwenshare.file.dao.entity.Storage;
 import com.qiwenshare.file.domain.FileBean;
 import com.qiwenshare.file.domain.StorageBean;
 import com.qiwenshare.file.domain.UserBean;
-import org.springframework.stereotype.Service;
-
 
 @Service
-public class FiletransferService implements IFiletransferService {
-
-    @Resource
-    FiletransferMapper filetransferMapper;
-    @Resource
-    FileMapper fileMapper;
-
+public class FiletransferService {
+    @Autowired
+    private StorageDao storageDao;
+    @Autowired
+    private FileDao fileDao;
     @Resource
     QiwenFileConfig qiwenFileConfig;
 
-    @Override
-    public void deleteUserImageByIds(List<Integer> imageidList) {
-        filetransferMapper.deleteUserImageByIds(imageidList);
-    }
-
-
-    @Override
     public void uploadFile(HttpServletRequest request, FileBean fileBean, UserBean sessionUserBean) {
         AliyunOSS oss = qiwenFileConfig.getAliyun().getOss();
         request.setAttribute("oss", oss);
         Uploader uploader = new Uploader(request);
         List<UploadFile> uploadFileList = uploader.upload();
-        for (int i = 0; i < uploadFileList.size(); i++){
+        for (int i = 0; i < uploadFileList.size(); i++) {
             UploadFile uploadFile = uploadFileList.get(i);
-            if (uploadFile.getSuccess() == 1){
+            if (uploadFile.getSuccess() == 1) {
                 fileBean.setFileUrl(uploadFile.getUrl());
                 fileBean.setFileSize(uploadFile.getFileSize());
                 fileBean.setFileName(uploadFile.getFileName());
@@ -54,14 +48,12 @@ public class FiletransferService implements IFiletransferService {
                 fileBean.setUploadTime(DateUtil.getCurrentTime());
                 fileBean.setIsOSS(uploadFile.getIsOSS());
                 fileBean.setIsDir(0);
-                fileMapper.insert(fileBean);
-                //fileMapper.insertFile(fileBean);
+                File file = new File();
+                BeanUtils.copyProperties(fileBean, file);
+                file.setFileId(IDUtils.nextId());
+                fileDao.save(file);
             }
-
-
             synchronized (FiletransferService.class) {
-//                UserBean sessionUserBean = (UserBean) SecurityUtils.getSubject().getPrincipal();
-
                 long sessionUserId = sessionUserBean.getUserId();
                 StorageBean storageBean = selectStorageBean(new StorageBean(sessionUserId));
                 if (storageBean == null) {
@@ -73,27 +65,28 @@ public class FiletransferService implements IFiletransferService {
                     updateStorageBean(storageBean);
                 }
             }
-
         }
     }
 
-    @Override
     public StorageBean selectStorageBean(StorageBean storageBean) {
-        return filetransferMapper.selectStorageBean(storageBean);
+        Storage storage = storageDao.getOneByUserId(storageBean.getUserId());
+        if (storage == null) {
+            return null;
+        }
+        BeanUtils.copyProperties(storage, storageBean);
+        return storageBean;
     }
 
-    @Override
     public void insertStorageBean(StorageBean storageBean) {
-        filetransferMapper.insertStorageBean(storageBean);
+        Storage storage = new Storage();
+        BeanUtils.copyProperties(storageBean, storage);
+        storageDao.save(storage);
     }
 
-    @Override
     public void updateStorageBean(StorageBean storageBean) {
-        filetransferMapper.updateStorageBean(storageBean);
+        Storage storage = new Storage();
+        BeanUtils.copyProperties(storageBean, storage);
+        storageDao.editStorageSizeByIdAndUserId(storageBean.getStorageSize(),storageBean.getUserId(),storageBean.getStorageId());
     }
 
-    @Override
-    public StorageBean selectStorageByUser(StorageBean storageBean) {
-        return filetransferMapper.selectStorageByUser(storageBean);
-    }
 }

@@ -1,40 +1,47 @@
 package com.qiwenshare.file.service;
 
-import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
+import java.util.ArrayList;
+import java.util.List;
+
+import javax.annotation.Resource;
+
+import com.qiwenshare.common.util.IDUtils;
+import org.apache.shiro.SecurityUtils;
+import org.springframework.beans.BeanUtils;
+import org.springframework.stereotype.Service;
+import org.springframework.util.CollectionUtils;
+
 import com.qiwenshare.common.cbb.DateUtil;
 import com.qiwenshare.common.operation.FileOperation;
 import com.qiwenshare.common.oss.AliyunOSSDelete;
-import com.qiwenshare.common.util.PathUtil;
-import com.qiwenshare.file.api.IFileService;
-import com.qiwenshare.file.config.AliyunConfig;
+import com.qiwenshare.common.util.PathUtils;
 import com.qiwenshare.file.config.QiwenFileConfig;
-import com.qiwenshare.file.mapper.FileMapper;
+import com.qiwenshare.file.dao.FileDao;
+import com.qiwenshare.file.dao.entity.File;
 import com.qiwenshare.file.domain.FileBean;
 import com.qiwenshare.file.domain.StorageBean;
 import com.qiwenshare.file.domain.UserBean;
-import org.apache.shiro.SecurityUtils;
-import org.springframework.stereotype.Service;
-
-import javax.annotation.Resource;
-import java.util.List;
 
 
 @Service
-public class FileService extends ServiceImpl<FileMapper, FileBean> implements IFileService {
+public class FileService {
 
-    @Resource
-    FileMapper fileMapper;
     @Resource
     FiletransferService filetransferService;
     @Resource
     QiwenFileConfig qiwenFileConfig;
+    @Resource
+    FileDao fileDao;
 
-    @Override
+    
     public void insertFile(FileBean fileBean) {
-        fileMapper.insertFile(fileBean);
+        File file = new File();
+        BeanUtils.copyProperties(fileBean,file);
+        file.setFileId(IDUtils.nextId());
+        fileDao.save(file);
     }
 
-    @Override
+    
     public void batchInsertFile(List<FileBean> fileBeanList) {
         UserBean sessionUserBean = (UserBean) SecurityUtils.getSubject().getPrincipal();
         StorageBean storageBean = filetransferService.selectStorageBean(new StorageBean(sessionUserBean.getUserId()));
@@ -44,7 +51,16 @@ public class FileService extends ServiceImpl<FileMapper, FileBean> implements IF
                 fileSizeSum += fileBean.getFileSize();
             }
         }
-        fileMapper.batchInsertFile(fileBeanList);
+        if (!CollectionUtils.isEmpty(fileBeanList)) {
+            List<File> fileList = new ArrayList<>();
+            fileBeanList.forEach(item->{
+                File file = new File();
+                BeanUtils.copyProperties(item,file);
+                fileList.add(file);
+            });
+            fileDao.saveBatch(fileList);
+        }
+
         if (storageBean != null) {
             long updateFileSize = storageBean.getStorageSize() + fileSizeSum;
 
@@ -53,38 +69,83 @@ public class FileService extends ServiceImpl<FileMapper, FileBean> implements IF
         }
     }
 
-    @Override
+    
     public void updateFile(FileBean fileBean) {
         fileBean.setUploadTime(DateUtil.getCurrentTime());
-        fileMapper.updateFile(fileBean);
+        File file = new File();
+        BeanUtils.copyProperties(fileBean,file);
+        fileDao.edit(file);
     }
 
-    @Override
+    
     public List<FileBean> selectFileByNameAndPath(FileBean fileBean) {
-        return fileMapper.selectFileByNameAndPath(fileBean);
+        List<FileBean> fileBeanList = new ArrayList<>();
+        List<File> fileList = fileDao.getListByNameAndPath(fileBean.getFileName(), fileBean.getFilePath());
+        if (!CollectionUtils.isEmpty(fileList)) {
+            fileList.forEach(item->{
+                FileBean fileBeanTemp = new FileBean();
+                BeanUtils.copyProperties(item,fileBeanTemp);
+                fileBeanList.add(fileBeanTemp);
+            });
+        }
+        return fileBeanList;
     }
 
-    @Override
+    
     public FileBean selectFileById(FileBean fileBean) {
-        return fileMapper.selectFileById(fileBean);
+        File file = fileDao.getOne(fileBean.getFileId());
+        if (file == null) {
+            return null;
+        }
+        BeanUtils.copyProperties(file, fileBean);
+        return fileBean;
     }
 
-    @Override
+    
     public List<FileBean> selectFilePathTreeByUserId(FileBean fileBean) {
-        return fileMapper.selectFilePathTreeByUserId(fileBean);
+        List<FileBean> fileBeanList = new ArrayList<>();
+        List<File> fileList = fileDao.getListByUserIdAndIsDir(fileBean.getUserId());
+        if (!CollectionUtils.isEmpty(fileList)) {
+            fileList.forEach(item->{
+                FileBean fileBeanTemp = new FileBean();
+                BeanUtils.copyProperties(item,fileBeanTemp);
+                fileBeanList.add(fileBeanTemp);
+            });
+        }
+        return fileBeanList;
     }
 
-    @Override
+    
     public List<FileBean> selectFileList(FileBean fileBean) {
-        return fileMapper.selectFileList(fileBean);
+        List<FileBean> fileBeanList = new ArrayList<>();
+        String filePath = fileBean.getFilePath();
+        Long userId = fileBean.getUserId();
+        List<File> fileList = fileDao.getListByFilePathAndUserId(filePath, userId);
+        if (!CollectionUtils.isEmpty(fileList)) {
+            fileList.forEach(item->{
+                FileBean fileBeanTemp = new FileBean();
+                BeanUtils.copyProperties(item,fileBeanTemp);
+                fileBeanList.add(fileBeanTemp);
+            });
+        }
+        return fileBeanList;
     }
 
-    @Override
-    public List<FileBean> selectFileListByIds(List<Integer> fileIdList) {
-        return fileMapper.selectFileListByIds(fileIdList);
+    
+    public List<FileBean> selectFileListByIds(List<Long> fileIdList) {
+        List<FileBean> fileBeanList = new ArrayList<>();
+        List<File> fileList = fileDao.getListByIdList(fileIdList);
+        if (!CollectionUtils.isEmpty(fileList)) {
+            fileList.forEach(item->{
+                FileBean fileBeanTemp = new FileBean();
+                BeanUtils.copyProperties(item,fileBeanTemp);
+                fileBeanList.add(fileBeanTemp);
+            });
+        }
+        return fileBeanList;
     }
 
-    @Override
+    
     public List<FileBean> selectFileTreeListLikeFilePath(String filePath) {
         FileBean fileBean = new FileBean();
         filePath = filePath.replace("\\", "\\\\\\\\");
@@ -93,16 +154,24 @@ public class FileService extends ServiceImpl<FileMapper, FileBean> implements IF
         filePath = filePath.replace("_", "\\_");
 
         fileBean.setFilePath(filePath);
-
-        return fileMapper.selectFileTreeListLikeFilePath(fileBean);
+        List<FileBean> fileBeanList = new ArrayList<>();
+        List<File> fileList = fileDao.getListByFilePathLike(fileBean.getFilePath());
+        if (!CollectionUtils.isEmpty(fileList)) {
+            fileList.forEach(item->{
+                FileBean fileBeanTemp = new FileBean();
+                BeanUtils.copyProperties(item,fileBeanTemp);
+                fileBeanList.add(fileBeanTemp);
+            });
+        }
+        return fileBeanList;
     }
 
-    @Override
+    
     public void deleteFile(FileBean fileBean, UserBean sessionUserBean) {
         //UserBean sessionUserBean = (UserBean) SecurityUtils.getSubject().getPrincipal();
         StorageBean storageBean = filetransferService.selectStorageBean(new StorageBean(sessionUserBean.getUserId()));
         long deleteSize = 0;
-        String fileUrl = PathUtil.getStaticPath() + fileBean.getFileUrl();
+        String fileUrl = PathUtils.getStaticPath() + fileBean.getFileUrl();
         if (fileBean.getIsDir() == 1) {
             //1、先删除子目录
             String filePath = fileBean.getFilePath() + fileBean.getFileName() + "/";
@@ -111,7 +180,7 @@ public class FileService extends ServiceImpl<FileMapper, FileBean> implements IF
             for (int i = 0; i < fileList.size(); i++){
                 FileBean file = fileList.get(i);
                 //1.1、删除数据库文件
-                fileMapper.deleteFileById(file);
+                fileDao.removeById(file.getFileId());
                 //1.2、如果是文件，需要记录文件大小
                 if (file.getIsDir() != 1){
                     deleteSize += file.getFileSize();
@@ -120,16 +189,16 @@ public class FileService extends ServiceImpl<FileMapper, FileBean> implements IF
                         if (file.getIsOSS() == 1) {
                             AliyunOSSDelete.deleteObject(qiwenFileConfig.getAliyun().getOss(), file.getFileUrl().substring(1));
                         } else {
-                            FileOperation.deleteFile(PathUtil.getStaticPath() + file.getFileUrl());
+                            FileOperation.deleteFile(PathUtils.getStaticPath() + file.getFileUrl());
                         }
 
                     }
                 }
             }
             //2、根目录单独删除
-            fileMapper.deleteFileById(fileBean);
+            fileDao.removeById(fileBean.getFileId());
         }else{
-            fileMapper.deleteFileById(fileBean);
+            fileDao.removeById(fileBean.getFileId());
             deleteSize = FileOperation.getFileSize(fileUrl);
             //删除服务器文件
             if (fileBean.getFileUrl() != null && fileBean.getFileUrl().indexOf("upload") != -1){
@@ -151,19 +220,17 @@ public class FileService extends ServiceImpl<FileMapper, FileBean> implements IF
         }
     }
 
-    @Override
-    public void deleteFileByIds(List<Integer> fileIdList) {
-        fileMapper.deleteFileByIds(fileIdList);
+
+    public void deleteFileByIds(List<Long> fileIdList) {
+        fileDao.removeByIdList(fileIdList);
     }
 
-
-    @Override
     public void updateFilepathByFilepath(String oldfilePath, String newfilePath, String fileName, String extendName) {
         if ("null".equals(extendName)){
             extendName = null;
         }
         //移动根目录
-        fileMapper.updateFilepathByPathAndName(oldfilePath, newfilePath, fileName, extendName);
+        fileDao.editFilepathByPathAndName(oldfilePath, newfilePath, fileName, extendName);
 
         //移动子目录
         oldfilePath = oldfilePath + fileName + "/";
@@ -175,13 +242,22 @@ public class FileService extends ServiceImpl<FileMapper, FileBean> implements IF
         oldfilePath = oldfilePath.replace("_", "\\_");
 
         if (extendName == null) { //为null说明是目录，则需要移动子目录
-            fileMapper.updateFilepathByFilepath(oldfilePath, newfilePath);
+            fileDao.editFilePathByFilePath(oldfilePath, newfilePath);
         }
 
     }
 
-    @Override
+    
     public List<FileBean> selectFileByExtendName(List<String> fileNameList, long userId) {
-        return fileMapper.selectFileByExtendName(fileNameList, userId);
+        List<FileBean> fileBeanList = new ArrayList<>();
+        List<File> fileList = fileDao.getListByUserIdExtendNameList(userId, fileNameList);
+        if (!CollectionUtils.isEmpty(fileList)) {
+            fileList.forEach(item->{
+                FileBean fileBeanTemp = new FileBean();
+                BeanUtils.copyProperties(item,fileBeanTemp);
+                fileBeanList.add(fileBeanTemp);
+            });
+        }
+        return fileBeanList;
     }
 }

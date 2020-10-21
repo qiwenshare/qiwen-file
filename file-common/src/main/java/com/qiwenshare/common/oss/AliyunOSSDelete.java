@@ -23,11 +23,7 @@ package com.qiwenshare.common.oss;
 
 import com.aliyun.oss.OSS;
 import com.aliyun.oss.OSSClientBuilder;
-import com.aliyun.oss.model.ObjectMetadata;
 import com.qiwenshare.common.domain.AliyunOSS;
-import com.qiwenshare.common.util.FileUtil;
-
-import java.io.InputStream;
 
 
 public class AliyunOSSDelete {

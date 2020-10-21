@@ -1,7 +1,10 @@
 package com.qiwenshare.file.config.shiro;
 
-import com.qiwenshare.file.domain.UserBean;
-import com.qiwenshare.file.service.UserService;
+import java.util.HashMap;
+import java.util.Map;
+
+import javax.annotation.Resource;
+
 import org.apache.shiro.SecurityUtils;
 import org.apache.shiro.authc.AuthenticationException;
 import org.apache.shiro.authc.AuthenticationInfo;
@@ -13,9 +16,8 @@ import org.apache.shiro.realm.AuthorizingRealm;
 import org.apache.shiro.subject.PrincipalCollection;
 import org.apache.shiro.util.ByteSource;
 
-import javax.annotation.Resource;
-import java.util.HashMap;
-import java.util.Map;
+import com.qiwenshare.file.domain.UserBean;
+import com.qiwenshare.file.service.UserService;
 
 public class MyShiroRealm extends AuthorizingRealm {
     @Resource
@@ -28,60 +30,47 @@ public class MyShiroRealm extends AuthorizingRealm {
         System.out.println("权限配置-->MyShiroRealm.doGetAuthorizationInfo()");
         SimpleAuthorizationInfo authorizationInfo = new SimpleAuthorizationInfo();
 
-
         return authorizationInfo;
     }
 
-    /*主要是用来进行身份认证的，也就是说验证用户输入的账号和密码是否正确。*/
+    /**
+     * @author dehui dou
+     * @description 主要是用来进行身份认证的，也就是说验证用户输入的账号和密码是否正确
+     * @param token
+     * @return org.apache.shiro.authc.AuthenticationInfo
+     */
     @Override
-    protected AuthenticationInfo doGetAuthenticationInfo(AuthenticationToken token)
-            throws AuthenticationException {
-        //设置登录过期时间，永不过期
+    protected AuthenticationInfo doGetAuthenticationInfo(AuthenticationToken token) throws AuthenticationException {
+        // 设置登录过期时间，永不过期
         SecurityUtils.getSubject().getSession().setTimeout(-1000L);
-        //获取用户的输入的账号.
-        String username = (String) token.getPrincipal();
-        String password = new String((char[]) token.getCredentials());
+        // 获取用户的输入的账号.
+        String username = (String)token.getPrincipal();
+        String password = new String((char[])token.getCredentials());
 
         UserBean qquserinfo = qqLoginInfoMap.get(username + password);
         SimpleAuthenticationInfo authenticationInfo = null;
-        if (qquserinfo != null){ //qq登录
+        // qq登录
+        if (qquserinfo != null) {
             qqLoginInfoMap.remove(username + password);
             UserBean userInfo = userInfoService.selectUserByopenId(password);
-
             if (userInfo == null) {
                 return null;
             }
-
             ByteSource byteSourceSalt = ByteSource.Util.bytes(userInfo.getSalt());
-            authenticationInfo = new SimpleAuthenticationInfo(
-                    userInfo, //用户名
-                    userInfo.getQqPassword(), //密码
-                    byteSourceSalt,
-                    getName()  //realm name
-            );
-        }else {
-
+            authenticationInfo =
+                new SimpleAuthenticationInfo(userInfo, userInfo.getQqPassword(), byteSourceSalt, getName());
+        } else {
             UserBean userInfo = userInfoService.findUserInfoByTelephone(username);
-
             if (userInfo == null) {
                 return null;
             }
 
             ByteSource byteSourceSalt = ByteSource.Util.bytes(userInfo.getSalt());
-            authenticationInfo = new SimpleAuthenticationInfo(
-                    userInfo, //用户名
-                    userInfo.getPassword(), //密码
-                    byteSourceSalt,
-                    getName()  //realm name
-            );
+            // 用户名,密码,realm name
+            authenticationInfo =
+                new SimpleAuthenticationInfo(userInfo, userInfo.getPassword(), byteSourceSalt, getName());
         }
-
-        //mailService.sendLoginSafeMail(userInfo); //登录邮件
-
         return authenticationInfo;
     }
-
-
-
 
 }

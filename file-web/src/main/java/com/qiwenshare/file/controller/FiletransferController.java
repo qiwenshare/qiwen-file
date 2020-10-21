@@ -5,33 +5,30 @@ import com.aliyun.oss.OSS;
 import com.aliyun.oss.model.OSSObject;
 import com.qiwenshare.common.operation.FileOperation;
 import com.qiwenshare.common.oss.AliyunOSSDownload;
-import com.qiwenshare.common.util.PathUtil;
+import com.qiwenshare.common.util.PathUtils;
 import com.qiwenshare.common.cbb.RestResult;
-import com.qiwenshare.common.operation.ImageOperation;
-import com.qiwenshare.file.api.IFileService;
-import com.qiwenshare.file.api.IFiletransferService;
 import com.qiwenshare.file.api.IRemoteUserService;
 import com.qiwenshare.file.config.QiwenFileConfig;
 import com.qiwenshare.file.domain.FileBean;
 import com.qiwenshare.file.domain.StorageBean;
 import com.qiwenshare.file.domain.UserBean;
+import com.qiwenshare.file.service.FileService;
+import com.qiwenshare.file.service.FiletransferService;
 import org.apache.shiro.SecurityUtils;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpHeaders;
 import org.springframework.web.bind.annotation.*;
 
 import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.*;
-import java.util.List;
 
 @RestController
 @RequestMapping("/filetransfer")
 public class FiletransferController {
 
     @Resource
-    IFiletransferService filetransferService;
+    FiletransferService filetransferService;
 
     @Resource
     FileController fileController;
@@ -41,7 +38,7 @@ public class FiletransferController {
     @Autowired
     QiwenFileConfig qiwenFileConfig;
     @Resource
-    IFileService fileService;
+    FileService fileService;
 
     /**
      * 上传文件
@@ -50,7 +47,6 @@ public class FiletransferController {
      * @return
      */
     @RequestMapping(value = "/uploadfile", method = RequestMethod.POST)
-    @ResponseBody
     public String uploadFile(HttpServletRequest request, FileBean fileBean, @RequestHeader("token") String token) {
         RestResult<String> restResult = new RestResult<String>();
         //UserBean sessionUserBean = (UserBean) SecurityUtils.getSubject().getPrincipal();
@@ -100,7 +96,7 @@ public class FiletransferController {
         response.addHeader("Content-Disposition", "attachment;fileName=" + fileName);// 设置文件名
         byte[] buffer = new byte[1024];
         BufferedInputStream bis = null;
-        FileBean fileBean1 = fileService.getById(fileBean.getFileId());
+        FileBean fileBean1 = fileService.selectFileById(fileBean);
         if (fileBean1.getIsOSS() != null && fileBean1.getIsOSS() == 1) {
 
             AliyunOSSDownload aliyunOSSDownload= new AliyunOSSDownload();
@@ -130,7 +126,7 @@ public class FiletransferController {
             ossClient.shutdown();
         } else {
             //设置文件路径
-            File file = FileOperation.newFile(PathUtil.getStaticPath() + fileBean.getFileUrl());
+            File file = FileOperation.newFile(PathUtils.getStaticPath() + fileBean.getFileUrl());
             if (file.exists()) {
 
 
@@ -171,7 +167,6 @@ public class FiletransferController {
      * @return
      */
     @RequestMapping(value = "/getstorage", method = RequestMethod.GET)
-    @ResponseBody
     public RestResult<StorageBean> getStorage(@RequestHeader("token") String token) {
         RestResult<StorageBean> restResult = new RestResult<StorageBean>();
         //UserBean sessionUserBean = (UserBean) SecurityUtils.getSubject().getPrincipal();
@@ -191,7 +186,7 @@ public class FiletransferController {
             storageBean.setUserId(sessionUserBean.getUserId());
         }
 
-        StorageBean storage = filetransferService.selectStorageByUser(storageBean);
+        StorageBean storage = filetransferService.selectStorageBean(storageBean);
         restResult.setData(storage);
         restResult.setSuccess(true);
         return restResult;

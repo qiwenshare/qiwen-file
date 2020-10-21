@@ -1,0 +1,71 @@
+server:
+  port: 8080
+eureka:
+  client:
+    fetchRegistry: false
+    register-with-eureka: false
+    serviceUrl:
+      defaultZone: http://${eureka.instance.hostname}:8761/eureka/
+  instance:
+    hostname: localhost
+logging:
+  file: /qiwenshare/qiwen-file/log/web.log
+  level:
+    root: info
+spring:
+  application:
+    name: qiwen-file
+  datasource:
+    username: root
+    password: root
+    url: jdbc:mysql://localhost:3306/filedemo?serverTimezone=UTC&useUnicode=true&useSSL=false
+    driver-class-name: com.mysql.cj.jdbc.Driver
+    type: com.alibaba.druid.pool.DruidDataSource
+    #   druid配置
+    initialSize: 5
+    minIdle: 5
+    maxActive: 20
+    maxWait: 60000
+    timeBetweenEvictionRunsMillis: 60000
+    minEvictableIdleTimeMillis: 300000
+    validationQuery: SELECT 1 FROM DUAL
+    testWhileIdle: true
+    testOnBorrow: false
+    testOnReturn: false
+    poolPreparedStatements: true
+    filters: stat,wall
+    maxPoolPreparedStatementPerConnectionSize: 20
+    useGlobalDataSourceStat: true
+    connectionProperties: druid.stat.mergeSql=true;druid.stat.slowSqlMillis=500
+  main:
+    allow-bean-definition-overriding: true
+  mvc:
+    static-path-pattern: /**
+  resources:
+    static-locations: classpath:/static
+  servlet:
+    multipart:
+      enabled: true
+      max-file-size: 2048MB
+      max-request-size: 2048MB
+mybatis-plus:
+  configuration:
+    log-impl: org.apache.ibatis.logging.stdout.StdOutImpl
+    map-underscore-to-camel-case: false
+  global-config:
+    db-config:
+      column-underline: false
+      db-type: mysql
+      field-strategy: not_empty
+  mapper-locations: classpath*:mapper/*Mapper.xml
+qiwen-file:
+  aliyun:
+    oss:
+      access-key-id: ''
+      access-key-secret: ''
+      bucket-name: ''
+      domain: ''
+      enabled: false
+      endpoint: ''
+  remote-login: false
+  share-mode: false

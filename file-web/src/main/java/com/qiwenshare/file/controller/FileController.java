@@ -4,35 +4,31 @@ import com.alibaba.fastjson.JSON;
 import com.qiwenshare.common.cbb.DateUtil;
 import com.qiwenshare.common.cbb.RestResult;
 import com.qiwenshare.common.operation.FileOperation;
-import com.qiwenshare.common.oss.AliyunOSSDelete;
 import com.qiwenshare.common.oss.AliyunOSSRename;
-import com.qiwenshare.common.util.FileUtil;
-import com.qiwenshare.common.util.PathUtil;
-import com.qiwenshare.file.api.IFileService;
-import com.qiwenshare.file.api.IFiletransferService;
+import com.qiwenshare.common.util.FileUtils;
+import com.qiwenshare.common.util.PathUtils;
 import com.qiwenshare.file.api.IRemoteUserService;
 import com.qiwenshare.file.config.QiwenFileConfig;
 import com.qiwenshare.file.domain.FileBean;
 import com.qiwenshare.file.domain.TreeNode;
 import com.qiwenshare.file.domain.UserBean;
+import com.qiwenshare.file.service.FileService;
 import org.apache.shiro.SecurityUtils;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpHeaders;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.web.servlet.ModelAndView;
 
 import javax.annotation.Resource;
 import java.io.File;
 import java.util.*;
 
-import static com.qiwenshare.common.util.FileUtil.getFileExtendsByType;
+import static com.qiwenshare.common.util.FileUtils.getFileExtendsByType;
 
 @RestController
 @RequestMapping("/file")
 public class FileController {
 
     @Resource
-    IFileService fileService;
+    FileService fileService;
     @Autowired
     IRemoteUserService remoteUserService;
     @Resource
@@ -46,7 +42,6 @@ public class FileController {
      * @return
      */
     @RequestMapping(value = "/createfile", method = RequestMethod.POST)
-    @ResponseBody
     public RestResult<String> createFile(@RequestBody FileBean fileBean, @RequestHeader("token") String token) {
         RestResult<String> restResult = new RestResult<>();
         if (!operationCheck(token).isSuccess()){
@@ -83,7 +78,6 @@ public class FileController {
      * @return
      */
     @RequestMapping(value = "/renamefile", method = RequestMethod.POST)
-    @ResponseBody
     public RestResult<String> renameFile(@RequestBody FileBean fileBean, @RequestHeader("token") String token) {
         RestResult<String> restResult = new RestResult<>();
         if (!operationCheck(token).isSuccess()){
@@ -112,7 +106,7 @@ public class FileController {
             fileBean.setFilePath(fileBean.getFilePath() + fileBean.getFileName() + "/");
         }
         if (fileBean.getIsOSS() == 1) {
-            FileBean file = fileService.getById(fileBean.getFileId());
+            FileBean file = fileService.selectFileById(fileBean);
             String fileUrl = file.getFileUrl();
             String newFileUrl = fileUrl.replace(file.getFileName(), fileBean.getFileName());
             fileBean.setFileUrl(newFileUrl);
@@ -126,7 +120,6 @@ public class FileController {
     }
 
     @RequestMapping(value = "/getfilelist", method = RequestMethod.GET)
-    @ResponseBody
     public RestResult<List<FileBean>> getFileList(FileBean fileBean, @RequestHeader("token") String token){
         RestResult<List<FileBean>> restResult = new RestResult<>();
         if(qiwenFileConfig.isShareMode()){
@@ -149,7 +142,7 @@ public class FileController {
             fileBean.setUserId(sessionUserBean.getUserId());
         }
 
-        fileBean.setFilePath(PathUtil.urlDecode(fileBean.getFilePath()));
+        fileBean.setFilePath(PathUtils.urlDecode(fileBean.getFilePath()));
         List<FileBean> fileList = fileService.selectFileList(fileBean);
 
         restResult.setData(fileList);
@@ -163,7 +156,6 @@ public class FileController {
      * @return
      */
     @RequestMapping(value = "/batchdeletefile", method = RequestMethod.POST)
-    @ResponseBody
     public RestResult<String> deleteImageByIds(@RequestBody FileBean fileBean, @RequestHeader("token") String token) {
         RestResult<String> result = new RestResult<String>();
         if (!operationCheck(token).isSuccess()) {
@@ -195,7 +187,6 @@ public class FileController {
      * @return
      */
     @RequestMapping(value = "/deletefile", method = RequestMethod.POST)
-    @ResponseBody
     public String deleteFile(@RequestBody FileBean fileBean, @RequestHeader("token") String token) {
         RestResult<String> result = new RestResult<String>();
         if (!operationCheck(token).isSuccess()){
@@ -223,14 +214,13 @@ public class FileController {
      * @return
      */
     @RequestMapping(value = "/unzipfile", method = RequestMethod.POST)
-    @ResponseBody
     public RestResult<String> unzipFile(@RequestBody FileBean fileBean, @RequestHeader("token") String token) {
         RestResult<String> result = new RestResult<String>();
         if (!operationCheck(token).isSuccess()){
             return operationCheck(token);
         }
 
-        String zipFileUrl = PathUtil.getStaticPath() + fileBean.getFileUrl();
+        String zipFileUrl = PathUtils.getStaticPath() + fileBean.getFileUrl();
         File file = FileOperation.newFile(zipFileUrl);
         String unzipUrl = file.getParent();
         String[] arr = fileBean.getFileUrl().split("\\.");
@@ -276,23 +266,22 @@ public class FileController {
             FileBean tempFileBean = new FileBean();
             tempFileBean.setUploadTime(DateUtil.getCurrentTime());
             tempFileBean.setUserId(sessionUserBean.getUserId());
-            tempFileBean.setFilePath(FileUtil.pathSplitFormat(fileBean.getFilePath() + entryName.replace(currentFile.getName(), "")).replace("\\", "/"));
+            tempFileBean.setFilePath(FileUtils.pathSplitFormat(fileBean.getFilePath() + entryName.replace(currentFile.getName(), "")).replace("\\", "/"));
             if (currentFile.isDirectory()){
 
                 tempFileBean.setIsDir(1);
 
                 tempFileBean.setFileName(currentFile.getName());
                 tempFileBean.setTimeStampName(currentFile.getName());
-                //tempFileBean.setFileUrl(File.separator + (file.getParent() + File.separator + currentFile.getName()).replace(PathUtil.getStaticPath(), ""));
             }else{
 
                 tempFileBean.setIsDir(0);
 
-                tempFileBean.setExtendName(FileUtil.getFileType(totalFileUrl));
-                tempFileBean.setFileName(FileUtil.getFileNameNotExtend(currentFile.getName()));
+                tempFileBean.setExtendName(FileUtils.getFileType(totalFileUrl));
+                tempFileBean.setFileName(FileUtils.getFileNameNotExtend(currentFile.getName()));
                 tempFileBean.setFileSize(currentFile.length());
-                tempFileBean.setTimeStampName(FileUtil.getFileNameNotExtend(currentFile.getName()));
-                tempFileBean.setFileUrl(File.separator + (currentFile.getPath()).replace(PathUtil.getStaticPath(), ""));
+                tempFileBean.setTimeStampName(FileUtils.getFileNameNotExtend(currentFile.getName()));
+                tempFileBean.setFileUrl(File.separator + (currentFile.getPath()).replace(PathUtils.getStaticPath(), ""));
             }
             fileBeanList.add(tempFileBean);
         }
@@ -309,7 +298,6 @@ public class FileController {
      * @return 返回前台移动结果
      */
     @RequestMapping(value = "/movefile", method = RequestMethod.POST)
-    @ResponseBody
     public RestResult<String> moveFile(@RequestBody FileBean fileBean, @RequestHeader("token") String token) {
         RestResult<String> result = new RestResult<String>();
         if (!operationCheck(token).isSuccess()){
@@ -332,7 +320,6 @@ public class FileController {
      * @return 返回前台移动结果
      */
     @RequestMapping(value = "/batchmovefile", method = RequestMethod.POST)
-    @ResponseBody
     public RestResult<String> batchMoveFile(@RequestBody FileBean fileBean, @RequestHeader("token") String token) {
 
         RestResult<String> result = new RestResult<String>();
@@ -388,7 +375,6 @@ public class FileController {
      * @return
      */
     @RequestMapping(value = "/selectfilebyfiletype", method = RequestMethod.GET)
-    @ResponseBody
     public RestResult<List<FileBean>> selectFileByFileType(FileBean fileBean, @RequestHeader("token") String token) {
         RestResult<List<FileBean>> result = new RestResult<List<FileBean>>();
         //UserBean sessionUserBean = (UserBean) SecurityUtils.getSubject().getPrincipal();
@@ -416,7 +402,6 @@ public class FileController {
      * @return
      */
     @RequestMapping(value = "/getfiletree", method = RequestMethod.GET)
-    @ResponseBody
     public RestResult<TreeNode> getFileTree(@RequestHeader("token") String token){
         RestResult<TreeNode> result = new RestResult<TreeNode>();
         FileBean fileBean = new FileBean();

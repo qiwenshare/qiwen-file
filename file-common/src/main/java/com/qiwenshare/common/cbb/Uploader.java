@@ -4,8 +4,8 @@ import com.qiwenshare.common.domain.AliyunOSS;
 import com.qiwenshare.common.domain.UploadFile;
 import com.qiwenshare.common.operation.ImageOperation;
 import com.qiwenshare.common.oss.AliyunOSSUpload;
-import com.qiwenshare.common.util.FileUtil;
-import com.qiwenshare.common.util.PathUtil;
+import com.qiwenshare.common.util.FileUtils;
+import com.qiwenshare.common.util.PathUtils;
 import org.apache.commons.fileupload.disk.DiskFileItemFactory;
 import org.apache.commons.fileupload.servlet.ServletFileUpload;
 import org.apache.commons.fileupload.util.Streams;
@@ -94,7 +94,7 @@ public class Uploader {
 
         String fileName = getFileName(originalName);
 
-        String fileType = FileUtil.getFileType(originalName);
+        String fileType = FileUtils.getFileType(originalName);
         uploadFile.setFileName(fileName);
         uploadFile.setFileType(fileType);
         uploadFile.setTimeStampName(timeStampName);
@@ -103,8 +103,8 @@ public class Uploader {
         String minFilePath = savePath + FILE_SEPARATOR + timeStampName + "_min" + "." + fileType;
         String ossFilePath = savePath + FILE_SEPARATOR + timeStampName + FILE_SEPARATOR + fileName +"." + fileType;
 
-        File file = new File(PathUtil.getStaticPath() + FILE_SEPARATOR + saveFilePath);
-        File minFile = new File(PathUtil.getStaticPath() + FILE_SEPARATOR + minFilePath);
+        File file = new File(PathUtils.getStaticPath() + FILE_SEPARATOR + saveFilePath);
+        File minFile = new File(PathUtils.getStaticPath() + FILE_SEPARATOR + minFilePath);
         if (aliyunOSS.isEnabled()) {
             AliyunOSSUpload.StreamUpload(inputStream, aliyunOSS, ossFilePath.substring(1));
             uploadFile.setIsOSS(1);
@@ -121,7 +121,7 @@ public class Uploader {
                 out = new FileOutputStream(file);
                 output = new BufferedOutputStream(out);
                 Streams.copy(in, output, true);
-                if (FileUtil.isImageFile(uploadFile.getFileType())){
+                if (FileUtils.isImageFile(uploadFile.getFileType())){
                     ImageOperation.thumbnailsImage(file, minFile, 300);
                 }
 
@@ -186,16 +186,16 @@ public class Uploader {
     private String getSaveFilePath(String path) {
         SimpleDateFormat formater = new SimpleDateFormat("yyyyMMdd");
         path = FILE_SEPARATOR + path + FILE_SEPARATOR + formater.format(new Date());
-        File dir = new File(PathUtil.getStaticPath() + path);
+        File dir = new File(PathUtils.getStaticPath() + path);
         //LOG.error(PathUtil.getStaticPath() + path);
         if (!dir.exists()) {
             try {
                 boolean isSuccessMakeDir = dir.mkdirs();
                 if (!isSuccessMakeDir) {
-                    LOG.error("目录创建失败:" + PathUtil.getStaticPath() + path);
+                    LOG.error("目录创建失败:" + PathUtils.getStaticPath() + path);
                 }
             } catch (Exception e) {
-                LOG.error("目录创建失败" + PathUtil.getStaticPath() + path);
+                LOG.error("目录创建失败" + PathUtils.getStaticPath() + path);
                 return "";
             }
         }

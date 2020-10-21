@@ -9,7 +9,7 @@ import java.net.URLDecoder;
 import java.security.NoSuchAlgorithmException;
 import java.security.SecureRandom;
 
-public class PathUtil {
+public class PathUtils {
     /**
      * 获取项目所在的根目录路径 resources路径
      * @return

@@ -2,7 +2,7 @@ package com.qiwenshare.common.util;
 
 import java.util.Random;
 
-public class PasswordUtil {
+public class PasswordUtils {
     public static String getSaltValue() {
         Random r = new Random();
         StringBuilder sb = new StringBuilder(16);

@@ -2,8 +2,8 @@ package com.qiwenshare.common.operation;
 
 import com.github.junrar.Archive;
 import com.github.junrar.rarfile.FileHeader;
-import com.qiwenshare.common.util.FileUtil;
-import com.qiwenshare.common.util.PathUtil;
+import com.qiwenshare.common.util.FileUtils;
+import com.qiwenshare.common.util.PathUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -355,8 +355,8 @@ public class FileOperation {
     }
 
     public static long deleteFileFromDisk(String fileurl) {
-        String fileUrl = PathUtil.getStaticPath() + fileurl;
-        String extendName = FileUtil.getFileType(fileUrl);
+        String fileUrl = PathUtils.getStaticPath() + fileurl;
+        String extendName = FileUtils.getFileType(fileUrl);
         String minFileUrl = fileUrl.replace("." + extendName, "_min." + extendName);
         long filesize = getFileSize(fileUrl);
 

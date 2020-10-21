@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.qiwenshare.file.dao.mapper.PermissionMapper">
+
+    <!-- 通用查询映射结果 -->
+    <resultMap id="BaseResultMap" type="com.qiwenshare.file.dao.entity.Permission">
+        <id column="permissionId" property="permissionId" />
+        <result column="available" property="available" />
+        <result column="name" property="name" />
+        <result column="parentId" property="parentId" />
+        <result column="parentIds" property="parentIds" />
+        <result column="permission" property="permission" />
+        <result column="resourceType" property="resourceType" />
+        <result column="url" property="url" />
+    </resultMap>
+
+    <!-- 通用查询结果列 -->
+    <sql id="Base_Column_List">
+        permissionId, available, name, parentId, parentIds, permission, resourceType, url
+    </sql>
+
+</mapper>

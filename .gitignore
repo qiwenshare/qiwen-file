@@ -1,7 +1,6 @@
 /.idea
-/scp-config/*.iml
 /release
-/scp-common/target
-/scp-config/target
 /*.log
 /file-common/target
+/file-common/*.iml
+*.iml

@@ -21,22 +21,12 @@
 
 package com.qiwenshare.common.oss;
 
-import java.io.BufferedReader;
-import java.io.ByteArrayInputStream;
-import java.io.File;
 import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
 
-import com.aliyun.oss.ClientException;
 import com.aliyun.oss.OSS;
 import com.aliyun.oss.OSSClientBuilder;
-import com.aliyun.oss.OSSException;
 import com.aliyun.oss.model.*;
 import com.qiwenshare.common.domain.AliyunOSS;
-import com.qiwenshare.common.util.FileUtil;
 
 
 public class AliyunOSSUpload {

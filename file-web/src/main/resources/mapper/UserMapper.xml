@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.qiwenshare.file.dao.mapper.UserMapper">
+
+    <!-- 通用查询映射结果 -->
+    <resultMap id="BaseResultMap" type="com.qiwenshare.file.dao.entity.User">
+        <id column="userId" property="userId"/>
+        <result column="addrArea" property="addrArea"/>
+        <result column="addrCity" property="addrCity"/>
+        <result column="addrProvince" property="addrProvince"/>
+        <result column="birthday" property="birthday"/>
+        <result column="email" property="email"/>
+        <result column="imageUrl" property="imageUrl"/>
+        <result column="industry" property="industry"/>
+        <result column="intro" property="intro"/>
+        <result column="openId" property="openId"/>
+        <result column="password" property="password"/>
+        <result column="position" property="position"/>
+        <result column="qqPassword" property="qqPassword"/>
+        <result column="realname" property="realname"/>
+        <result column="registerTime" property="registerTime"/>
+        <result column="salt" property="salt"/>
+        <result column="sex" property="sex"/>
+        <result column="telephone" property="telephone"/>
+        <result column="username" property="username"/>
+    </resultMap>
+
+    <!-- 通用查询结果列 -->
+    <sql id="Base_Column_List">
+        userId, addrArea, addrCity, addrProvince, birthday, email, imageUrl, industry, intro, openId, password, position, qqPassword, realname, registerTime, salt, sex, telephone, username
+    </sql>
+
+    <select id="getOneByUserName" resultType="com.qiwenshare.file.dao.entity.User">
+        select * from user
+        left join user_role on user_role.userId = user.userId
+        left join role on role.roleId = user_role.roleId
+        where (username = #{username}) AND openId IS NULL
+    </select>
+</mapper>

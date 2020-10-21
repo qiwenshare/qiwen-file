@@ -1,23 +1,12 @@
 package com.qiwenshare.file.domain;
 
-import com.baomidou.mybatisplus.annotation.TableName;
-import lombok.Data;
-
-import javax.persistence.*;
-
 /**
  * 存储信息类
  */
-@Data
-@Table(name = "storage")
-@Entity
-@TableName("storage")
 public class StorageBean {
     /**
      * 存储id
      */
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long storageId;
 
     /**
@@ -36,6 +25,30 @@ public class StorageBean {
 
     public StorageBean(long userId) {
         this.userId = userId;
+    }
+
+    public Long getStorageId() {
+        return storageId;
+    }
+
+    public void setStorageId(Long storageId) {
+        this.storageId = storageId;
+    }
+
+    public Long getUserId() {
+        return userId;
+    }
+
+    public void setUserId(Long userId) {
+        this.userId = userId;
+    }
+
+    public Long getStorageSize() {
+        return storageSize;
+    }
+
+    public void setStorageSize(Long storageSize) {
+        this.storageSize = storageSize;
     }
 
 }

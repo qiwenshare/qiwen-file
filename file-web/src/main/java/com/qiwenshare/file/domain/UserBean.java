@@ -1,29 +1,20 @@
 package com.qiwenshare.file.domain;
 
-import com.baomidou.mybatisplus.annotation.TableName;
-import lombok.Data;
-
-import javax.persistence.*;
-import javax.websocket.Session;
 import java.util.List;
+
+import javax.websocket.Session;
 
 /**
  * 用户基础信息类
  *
  * @author ma116
  */
-@Data
-@Table(name = "user", uniqueConstraints = {
-        @UniqueConstraint(name = "openIdIndex", columnNames = {"openId"})
-})
-@Entity
-@TableName("user")
+
 public class UserBean {
     /**
      * 用户id
      */
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
+
     private Long userId;
 
     /**
@@ -54,7 +45,6 @@ public class UserBean {
     /**
      * 重复密码
      */
-    @Transient
     private String passwordAgain;
 
     /**
@@ -110,8 +100,7 @@ public class UserBean {
     /**
      * 盐值
      */
-    private String salt;//加密密码的盐
-    //private byte state;//用户状态,0:创建未认证（比如没有激活，没有输入验证码等等）--等待验证的用户 , 1:正常状态,2：用户被锁定.
+    private String salt;// 加密密码的盐
 
     /**
      * 用户头像URL
@@ -123,39 +112,243 @@ public class UserBean {
      */
     private String registerTime;
 
-
     /**
      * 与某个客户端的连接会话，需要通过它来给客户端发送数据
      */
-    @Transient
     private Session session;
 
     /**
      * 消息未读数
      */
-    @Transient
     private Integer notReadCount;
 
     /**
      * 验证码
      */
-    @Transient
     private String verificationCode;
 
-    @Transient
     private String token;
-    @Transient
     private String downloadDomain;
-    @Transient
     private String viewDomain;
 
     /**
      * 角色列表
      */
-    @ManyToMany(fetch = FetchType.EAGER)//立即从数据库中进行加载数据
-    @JoinTable(name = "user_role",
-            joinColumns = {@JoinColumn(name = "userId")},
-            inverseJoinColumns = {@JoinColumn(name = "roleid")})
     private List<Role> roleList;// 一个用户具有多个角色
 
+    public Long getUserId() {
+        return userId;
+    }
+
+    public void setUserId(Long userId) {
+        this.userId = userId;
+    }
+
+    public String getOpenId() {
+        return openId;
+    }
+
+    public void setOpenId(String openId) {
+        this.openId = openId;
+    }
+
+    public String getUsername() {
+        return username;
+    }
+
+    public void setUsername(String username) {
+        this.username = username;
+    }
+
+    public String getRealname() {
+        return realname;
+    }
+
+    public void setRealname(String realname) {
+        this.realname = realname;
+    }
+
+    public String getPassword() {
+        return password;
+    }
+
+    public void setPassword(String password) {
+        this.password = password;
+    }
+
+    public String getQqPassword() {
+        return qqPassword;
+    }
+
+    public void setQqPassword(String qqPassword) {
+        this.qqPassword = qqPassword;
+    }
+
+    public String getPasswordAgain() {
+        return passwordAgain;
+    }
+
+    public void setPasswordAgain(String passwordAgain) {
+        this.passwordAgain = passwordAgain;
+    }
+
+    public String getTelephone() {
+        return telephone;
+    }
+
+    public void setTelephone(String telephone) {
+        this.telephone = telephone;
+    }
+
+    public String getEmail() {
+        return email;
+    }
+
+    public void setEmail(String email) {
+        this.email = email;
+    }
+
+    public String getSex() {
+        return sex;
+    }
+
+    public void setSex(String sex) {
+        this.sex = sex;
+    }
+
+    public String getBirthday() {
+        return birthday;
+    }
+
+    public void setBirthday(String birthday) {
+        this.birthday = birthday;
+    }
+
+    public String getAddrProvince() {
+        return addrProvince;
+    }
+
+    public void setAddrProvince(String addrProvince) {
+        this.addrProvince = addrProvince;
+    }
+
+    public String getAddrCity() {
+        return addrCity;
+    }
+
+    public void setAddrCity(String addrCity) {
+        this.addrCity = addrCity;
+    }
+
+    public String getAddrArea() {
+        return addrArea;
+    }
+
+    public void setAddrArea(String addrArea) {
+        this.addrArea = addrArea;
+    }
+
+    public String getIndustry() {
+        return industry;
+    }
+
+    public void setIndustry(String industry) {
+        this.industry = industry;
+    }
+
+    public String getPosition() {
+        return position;
+    }
+
+    public void setPosition(String position) {
+        this.position = position;
+    }
+
+    public String getIntro() {
+        return intro;
+    }
+
+    public void setIntro(String intro) {
+        this.intro = intro;
+    }
+
+    public String getSalt() {
+        return salt;
+    }
+
+    public void setSalt(String salt) {
+        this.salt = salt;
+    }
+
+    public String getImageUrl() {
+        return imageUrl;
+    }
+
+    public void setImageUrl(String imageUrl) {
+        this.imageUrl = imageUrl;
+    }
+
+    public String getRegisterTime() {
+        return registerTime;
+    }
+
+    public void setRegisterTime(String registerTime) {
+        this.registerTime = registerTime;
+    }
+
+    public Session getSession() {
+        return session;
+    }
+
+    public void setSession(Session session) {
+        this.session = session;
+    }
+
+    public Integer getNotReadCount() {
+        return notReadCount;
+    }
+
+    public void setNotReadCount(Integer notReadCount) {
+        this.notReadCount = notReadCount;
+    }
+
+    public String getVerificationCode() {
+        return verificationCode;
+    }
+
+    public void setVerificationCode(String verificationCode) {
+        this.verificationCode = verificationCode;
+    }
+
+    public String getToken() {
+        return token;
+    }
+
+    public void setToken(String token) {
+        this.token = token;
+    }
+
+    public String getDownloadDomain() {
+        return downloadDomain;
+    }
+
+    public void setDownloadDomain(String downloadDomain) {
+        this.downloadDomain = downloadDomain;
+    }
+
+    public String getViewDomain() {
+        return viewDomain;
+    }
+
+    public void setViewDomain(String viewDomain) {
+        this.viewDomain = viewDomain;
+    }
+
+    public List<Role> getRoleList() {
+        return roleList;
+    }
+
+    public void setRoleList(List<Role> roleList) {
+        this.roleList = roleList;
+    }
 }
