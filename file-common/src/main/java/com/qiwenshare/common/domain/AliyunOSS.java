@@ -1,8 +1,5 @@
 package com.qiwenshare.common.domain;
 
-import lombok.Data;
-
-
 public class AliyunOSS {
     private boolean enabled;
     private String endpoint;

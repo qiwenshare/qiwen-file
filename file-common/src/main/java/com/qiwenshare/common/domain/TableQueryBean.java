@@ -1,10 +1,7 @@
 package com.qiwenshare.common.domain;
 
-import lombok.Data;
-
-@Data
 public class TableQueryBean {
-    //key, pageIndex, pageSize, sortField, sortOrder
+    // key, pageIndex, pageSize, sortField, sortOrder
 
     private int page;
     private int limit;
@@ -24,4 +21,51 @@ public class TableQueryBean {
      */
     private String order;
 
+    public int getPage() {
+        return page;
+    }
+
+    public void setPage(int page) {
+        this.page = page;
+    }
+
+    public int getLimit() {
+        return limit;
+    }
+
+    public void setLimit(int limit) {
+        this.limit = limit;
+    }
+
+    public int getBeginCount() {
+        return beginCount;
+    }
+
+    public void setBeginCount(int beginCount) {
+        this.beginCount = beginCount;
+    }
+
+    public String getKey() {
+        return key;
+    }
+
+    public void setKey(String key) {
+        this.key = key;
+    }
+
+    public String getField() {
+        return field;
+    }
+
+    public void setField(String field) {
+        this.field = field;
+    }
+
+    public String getOrder() {
+        return order;
+    }
+
+    public void setOrder(String order) {
+        this.order = order;
+    }
 }
