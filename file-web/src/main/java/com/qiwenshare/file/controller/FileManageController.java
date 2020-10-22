@@ -307,9 +307,10 @@ public class FileManageController extends BaseController{
     }
 
     /**
-     * 获取文件树
-     * 
-     * @return
+     * @author dehui dou
+     * @description 获取文件树
+     * @param token
+     * @return com.qiwenshare.file.domain.RestResult<com.qiwenshare.file.domain.TreeNode>
      */
     @RequestMapping(value = "/getfiletree", method = RequestMethod.GET)
     public RestResult<TreeNode> getFileTree(@RequestHeader("token") String token) {
@@ -349,17 +350,14 @@ public class FileManageController extends BaseController{
         Map<String, String> map = new HashMap<>();
         filePath = filePath + currentNodeName + "/";
         map.put("filePath", filePath);
-        if (!isExistPath(childrenTreeNodes, currentNodeName)) { // 1、判断有没有该子节点，如果没有则插入
-            // 插入
+        // 1、判断有没有该子节点，如果没有则插入
+        if (!isExistPath(childrenTreeNodes, currentNodeName)) {
             TreeNode resultTreeNode = new TreeNode();
-
             resultTreeNode.setAttributes(map);
             resultTreeNode.setLabel(nodeNameQueue.poll());
             resultTreeNode.setId(treeid++);
-
             childrenTreeNodes.add(resultTreeNode);
-
-        } else { // 2、如果有，则跳过
+        } else {
             nodeNameQueue.poll();
         }
 
