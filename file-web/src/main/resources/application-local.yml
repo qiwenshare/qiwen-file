@@ -58,12 +58,4 @@ mybatis-plus:
       db-type: mysql
       field-strategy: not_empty
   mapper-locations: classpath*:mapper/*Mapper.xml
-qiwen-file:
-  aliyun:
-    oss:
-      access-key-id: ''
-      access-key-secret: ''
-      bucket-name: ''
-      domain: ''
-      enabled: false
-      endpoint: ''
+
