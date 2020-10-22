@@ -1,6 +1,6 @@
 package com.qiwenshare.file.config.exception;
 
-import com.qiwenshare.common.cbb.RestResult;
+import com.qiwenshare.file.domain.RestResult;
 import com.qiwenshare.file.constants.CommonConstants.RepCodeEnum;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

@@ -25,36 +25,23 @@ public class ShiroConfig {
         System.out.println("ShiroConfiguration.shirFilter()" + "mac");
         ShiroFilterFactoryBean shiroFilterFactoryBean = new ShiroFilterFactoryBean();
         shiroFilterFactoryBean.setSecurityManager(securityManager);
-        // 拦截器.
         Map<String, String> filterChainDefinitionMap = new LinkedHashMap<String, String>();
-
-        // 配置退出过滤器
         filterChainDefinitionMap.put("/logout", "logout");
-
-        // <!-- authc:所有url都必须认证通过才可以访问; anon:所有url都都可以匿名访问-->
-        // filterChainDefinitionMap.put("/user/userlogin", "authc");
-        // 如果不设置默认会自动寻找Web工程根目录下的"/login.jsp"页面
-        // shiroFilterFactoryBean.setLoginUrl("/user/userlogin");
-        // 登录成功后要跳转的链接
-        // shiroFilterFactoryBean.setSuccessUrl("/user/userlogin");
-        // 未授权界面;
         shiroFilterFactoryBean.setUnauthorizedUrl("/403");
-        // filterChainDefinitionMap.put("/**", "perms");
         shiroFilterFactoryBean.setFilterChainDefinitionMap(filterChainDefinitionMap);
         return shiroFilterFactoryBean;
     }
 
     /**
-     * 凭证匹配器 （由于我们的密码校验交给Shiro的SimpleAuthenticationInfo进行处理了 ）
-     *
-     * @return
+     * @author dehui dou
+     * @description 凭证匹配器 （由于我们的密码校验交给Shiro的SimpleAuthenticationInfo进行处理了 ）
+     * @param
+     * @return org.apache.shiro.authc.credential.HashedCredentialsMatcher
      */
     @Bean
     public HashedCredentialsMatcher hashedCredentialsMatcher() {
         HashedCredentialsMatcher hashedCredentialsMatcher = new HashedCredentialsMatcher();
-        // 散列算法:这里使用MD5算法;
         hashedCredentialsMatcher.setHashAlgorithmName("md5");
-        // 散列的次数，比如散列两次，相当于 md5(md5(""));
         hashedCredentialsMatcher.setHashIterations(1024);
         return hashedCredentialsMatcher;
     }
@@ -73,18 +60,11 @@ public class ShiroConfig {
         return securityManager;
     }
 
-    // @Bean
-    // public DefaultAdvisorAutoProxyCreator advisorAutoProxyCreator(){
-    // DefaultAdvisorAutoProxyCreator advisorAutoProxyCreator = new DefaultAdvisorAutoProxyCreator();
-    // advisorAutoProxyCreator.setProxyTargetClass(true);
-    // return advisorAutoProxyCreator;
-    // }
-
     /**
-     * 开启shiro aop注解支持. 使用代理方式;所以需要开启代码支持;
-     *
+     * @author dehui dou
+     * @description 开启shiro aop注解支持. 使用代理方式;所以需要开启代码支持;
      * @param securityManager
-     * @return
+     * @return org.apache.shiro.spring.security.interceptor.AuthorizationAttributeSourceAdvisor
      */
     @Bean
     public AuthorizationAttributeSourceAdvisor authorizationAttributeSourceAdvisor(SecurityManager securityManager) {
@@ -98,16 +78,11 @@ public class ShiroConfig {
     public SimpleMappingExceptionResolver createSimpleMappingExceptionResolver() {
         SimpleMappingExceptionResolver r = new SimpleMappingExceptionResolver();
         Properties mappings = new Properties();
-        // 数据库异常处理
         mappings.setProperty("DatabaseException", "databaseError");
         mappings.setProperty("UnauthorizedException", "403");
-        // None by default
         r.setExceptionMappings(mappings);
-        // No default
         r.setDefaultErrorView("error");
-        // Default is "exception"
         r.setExceptionAttribute("ex");
-        // r.setWarnLogCategory("example.MvcLogger"); // No default
         return r;
     }
 
@@ -115,7 +90,6 @@ public class ShiroConfig {
     public FilterRegistrationBean filterRegistrationBean() {
         // 对响应头进行CORS授权
         MyCorsRegistration corsRegistration = new MyCorsRegistration("*");
-
         corsRegistration
             // 允许向该服务器提交请求的URI，*表示全部允许
             .allowedOrigins("*")
@@ -133,7 +107,6 @@ public class ShiroConfig {
         // 第一个参数表示过滤的url,*表示过滤所有
         configurationSource.registerCorsConfiguration("/**", corsRegistration.getCorsConfiguration());
         CorsFilter corsFilter = new CorsFilter(configurationSource);
-
         return new FilterRegistrationBean(corsFilter);
     }
 

@@ -29,7 +29,6 @@ public class MyShiroRealm extends AuthorizingRealm {
     protected AuthorizationInfo doGetAuthorizationInfo(PrincipalCollection principals) {
         System.out.println("权限配置-->MyShiroRealm.doGetAuthorizationInfo()");
         SimpleAuthorizationInfo authorizationInfo = new SimpleAuthorizationInfo();
-
         return authorizationInfo;
     }
 
@@ -46,7 +45,6 @@ public class MyShiroRealm extends AuthorizingRealm {
         // 获取用户的输入的账号.
         String username = (String)token.getPrincipal();
         String password = new String((char[])token.getCredentials());
-
         UserBean qquserinfo = qqLoginInfoMap.get(username + password);
         SimpleAuthenticationInfo authenticationInfo = null;
         // qq登录
@@ -64,9 +62,7 @@ public class MyShiroRealm extends AuthorizingRealm {
             if (userInfo == null) {
                 return null;
             }
-
             ByteSource byteSourceSalt = ByteSource.Util.bytes(userInfo.getSalt());
-            // 用户名,密码,realm name
             authenticationInfo =
                 new SimpleAuthenticationInfo(userInfo, userInfo.getPassword(), byteSourceSalt, getName());
         }

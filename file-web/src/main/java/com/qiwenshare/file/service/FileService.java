@@ -3,19 +3,16 @@ package com.qiwenshare.file.service;
 import java.util.ArrayList;
 import java.util.List;
 
-import javax.annotation.Resource;
-
-import com.qiwenshare.common.util.IDUtils;
 import org.apache.shiro.SecurityUtils;
 import org.springframework.beans.BeanUtils;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
 
-import com.qiwenshare.common.cbb.DateUtil;
-import com.qiwenshare.common.operation.FileOperation;
-import com.qiwenshare.common.oss.AliyunOSSDelete;
-import com.qiwenshare.common.util.PathUtils;
-import com.qiwenshare.file.config.QiwenFileConfig;
+import com.qiwenshare.file.util.DateUtils;
+import com.qiwenshare.file.util.FileUtils;
+import com.qiwenshare.file.util.IDUtils;
+import com.qiwenshare.file.util.PathUtils;
 import com.qiwenshare.file.dao.FileDao;
 import com.qiwenshare.file.dao.entity.File;
 import com.qiwenshare.file.domain.FileBean;
@@ -26,12 +23,10 @@ import com.qiwenshare.file.domain.UserBean;
 @Service
 public class FileService {
 
-    @Resource
-    FiletransferService filetransferService;
-    @Resource
-    QiwenFileConfig qiwenFileConfig;
-    @Resource
-    FileDao fileDao;
+    @Autowired
+    private FiletransferService filetransferService;
+    @Autowired
+    private FileDao fileDao;
 
     
     public void insertFile(FileBean fileBean) {
@@ -71,7 +66,7 @@ public class FileService {
 
     
     public void updateFile(FileBean fileBean) {
-        fileBean.setUploadTime(DateUtil.getCurrentTime());
+        fileBean.setUploadTime(DateUtils.getCurrentTime());
         File file = new File();
         BeanUtils.copyProperties(fileBean,file);
         fileDao.edit(file);
@@ -168,7 +163,6 @@ public class FileService {
 
     
     public void deleteFile(FileBean fileBean, UserBean sessionUserBean) {
-        //UserBean sessionUserBean = (UserBean) SecurityUtils.getSubject().getPrincipal();
         StorageBean storageBean = filetransferService.selectStorageBean(new StorageBean(sessionUserBean.getUserId()));
         long deleteSize = 0;
         String fileUrl = PathUtils.getStaticPath() + fileBean.getFileUrl();
@@ -186,12 +180,7 @@ public class FileService {
                     deleteSize += file.getFileSize();
                     //1.3、删除服务器文件，只删除文件，目录是虚拟的
                     if (file.getFileUrl() != null && file.getFileUrl().indexOf("upload") != -1){
-                        if (file.getIsOSS() == 1) {
-                            AliyunOSSDelete.deleteObject(qiwenFileConfig.getAliyun().getOss(), file.getFileUrl().substring(1));
-                        } else {
-                            FileOperation.deleteFile(PathUtils.getStaticPath() + file.getFileUrl());
-                        }
-
+                        FileUtils.deleteFile(PathUtils.getStaticPath() + file.getFileUrl());
                     }
                 }
             }
@@ -199,14 +188,10 @@ public class FileService {
             fileDao.removeById(fileBean.getFileId());
         }else{
             fileDao.removeById(fileBean.getFileId());
-            deleteSize = FileOperation.getFileSize(fileUrl);
+            deleteSize = FileUtils.getFileSize(fileUrl);
             //删除服务器文件
             if (fileBean.getFileUrl() != null && fileBean.getFileUrl().indexOf("upload") != -1){
-                if (fileBean.getIsOSS() == 1) {
-                    AliyunOSSDelete.deleteObject(qiwenFileConfig.getAliyun().getOss(), fileBean.getFileUrl().substring(1));
-                } else {
-                    FileOperation.deleteFile(fileUrl);
-                }
+                FileUtils.deleteFile(fileUrl);
             }
         }
 

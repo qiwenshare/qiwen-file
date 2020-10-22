@@ -1,10 +1,7 @@
 package com.qiwenshare.file.controller;
 
 import com.alibaba.fastjson.JSON;
-import com.qiwenshare.common.cbb.RestResult;
-import com.qiwenshare.common.domain.AliyunOSS;
-import com.qiwenshare.file.api.IRemoteUserService;
-import com.qiwenshare.file.config.QiwenFileConfig;
+import com.qiwenshare.file.domain.RestResult;
 import com.qiwenshare.file.domain.UserBean;
 import com.qiwenshare.file.service.UserService;
 import org.apache.shiro.SecurityUtils;
@@ -12,136 +9,100 @@ import org.apache.shiro.authc.UsernamePasswordToken;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
-import javax.annotation.Resource;
 import java.util.HashMap;
 import java.util.Map;
 
 /**
- * 用户控制类
- *
- * @author ma116
+ * @author dehui dou
+ * @date 2020/10/22 14:25
+ * @description 用户控制类
  */
 @RestController
 @RequestMapping("/user")
-public class UserController {
-    @Resource
+public class UserController extends BaseController{
+
+    @Autowired
     UserService userService;
-    @Autowired
-    IRemoteUserService remoteUserService;
-    @Autowired
-    QiwenFileConfig qiwenFileConfig;
-
     public static Map<String, String> verificationCodeMap = new HashMap<>();
-
-    public static final int TEXT = 4;
-
-    /**
-     * 当前模块
-     */
-    public static final String CURRENT_MODULE = "用户管理";
 
     @RequestMapping(value = "/adduser", method = RequestMethod.POST)
     public RestResult<String> addUser(@RequestBody UserBean userBean) {
-        RestResult<String> restResult = null;
-        boolean isRemoteLogin = qiwenFileConfig.isRemoteLogin();
-        if (isRemoteLogin) {
-            restResult = remoteUserService.addUser(userBean);
-        } else {
-            restResult = userService.registerUser(userBean);
-        }
-        return restResult;
+        return userService.registerUser(userBean);
     }
 
     /**
-     * 用户登录
-     *
+     * @author dehui dou
+     * @description 用户登录
      * @param userBean
-     * @return
+     * @return com.qiwenshare.common.cbb.RestResult<com.qiwenshare.file.domain.UserBean>
      */
     @RequestMapping("/userlogin")
     public RestResult<UserBean> userLogin(@RequestBody UserBean userBean) {
         RestResult<UserBean> restResult = new RestResult<UserBean>();
-        boolean isRemoteLogin = qiwenFileConfig.isRemoteLogin();
-        if (isRemoteLogin) {
-            restResult = remoteUserService.userLogin(userBean);
-        } else {
-            restResult.setSuccess(true);
-            try {
-                SecurityUtils.getSubject()
-                    .login(new UsernamePasswordToken(userBean.getUsername(), userBean.getPassword()));
-            } catch (Exception e) {
-                restResult.setSuccess(false);
-                restResult.setErrorMessage("手机号或密码错误！");
-            }
-            UserBean sessionUserBean = (UserBean)SecurityUtils.getSubject().getPrincipal();
-            if (sessionUserBean != null) {
-                restResult.setData(sessionUserBean);
-                restResult.setSuccess(true);
-            } else {
-                restResult.setSuccess(false);
-                restResult.setErrorMessage("手机号或密码错误！");
-            }
+        restResult.setSuccess(true);
+        try {
+            SecurityUtils.getSubject().login(new UsernamePasswordToken(userBean.getUsername(), userBean.getPassword()));
+        } catch (Exception e) {
+            restResult.setSuccess(false);
+            restResult.setErrorMessage("手机号或密码错误！");
         }
-
+        UserBean sessionUserBean = getLoginUserInfo();
+        if (sessionUserBean != null) {
+            restResult.setData(sessionUserBean);
+            restResult.setSuccess(true);
+        } else {
+            restResult.setSuccess(false);
+            restResult.setErrorMessage("手机号或密码错误！");
+        }
         return restResult;
     }
 
     /**
-     * 用户注销
-     *
-     * @return
+     * @author dehui dou
+     * @description 用户注销
+     * @param token
+     * @return com.qiwenshare.common.cbb.RestResult<java.lang.String>
      */
     @RequestMapping(value = "/userlogout", method = RequestMethod.POST)
     public RestResult<String> userLogout(@RequestHeader("token") String token) {
         RestResult<String> restResult = new RestResult<String>();
-        boolean isRemoteLogin = qiwenFileConfig.isRemoteLogin();
-        if (isRemoteLogin) {
-            restResult = remoteUserService.userLogout(token);
-        } else {
-            SecurityUtils.getSubject().logout();
-            restResult.setSuccess(true);
-            restResult.setData("注销登录成功！");
-        }
-
+        SecurityUtils.getSubject().logout();
+        restResult.setSuccess(true);
+        restResult.setData("注销登录成功！");
         return restResult;
     }
 
-    /* 检查用户登录信息
-    *
-    * @return
-    */
+    /**
+     * @author dehui dou
+     * @description 检查用户登录信息
+     * @param token
+     * @return com.qiwenshare.common.cbb.RestResult<com.qiwenshare.file.domain.UserBean>
+     */
     @GetMapping("/checkuserlogininfo")
     public RestResult<UserBean> checkUserLoginInfo(@RequestHeader("token") String token) {
         RestResult<UserBean> restResult = new RestResult<UserBean>();
-        boolean isRemoteLogin = qiwenFileConfig.isRemoteLogin();
-        if (isRemoteLogin) {
+        UserBean sessionUserBean = getLoginUserInfo();
+        if (sessionUserBean != null) {
+            UserBean userInfo = userService.getUserInfoById(sessionUserBean.getUserId());
 
-            restResult = remoteUserService.checkUserLoginInfo(token);
+            restResult.setData(userInfo);
+            restResult.setSuccess(true);
         } else {
-            UserBean sessionUserBean = (UserBean)SecurityUtils.getSubject().getPrincipal();
-            if (sessionUserBean != null) {
-                UserBean userInfo = userService.getUserInfoById(sessionUserBean.getUserId());
-
-                restResult.setData(userInfo);
-                restResult.setSuccess(true);
-            } else {
-                restResult.setSuccess(false);
-                restResult.setErrorMessage("用户暂未登录");
-            }
+            restResult.setSuccess(false);
+            restResult.setErrorMessage("用户暂未登录");
         }
         return restResult;
     }
 
     /**
-     * 得到用户信息通过id
-     *
+     * @author dehui dou
+     * @description 得到用户信息通过id
      * @param userId
-     * @return
+     * @return java.lang.String
      */
     @RequestMapping("/getuserinfobyid")
     public String getUserInfoById(int userId) {
         RestResult<UserBean> restResult = new RestResult<UserBean>();
-
         UserBean userBean = userService.getUserInfoById(userId);
         if (userBean == null) {
             restResult.setSuccess(false);

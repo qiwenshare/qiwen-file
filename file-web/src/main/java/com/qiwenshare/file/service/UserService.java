@@ -2,15 +2,15 @@ package com.qiwenshare.file.service;
 
 import java.util.regex.Pattern;
 
-import com.qiwenshare.common.util.IDUtils;
+import com.qiwenshare.file.util.DateUtils;
+import com.qiwenshare.file.util.IDUtils;
 import org.apache.shiro.crypto.hash.SimpleHash;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import com.qiwenshare.common.cbb.DateUtil;
-import com.qiwenshare.common.cbb.RestResult;
-import com.qiwenshare.common.util.PasswordUtils;
+import com.qiwenshare.file.domain.RestResult;
+import com.qiwenshare.file.util.PasswordUtils;
 import com.qiwenshare.file.controller.UserController;
 import com.qiwenshare.file.dao.UserDao;
 import com.qiwenshare.file.dao.UserRoleDao;
@@ -132,7 +132,7 @@ public class UserService {
         userBean.setSalt(salt);
 
         userBean.setPassword(newPassword);
-        userBean.setRegisterTime(DateUtil.getCurrentTime());
+        userBean.setRegisterTime(DateUtils.getCurrentTime());
         int result = saveUserAndUserRole(userBean);
         if (result == 1) {
             restResult.setSuccess(true);

@@ -1,11 +1,11 @@
-package com.qiwenshare.common.operation;
+package com.qiwenshare.file.util;
 
 import net.coobird.thumbnailator.Thumbnails;
 
 import java.io.File;
 import java.io.IOException;
 
-public class ImageOperation {
+public class ImageUtils {
     /**
      * 左旋
      * @param inFile 源文件

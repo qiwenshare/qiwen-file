@@ -1,11 +1,17 @@
-package com.qiwenshare.common.cbb;
+package com.qiwenshare.file.domain;
 
-import com.qiwenshare.common.domain.AliyunOSS;
-import com.qiwenshare.common.domain.UploadFile;
-import com.qiwenshare.common.operation.ImageOperation;
-import com.qiwenshare.common.oss.AliyunOSSUpload;
-import com.qiwenshare.common.util.FileUtils;
-import com.qiwenshare.common.util.PathUtils;
+import java.io.*;
+import java.security.NoSuchAlgorithmException;
+import java.security.SecureRandom;
+import java.text.SimpleDateFormat;
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.Iterator;
+import java.util.List;
+
+import javax.servlet.http.HttpServletRequest;
+
+import com.qiwenshare.file.util.ImageUtils;
 import org.apache.commons.fileupload.disk.DiskFileItemFactory;
 import org.apache.commons.fileupload.servlet.ServletFileUpload;
 import org.apache.commons.fileupload.util.Streams;
@@ -14,12 +20,8 @@ import org.slf4j.LoggerFactory;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.multipart.support.StandardMultipartHttpServletRequest;
 
-import javax.servlet.http.HttpServletRequest;
-import java.io.*;
-import java.security.NoSuchAlgorithmException;
-import java.security.SecureRandom;
-import java.text.SimpleDateFormat;
-import java.util.*;
+import com.qiwenshare.file.util.FileUtils;
+import com.qiwenshare.file.util.PathUtils;
 
 /**
  * 文件上传辅助类
@@ -27,18 +29,15 @@ import java.util.*;
 public class Uploader {
     private static final Logger LOG = LoggerFactory.getLogger(Uploader.class);
 
-
     public static final String ROOT_PATH = "upload";
 
     public static final String FILE_SEPARATOR = "/";
 
     private StandardMultipartHttpServletRequest request = null;
 
-    private AliyunOSS aliyunOSS;
-
     // 文件允许格式
-    //private String[] allowFiles = {".rar", ".doc", ".docx", ".zip", ".pdf", ".txt", ".swf", ".wmv", ".gif", ".png", ".jpg", ".jpeg", ".bmp", "blob", ".mp4"};
-
+    // private String[] allowFiles = {".rar", ".doc", ".docx", ".zip", ".pdf", ".txt", ".swf", ".wmv", ".gif", ".png",
+    // ".jpg", ".jpeg", ".bmp", "blob", ".mp4"};
 
     // 文件大小限制，单位KB
     private int maxSize = 10000000;
@@ -46,14 +45,13 @@ public class Uploader {
     List<UploadFile> saveUploadFileList = new ArrayList<UploadFile>();
 
     public Uploader(HttpServletRequest request) {
-        aliyunOSS = (AliyunOSS) request.getAttribute("oss");
-        this.request = (StandardMultipartHttpServletRequest) request;
+        this.request = (StandardMultipartHttpServletRequest)request;
         saveUploadFileList = new ArrayList<>();
     }
 
     public List<UploadFile> upload() {
 
-        // 判断enctype属性是否为multipart/form-data 
+        // 判断enctype属性是否为multipart/form-data
         boolean isMultipart = ServletFileUpload.isMultipartContent(this.request);
         if (!isMultipart) {
             UploadFile uploadFile = new UploadFile();
@@ -62,15 +60,17 @@ public class Uploader {
             saveUploadFileList.add(uploadFile);
             return saveUploadFileList;
         }
-        DiskFileItemFactory dff = new DiskFileItemFactory();//1、创建工厂
+        DiskFileItemFactory dff = new DiskFileItemFactory();// 1、创建工厂
         String savePath = getSaveFilePath(ROOT_PATH);
         dff.setRepository(new File(savePath));
         try {
-            ServletFileUpload sfu = new ServletFileUpload(dff);//2、创建文件上传解析器
+            ServletFileUpload sfu = new ServletFileUpload(dff);// 2、创建文件上传解析器
             sfu.setSizeMax(this.maxSize * 1024L);
-            sfu.setHeaderEncoding("utf-8");//3、解决文件名的中文乱码
+            sfu.setHeaderEncoding("utf-8");// 3、解决文件名的中文乱码
             Iterator<String> iter = this.request.getFileNames();
-            while (iter.hasNext()) doUpload(savePath, iter);
+            while (iter.hasNext()) {
+                doUpload(savePath, iter);
+            }
         } catch (IOException e) {
             UploadFile uploadFile = new UploadFile();
             uploadFile.setSuccess(1);
@@ -89,7 +89,6 @@ public class Uploader {
         InputStream inputStream = multipartfile.getInputStream();
         String timeStampName = getTimeStampName();
 
-
         String originalName = multipartfile.getOriginalFilename();
 
         String fileName = getFileName(originalName);
@@ -101,39 +100,32 @@ public class Uploader {
 
         String saveFilePath = savePath + FILE_SEPARATOR + timeStampName + "." + fileType;
         String minFilePath = savePath + FILE_SEPARATOR + timeStampName + "_min" + "." + fileType;
-        String ossFilePath = savePath + FILE_SEPARATOR + timeStampName + FILE_SEPARATOR + fileName +"." + fileType;
+        String ossFilePath = savePath + FILE_SEPARATOR + timeStampName + FILE_SEPARATOR + fileName + "." + fileType;
 
         File file = new File(PathUtils.getStaticPath() + FILE_SEPARATOR + saveFilePath);
         File minFile = new File(PathUtils.getStaticPath() + FILE_SEPARATOR + minFilePath);
-        if (aliyunOSS.isEnabled()) {
-            AliyunOSSUpload.StreamUpload(inputStream, aliyunOSS, ossFilePath.substring(1));
-            uploadFile.setIsOSS(1);
-            uploadFile.setUrl(ossFilePath);
-        } else {
-            uploadFile.setIsOSS(0);
-            uploadFile.setUrl(saveFilePath);
-            BufferedInputStream in = null;
-            FileOutputStream out = null;
-            BufferedOutputStream output = null;
+        uploadFile.setIsOSS(0);
+        uploadFile.setUrl(saveFilePath);
+        BufferedInputStream in = null;
+        FileOutputStream out = null;
+        BufferedOutputStream output = null;
 
-            try {
-                in = new BufferedInputStream(inputStream);
-                out = new FileOutputStream(file);
-                output = new BufferedOutputStream(out);
-                Streams.copy(in, output, true);
-                if (FileUtils.isImageFile(uploadFile.getFileType())){
-                    ImageOperation.thumbnailsImage(file, minFile, 300);
-                }
-
-            } catch (FileNotFoundException e) {
-                LOG.error("文件没有发现" + e);
-            } catch (IOException e) {
-                LOG.error("文件读取失败" + e);
-            } finally {
-                closeStream(in, out, output);
+        try {
+            in = new BufferedInputStream(inputStream);
+            out = new FileOutputStream(file);
+            output = new BufferedOutputStream(out);
+            Streams.copy(in, output, true);
+            if (FileUtils.isImageFile(uploadFile.getFileType())) {
+                ImageUtils.thumbnailsImage(file, minFile, 300);
             }
-        }
 
+        } catch (FileNotFoundException e) {
+            LOG.error("文件没有发现" + e);
+        } catch (IOException e) {
+            LOG.error("文件读取失败" + e);
+        } finally {
+            closeStream(in, out, output);
+        }
 
         uploadFile.setSuccess(1);
         uploadFile.setMessage("上传成功");
@@ -141,9 +133,8 @@ public class Uploader {
         saveUploadFileList.add(uploadFile);
     }
 
-
-    private void closeStream(BufferedInputStream in, FileOutputStream out,
-                             BufferedOutputStream output) throws IOException {
+    private void closeStream(BufferedInputStream in, FileOutputStream out, BufferedOutputStream output)
+        throws IOException {
         if (in != null) {
             in.close();
         }
@@ -155,7 +146,7 @@ public class Uploader {
         }
     }
 
-    private String getFileName(String fileName){
+    private String getFileName(String fileName) {
         return fileName.substring(0, fileName.lastIndexOf("."));
     }
 
@@ -167,13 +158,11 @@ public class Uploader {
     private String getTimeStampName() {
         try {
             SecureRandom number = SecureRandom.getInstance("SHA1PRNG");
-            return "" + number.nextInt(10000)
-                    + System.currentTimeMillis();
+            return "" + number.nextInt(10000) + System.currentTimeMillis();
         } catch (NoSuchAlgorithmException e) {
             LOG.error("生成安全随机数失败");
         }
-        return ""
-                + System.currentTimeMillis();
+        return "" + System.currentTimeMillis();
 
     }
 
@@ -187,7 +176,7 @@ public class Uploader {
         SimpleDateFormat formater = new SimpleDateFormat("yyyyMMdd");
         path = FILE_SEPARATOR + path + FILE_SEPARATOR + formater.format(new Date());
         File dir = new File(PathUtils.getStaticPath() + path);
-        //LOG.error(PathUtil.getStaticPath() + path);
+        // LOG.error(PathUtil.getStaticPath() + path);
         if (!dir.exists()) {
             try {
                 boolean isSuccessMakeDir = dir.mkdirs();

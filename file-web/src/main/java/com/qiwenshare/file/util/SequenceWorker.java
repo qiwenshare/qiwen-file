@@ -1,4 +1,4 @@
-package com.qiwenshare.common.util;
+package com.qiwenshare.file.util;
 
 
 /**

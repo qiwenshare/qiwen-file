@@ -3,7 +3,7 @@ package com.qiwenshare.file.constants;
 
 import java.text.MessageFormat;
 
-import com.qiwenshare.common.cbb.RestResult;
+import com.qiwenshare.file.domain.RestResult;
 /**
  * @author dehui dou
  * @date 2020/8/25

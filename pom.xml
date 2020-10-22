@@ -17,7 +17,6 @@
 
     <properties>
         <java.version>1.8</java.version>
-        <spring-cloud.version>Hoxton.SR1</spring-cloud.version>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <maven.compiler.encoding>UTF-8</maven.compiler.encoding>
     </properties>
@@ -74,8 +73,6 @@
         <dependency>
             <groupId>org.apache.commons</groupId>
             <artifactId>commons-dbcp2</artifactId>
-<!--            <version>2.1.1</version>-->
-<!--            <scope>runtime</scope>-->
         </dependency>
 
     </dependencies>
@@ -83,13 +80,6 @@
 
     <dependencyManagement>
         <dependencies>
-            <dependency>
-                <groupId>org.springframework.cloud</groupId>
-                <artifactId>spring-cloud-dependencies</artifactId>
-                <version>${spring-cloud.version}</version>
-                <type>pom</type>
-                <scope>import</scope>
-            </dependency>
             <dependency>
                 <groupId>org.mybatis.spring.boot</groupId>
                 <artifactId>mybatis-spring-boot-starter</artifactId>
@@ -104,16 +94,6 @@
                 <groupId>commons-io</groupId>
                 <artifactId>commons-io</artifactId>
                 <version>2.6</version>
-            </dependency>
-            <dependency>
-                <groupId>org.springframework.boot</groupId>
-                <artifactId>spring-boot-starter-websocket</artifactId>
-                <version>2.1.5.RELEASE</version>
-            </dependency>
-            <dependency>
-                <groupId>org.hibernate</groupId>
-                <artifactId>hibernate-core</artifactId>
-                <version>5.4.1.Final</version>
             </dependency>
 
             <!--阿里云短信验证服务-->
@@ -132,9 +112,7 @@
     </dependencyManagement>
 
     <modules>
-        <module>file-common</module>
         <module>file-web</module>
-
     </modules>
 
     <build>

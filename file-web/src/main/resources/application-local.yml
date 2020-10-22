@@ -67,5 +67,3 @@ qiwen-file:
       domain: ''
       enabled: false
       endpoint: ''
-  remote-login: false
-  share-mode: false

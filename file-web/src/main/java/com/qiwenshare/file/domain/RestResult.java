@@ -1,4 +1,4 @@
-package com.qiwenshare.common.cbb;
+package com.qiwenshare.file.domain;
 
 public class RestResult<T> {
     private boolean success = true;

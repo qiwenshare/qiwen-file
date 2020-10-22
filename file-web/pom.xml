@@ -24,19 +24,6 @@
 
     <dependencies>
         <dependency>
-            <groupId>org.springframework.cloud</groupId>
-            <artifactId>spring-cloud-starter-netflix-eureka-server</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>org.springframework.cloud</groupId>
-            <artifactId>spring-cloud-starter-openfeign</artifactId>
-        </dependency>
-<!--        <dependency>-->
-<!--            <groupId>org.springframework.cloud</groupId>-->
-<!--            <artifactId>spring-cloud-config-client</artifactId>-->
-<!--        </dependency>-->
-
-        <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-test</artifactId>
             <scope>test</scope>
@@ -47,8 +34,6 @@
             <artifactId>mybatis-plus-boot-starter</artifactId>
             <version>3.3.1.tmp</version>
         </dependency>
-
-
         <!-- spring boot依赖包 -->
         <dependency>
             <groupId>org.springframework.boot</groupId>
@@ -66,11 +51,6 @@
             <version>1.4.0</version>
         </dependency>
 
-        <dependency>
-            <groupId>com.qiwenshare</groupId>
-            <artifactId>file-common</artifactId>
-            <version>1.0.0-SNAPSHOT</version>
-        </dependency>
         <!-- alibaba druid -->
         <dependency>
             <groupId>com.alibaba</groupId>
@@ -90,6 +70,41 @@
         <dependency>
             <groupId>org.apache.commons</groupId>
             <artifactId>commons-pool2</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>com.github.junrar</groupId>
+            <artifactId>junrar</artifactId>
+            <version>7.3.0</version>
+        </dependency>
+        <!-- https://mvnrepository.com/artifact/commons-fileupload/commons-fileupload -->
+        <dependency>
+            <groupId>commons-fileupload</groupId>
+            <artifactId>commons-fileupload</artifactId>
+            <version>1.3.3</version>
+        </dependency>
+
+        <!--图片压缩-->
+        <dependency>
+            <groupId>net.coobird</groupId>
+            <artifactId>thumbnailator</artifactId>
+            <version>0.4.8</version>
+        </dependency>
+        <!-- https://mvnrepository.com/artifact/org.jsoup/jsoup -->
+        <dependency>
+            <groupId>org.jsoup</groupId>
+            <artifactId>jsoup</artifactId>
+            <version>1.12.1</version>
+        </dependency>
+        <dependency>
+            <groupId>net.sourceforge.htmlunit</groupId>
+            <artifactId>htmlunit</artifactId>
+            <version>2.36.0</version>
+        </dependency>
+        <dependency>
+            <groupId>com.aliyun.oss</groupId>
+            <artifactId>aliyun-sdk-oss</artifactId>
+            <version>3.10.2</version>
         </dependency>
     </dependencies>
 

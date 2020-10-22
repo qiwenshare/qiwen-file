@@ -1,8 +1,6 @@
-package com.qiwenshare.common.domain;
+package com.qiwenshare.file.domain;
 
 public class TableQueryBean {
-    // key, pageIndex, pageSize, sortField, sortOrder
-
     private int page;
     private int limit;
     private int beginCount;

@@ -1,4 +1,4 @@
-package com.qiwenshare.common.cbb;
+package com.qiwenshare.file.util;
 
 import java.text.DateFormat;
 import java.text.ParseException;
@@ -6,7 +6,7 @@ import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.Date;
 
-public class DateUtil {
+public class DateUtils {
     /**
      * 获取系统当前时间
      *
@@ -39,7 +39,7 @@ public class DateUtil {
      * @throws ParseException 解析异常
      */
     public static java.sql.Date getSqlDateByFormatString(String formatString, String stringDate) throws ParseException {
-        long longtime = DateUtil.getDateByFormatString("yyyyMMdd", stringDate).getTime();
+        long longtime = DateUtils.getDateByFormatString("yyyyMMdd", stringDate).getTime();
         return new java.sql.Date(longtime);
     }
 
