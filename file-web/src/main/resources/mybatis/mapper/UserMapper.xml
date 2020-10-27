@@ -79,26 +79,6 @@
 
     </select>
 
-    <select id="selectUserListByCondition" resultMap="userBeanResultMapId"
-            parameterType="com.qiwenshare.common.domain.TableQueryBean">
-        SELECT * FROM user
-        <if test="key != null">
-            where username LIKE '%${key}%'
-        </if>
-        <if test="field != null and order != null">
-            order by ${field} ${order}
-        </if>
-        limit #{beginCount}, #{limit}
-    </select>
-
-    <select id="selectUserCountByCondition" resultType="int" parameterType="com.qiwenshare.common.domain.TableQueryBean">
-        SELECT count(*) FROM user
-        <if test="key != null">
-            where username LIKE '%${key}%'
-        </if>
-        limit #{beginCount}, #{limit}
-    </select>
-
     <delete id="deleteUserInfo" parameterType="com.qiwenshare.file.domain.UserBean">
         delete from user where userId = #{userId}
     </delete>
@@ -144,17 +124,5 @@
     </select>
 
 
-
-    <select id="selectPermissionListByCondition" resultType="com.qiwenshare.file.domain.Permission"
-            parameterType="com.qiwenshare.common.domain.TableQueryBean">
-        SELECT * FROM permission
-        <if test="key != null">
-            where permission LIKE '%${key}%'
-        </if>
-        <if test="field != null and order != null">
-            order by ${field} ${order}
-        </if>
-        limit #{beginCount}, #{limit}
-    </select>
 
 </mapper>

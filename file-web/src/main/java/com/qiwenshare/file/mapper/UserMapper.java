@@ -1,7 +1,6 @@
 package com.qiwenshare.file.mapper;
 
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
-import com.qiwenshare.common.domain.TableQueryBean;
 
 import com.qiwenshare.file.domain.UserBean;
 
@@ -57,9 +56,6 @@ public interface UserMapper extends BaseMapper<UserBean> {
 
     List<UserBean> selectAllUserList();
 
-    List<UserBean> selectUserListByCondition(TableQueryBean tableQueryBean);
 
-
-    int selectUserCountByCondition(TableQueryBean tableQueryBean);
 
 }

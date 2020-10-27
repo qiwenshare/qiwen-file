@@ -4,7 +4,6 @@ import com.alibaba.fastjson.JSON;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.qiwenshare.common.cbb.DateUtil;
 import com.qiwenshare.common.cbb.RestResult;
-import com.qiwenshare.common.domain.TableQueryBean;
 import com.qiwenshare.common.util.JjwtUtil;
 import com.qiwenshare.common.util.PasswordUtil;
 import com.qiwenshare.file.api.IUserService;
@@ -306,10 +305,6 @@ public class UserService extends ServiceImpl<UserMapper, UserBean> implements IU
 
 
 
-    @Override
-    public int selectUserCountByCondition(TableQueryBean tableQueryBean) {
-        return userMapper.selectUserCountByCondition(tableQueryBean);
-    }
 
     @Override
     public void deleteUserInfo(UserBean userBean) {

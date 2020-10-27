@@ -131,6 +131,9 @@ public class FileService extends ServiceImpl<FileMapper, FileBean> implements IF
         }else{
             fileMapper.deleteFileById(fileBean);
             deleteSize = FileOperation.getFileSize(fileUrl);
+            if (deleteSize == 0) {
+                deleteSize = fileBean.getFileSize();
+            }
             //删除服务器文件
             if (fileBean.getFileUrl() != null && fileBean.getFileUrl().indexOf("upload") != -1){
                 if (fileBean.getIsOSS() == 1) {

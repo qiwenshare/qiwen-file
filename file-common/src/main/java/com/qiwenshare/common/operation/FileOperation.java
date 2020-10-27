@@ -345,15 +345,6 @@ public class FileOperation {
         return res;
     }
 
-    public static void main(String[] args) {
-        try {
-//            unrar(new File("C:\\Users\\MACHAOP\\Desktop\\Oracle资料.rar"), "C:\\Users\\MACHAOP\\Desktop\\123");
-            unzip(new File("C:\\Users\\MACHAOP\\Desktop\\123.zip"),  "C:\\Users\\MACHAOP\\Desktop\\123");
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-    }
-
     public static long deleteFileFromDisk(String fileurl) {
         String fileUrl = PathUtil.getStaticPath() + fileurl;
         String extendName = FileUtil.getFileType(fileUrl);

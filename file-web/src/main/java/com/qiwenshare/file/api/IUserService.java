@@ -2,8 +2,6 @@ package com.qiwenshare.file.api;
 
 import com.baomidou.mybatisplus.extension.service.IService;
 import com.qiwenshare.common.cbb.RestResult;
-import com.qiwenshare.common.domain.TableQueryBean;
-import com.qiwenshare.file.domain.FileBean;
 import com.qiwenshare.file.domain.UserBean;
 
 import java.util.List;
@@ -104,10 +102,5 @@ public interface IUserService extends IService<UserBean> {
 
 
 
-    /**
-     * 获取用户数量
-     * @param tableQueryBean 查询条件
-     * @return 用户数量
-     */
-    int selectUserCountByCondition(TableQueryBean tableQueryBean);
+
 }
