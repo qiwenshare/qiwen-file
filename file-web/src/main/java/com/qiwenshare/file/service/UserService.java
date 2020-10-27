@@ -46,8 +46,10 @@ public class UserService extends ServiceImpl<UserMapper, UserBean> implements IU
         String subject = c.getSubject();
         logger.info("解析结果：" + subject);
         UserBean tokenUserBean = JSON.parseObject(subject, UserBean.class);
+        logger.info("tokenUserBean:" + JSON.toJSONString(tokenUserBean));
 
         UserBean saveUserBean = findUserInfoByTelephone(tokenUserBean.getTelephone());
+        logger.info("saveUserBean:" + JSON.toJSONString(saveUserBean));
         if (tokenUserBean.getPassword().equals(saveUserBean.getPassword())) {
 
             return saveUserBean;
