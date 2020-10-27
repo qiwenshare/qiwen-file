@@ -1,15 +1,20 @@
 package com.qiwenshare.file.service;
 
+import com.alibaba.fastjson.JSON;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.qiwenshare.common.cbb.DateUtil;
 import com.qiwenshare.common.cbb.RestResult;
 import com.qiwenshare.common.domain.TableQueryBean;
+import com.qiwenshare.common.util.JjwtUtil;
 import com.qiwenshare.common.util.PasswordUtil;
 import com.qiwenshare.file.api.IUserService;
 import com.qiwenshare.file.controller.UserController;
 import com.qiwenshare.file.domain.UserBean;
 import com.qiwenshare.file.mapper.UserMapper;
+import io.jsonwebtoken.Claims;
 import org.apache.shiro.crypto.hash.SimpleHash;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
@@ -18,9 +23,38 @@ import java.util.regex.Pattern;
 
 @Service
 public class UserService extends ServiceImpl<UserMapper, UserBean> implements IUserService {
-    //private static final Logger log= Logger.getLogger(EssayService.class);
+    private static final Logger logger = LoggerFactory.getLogger(UserService.class);
     @Resource
     UserMapper userMapper;
+
+    @Override
+    public UserBean getUserBeanByToken(String token){
+        Claims c = null;
+        try {
+            logger.info("token:" + token);
+            c = JjwtUtil.parseJWT(token);
+        } catch (Exception e) {
+            logger.error("解码异常");
+            e.printStackTrace();
+            return null;
+        }
+        if (c == null) {
+            logger.info("解码为空");
+
+            return null;
+        }
+        String subject = c.getSubject();
+        logger.info("解析结果：" + subject);
+        UserBean tokenUserBean = JSON.parseObject(subject, UserBean.class);
+
+        UserBean saveUserBean = findUserInfoByTelephone(tokenUserBean.getTelephone());
+        if (tokenUserBean.getPassword().equals(saveUserBean.getPassword())) {
+
+            return saveUserBean;
+        } else {
+            return null;
+        }
+    }
 
     /**
      * 用户注册

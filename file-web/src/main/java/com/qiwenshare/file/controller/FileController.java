@@ -11,6 +11,7 @@ import com.qiwenshare.common.util.PathUtil;
 import com.qiwenshare.file.api.IFileService;
 import com.qiwenshare.file.api.IFiletransferService;
 import com.qiwenshare.file.api.IRemoteUserService;
+import com.qiwenshare.file.api.IUserService;
 import com.qiwenshare.file.config.QiwenFileConfig;
 import com.qiwenshare.file.domain.FileBean;
 import com.qiwenshare.file.domain.TreeNode;
@@ -33,6 +34,8 @@ public class FileController {
 
     @Resource
     IFileService fileService;
+    @Resource
+    IUserService userService;
     @Autowired
     IRemoteUserService remoteUserService;
     @Resource
@@ -58,15 +61,7 @@ public class FileController {
             restResult.setSuccess(false);
             return restResult;
         }
-        UserBean sessionUserBean = new UserBean();
-        boolean isRemoteLogin = qiwenFileConfig.isRemoteLogin();
-        if (isRemoteLogin) {
-
-            RestResult<UserBean> restUserBean = remoteUserService.checkUserLoginInfo(token);
-            sessionUserBean = restUserBean.getData();
-        } else {
-            sessionUserBean = (UserBean) SecurityUtils.getSubject().getPrincipal();
-        }
+        UserBean sessionUserBean = userService.getUserBeanByToken(token);
 
         fileBean.setUserId(sessionUserBean.getUserId());
 
@@ -89,15 +84,7 @@ public class FileController {
         if (!operationCheck(token).isSuccess()){
             return operationCheck(token);
         }
-        UserBean sessionUserBean = new UserBean();
-        boolean isRemoteLogin = qiwenFileConfig.isRemoteLogin();
-        if (isRemoteLogin) {
-
-            RestResult<UserBean> restUserBean = remoteUserService.checkUserLoginInfo(token);
-            sessionUserBean = restUserBean.getData();
-        } else {
-            sessionUserBean = (UserBean) SecurityUtils.getSubject().getPrincipal();
-        }
+        UserBean sessionUserBean = userService.getUserBeanByToken(token);
         //UserBean sessionUserBean = (UserBean) SecurityUtils.getSubject().getPrincipal();
         fileBean.setUserId(sessionUserBean.getUserId());
         fileBean.setUploadTime(DateUtil.getCurrentTime());
@@ -132,16 +119,7 @@ public class FileController {
         if(qiwenFileConfig.isShareMode()){
             fileBean.setUserId(2L);
         }else {
-            //UserBean sessionUserBean = (UserBean) SecurityUtils.getSubject().getPrincipal();
-            UserBean sessionUserBean = new UserBean();
-            boolean isRemoteLogin = qiwenFileConfig.isRemoteLogin();
-            if (isRemoteLogin) {
-
-                RestResult<UserBean> restUserBean = remoteUserService.checkUserLoginInfo(token);
-                sessionUserBean = restUserBean.getData();
-            } else {
-                sessionUserBean = (UserBean) SecurityUtils.getSubject().getPrincipal();
-            }
+            UserBean sessionUserBean = userService.getUserBeanByToken(token);
             if (fileBean == null) {
                 restResult.setSuccess(false);
                 return restResult;
@@ -169,15 +147,7 @@ public class FileController {
         if (!operationCheck(token).isSuccess()) {
             return operationCheck(token);
         }
-        UserBean sessionUserBean = new UserBean();
-        boolean isRemoteLogin = qiwenFileConfig.isRemoteLogin();
-        if (isRemoteLogin) {
-
-            RestResult<UserBean> restUserBean = remoteUserService.checkUserLoginInfo(token);
-            sessionUserBean = restUserBean.getData();
-        } else {
-            sessionUserBean = (UserBean) SecurityUtils.getSubject().getPrincipal();
-        }
+        UserBean sessionUserBean = userService.getUserBeanByToken(token);
         List<FileBean> fileList = JSON.parseArray(fileBean.getFiles(), FileBean.class);
 
         for (FileBean file : fileList) {
@@ -201,15 +171,7 @@ public class FileController {
         if (!operationCheck(token).isSuccess()){
             return JSON.toJSONString(operationCheck(token));
         }
-        UserBean sessionUserBean = new UserBean();
-        boolean isRemoteLogin = qiwenFileConfig.isRemoteLogin();
-        if (isRemoteLogin) {
-
-            RestResult<UserBean> restUserBean = remoteUserService.checkUserLoginInfo(token);
-            sessionUserBean = restUserBean.getData();
-        } else {
-            sessionUserBean = (UserBean) SecurityUtils.getSubject().getPrincipal();
-        }
+        UserBean sessionUserBean = userService.getUserBeanByToken(token);
         fileService.deleteFile(fileBean, sessionUserBean);
 
         result.setSuccess(true);
@@ -258,16 +220,7 @@ public class FileController {
         }
 
         List<FileBean> fileBeanList = new ArrayList<>();
-        //UserBean sessionUserBean = (UserBean) SecurityUtils.getSubject().getPrincipal();
-        UserBean sessionUserBean = new UserBean();
-        boolean isRemoteLogin = qiwenFileConfig.isRemoteLogin();
-        if (isRemoteLogin) {
-
-            RestResult<UserBean> restUserBean = remoteUserService.checkUserLoginInfo(token);
-            sessionUserBean = restUserBean.getData();
-        } else {
-            sessionUserBean = (UserBean) SecurityUtils.getSubject().getPrincipal();
-        }
+        UserBean sessionUserBean = userService.getUserBeanByToken(token);
         for (int i = 0; i < fileEntryNameList.size(); i++){
             String entryName = fileEntryNameList.get(i);
             String totalFileUrl = unzipUrl + entryName;
@@ -356,16 +309,7 @@ public class FileController {
 
     public RestResult<String> operationCheck(String token){
         RestResult<String> result = new RestResult<String>();
-        //UserBean sessionUserBean = (UserBean) SecurityUtils.getSubject().getPrincipal();
-        UserBean sessionUserBean = new UserBean();
-        boolean isRemoteLogin = qiwenFileConfig.isRemoteLogin();
-        if (isRemoteLogin) {
-
-            RestResult<UserBean> restUserBean = remoteUserService.checkUserLoginInfo(token);
-            sessionUserBean = restUserBean.getData();
-        } else {
-            sessionUserBean = (UserBean) SecurityUtils.getSubject().getPrincipal();
-        }
+        UserBean sessionUserBean = userService.getUserBeanByToken(token);
         if (sessionUserBean == null){
             result.setSuccess(false);
             result.setErrorMessage("未登录");
@@ -391,16 +335,7 @@ public class FileController {
     @ResponseBody
     public RestResult<List<FileBean>> selectFileByFileType(FileBean fileBean, @RequestHeader("token") String token) {
         RestResult<List<FileBean>> result = new RestResult<List<FileBean>>();
-        //UserBean sessionUserBean = (UserBean) SecurityUtils.getSubject().getPrincipal();
-        UserBean sessionUserBean = new UserBean();
-        boolean isRemoteLogin = qiwenFileConfig.isRemoteLogin();
-        if (isRemoteLogin) {
-
-            RestResult<UserBean> restUserBean = remoteUserService.checkUserLoginInfo(token);
-            sessionUserBean = restUserBean.getData();
-        } else {
-            sessionUserBean = (UserBean) SecurityUtils.getSubject().getPrincipal();
-        }
+        UserBean sessionUserBean = userService.getUserBeanByToken(token);
         long userId = sessionUserBean.getUserId();
         if (qiwenFileConfig.isShareMode()){
             userId = 2;
@@ -420,16 +355,7 @@ public class FileController {
     public RestResult<TreeNode> getFileTree(@RequestHeader("token") String token){
         RestResult<TreeNode> result = new RestResult<TreeNode>();
         FileBean fileBean = new FileBean();
-        //UserBean sessionUserBean = (UserBean) SecurityUtils.getSubject().getPrincipal();
-        UserBean sessionUserBean = new UserBean();
-        boolean isRemoteLogin = qiwenFileConfig.isRemoteLogin();
-        if (isRemoteLogin) {
-
-            RestResult<UserBean> restUserBean = remoteUserService.checkUserLoginInfo(token);
-            sessionUserBean = restUserBean.getData();
-        } else {
-            sessionUserBean = (UserBean) SecurityUtils.getSubject().getPrincipal();
-        }
+        UserBean sessionUserBean = userService.getUserBeanByToken(token);
         if (qiwenFileConfig.isShareMode()){
             fileBean.setUserId(2L);
         }else{

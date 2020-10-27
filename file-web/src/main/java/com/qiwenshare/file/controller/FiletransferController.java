@@ -11,6 +11,7 @@ import com.qiwenshare.common.operation.ImageOperation;
 import com.qiwenshare.file.api.IFileService;
 import com.qiwenshare.file.api.IFiletransferService;
 import com.qiwenshare.file.api.IRemoteUserService;
+import com.qiwenshare.file.api.IUserService;
 import com.qiwenshare.file.config.QiwenFileConfig;
 import com.qiwenshare.file.domain.FileBean;
 import com.qiwenshare.file.domain.StorageBean;
@@ -42,6 +43,8 @@ public class FiletransferController {
     QiwenFileConfig qiwenFileConfig;
     @Resource
     IFileService fileService;
+    @Resource
+    IUserService userService;
 
     /**
      * 上传文件
@@ -53,16 +56,7 @@ public class FiletransferController {
     @ResponseBody
     public String uploadFile(HttpServletRequest request, FileBean fileBean, @RequestHeader("token") String token) {
         RestResult<String> restResult = new RestResult<String>();
-        //UserBean sessionUserBean = (UserBean) SecurityUtils.getSubject().getPrincipal();
-        UserBean sessionUserBean = new UserBean();
-        boolean isRemoteLogin = qiwenFileConfig.isRemoteLogin();
-        if (isRemoteLogin) {
-
-            RestResult<UserBean> restUserBean = remoteUserService.checkUserLoginInfo(token);
-            sessionUserBean = restUserBean.getData();
-        } else {
-            sessionUserBean = (UserBean) SecurityUtils.getSubject().getPrincipal();
-        }
+        UserBean sessionUserBean = userService.getUserBeanByToken(token);
         if (sessionUserBean == null){
             restResult.setSuccess(false);
             restResult.setErrorMessage("未登录");
@@ -175,15 +169,7 @@ public class FiletransferController {
     public RestResult<StorageBean> getStorage(@RequestHeader("token") String token) {
         RestResult<StorageBean> restResult = new RestResult<StorageBean>();
         //UserBean sessionUserBean = (UserBean) SecurityUtils.getSubject().getPrincipal();
-        UserBean sessionUserBean = new UserBean();
-        boolean isRemoteLogin = qiwenFileConfig.isRemoteLogin();
-        if (isRemoteLogin) {
-
-            RestResult<UserBean> restUserBean = remoteUserService.checkUserLoginInfo(token);
-            sessionUserBean = restUserBean.getData();
-        } else {
-            sessionUserBean = (UserBean) SecurityUtils.getSubject().getPrincipal();
-        }
+        UserBean sessionUserBean = userService.getUserBeanByToken(token);
         StorageBean storageBean = new StorageBean();
         if (qiwenFileConfig.isShareMode()){
             storageBean.setUserId(2L);

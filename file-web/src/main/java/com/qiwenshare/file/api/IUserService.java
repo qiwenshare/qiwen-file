@@ -10,6 +10,9 @@ import java.util.List;
 
 public interface IUserService extends IService<UserBean> {
 
+    UserBean getUserBeanByToken(String token);
+
+
     /**
      * 用户注册
      *
