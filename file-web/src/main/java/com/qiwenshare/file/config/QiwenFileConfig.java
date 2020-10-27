@@ -9,7 +9,6 @@ import org.springframework.stereotype.Component;
 @Component
 @ConfigurationProperties(prefix = "qiwen-file")
 public class QiwenFileConfig {
-    private boolean remoteLogin;
 
     private boolean shareMode;
 

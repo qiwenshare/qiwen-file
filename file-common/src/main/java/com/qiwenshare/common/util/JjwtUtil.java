@@ -89,6 +89,18 @@ public class JjwtUtil {
 				.parseClaimsJws(jwt).getBody(); // 设置需要解析的jwt
 		return claims;
 	}
+	
+	public static void main(String[] args) {
+		Claims claims = null;
+		try {
+			claims = parseJWT("eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJ7XCJhZGRyQXJlYVwiOlwi6ZuB5aGU5Yy6XCIsXCJhZGRyQ2l0eVwiOlwi6KW_5a6J5biCXCIsXCJhZGRyUHJvdmluY2VcIjpcIumZleilv-ecgVwiLFwiYmVnaW5Db3VudFwiOjAsXCJiaXJ0aGRheVwiOlwiMTk5NC0wNS0wNlwiLFwiY3VycmVudFBhZ2VcIjowLFwiZWRpdG9yVHlwZVwiOjAsXCJlbWFpbFwiOlwiMTE2MjcxNDQ4M0BxcS5jb21cIixcImVzc2F5Q291bnRcIjowLFwiaW1hZ2VVcmxcIjpcIi91cGxvYWQvMjAyMDA3MTUvODA5NjE1OTQ4MjEzODkwNTkuanBnXCIsXCJpbmR1c3RyeVwiOlwi6K6h566X5py66KGM5LiaXCIsXCJpbnRyb1wiOlwi6ZSZ5oqK6ZmI6YaL5b2T5oiQ5aKo77yM5YaZ5bC95Y2K55Sf6YO95piv6YW444CCXCIsXCJsYXN0TG9naW5UaW1lXCI6XCIyMDIwLTEwLTI3IDE5OjAxOjU0XCIsXCJub3RSZWFkQ291bnRcIjowLFwicGFnZUNvdW50XCI6MCxcInBhc3N3b3JkXCI6XCI3NjcyYmE0NDc4OTY5NTlmNmU1NDQ1NTcxOGY2ZWU2ZlwiLFwic2FsdFwiOlwiMzY5MjQ1NzgxMDIyMDg3NlwiLFwic2V4XCI6XCLnlLdcIixcInRlbGVwaG9uZVwiOlwiMTg4MjkyOTE4MTdcIixcInVzZXJJZFwiOjIsXCJ1c2VybmFtZVwiOlwiTUFDXCJ9IiwiYXVkIjoicWl3ZW4iLCJwYXNzd29yZCI6IjAxMDIwMyIsImlzcyI6InFpd2Vuc2hhcmUiLCJleHAiOjE2MDM4MDA0MDcsImlhdCI6MTYwMzc5NjgwNywianRpIjoiNzYzZTE0NDMtYmZjYS00MDkzLTg3NGYtMzlmMzQ1ODRiZDkyIiwidXNlcm5hbWUiOiJhZG1pbiJ9.Gv_QlXZEiT_-mbI2Iz6oa2SqgBXwVzsS_xK8RhvF7oY");
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+		String subject = claims.getSubject();
+		System.out.println(subject);
+	}
+
 
  
 }

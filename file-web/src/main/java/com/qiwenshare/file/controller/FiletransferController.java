@@ -7,25 +7,20 @@ import com.qiwenshare.common.operation.FileOperation;
 import com.qiwenshare.common.oss.AliyunOSSDownload;
 import com.qiwenshare.common.util.PathUtil;
 import com.qiwenshare.common.cbb.RestResult;
-import com.qiwenshare.common.operation.ImageOperation;
 import com.qiwenshare.file.api.IFileService;
 import com.qiwenshare.file.api.IFiletransferService;
-import com.qiwenshare.file.api.IRemoteUserService;
 import com.qiwenshare.file.api.IUserService;
 import com.qiwenshare.file.config.QiwenFileConfig;
 import com.qiwenshare.file.domain.FileBean;
 import com.qiwenshare.file.domain.StorageBean;
 import com.qiwenshare.file.domain.UserBean;
-import org.apache.shiro.SecurityUtils;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpHeaders;
 import org.springframework.web.bind.annotation.*;
 
 import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.*;
-import java.util.List;
 
 @RestController
 @RequestMapping("/filetransfer")
@@ -37,8 +32,6 @@ public class FiletransferController {
     @Resource
     FileController fileController;
 
-    @Autowired
-    IRemoteUserService remoteUserService;
     @Autowired
     QiwenFileConfig qiwenFileConfig;
     @Resource

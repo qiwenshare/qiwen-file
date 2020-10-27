@@ -12,6 +12,7 @@ import com.qiwenshare.file.controller.UserController;
 import com.qiwenshare.file.domain.UserBean;
 import com.qiwenshare.file.mapper.UserMapper;
 import io.jsonwebtoken.Claims;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.shiro.crypto.hash.SimpleHash;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -40,17 +41,28 @@ public class UserService extends ServiceImpl<UserMapper, UserBean> implements IU
         }
         if (c == null) {
             logger.info("解码为空");
-
             return null;
         }
         String subject = c.getSubject();
         logger.info("解析结果：" + subject);
         UserBean tokenUserBean = JSON.parseObject(subject, UserBean.class);
-        logger.info("tokenUserBean:" + JSON.toJSONString(tokenUserBean));
 
-        UserBean saveUserBean = findUserInfoByTelephone(tokenUserBean.getTelephone());
-        logger.info("saveUserBean:" + JSON.toJSONString(saveUserBean));
-        if (tokenUserBean.getPassword().equals(saveUserBean.getPassword())) {
+        UserBean saveUserBean = new UserBean();
+        String tokenPassword = "";
+        String savePassword = "";
+        if (StringUtils.isNotEmpty(tokenUserBean.getPassword())) {
+            saveUserBean = findUserInfoByTelephone(tokenUserBean.getTelephone());
+            tokenPassword = tokenUserBean.getPassword();
+            savePassword = saveUserBean.getPassword();
+        } else if (StringUtils.isNotEmpty(tokenUserBean.getQqPassword())) {
+            saveUserBean = selectUserByopenid(tokenUserBean.getOpenId());
+            tokenPassword = tokenUserBean.getQqPassword();
+            savePassword = saveUserBean.getQqPassword();
+        }
+        if (StringUtils.isEmpty(tokenPassword) || StringUtils.isEmpty(savePassword)) {
+            return null;
+        }
+        if (tokenPassword.equals(savePassword)) {
 
             return saveUserBean;
         } else {
@@ -58,6 +70,12 @@ public class UserService extends ServiceImpl<UserMapper, UserBean> implements IU
         }
     }
 
+
+    @Override
+    public UserBean selectUserByopenid(String openid) {
+        UserBean userBean = userMapper.selectUserByopenId(openid);
+        return userBean;
+    }
     /**
      * 用户注册
      */

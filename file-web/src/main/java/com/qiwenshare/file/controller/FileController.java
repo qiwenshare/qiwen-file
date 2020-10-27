@@ -4,23 +4,16 @@ import com.alibaba.fastjson.JSON;
 import com.qiwenshare.common.cbb.DateUtil;
 import com.qiwenshare.common.cbb.RestResult;
 import com.qiwenshare.common.operation.FileOperation;
-import com.qiwenshare.common.oss.AliyunOSSDelete;
 import com.qiwenshare.common.oss.AliyunOSSRename;
 import com.qiwenshare.common.util.FileUtil;
 import com.qiwenshare.common.util.PathUtil;
 import com.qiwenshare.file.api.IFileService;
-import com.qiwenshare.file.api.IFiletransferService;
-import com.qiwenshare.file.api.IRemoteUserService;
 import com.qiwenshare.file.api.IUserService;
 import com.qiwenshare.file.config.QiwenFileConfig;
 import com.qiwenshare.file.domain.FileBean;
 import com.qiwenshare.file.domain.TreeNode;
 import com.qiwenshare.file.domain.UserBean;
-import org.apache.shiro.SecurityUtils;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpHeaders;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.web.servlet.ModelAndView;
 
 import javax.annotation.Resource;
 import java.io.File;
@@ -36,8 +29,7 @@ public class FileController {
     IFileService fileService;
     @Resource
     IUserService userService;
-    @Autowired
-    IRemoteUserService remoteUserService;
+
     @Resource
     QiwenFileConfig qiwenFileConfig;
 

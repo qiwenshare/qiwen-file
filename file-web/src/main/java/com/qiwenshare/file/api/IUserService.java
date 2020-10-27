@@ -12,6 +12,7 @@ public interface IUserService extends IService<UserBean> {
 
     UserBean getUserBeanByToken(String token);
 
+    UserBean selectUserByopenid(String openid);
 
     /**
      * 用户注册

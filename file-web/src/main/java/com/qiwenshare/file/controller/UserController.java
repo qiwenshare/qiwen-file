@@ -2,17 +2,13 @@ package com.qiwenshare.file.controller;
 
 import cn.hutool.core.bean.BeanUtil;
 import com.alibaba.fastjson.JSON;
-import com.qiwenshare.common.cbb.DateUtil;
 import com.qiwenshare.common.cbb.RestResult;
 import com.qiwenshare.common.domain.AliyunOSS;
 import com.qiwenshare.common.util.JjwtUtil;
-import com.qiwenshare.file.api.IRemoteUserService;
 import com.qiwenshare.file.api.IUserService;
 import com.qiwenshare.file.config.QiwenFileConfig;
 import com.qiwenshare.file.domain.UserBean;
 import com.qiwenshare.file.vo.user.UserLoginVo;
-import org.apache.shiro.SecurityUtils;
-import org.apache.shiro.authc.UsernamePasswordToken;
 import org.apache.shiro.crypto.hash.SimpleHash;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -35,8 +31,6 @@ public class UserController {
     @Resource
     IUserService userService;
 
-    @Autowired
-    IRemoteUserService remoteUserService;
     @Autowired
     QiwenFileConfig qiwenFileConfig;
 
@@ -94,27 +88,6 @@ public class UserController {
         } else {
             restResult.setSuccess(false);
             restResult.setErrorMessage("手机号或密码错误！");
-        }
-
-        return restResult;
-    }
-
-    /**
-            * 用户注销
-     *
-             * @return
-             */
-    @RequestMapping(value = "/userlogout", method = RequestMethod.POST)
-    @ResponseBody
-    public RestResult<String> userLogout(@RequestHeader("token") String token) {
-        RestResult<String> restResult = new RestResult<String>();
-        boolean isRemoteLogin = qiwenFileConfig.isRemoteLogin();
-        if (isRemoteLogin) {
-            restResult = remoteUserService.userLogout(token);
-        } else {
-            SecurityUtils.getSubject().logout();
-            restResult.setSuccess(true);
-            restResult.setData("注销登录成功！");
         }
 
         return restResult;
