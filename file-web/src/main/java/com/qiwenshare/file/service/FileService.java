@@ -4,6 +4,7 @@ import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.qiwenshare.common.cbb.DateUtil;
 import com.qiwenshare.common.operation.FileOperation;
 import com.qiwenshare.common.oss.AliyunOSSDelete;
+import com.qiwenshare.common.util.FileUtil;
 import com.qiwenshare.common.util.PathUtil;
 import com.qiwenshare.file.api.IFileService;
 import com.qiwenshare.file.config.AliyunConfig;
@@ -99,7 +100,6 @@ public class FileService extends ServiceImpl<FileMapper, FileBean> implements IF
 
     @Override
     public void deleteFile(FileBean fileBean, UserBean sessionUserBean) {
-        //UserBean sessionUserBean = (UserBean) SecurityUtils.getSubject().getPrincipal();
         StorageBean storageBean = filetransferService.selectStorageBean(new StorageBean(sessionUserBean.getUserId()));
         long deleteSize = 0;
         String fileUrl = PathUtil.getStaticPath() + fileBean.getFileUrl();
@@ -117,10 +117,13 @@ public class FileService extends ServiceImpl<FileMapper, FileBean> implements IF
                     deleteSize += file.getFileSize();
                     //1.3、删除服务器文件，只删除文件，目录是虚拟的
                     if (file.getFileUrl() != null && file.getFileUrl().indexOf("upload") != -1){
-                        if (file.getIsOSS() == 1) {
+                        if (file.getIsOSS() != null && file.getIsOSS() == 1) {
                             AliyunOSSDelete.deleteObject(qiwenFileConfig.getAliyun().getOss(), file.getFileUrl().substring(1));
                         } else {
                             FileOperation.deleteFile(PathUtil.getStaticPath() + file.getFileUrl());
+                            if (FileUtil.isImageFile(file.getExtendName())) {
+                                FileOperation.deleteFile(PathUtil.getStaticPath() + file.getFileUrl().replace(file.getTimeStampName(), file.getTimeStampName() + "_min"));
+                            }
                         }
 
                     }
@@ -136,10 +139,13 @@ public class FileService extends ServiceImpl<FileMapper, FileBean> implements IF
             }
             //删除服务器文件
             if (fileBean.getFileUrl() != null && fileBean.getFileUrl().indexOf("upload") != -1){
-                if (fileBean.getIsOSS() == 1) {
+                if (fileBean.getIsOSS() != null && fileBean.getIsOSS() == 1) {
                     AliyunOSSDelete.deleteObject(qiwenFileConfig.getAliyun().getOss(), fileBean.getFileUrl().substring(1));
                 } else {
                     FileOperation.deleteFile(fileUrl);
+                    if (FileUtil.isImageFile(fileBean.getExtendName())) {
+                        FileOperation.deleteFile(PathUtil.getStaticPath() + fileBean.getFileUrl().replace(fileBean.getTimeStampName(), fileBean.getTimeStampName() + "_min"));
+                    }
                 }
             }
         }
