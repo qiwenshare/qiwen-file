@@ -20,6 +20,7 @@
 <p align="center">
 	<a href="http://fileos.qiwenshare.com/" target="_blank">在线演示环境</a> 
 	<a href="https://www.qiwenshare.com/essay/detail/169"  target="_blank">安装指导</a>
+        <a href="https://www.qiwenshare.com/essay/detail/324"  target="_blank">更新日志</a>
 </p>
 
 -------------------------------------------------------------------------------
@@ -38,10 +39,11 @@
 #### 文件操作
 1. 用户可对目录结构进行增加，删除，修改 
 2. 提供文件的上传，下载， 
-3. 支持对zip文件的在线解压缩 
+3. 支持对zip文件和rar文件的在线解压缩 
 4. 支持文件和目录的移动和复制 
-5. 多文件格式分类查看 
-6. ...
+5. 多文件格式分类查看
+6. 支持阿里云OSS对象存储
+7. ...
 
 ## 软件架构
 该项目采用前后端分离的方式进行开发和部署,主要用到以下关键技术
