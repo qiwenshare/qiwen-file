@@ -36,9 +36,9 @@ public class FileService extends ServiceImpl<FileMapper, FileBean> implements IF
     }
 
     @Override
-    public void batchInsertFile(List<FileBean> fileBeanList) {
-        UserBean sessionUserBean = (UserBean) SecurityUtils.getSubject().getPrincipal();
-        StorageBean storageBean = filetransferService.selectStorageBean(new StorageBean(sessionUserBean.getUserId()));
+    public void batchInsertFile(List<FileBean> fileBeanList, Long userId) {
+//        UserBean sessionUserBean = (UserBean) SecurityUtils.getSubject().getPrincipal();
+        StorageBean storageBean = filetransferService.selectStorageBean(new StorageBean(userId));
         long fileSizeSum = 0;
         for (FileBean fileBean : fileBeanList) {
             if (fileBean.getIsDir() == 0) {

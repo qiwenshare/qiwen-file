@@ -89,15 +89,16 @@ public class FileController {
         if (1 == fileBean.getIsDir()) {
             fileBean.setOldFilePath(fileBean.getFilePath() + fileBean.getOldFileName() + "/");
             fileBean.setFilePath(fileBean.getFilePath() + fileBean.getFileName() + "/");
-        }
-        if (fileBean.getIsOSS() == 1) {
-            FileBean file = fileService.getById(fileBean.getFileId());
-            String fileUrl = file.getFileUrl();
-            String newFileUrl = fileUrl.replace(file.getFileName(), fileBean.getFileName());
-            fileBean.setFileUrl(newFileUrl);
-            AliyunOSSRename.rename(qiwenFileConfig.getAliyun().getOss(),
-                    fileUrl.substring(1),
-                    newFileUrl.substring(1));
+        } else {
+            if (fileBean.getIsOSS() == 1) {
+                FileBean file = fileService.getById(fileBean.getFileId());
+                String fileUrl = file.getFileUrl();
+                String newFileUrl = fileUrl.replace(file.getFileName(), fileBean.getFileName());
+                fileBean.setFileUrl(newFileUrl);
+                AliyunOSSRename.rename(qiwenFileConfig.getAliyun().getOss(),
+                        fileUrl.substring(1),
+                        newFileUrl.substring(1));
+            }
         }
         fileService.updateFile(fileBean);
         restResult.setSuccess(true);
@@ -241,7 +242,7 @@ public class FileController {
             }
             fileBeanList.add(tempFileBean);
         }
-        fileService.batchInsertFile(fileBeanList);
+        fileService.batchInsertFile(fileBeanList, sessionUserBean.getUserId());
         result.setSuccess(true);
 
         return result;

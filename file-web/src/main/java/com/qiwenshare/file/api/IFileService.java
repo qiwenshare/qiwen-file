@@ -9,7 +9,7 @@ import java.util.List;
 public interface IFileService  extends IService<FileBean> {
 
     void insertFile(FileBean fileBean);
-    void batchInsertFile(List<FileBean> fileBeanList);
+    void batchInsertFile(List<FileBean> fileBeanList, Long userId);
     void updateFile(FileBean fileBean);
     List<FileBean> selectFileByNameAndPath(FileBean fileBean);
     FileBean selectFileById(FileBean fileBean);
