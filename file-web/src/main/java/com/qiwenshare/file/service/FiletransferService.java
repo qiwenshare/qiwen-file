@@ -6,8 +6,10 @@ import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
 
 import com.qiwenshare.common.cbb.DateUtil;
-import com.qiwenshare.common.cbb.Uploader;
 import com.qiwenshare.common.domain.UploadFile;
+import com.qiwenshare.common.upload.factory.AliyunOSSUploaderFactory;
+import com.qiwenshare.common.upload.factory.ChunkUploaderFactory;
+import com.qiwenshare.common.upload.Uploader;
 import com.qiwenshare.file.api.IFiletransferService;
 
 import com.qiwenshare.common.domain.AliyunOSS;
@@ -41,26 +43,39 @@ public class FiletransferService implements IFiletransferService {
     public void uploadFile(HttpServletRequest request, FileBean fileBean, UserBean sessionUserBean) {
         AliyunOSS oss = qiwenFileConfig.getAliyun().getOss();
         request.setAttribute("oss", oss);
-        Uploader uploader = new Uploader(request);
-        List<UploadFile> uploadFileList = uploader.upload();
+        Uploader uploader;
+        UploadFile uploadFile = new UploadFile();
+        uploadFile.setChunkNumber(fileBean.getChunkNumber());
+        uploadFile.setChunkSize(fileBean.getChunkSize());
+        uploadFile.setTotalChunks(fileBean.getTotalChunks());
+        uploadFile.setIdentifier(fileBean.getIdentifier());
+        uploadFile.setTotalSize(fileBean.getTotalSize());
+        uploadFile.setCurrentChunkSize(fileBean.getCurrentChunkSize());
+        if (oss.isEnabled()) {
+            uploader = new AliyunOSSUploaderFactory().getUploader(uploadFile);
+        } else {
+            uploader = new ChunkUploaderFactory().getUploader(uploadFile);
+        }
+
+        List<UploadFile> uploadFileList = uploader.upload(request);
         for (int i = 0; i < uploadFileList.size(); i++){
-            UploadFile uploadFile = uploadFileList.get(i);
+            uploadFile = uploadFileList.get(i);
+            fileBean.setTimeStampName(uploadFile.getTimeStampName());
             if (uploadFile.getSuccess() == 1){
                 fileBean.setFileUrl(uploadFile.getUrl());
                 fileBean.setFileSize(uploadFile.getFileSize());
                 fileBean.setFileName(uploadFile.getFileName());
                 fileBean.setExtendName(uploadFile.getFileType());
-                fileBean.setTimeStampName(uploadFile.getTimeStampName());
                 fileBean.setUploadTime(DateUtil.getCurrentTime());
                 fileBean.setIsOSS(uploadFile.getIsOSS());
                 fileBean.setIsDir(0);
+                fileBean.setPointCount(1);
                 fileMapper.insert(fileBean);
-                //fileMapper.insertFile(fileBean);
+
             }
 
 
             synchronized (FiletransferService.class) {
-//                UserBean sessionUserBean = (UserBean) SecurityUtils.getSubject().getPrincipal();
 
                 long sessionUserId = sessionUserBean.getUserId();
                 StorageBean storageBean = selectStorageBean(new StorageBean(sessionUserId));

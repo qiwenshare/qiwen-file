@@ -31,7 +31,7 @@ public class UserService extends ServiceImpl<UserMapper, UserBean> implements IU
     public UserBean getUserBeanByToken(String token){
         Claims c = null;
         try {
-            logger.info("token:" + token);
+            logger.debug("token:" + token);
             c = JjwtUtil.parseJWT(token);
         } catch (Exception e) {
             logger.error("解码异常");
@@ -43,7 +43,7 @@ public class UserService extends ServiceImpl<UserMapper, UserBean> implements IU
             return null;
         }
         String subject = c.getSubject();
-        logger.info("解析结果：" + subject);
+        logger.debug("解析结果：" + subject);
         UserBean tokenUserBean = JSON.parseObject(subject, UserBean.class);
 
         UserBean saveUserBean = new UserBean();

@@ -2,11 +2,6 @@ package com.qiwenshare.common.domain;
 
 import lombok.Data;
 
-/**
- * md-edit插件上传图片返回数据实体类
- *
- * @author ma116
- */
 @Data
 public class UploadFile {
     private String fileName;
@@ -17,5 +12,16 @@ public class UploadFile {
     private String message;
     private String url;
     private Integer isOSS;
+    //切片上传相关参数
+    private String taskId;
+    private int chunkNumber;
+    private long chunkSize;
+    private int totalChunks;
+    private String identifier;
+    private long totalSize;
+    private long currentChunkSize;
+
+
+
 
 }
