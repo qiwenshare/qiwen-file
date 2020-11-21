@@ -168,7 +168,7 @@ public class ChunkUploader extends Uploader {
             uploadFile.setSuccess(0);
             uploadFile.setMessage("未完成");
         }
-        uploadFile.setFileSize(uploadFile.getTotalSize());
+        uploadFile.setFileSize(uploadFile.getCurrentChunkSize());
         saveUploadFileList.add(uploadFile);
 
         return saveUploadFileList;
