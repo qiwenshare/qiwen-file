@@ -1,5 +1,6 @@
 package com.qiwenshare.file.controller;
 
+import cn.hutool.core.bean.BeanUtil;
 import com.alibaba.fastjson.JSON;
 import com.aliyun.oss.OSS;
 import com.aliyun.oss.model.OSSObject;
@@ -16,6 +17,7 @@ import com.qiwenshare.file.config.QiwenFileConfig;
 import com.qiwenshare.file.domain.FileBean;
 import com.qiwenshare.file.domain.StorageBean;
 import com.qiwenshare.file.domain.UserBean;
+import com.qiwenshare.file.dto.UploadFileDto;
 import com.qiwenshare.file.vo.file.UploadFileVo;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
@@ -53,7 +55,7 @@ public class FiletransferController {
      */
     @RequestMapping(value = "/uploadfile", method = RequestMethod.GET)
     @ResponseBody
-    public RestResult<UploadFileVo> uploadFileSpeed(HttpServletRequest request, FileBean fileBean, @RequestHeader("token") String token) {
+    public RestResult<UploadFileVo> uploadFileSpeed(HttpServletRequest request, UploadFileDto uploadFileDto, @RequestHeader("token") String token) {
         RestResult<UploadFileVo> restResult = new RestResult<UploadFileVo>();
         UserBean sessionUserBean = userService.getUserBeanByToken(token);
         if (sessionUserBean == null){
@@ -69,15 +71,15 @@ public class FiletransferController {
         }
         UploadFileVo uploadFileVo = new UploadFileVo();
         Map<String, Object> param = new HashMap<String, Object>();
-        param.put("identifier", fileBean.getIdentifier());
+        param.put("identifier", uploadFileDto.getIdentifier());
         synchronized (FiletransferController.class) {
             List<FileBean> list = fileService.listByMap(param);
             if (list != null && !list.isEmpty()) {
                 FileBean file = list.get(0);
                 file.setUserId(sessionUserBean.getUserId());
                 file.setUploadTime(DateUtil.getCurrentTime());
-                file.setFilePath(fileBean.getFilePath());
-                String fileName = fileBean.getFilename();
+                file.setFilePath(uploadFileDto.getFilePath());
+                String fileName = uploadFileDto.getFilename();
                 file.setFileName(fileName.substring(0, fileName.lastIndexOf(".")));
                 file.setExtendName(FileUtil.getFileType(fileName));
                 file.setPointCount(file.getPointCount() + 1);
@@ -90,7 +92,7 @@ public class FiletransferController {
             }
         }
 
-        fileBean.setUserId(sessionUserBean.getUserId());
+        //fileBean.setUserId(sessionUserBean.getUserId());
         restResult.setData(uploadFileVo);
         restResult.setSuccess(true);
         return restResult;
@@ -104,7 +106,7 @@ public class FiletransferController {
      */
     @RequestMapping(value = "/uploadfile", method = RequestMethod.POST)
     @ResponseBody
-    public RestResult<UploadFileVo> uploadFile(HttpServletRequest request, FileBean fileBean, @RequestHeader("token") String token) {
+    public RestResult<UploadFileVo> uploadFile(HttpServletRequest request, UploadFileDto uploadFileDto, @RequestHeader("token") String token) {
         RestResult<UploadFileVo> restResult = new RestResult<UploadFileVo>();
         UserBean sessionUserBean = userService.getUserBeanByToken(token);
         if (sessionUserBean == null){
@@ -118,7 +120,8 @@ public class FiletransferController {
             restResult.setErrorMessage("没权限，请联系管理员！");
             return restResult;
         }
-
+        FileBean fileBean = new FileBean();
+        BeanUtil.copyProperties(uploadFileDto, fileBean);
         fileBean.setUserId(sessionUserBean.getUserId());
 
         filetransferService.uploadFile(request, fileBean, sessionUserBean);

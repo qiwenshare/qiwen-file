@@ -1,36 +1,22 @@
-package com.qiwenshare.file.domain;
+package com.qiwenshare.file.dto;
 
 import com.baomidou.mybatisplus.annotation.IdType;
 import com.baomidou.mybatisplus.annotation.TableField;
 import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableName;
+import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Data;
 
 import javax.persistence.*;
 
-/**
- * 文件实体类
- *
- * @author ma116
- */
 @Data
-@Table(name = "file", uniqueConstraints = {
-        @UniqueConstraint(name = "fileindex", columnNames = {"fileName", "filePath", "extendName"})})
-@Entity
-@TableName("file")
-public class FileBean {
-    /**
-     * 文件id
-     */
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @TableId(type = IdType.AUTO)
+@Schema(name = "上传文件DTO",required = true)
+public class UploadFileDto {
+
     private Long fileId;
 
 
-    /**
-     * 用户id
-     */
+
     private Long userId;
 
     /**
@@ -61,7 +47,7 @@ public class FileBean {
     /**
      * 文件名
      */
-    private String fileName;
+    private String filename;
 
     /**
      * 文件大小
@@ -77,40 +63,24 @@ public class FileBean {
 
     private Integer pointCount;
 
-    @Transient
-    @TableField(exist = false)
     private String oldFilePath;
 
-    @Transient
-    @TableField(exist = false)
     private String oldFileName;
 
-    @Transient
-    @TableField(exist = false)
     private String files;
 
-    @Transient
-    @TableField(exist = false)
     private Integer fileType;
 
-    //切片上传相关参数
-    @Transient
-    @TableField(exist = false)
     private String taskId;
-    @Transient
-    @TableField(exist = false)
+
     private int chunkNumber;
-    @Transient
-    @TableField(exist = false)
+
     private long chunkSize;
-    @Transient
-    @TableField(exist = false)
+
     private int totalChunks;
-    @Transient
-    @TableField(exist = false)
+
     private long totalSize;
-    @Transient
-    @TableField(exist = false)
+
     private long currentChunkSize;
 
     private String identifier;
