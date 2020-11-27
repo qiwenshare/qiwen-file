@@ -72,21 +72,19 @@ public class FiletransferService implements IFiletransferService {
                 fileBean.setPointCount(1);
                 fileMapper.insert(fileBean);
 
-            }
-
-
-            synchronized (FiletransferService.class) {
-
-                long sessionUserId = sessionUserBean.getUserId();
-                StorageBean storageBean = selectStorageBean(new StorageBean(sessionUserId));
-                if (storageBean == null) {
-                    StorageBean storage = new StorageBean(sessionUserId);
-                    storage.setStorageSize(fileBean.getFileSize());
-                    insertStorageBean(storage);
-                } else {
-                    storageBean.setStorageSize(storageBean.getStorageSize() + uploadFile.getFileSize());
-                    updateStorageBean(storageBean);
+                synchronized (FiletransferService.class) {
+                    long sessionUserId = sessionUserBean.getUserId();
+                    StorageBean storageBean = selectStorageBean(new StorageBean(sessionUserId));
+                    if (storageBean == null) {
+                        StorageBean storage = new StorageBean(sessionUserId);
+                        storage.setStorageSize(fileBean.getFileSize());
+                        insertStorageBean(storage);
+                    } else {
+                        storageBean.setStorageSize(storageBean.getStorageSize() + uploadFile.getFileSize());
+                        updateStorageBean(storageBean);
+                    }
                 }
+
             }
 
         }
