@@ -18,8 +18,8 @@
 	
 </p>
 <p align="center">
-	<a href="http://fileos.qiwenshare.com/" target="_blank">在线演示环境</a> 
-	<a href="https://www.qiwenshare.com/essay/detail/169"  target="_blank">安装指导</a>
+	<a href="http://fileos.qiwenshare.com/" target="_blank">在线演示环境</a> &nbsp;|
+	<a href="https://www.qiwenshare.com/essay/detail/169"  target="_blank">安装指导</a>&nbsp;|
         <a href="https://www.qiwenshare.com/essay/detail/324"  target="_blank">更新日志</a>
 </p>
 
@@ -43,35 +43,23 @@
 4. 支持文件和目录的移动和复制 
 5. 多文件格式分类查看
 6. 支持阿里云OSS对象存储
-7. ...
+7. 增加分片上传，该功能同时支持本地存储和阿里云OSS
+8. 支持极速秒传功能，提高上传效率
+9. 上传文件前台实时显示上传文件进度，上传速率，百分比等信息
+10. 支持文件重命名
+11. 可实时显示文件存储占用情况及总占用容量
+12. ...
 
 ## 软件架构
 该项目采用前后端分离的方式进行开发和部署,主要用到以下关键技术
 
-**前台**：elementui，vue,  swipper， nodejs， webpack
+**前台**：elementui，vue-cli3,  swipper， nodejs， webpack
 
-**后台框架**：springboot mybatis jpa
+**后台**：springboot mybatis jpa jwt
+
+**数据库** : mysql
 
 **数据结构**：递归算法，树的遍历和插入...
-
-
-## 安装教程
-
-[手把手教你部署奇文网盘](https://www.qiwenshare.com/essay/detail/169)
-
-## 目录说明
-
-```
-
--file-common 公共模块
--file-web 文件代码
-    |-src
-        |-main Java代码
-        |-resources 静态资源
-            |-static 前台代码
-```
-
-
 
 
 ## 使用说明
@@ -111,7 +99,10 @@
 ![输入图片说明](https://images.gitee.com/uploads/images/2019/1022/210106_d4b619f3_947714.png "屏幕截图.png")
  **文件在线解压缩**  :green_heart: 
 ![输入图片说明](https://images.gitee.com/uploads/images/2019/1022/210214_c00f5600_947714.png "屏幕截图.png")
-
+ **上传进度显示** 
+![输入图片说明](https://images.gitee.com/uploads/images/2020/1127/211713_87fb01b2_947714.png "屏幕截图.png")
+ **上传进度框最小化** 
+![输入图片说明](https://images.gitee.com/uploads/images/2020/1127/211845_e88c61b1_947714.png "屏幕截图.png")
 
 
 ## 联系我
