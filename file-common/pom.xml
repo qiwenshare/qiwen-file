@@ -17,7 +17,7 @@
         <dependency>
             <groupId>com.github.junrar</groupId>
             <artifactId>junrar</artifactId>
-            <version>7.3.0</version>
+            <version>7.4.0</version>
         </dependency>
 
         <!-- spring boot依赖包-->
