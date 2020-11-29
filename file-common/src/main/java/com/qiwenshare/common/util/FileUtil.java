@@ -15,6 +15,7 @@ public class FileUtil {
     public static final int DOC_TYPE = 2;
     public static final int VIDEO_TYPE = 3;
     public static final int MUSIC_TYPE = 4;
+    public static final int OTHER_TYPE = 5;
 
     public static List<String> getFileExtendsByType(int fileType) {
 

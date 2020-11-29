@@ -1,5 +1,6 @@
 package com.qiwenshare.file.service;
 
+import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.qiwenshare.common.cbb.DateUtil;
 import com.qiwenshare.common.operation.FileOperation;
@@ -13,10 +14,12 @@ import com.qiwenshare.file.mapper.FileMapper;
 import com.qiwenshare.file.domain.FileBean;
 import com.qiwenshare.file.domain.StorageBean;
 import com.qiwenshare.file.domain.UserBean;
+import org.apache.commons.lang3.ArrayUtils;
 import org.apache.shiro.SecurityUtils;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
+import java.util.Arrays;
 import java.util.List;
 
 
@@ -191,6 +194,18 @@ public class FileService extends ServiceImpl<FileMapper, FileBean> implements IF
 
     @Override
     public List<FileBean> selectFileByExtendName(List<String> fileNameList, long userId) {
-        return fileMapper.selectFileByExtendName(fileNameList, userId);
+        LambdaQueryWrapper<FileBean> wrapper = new LambdaQueryWrapper<>();
+        wrapper.in(FileBean::getExtendName, fileNameList).eq(FileBean::getUserId, userId);
+        List<FileBean> fileBeans = fileMapper.selectList(wrapper);
+        return fileBeans;
+        //return fileMapper.selectFileByExtendName(fileNameList, userId);
+    }
+
+    @Override
+    public List<FileBean> selectFileNotInExtendNames(List<String> fileNameList, long userId) {
+        LambdaQueryWrapper<FileBean> wrapper = new LambdaQueryWrapper<>();
+        wrapper.notIn(FileBean::getExtendName, fileNameList).eq(FileBean::getUserId, userId);
+        List<FileBean> fileBeans = fileMapper.selectList(wrapper);
+        return fileBeans;
     }
 }

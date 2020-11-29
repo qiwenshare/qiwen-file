@@ -1,6 +1,7 @@
 package com.qiwenshare.file.controller;
 
 import com.alibaba.fastjson.JSON;
+import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.qiwenshare.common.cbb.DateUtil;
 import com.qiwenshare.common.cbb.RestResult;
 import com.qiwenshare.common.operation.FileOperation;
@@ -13,10 +14,12 @@ import com.qiwenshare.file.config.QiwenFileConfig;
 import com.qiwenshare.file.domain.FileBean;
 import com.qiwenshare.file.domain.TreeNode;
 import com.qiwenshare.file.domain.UserBean;
+import org.apache.commons.lang3.ArrayUtils;
 import org.springframework.web.bind.annotation.*;
 
 import javax.annotation.Resource;
 import java.io.File;
+import java.io.Serializable;
 import java.util.*;
 
 import static com.qiwenshare.common.util.FileUtil.getFileExtendsByType;
@@ -333,8 +336,19 @@ public class FileController {
         if (qiwenFileConfig.isShareMode()){
             userId = 2;
         }
-        List<FileBean> file = fileService.selectFileByExtendName(getFileExtendsByType(fileBean.getFileType()), userId);
-        result.setData(file);
+        List<FileBean> fileList = new ArrayList<>();
+        if (fileBean.getFileType() == FileUtil.OTHER_TYPE) {
+
+            List<String> arrList = new ArrayList<>();
+            arrList.addAll(Arrays.asList(FileUtil.DOC_FILE));
+            arrList.addAll(Arrays.asList(FileUtil.IMG_FILE));
+            arrList.addAll(Arrays.asList(FileUtil.VIDEO_FILE));
+            arrList.addAll(Arrays.asList(FileUtil.MUSIC_FILE));
+            fileList = fileService.selectFileNotInExtendNames(arrList, userId);
+        } else {
+            fileList = fileService.selectFileByExtendName(getFileExtendsByType(fileBean.getFileType()), userId);
+        }
+        result.setData(fileList);
         result.setSuccess(true);
         return result;
     }

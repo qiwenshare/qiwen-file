@@ -22,4 +22,5 @@ public interface IFileService  extends IService<FileBean> {
     void deleteFileByIds(List<Integer> fileIdList);
     void updateFilepathByFilepath(String oldfilePath, String newfilePath, String fileName, String extendName);
     List<FileBean> selectFileByExtendName(List<String> fileNameList, long userId);
+    List<FileBean> selectFileNotInExtendNames(List<String> fileNameList, long userId);
 }
