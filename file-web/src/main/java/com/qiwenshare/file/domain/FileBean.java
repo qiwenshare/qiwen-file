@@ -77,6 +77,8 @@ public class FileBean {
 
     private Integer pointCount;
 
+    private Integer deleteFlag;
+
     @Transient
     @TableField(exist = false)
     private String oldFilePath;
