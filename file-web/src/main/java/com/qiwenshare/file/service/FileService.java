@@ -34,13 +34,7 @@ public class FileService extends ServiceImpl<FileMapper, FileBean> implements IF
     QiwenFileConfig qiwenFileConfig;
 
     @Override
-    public void insertFile(FileBean fileBean) {
-        fileMapper.insertFile(fileBean);
-    }
-
-    @Override
     public void batchInsertFile(List<FileBean> fileBeanList, Long userId) {
-//        UserBean sessionUserBean = (UserBean) SecurityUtils.getSubject().getPrincipal();
         StorageBean storageBean = filetransferService.selectStorageBean(new StorageBean(userId));
         long fileSizeSum = 0;
         for (FileBean fileBean : fileBeanList) {
@@ -65,17 +59,18 @@ public class FileService extends ServiceImpl<FileMapper, FileBean> implements IF
 
     @Override
     public List<FileBean> selectFileByNameAndPath(FileBean fileBean) {
-        return fileMapper.selectFileByNameAndPath(fileBean);
+        LambdaQueryWrapper<FileBean> lambdaQueryWrapper = new LambdaQueryWrapper<>();
+        lambdaQueryWrapper.eq(FileBean::getFileName, fileBean.getFileName()).eq(FileBean::getFilePath, fileBean.getFilePath());
+        return fileMapper.selectList(lambdaQueryWrapper);
+//        return fileMapper.selectFileByNameAndPath(fileBean);
     }
 
-    @Override
-    public FileBean selectFileById(FileBean fileBean) {
-        return fileMapper.selectFileById(fileBean);
-    }
 
     @Override
     public List<FileBean> selectFilePathTreeByUserId(FileBean fileBean) {
-        return fileMapper.selectFilePathTreeByUserId(fileBean);
+        LambdaQueryWrapper<FileBean> lambdaQueryWrapper = new LambdaQueryWrapper<>();
+        lambdaQueryWrapper.eq(FileBean::getUserId, fileBean.getUserId()).eq(FileBean::getIsDir, 1);
+        return fileMapper.selectList(lambdaQueryWrapper);
     }
 
     @Override
@@ -83,10 +78,6 @@ public class FileService extends ServiceImpl<FileMapper, FileBean> implements IF
         return fileMapper.selectFileList(fileBean);
     }
 
-    @Override
-    public List<FileBean> selectFileListByIds(List<Integer> fileIdList) {
-        return fileMapper.selectFileListByIds(fileIdList);
-    }
 
     @Override
     public List<FileBean> selectFileTreeListLikeFilePath(String filePath) {
@@ -98,7 +89,10 @@ public class FileService extends ServiceImpl<FileMapper, FileBean> implements IF
 
         fileBean.setFilePath(filePath);
 
-        return fileMapper.selectFileTreeListLikeFilePath(fileBean);
+        LambdaQueryWrapper<FileBean> lambdaQueryWrapper = new LambdaQueryWrapper<>();
+        lambdaQueryWrapper.likeLeft(FileBean::getFilePath, filePath);
+        return fileMapper.selectList(lambdaQueryWrapper);
+//        return fileMapper.selectFileTreeListLikeFilePath(fileBean);
     }
 
     @Override
@@ -114,7 +108,7 @@ public class FileService extends ServiceImpl<FileMapper, FileBean> implements IF
             for (int i = 0; i < fileList.size(); i++){
                 FileBean file = fileList.get(i);
                 //1.1、删除数据库文件
-                fileMapper.deleteFileById(file);
+                fileMapper.deleteById(file.getFileId());
                 //1.2、如果是文件，需要记录文件大小
                 if (file.getIsDir() != 1){
                     deleteSize += file.getFileSize();
@@ -133,9 +127,9 @@ public class FileService extends ServiceImpl<FileMapper, FileBean> implements IF
                 }
             }
             //2、根目录单独删除
-            fileMapper.deleteFileById(fileBean);
+            fileMapper.deleteById(fileBean.getFileId());
         }else{
-            fileMapper.deleteFileById(fileBean);
+            fileMapper.deleteById(fileBean.getFileId());
             deleteSize = FileOperation.getFileSize(fileUrl);
             if (deleteSize == 0) {
                 deleteSize = fileBean.getFileSize();
@@ -161,11 +155,6 @@ public class FileService extends ServiceImpl<FileMapper, FileBean> implements IF
             storageBean.setStorageSize(updateFileSize);
             filetransferService.updateStorageBean(storageBean);
         }
-    }
-
-    @Override
-    public void deleteFileByIds(List<Integer> fileIdList) {
-        fileMapper.deleteFileByIds(fileIdList);
     }
 
 

@@ -62,7 +62,7 @@ public class FileController {
 
         fileBean.setUploadTime(DateUtil.getCurrentTime());
 
-        fileService.insertFile(fileBean);
+        fileService.save(fileBean);
         restResult.setSuccess(true);
         return restResult;
     }
@@ -124,6 +124,7 @@ public class FileController {
         }
 
         fileBean.setFilePath(PathUtil.urlDecode(fileBean.getFilePath()));
+
         List<FileBean> fileList = fileService.selectFileList(fileBean);
 
         restResult.setData(fileList);

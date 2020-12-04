@@ -22,10 +22,6 @@ public interface IFiletransferService {
      */
     void uploadFile(HttpServletRequest request, FileBean fileBean, UserBean sessionUserBean);
 
-
-
-    void deleteUserImageByIds(List<Integer> imageidList);
-
     StorageBean selectStorageBean(StorageBean storageBean);
 
     void insertStorageBean(StorageBean storageBean);

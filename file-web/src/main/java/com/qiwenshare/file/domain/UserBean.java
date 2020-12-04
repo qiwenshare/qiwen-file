@@ -19,36 +19,28 @@ import java.util.List;
 @Entity
 @TableName("user")
 public class UserBean {
-    /**
-     * 用户id
-     */
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(columnDefinition="bigint(20) comment '用户id'")
     private Long userId;
 
-    /**
-     * openId qq登录使用
-     */
+    @Column(columnDefinition="varchar(30) comment 'openId qq登录使用'")
     private String openId;
 
-    /**
-     * 用户名称
-     */
+    @Column(columnDefinition="varchar(30) comment '用户名'")
     private String username;
 
-    /**
-     * 真实名
-     */
+    @Column(columnDefinition="varchar(30) comment '真实名'")
     private String realname;
 
-    /**
-     * 密码
-     */
+    @Column(columnDefinition="varchar(35) comment '密码'")
     private String password;
 
     /**
      * qq密码
      */
+    @Column(columnDefinition="varchar(35) comment 'qq密码'")
     private String qqPassword;
 
     /**
@@ -57,70 +49,45 @@ public class UserBean {
     @Transient
     private String passwordAgain;
 
-    /**
-     * 手机号码
-     */
+    @Column(columnDefinition="varchar(15) comment '手机号码'")
     private String telephone;
 
-    /**
-     * 邮箱
-     */
+    @Column(columnDefinition="varchar(100) comment '邮箱'")
     private String email;
 
-    /**
-     * 年龄
-     */
+    @Column(columnDefinition="varchar(3) comment '年龄'")
     private String sex;
 
-    /**
-     * 生日
-     */
+
+    @Column(columnDefinition="varchar(30) comment '生日'")
     private String birthday;
 
-    /**
-     * 省
-     */
+    @Column(columnDefinition="varchar(10) comment '省'")
     private String addrProvince;
 
-    /**
-     * 市
-     */
+    @Column(columnDefinition="varchar(10) comment '市'")
     private String addrCity;
 
-    /**
-     * 区
-     */
+    @Column(columnDefinition="varchar(10) comment '区'")
     private String addrArea;
 
-    /**
-     * 行业
-     */
+    @Column(columnDefinition="varchar(50) comment '行业'")
     private String industry;
 
-    /**
-     * 职位
-     */
+    @Column(columnDefinition="varchar(50) comment '职位'")
     private String position;
 
-    /**
-     * 介绍
-     */
+    @Column(columnDefinition="varchar(5000) comment '介绍'")
     private String intro;
 
-    /**
-     * 盐值
-     */
+    @Column(columnDefinition="varchar(20) comment '盐值'")
     private String salt;//加密密码的盐
     //private byte state;//用户状态,0:创建未认证（比如没有激活，没有输入验证码等等）--等待验证的用户 , 1:正常状态,2：用户被锁定.
 
-    /**
-     * 用户头像URL
-     */
+    @Column(columnDefinition="varchar(100) comment '用户头像URL'")
     private String imageUrl;
 
-    /**
-     * 注册时间
-     */
+    @Column(columnDefinition="varchar(30) comment '注册时间'")
     private String registerTime;
 
 

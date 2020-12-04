@@ -6,13 +6,6 @@
 
 <mapper namespace="com.qiwenshare.file.mapper.FileMapper">
 
-    <insert id="insertFile" parameterType="com.qiwenshare.file.domain.FileBean">
-        INSERT ignore INTO file (userId, fileName,timeStampName, fileUrl,
-        filePath, extendName, uploadTime, fileSize, isDir)
-        VALUES (#{userId}, #{fileName},#{timeStampName},
-         #{fileUrl}, #{filePath}, #{extendName}, #{uploadTime},
-         #{fileSize}, #{isDir});
-    </insert>
 
     <insert id="batchInsertFile" parameterType="java.util.List">
         INSERT ignore INTO file (userId, fileName,timeStampName, fileUrl,
@@ -68,10 +61,6 @@
         </if>
     </update>
 
-    <select id="selectFileById" parameterType="com.qiwenshare.file.domain.FileBean" resultType="com.qiwenshare.file.domain.FileBean">
-        select * from file
-        where fileId = #{fileId}
-    </select>
 
     <select id="selectFileList" parameterType="com.qiwenshare.file.domain.FileBean" resultType="com.qiwenshare.file.domain.FileBean">
         select * from file
@@ -79,56 +68,9 @@
         order by isDir desc, fileName
     </select>
 
-    <select id="selectFileListByIds" resultType="com.qiwenshare.file.domain.FileBean" parameterType="int">
-        select * from file where fileId in
-        <foreach collection="list" open="(" separator="," close=")" item="fileId">
-            #{fileId}
-        </foreach>
-    </select>
-
-    <select id="selectFileByExtendName" resultType="com.qiwenshare.file.domain.FileBean">
-        select * from file
-        where extendName in
-        <foreach collection="fileNameList" open="(" separator="," close=")" item="extendName">
-            #{extendName}
-        </foreach>
-        and userId = #{userId}
-    </select>
-    
-    <select id="selectFileTreeListLikeFilePath" parameterType="com.qiwenshare.file.domain.FileBean" resultType="com.qiwenshare.file.domain.FileBean">
-        select * from file
-        where filePath like N'${filePath}%'
-    </select>
-
-    <delete id="deleteFileById" parameterType="com.qiwenshare.file.domain.FileBean">
-        DELETE FROM file WHERE fileId = #{fileId}
-    </delete>
-
-    <delete id="deleteFileByIds" parameterType="int">
-        delete from file where fileId in
-        <foreach  collection="list" open="(" separator="," close=")" item="fileId">
-            #{fileId}
-        </foreach>
-    </delete>
-
-    <select id="selectFilePathTreeByUserId" parameterType="com.qiwenshare.file.domain.FileBean" resultType="com.qiwenshare.file.domain.FileBean">
-        SELECT * FROM file
-        WHERE isDir = 1 and userId=#{userId}
-    </select>
-
-    <select id="selectFileByNameAndPath" parameterType="com.qiwenshare.file.domain.FileBean"
-        resultType="com.qiwenshare.file.domain.FileBean">
-        SELECT * FROM file
-        WHERE filename = #{fileName} AND filepath = #{filePath}
-    </select>
-    
 
 
-<!--    <select id="selectFileByExtendName" resultType="FileBean" parameterType="java.lang.String">-->
-<!--        select * from file-->
-<!--        where extendName in-->
-<!--        <foreach collection="list" separator="," open="(" close=")" item="extendName">-->
-<!--            #{extendName}-->
-<!--        </foreach>-->
-<!--    </select>-->
+
+
+
 </mapper>

@@ -223,7 +223,7 @@ public class FiletransferController {
     @ResponseBody
     public RestResult<StorageBean> getStorage(@RequestHeader("token") String token) {
         RestResult<StorageBean> restResult = new RestResult<StorageBean>();
-        //UserBean sessionUserBean = (UserBean) SecurityUtils.getSubject().getPrincipal();
+
         UserBean sessionUserBean = userService.getUserBeanByToken(token);
         StorageBean storageBean = new StorageBean();
         if (qiwenFileConfig.isShareMode()){

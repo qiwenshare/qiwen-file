@@ -5,10 +5,9 @@ import com.qiwenshare.file.domain.StorageBean;
 
 import java.util.List;
 
-public interface FiletransferMapper {
+public interface StorageMapper {
 
 
-    void deleteUserImageByIds(List<Integer> imageidList);
 
     StorageBean selectStorageBean(StorageBean storageBean);
 

@@ -15,10 +15,10 @@ import com.qiwenshare.file.api.IFiletransferService;
 import com.qiwenshare.common.domain.AliyunOSS;
 import com.qiwenshare.file.config.QiwenFileConfig;
 import com.qiwenshare.file.mapper.FileMapper;
-import com.qiwenshare.file.mapper.FiletransferMapper;
 import com.qiwenshare.file.domain.FileBean;
 import com.qiwenshare.file.domain.StorageBean;
 import com.qiwenshare.file.domain.UserBean;
+import com.qiwenshare.file.mapper.StorageMapper;
 import org.springframework.stereotype.Service;
 
 
@@ -26,17 +26,13 @@ import org.springframework.stereotype.Service;
 public class FiletransferService implements IFiletransferService {
 
     @Resource
-    FiletransferMapper filetransferMapper;
+    StorageMapper storageMapper;
     @Resource
     FileMapper fileMapper;
 
     @Resource
     QiwenFileConfig qiwenFileConfig;
 
-    @Override
-    public void deleteUserImageByIds(List<Integer> imageidList) {
-        filetransferMapper.deleteUserImageByIds(imageidList);
-    }
 
 
     @Override
@@ -92,21 +88,21 @@ public class FiletransferService implements IFiletransferService {
 
     @Override
     public StorageBean selectStorageBean(StorageBean storageBean) {
-        return filetransferMapper.selectStorageBean(storageBean);
+        return storageMapper.selectStorageBean(storageBean);
     }
 
     @Override
     public void insertStorageBean(StorageBean storageBean) {
-        filetransferMapper.insertStorageBean(storageBean);
+        storageMapper.insertStorageBean(storageBean);
     }
 
     @Override
     public void updateStorageBean(StorageBean storageBean) {
-        filetransferMapper.updateStorageBean(storageBean);
+        storageMapper.updateStorageBean(storageBean);
     }
 
     @Override
     public StorageBean selectStorageByUser(StorageBean storageBean) {
-        return filetransferMapper.selectStorageByUser(storageBean);
+        return storageMapper.selectStorageByUser(storageBean);
     }
 }

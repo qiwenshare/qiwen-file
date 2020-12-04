@@ -19,65 +19,54 @@ import javax.persistence.*;
 @Entity
 @TableName("file")
 public class FileBean {
-    /**
-     * 文件id
-     */
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @TableId(type = IdType.AUTO)
+    @Column(columnDefinition="bigint(20) comment '文件id'")
     private Long fileId;
 
-
-    /**
-     * 用户id
-     */
+    @Column(columnDefinition="bigint(20) comment '用户id'")
     private Long userId;
 
-    /**
-     * 文件URL
-     */
+    @Column(columnDefinition="varchar(500) comment '文件url'")
     private String fileUrl;
 
-    /**
-     * 文件路径
-     */
+    @Column(columnDefinition="varchar(500) comment '文件路径'")
     private String filePath;
 
-    /**
-     * 上传时间
-     */
+    @Column(columnDefinition="varchar(25) comment '上传时间'")
     private String uploadTime;
 
-    /**
-     * 时间戳名称
-     */
+    @Column(columnDefinition="varchar(50) comment '时间戳名称'")
     private String timeStampName;
 
-    /**
-     * 扩展名
-     */
+    @Column(columnDefinition="varchar(10) comment '扩展名'")
     private String extendName;
 
-    /**
-     * 文件名
-     */
+    @Column(columnDefinition="varchar(100) comment '文件名'")
     private String fileName;
 
-    /**
-     * 文件大小
-     */
+    @Column(columnDefinition="bigint(10) comment '文件大小'")
     private Long fileSize;
 
-    /**
-     * 是否是目录
-     */
+    @Column(columnDefinition="int(1) comment '是否是目录 0-否, 1-是'")
     private Integer isDir;
 
+    @Column(columnDefinition="int(1) comment '是否是OSS云存储 0-否, 1-是'")
     private Integer isOSS;
 
+    @Column(columnDefinition="int(11) comment '文件引用数量'")
     private Integer pointCount;
 
+    @Column(columnDefinition="int(11) comment '文件删除标志 0/null-正常, 1-删除'")
     private Integer deleteFlag;
+
+    @Column(columnDefinition="varchar(25) comment '删除时间'")
+    private String deleteTime;
+
+    @Column(columnDefinition="varchar(32) comment 'md5标识'")
+    private String identifier;
 
     @Transient
     @TableField(exist = false)
@@ -115,6 +104,5 @@ public class FileBean {
     @TableField(exist = false)
     private long currentChunkSize;
 
-    private String identifier;
 
 }

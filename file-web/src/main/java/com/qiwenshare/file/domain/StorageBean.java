@@ -13,21 +13,16 @@ import javax.persistence.*;
 @Entity
 @TableName("storage")
 public class StorageBean {
-    /**
-     * 存储id
-     */
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(columnDefinition="bigint(20) comment '存储id'")
     private Long storageId;
 
-    /**
-     * 用户id
-     */
+    @Column(columnDefinition="bigint(20) comment '用户id'")
     private Long userId;
 
-    /**
-     * 存储大小
-     */
+    @Column(columnDefinition="bigint(20) comment '存储大小'")
     private Long storageSize;
 
     public StorageBean() {
