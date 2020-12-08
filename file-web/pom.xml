@@ -12,7 +12,7 @@
     <version>1.0.0-SNAPSHOT</version>
     <name>file-web</name>
     <description>fileos.qiwenshare.com</description>
-    <packaging>jar</packaging>
+    <packaging>war</packaging>
     <properties>
         <java.version>1.8</java.version>
         <spring-cloud.version>Hoxton.SR1</spring-cloud.version>
@@ -49,7 +49,19 @@
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-web</artifactId>
+            <exclusions>
+                <exclusion>
+                    <groupId>org.springframework.boot</groupId>
+                    <artifactId>spring-boot-starter-tomcat</artifactId>
+                </exclusion>
+            </exclusions>
         </dependency>
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-tomcat</artifactId>
+            <scope>provided</scope>
+        </dependency>
+
         <dependency>
             <groupId>org.mybatis.spring.boot</groupId>
             <artifactId>mybatis-spring-boot-starter</artifactId>
@@ -73,6 +85,7 @@
 
 
     <build>
+        <finalName>file</finalName>
         <plugins>
             <plugin>
                 <groupId>org.springframework.boot</groupId>
@@ -80,40 +93,45 @@
 
             </plugin>
             <!--排除静态文件-->
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-jar-plugin</artifactId>
-                <configuration>
-                    <excludes>
-                        <exclude>static/**</exclude>
-                    </excludes>
-                </configuration>
-            </plugin>
+<!--            <plugin>-->
+<!--                <groupId>org.apache.maven.plugins</groupId>-->
+<!--                <artifactId>maven-jar-plugin</artifactId>-->
+<!--                <configuration>-->
+<!--                    <excludes>-->
+<!--                        <exclude>static/**</exclude>-->
+<!--                    </excludes>-->
+<!--                </configuration>-->
+<!--            </plugin>-->
             <!--ant插件执行自定义动作-->
+<!--            <plugin>-->
+<!--                <groupId>org.apache.maven.plugins</groupId>-->
+<!--                <artifactId>maven-antrun-plugin</artifactId>-->
+<!--                <executions>-->
+<!--                    <execution>-->
+<!--                        <phase>package</phase>-->
+<!--                        <goals>-->
+<!--                            <goal>run</goal>-->
+<!--                        </goals>-->
+<!--                        <configuration>-->
+<!--                            <target>-->
+<!--                                <copy file="target/${app-name}.war" tofile="${release-path}/app/${project.artifactId}/${app-name}.war" />-->
+
+<!--                                <copy todir="${release-path}">-->
+<!--                                    <fileset dir="target/classes">-->
+<!--                                        <include name="**/static/**" />-->
+<!--                                    </fileset>-->
+<!--                                </copy>-->
+<!--                            </target>-->
+<!--                        </configuration>-->
+<!--                    </execution>-->
+<!--                </executions>-->
+<!--            </plugin>-->
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-antrun-plugin</artifactId>
-                <executions>
-                    <execution>
-                        <phase>package</phase>
-                        <goals>
-                            <goal>run</goal>
-                        </goals>
-                        <configuration>
-                            <target>
-                                <copy file="target/${app-name}.jar" tofile="${release-path}/app/${project.artifactId}/${app-name}.jar" />
-                                <copy file="target/classes/script/startup.bat" tofile="${release-path}/startup.bat"/>
-                                <copy file="target/classes/script/startup.sh" tofile="${release-path}/startup.sh"/>
-                                <copy file="target/classes/script/stop.sh" tofile="${release-path}/stop.sh"/>
-                                <copy todir="${release-path}">
-                                    <fileset dir="target/classes">
-                                        <include name="**/static/**" />
-                                    </fileset>
-                                </copy>
-                            </target>
-                        </configuration>
-                    </execution>
-                </executions>
+                <artifactId>maven-war-plugin</artifactId>
+                <configuration>
+                    <failOnMissingWebXml>false</failOnMissingWebXml>
+                </configuration>
             </plugin>
 
         </plugins>
