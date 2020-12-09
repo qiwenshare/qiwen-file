@@ -90,7 +90,7 @@ public class FileService extends ServiceImpl<FileMapper, FileBean> implements IF
         fileBean.setFilePath(filePath);
 
         LambdaQueryWrapper<FileBean> lambdaQueryWrapper = new LambdaQueryWrapper<>();
-        lambdaQueryWrapper.likeLeft(FileBean::getFilePath, filePath);
+        lambdaQueryWrapper.likeRight(FileBean::getFilePath, filePath);
         return fileMapper.selectList(lambdaQueryWrapper);
 //        return fileMapper.selectFileTreeListLikeFilePath(fileBean);
     }
