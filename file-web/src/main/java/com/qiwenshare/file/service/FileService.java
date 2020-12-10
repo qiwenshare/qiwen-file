@@ -1,6 +1,7 @@
 package com.qiwenshare.file.service;
 
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
+import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.qiwenshare.common.cbb.DateUtil;
 import com.qiwenshare.common.operation.FileOperation;
@@ -14,6 +15,7 @@ import com.qiwenshare.file.mapper.FileMapper;
 import com.qiwenshare.file.domain.FileBean;
 import com.qiwenshare.file.domain.StorageBean;
 import com.qiwenshare.file.domain.UserBean;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.ArrayUtils;
 import org.apache.shiro.SecurityUtils;
 import org.springframework.stereotype.Service;
@@ -22,7 +24,7 @@ import javax.annotation.Resource;
 import java.util.Arrays;
 import java.util.List;
 
-
+@Slf4j
 @Service
 public class FileService extends ServiceImpl<FileMapper, FileBean> implements IFileService {
 
@@ -62,7 +64,6 @@ public class FileService extends ServiceImpl<FileMapper, FileBean> implements IF
         LambdaQueryWrapper<FileBean> lambdaQueryWrapper = new LambdaQueryWrapper<>();
         lambdaQueryWrapper.eq(FileBean::getFileName, fileBean.getFileName()).eq(FileBean::getFilePath, fileBean.getFilePath());
         return fileMapper.selectList(lambdaQueryWrapper);
-//        return fileMapper.selectFileByNameAndPath(fileBean);
     }
 
 
@@ -74,8 +75,11 @@ public class FileService extends ServiceImpl<FileMapper, FileBean> implements IF
     }
 
     @Override
-    public List<FileBean> selectFileList(FileBean fileBean) {
-        return fileMapper.selectFileList(fileBean);
+    public List<FileBean> selectFileListByPath(FileBean fileBean) {
+        LambdaQueryWrapper<FileBean> lambdaQueryWrapper = new LambdaQueryWrapper<>();
+        lambdaQueryWrapper.eq(FileBean::getFilePath, fileBean.getFilePath())
+                .eq(FileBean::getUserId, fileBean.getUserId()).orderByDesc(FileBean::getIsDir);
+        return fileMapper.selectList(lambdaQueryWrapper);
     }
 
 
@@ -90,9 +94,9 @@ public class FileService extends ServiceImpl<FileMapper, FileBean> implements IF
         fileBean.setFilePath(filePath);
 
         LambdaQueryWrapper<FileBean> lambdaQueryWrapper = new LambdaQueryWrapper<>();
-        lambdaQueryWrapper.likeLeft(FileBean::getFilePath, filePath);
+        log.info("删除文件路径：" + filePath);
+        lambdaQueryWrapper.likeRight(FileBean::getFilePath, filePath);
         return fileMapper.selectList(lambdaQueryWrapper);
-//        return fileMapper.selectFileTreeListLikeFilePath(fileBean);
     }
 
     @Override

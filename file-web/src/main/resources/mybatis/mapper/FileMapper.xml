@@ -62,12 +62,6 @@
     </update>
 
 
-    <select id="selectFileList" parameterType="com.qiwenshare.file.domain.FileBean" resultType="com.qiwenshare.file.domain.FileBean">
-        select * from file
-        where filePath = #{filePath} and userId = #{userId}
-        order by isDir desc, fileName
-    </select>
-
 
 
 

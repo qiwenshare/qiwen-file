@@ -9,6 +9,7 @@ import com.qiwenshare.file.api.IUserService;
 import com.qiwenshare.file.config.QiwenFileConfig;
 import com.qiwenshare.file.domain.UserBean;
 import com.qiwenshare.file.vo.user.UserLoginVo;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.shiro.crypto.hash.SimpleHash;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -25,9 +26,10 @@ import java.util.Map;
  * @author ma116
  */
 @RestController
+@Slf4j
 @RequestMapping("/user")
 public class UserController {
-    private static final Logger logger = LoggerFactory.getLogger(UserController.class);
+
     @Resource
     IUserService userService;
 
@@ -71,7 +73,7 @@ public class UserController {
         try {
             jwt = JjwtUtil.createJWT("qiwenshare", "qiwen", JSON.toJSONString(saveUserBean));
         } catch (Exception e) {
-            logger.info("登录失败：{}", e);
+            log.info("登录失败：{}", e);
             restResult.setSuccess(false);
             restResult.setErrorMessage("登录失败！");
             return restResult;
@@ -105,7 +107,6 @@ public class UserController {
         UserBean sessionUserBean = userService.getUserBeanByToken(token);
         if (sessionUserBean != null) {
 
-
             restResult.setData(sessionUserBean);
             restResult.setSuccess(true);
             AliyunOSS oss = qiwenFileConfig.getAliyun().getOss();
@@ -118,9 +119,6 @@ public class UserController {
             restResult.setSuccess(false);
             restResult.setErrorMessage("用户暂未登录");
         }
-
-
-
 
         return restResult;
     }
@@ -136,7 +134,7 @@ public class UserController {
     public String getUserInfoById(int userId) {
         RestResult<UserBean> restResult = new RestResult<UserBean>();
 
-        UserBean userBean = userService.getUserInfoById(userId);
+        UserBean userBean = userService.getById(userId);
         if (userBean == null) {
             restResult.setSuccess(false);
             restResult.setErrorCode("100001");
@@ -148,7 +146,5 @@ public class UserController {
         String resultJson = JSON.toJSONString(restResult);
         return resultJson;
     }
-
-
 
 }

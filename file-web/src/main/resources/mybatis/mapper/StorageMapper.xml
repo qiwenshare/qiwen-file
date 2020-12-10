@@ -7,21 +7,4 @@
 <mapper namespace="com.qiwenshare.file.mapper.StorageMapper">
 
 
-    <select id="selectStorageBean" resultType="com.qiwenshare.file.domain.StorageBean" parameterType="com.qiwenshare.file.domain.StorageBean">
-        select * from storage where userId = #{userId};
-    </select>
-
-    <insert id="updateStorageBean" parameterType="com.qiwenshare.file.domain.StorageBean">
-        update storage
-        set storageSize = #{storageSize}
-        where userId = #{userId} and storageId = #{storageId}
-    </insert>
-    <insert id="insertStorageBean" parameterType="com.qiwenshare.file.domain.StorageBean">
-        insert into storage (storageId, userId, storageSize)
-        values (#{storageId}, #{userId}, #{storageSize})
-    </insert>
-    
-    <select id="selectStorageByUser" resultType="com.qiwenshare.file.domain.StorageBean" parameterType="com.qiwenshare.file.domain.StorageBean">
-        select * from storage where userId=#{userId}
-    </select>
 </mapper>

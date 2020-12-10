@@ -14,6 +14,7 @@ import com.qiwenshare.file.config.QiwenFileConfig;
 import com.qiwenshare.file.domain.FileBean;
 import com.qiwenshare.file.domain.TreeNode;
 import com.qiwenshare.file.domain.UserBean;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.ArrayUtils;
 import org.springframework.web.bind.annotation.*;
 
@@ -25,6 +26,7 @@ import java.util.*;
 import static com.qiwenshare.common.util.FileUtil.getFileExtendsByType;
 
 @RestController
+@Slf4j
 @RequestMapping("/file")
 public class FileController {
 
@@ -80,7 +82,6 @@ public class FileController {
             return operationCheck(token);
         }
         UserBean sessionUserBean = userService.getUserBeanByToken(token);
-        //UserBean sessionUserBean = (UserBean) SecurityUtils.getSubject().getPrincipal();
         fileBean.setUserId(sessionUserBean.getUserId());
         fileBean.setUploadTime(DateUtil.getCurrentTime());
         List<FileBean> fileBeans = fileService.selectFileByNameAndPath(fileBean);
@@ -103,9 +104,17 @@ public class FileController {
                         newFileUrl.substring(1));
             }
         }
+
         fileService.updateFile(fileBean);
         restResult.setSuccess(true);
         return restResult;
+    }
+
+    @RequestMapping(value = "/recyclefile", method = RequestMethod.POST)
+    @ResponseBody
+    public RestResult<String> recycleFile(@RequestBody FileBean fileBean, @RequestHeader("token") String token) {
+        
+        return null;
     }
 
     @RequestMapping(value = "/getfilelist", method = RequestMethod.GET)
@@ -125,7 +134,7 @@ public class FileController {
 
         fileBean.setFilePath(PathUtil.urlDecode(fileBean.getFilePath()));
 
-        List<FileBean> fileList = fileService.selectFileList(fileBean);
+        List<FileBean> fileList = fileService.selectFileListByPath(fileBean);
 
         restResult.setData(fileList);
         restResult.setSuccess(true);

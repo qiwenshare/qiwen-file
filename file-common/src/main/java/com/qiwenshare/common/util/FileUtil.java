@@ -16,6 +16,8 @@ public class FileUtil {
     public static final int VIDEO_TYPE = 3;
     public static final int MUSIC_TYPE = 4;
     public static final int OTHER_TYPE = 5;
+    public static final int SHARE_FILE = 6;
+    public static final int RECYCLE_FILE = 7;
 
     public static List<String> getFileExtendsByType(int fileType) {
 
@@ -24,7 +26,6 @@ public class FileUtil {
             case IMAGE_TYPE:
                 fileExtends = Arrays.asList(IMG_FILE);
                 break;
-
             case DOC_TYPE:
                 fileExtends = Arrays.asList(DOC_FILE);
                 break;

@@ -2,6 +2,7 @@ package com.qiwenshare.common.upload;
 
 import com.qiwenshare.common.domain.UploadFile;
 import com.qiwenshare.common.util.PathUtil;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.io.FileUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -17,8 +18,9 @@ import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.List;
 
+@Slf4j
 public abstract class Uploader {
-    private static final Logger logger = LoggerFactory.getLogger(Uploader.class);
+
     public static final String ROOT_PATH = "upload";
     public static final String FILE_SEPARATOR = "/";
     // 文件大小限制，单位KB
@@ -44,10 +46,10 @@ public abstract class Uploader {
             try {
                 boolean isSuccessMakeDir = dir.mkdirs();
                 if (!isSuccessMakeDir) {
-                    logger.error("目录创建失败:" + PathUtil.getStaticPath() + path);
+                    log.error("目录创建失败:" + PathUtil.getStaticPath() + path);
                 }
             } catch (Exception e) {
-                logger.error("目录创建失败" + PathUtil.getStaticPath() + path);
+                log.error("目录创建失败" + PathUtil.getStaticPath() + path);
                 return "";
             }
         }
@@ -65,7 +67,7 @@ public abstract class Uploader {
             return "" + number.nextInt(10000)
                     + System.currentTimeMillis();
         } catch (NoSuchAlgorithmException e) {
-            logger.error("生成安全随机数失败");
+            log.error("生成安全随机数失败");
         }
         return ""
                 + System.currentTimeMillis();

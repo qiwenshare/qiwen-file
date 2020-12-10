@@ -1,6 +1,7 @@
 package com.qiwenshare.file.service;
 
 import com.alibaba.fastjson.JSON;
+import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.qiwenshare.common.cbb.DateUtil;
 import com.qiwenshare.common.cbb.RestResult;
@@ -11,6 +12,7 @@ import com.qiwenshare.file.controller.UserController;
 import com.qiwenshare.file.domain.UserBean;
 import com.qiwenshare.file.mapper.UserMapper;
 import io.jsonwebtoken.Claims;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.shiro.crypto.hash.SimpleHash;
 import org.slf4j.Logger;
@@ -21,9 +23,10 @@ import javax.annotation.Resource;
 import java.util.List;
 import java.util.regex.Pattern;
 
+@Slf4j
 @Service
 public class UserService extends ServiceImpl<UserMapper, UserBean> implements IUserService {
-    private static final Logger logger = LoggerFactory.getLogger(UserService.class);
+
     @Resource
     UserMapper userMapper;
 
@@ -31,19 +34,19 @@ public class UserService extends ServiceImpl<UserMapper, UserBean> implements IU
     public UserBean getUserBeanByToken(String token){
         Claims c = null;
         try {
-            logger.debug("token:" + token);
+            log.debug("token:" + token);
             c = JjwtUtil.parseJWT(token);
         } catch (Exception e) {
-            logger.error("解码异常");
+            log.error("解码异常");
             e.printStackTrace();
             return null;
         }
         if (c == null) {
-            logger.info("解码为空");
+            log.info("解码为空");
             return null;
         }
         String subject = c.getSubject();
-        logger.debug("解析结果：" + subject);
+        log.debug("解析结果：" + subject);
         UserBean tokenUserBean = JSON.parseObject(subject, UserBean.class);
 
         UserBean saveUserBean = new UserBean();
@@ -72,8 +75,10 @@ public class UserService extends ServiceImpl<UserMapper, UserBean> implements IU
 
     @Override
     public UserBean selectUserByopenid(String openid) {
-        UserBean userBean = userMapper.selectUserByopenId(openid);
-        return userBean;
+        LambdaQueryWrapper<UserBean> lambdaQueryWrapper = new LambdaQueryWrapper<>();
+        lambdaQueryWrapper.eq(UserBean::getOpenId, openid);
+        return userMapper.selectOne(lambdaQueryWrapper);
+
     }
     /**
      * 用户注册
@@ -146,22 +151,7 @@ public class UserService extends ServiceImpl<UserMapper, UserBean> implements IU
         }
     }
 
-    /**
-     * 添加用户
-     */
-    @Override
-    public UserBean addUser(UserBean userBean) {
 
-        String salt = PasswordUtil.getSaltValue();
-        String newPassword = new SimpleHash("MD5", userBean.getOpenId(), salt, 1024).toHex();
-
-        userBean.setSalt(salt);
-        userBean.setQqPassword(newPassword);
-
-        userMapper.insertUser(userBean);
-        userMapper.insertUserRole(userBean.getUserId(), 2);
-        return userBean;
-    }
 
   /**
      * 检测用户名是否存在
@@ -169,8 +159,10 @@ public class UserService extends ServiceImpl<UserMapper, UserBean> implements IU
      * @param userBean
      */
     private Boolean isUserNameExit(UserBean userBean) {
-        UserBean result = userMapper.selectUserByUserName(userBean);
-        if (result != null) {
+        LambdaQueryWrapper<UserBean> lambdaQueryWrapper = new LambdaQueryWrapper<>();
+        lambdaQueryWrapper.eq(UserBean::getUsername, userBean.getUsername());
+        List<UserBean> list = userMapper.selectList(lambdaQueryWrapper);
+        if (list != null && !list.isEmpty()) {
             return true;
         } else {
             return false;
@@ -184,12 +176,16 @@ public class UserService extends ServiceImpl<UserMapper, UserBean> implements IU
      * @return
      */
     private Boolean isPhoneExit(UserBean userBean) {
-        UserBean result = userMapper.selectUserByTelephone(userBean);
-        if (result != null) {
+
+        LambdaQueryWrapper<UserBean> lambdaQueryWrapper = new LambdaQueryWrapper<>();
+        lambdaQueryWrapper.eq(UserBean::getTelephone, userBean.getTelephone());
+        List<UserBean> list = userMapper.selectList(lambdaQueryWrapper);
+        if (list != null && !list.isEmpty()) {
             return true;
         } else {
             return false;
         }
+
     }
 
     private Boolean isPhoneFormatRight(String phone){
@@ -198,17 +194,6 @@ public class UserService extends ServiceImpl<UserMapper, UserBean> implements IU
         return isRight;
     }
 
-    /**
-     * 通过用户名获取用户信息
-     *
-     * @param userName
-     * @return
-     */
-    public UserBean findUserInfoByName(String userName) {
-        UserBean userinfo = new UserBean();
-        userinfo.setUsername(userName);
-        return userMapper.selectUserByUserName(userinfo);
-    }
 
     /**
      * 通过手机号获取用户信息
@@ -217,99 +202,12 @@ public class UserService extends ServiceImpl<UserMapper, UserBean> implements IU
      * @return
      */
     public UserBean findUserInfoByTelephone(String telephone) {
-        UserBean userinfo = new UserBean();
-        userinfo.setTelephone(telephone);
-        return userMapper.selectUserByTelephone(userinfo);
-    }
-
-    /**
-     * 通过用户名获取用户信息
-     *
-     * @param userName
-     * @return
-     */
-    public UserBean findUserInfoByNameAndPassword(String userName, String password) {
-        UserBean userinfo = new UserBean();
-        userinfo.setUsername(userName);
-        return userMapper.selectUserByUserName(userinfo);
-    }
-
-    /**
-     * 用户登录
-     */
-    @Override
-    public UserBean loginUser(UserBean userBean) {
-        RestResult<UserBean> restResult = new RestResult<UserBean>();
-        if (userBean.getUsername() == null && userBean.getTelephone() != null) {
-            userBean.setUsername(userBean.getTelephone());
-        }
-        if (userBean.getUsername() != null && userBean.getTelephone() == null) {
-            userBean.setTelephone(userBean.getUsername());
-        }
-        UserBean result = userMapper.selectUser(userBean);
-
-        return result;
-    }
-
-    @Override
-    public List<UserBean> selectAdminUserList() {
-        return userMapper.selectAdminUserList();
-    }
-
-
-
-    @Override
-    public UserBean getUserInfoById(long userId) {
-        UserBean userBean = userMapper.selectUserById(userId);
-
-        return userBean;
-    }
-
-    @Override
-    public UserBean selectUserByopenId(String openId) {
-        UserBean userBean = userMapper.selectUserByopenId(openId);
-        return userBean;
-    }
-
-
-    /**
-     * 修改用户信息
-     */
-    @Override
-    public RestResult<String> updateUserInfo(UserBean userBean) {
-        RestResult<String> restResult = new RestResult<String>();
-        userMapper.updateUserInfo(userBean);
-
-        restResult.setSuccess(true);
-        return restResult;
-    }
-
-    @Override
-    public void updateEmail(UserBean userBean) {
-        userMapper.updateEmail(userBean);
-    }
-
-    @Override
-    public void updataImageUrl(UserBean userBean){
-        userMapper.updataImageUrl(userBean);
-    }
-
-    /**
-     * 查询所有的用户
-     */
-    @Override
-    public List<UserBean> selectAllUserList() {
-        return userMapper.selectAllUserList();
-    }
-
-
-
-
-
-    @Override
-    public void deleteUserInfo(UserBean userBean) {
-        userMapper.deleteUserInfo(userBean);
+        LambdaQueryWrapper<UserBean> lambdaQueryWrapper = new LambdaQueryWrapper<>();
+        lambdaQueryWrapper.eq(UserBean::getTelephone, telephone);
+        return userMapper.selectOne(lambdaQueryWrapper);
 
     }
+
+
 
 }

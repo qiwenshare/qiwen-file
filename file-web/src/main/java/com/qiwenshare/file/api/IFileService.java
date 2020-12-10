@@ -14,7 +14,7 @@ public interface IFileService  extends IService<FileBean> {
     List<FileBean> selectFileByNameAndPath(FileBean fileBean);
 
     List<FileBean> selectFilePathTreeByUserId(FileBean fileBean);
-    List<FileBean> selectFileList(FileBean fileBean);
+    List<FileBean> selectFileListByPath(FileBean fileBean);
 
 
     List<FileBean> selectFileTreeListLikeFilePath(String filePath);

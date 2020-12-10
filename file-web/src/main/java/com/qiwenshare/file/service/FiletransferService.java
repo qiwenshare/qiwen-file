@@ -5,6 +5,8 @@ import java.util.List;
 import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
 
+import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
+import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
 import com.qiwenshare.common.cbb.DateUtil;
 import com.qiwenshare.common.domain.UploadFile;
 import com.qiwenshare.common.upload.factory.AliyunOSSUploaderFactory;
@@ -88,21 +90,30 @@ public class FiletransferService implements IFiletransferService {
 
     @Override
     public StorageBean selectStorageBean(StorageBean storageBean) {
-        return storageMapper.selectStorageBean(storageBean);
+        LambdaQueryWrapper<StorageBean> lambdaQueryWrapper = new LambdaQueryWrapper<>();
+        lambdaQueryWrapper.eq(StorageBean::getUserId, storageBean.getUserId());
+        return storageMapper.selectOne(lambdaQueryWrapper);
+
     }
 
     @Override
     public void insertStorageBean(StorageBean storageBean) {
-        storageMapper.insertStorageBean(storageBean);
+        storageMapper.insert(storageBean);
     }
 
     @Override
     public void updateStorageBean(StorageBean storageBean) {
-        storageMapper.updateStorageBean(storageBean);
+        LambdaUpdateWrapper<StorageBean> lambdaUpdateWrapper = new LambdaUpdateWrapper<>();
+        lambdaUpdateWrapper.set(StorageBean::getStorageSize, storageBean.getStorageSize())
+                .eq(StorageBean::getStorageId, storageBean.getStorageId())
+                .eq(StorageBean::getUserId, storageBean.getUserId());
+        storageMapper.update(null, lambdaUpdateWrapper);
     }
 
     @Override
     public StorageBean selectStorageByUser(StorageBean storageBean) {
-        return storageMapper.selectStorageByUser(storageBean);
+        LambdaQueryWrapper<StorageBean> lambdaQueryWrapper = new LambdaQueryWrapper<>();
+        lambdaQueryWrapper.eq(StorageBean::getUserId, storageBean.getUserId());
+        return storageMapper.selectOne(lambdaQueryWrapper);
     }
 }
