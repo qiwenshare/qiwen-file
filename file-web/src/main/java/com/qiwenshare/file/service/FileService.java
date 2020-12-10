@@ -94,7 +94,9 @@ public class FileService extends ServiceImpl<FileMapper, FileBean> implements IF
         fileBean.setFilePath(filePath);
 
         LambdaQueryWrapper<FileBean> lambdaQueryWrapper = new LambdaQueryWrapper<>();
+
         log.info("删除文件路径：" + filePath);
+
         lambdaQueryWrapper.likeRight(FileBean::getFilePath, filePath);
         return fileMapper.selectList(lambdaQueryWrapper);
     }
