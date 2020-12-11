@@ -68,41 +68,41 @@ public class FileBean {
     @Column(columnDefinition="varchar(32) comment 'md5标识'")
     private String identifier;
 
-    @Transient
-    @TableField(exist = false)
-    private String oldFilePath;
+//    @Transient
+//    @TableField(exist = false)
+//    private String oldFilePath;
+//
+//    @Transient
+//    @TableField(exist = false)
+//    private String oldFileName;
 
-    @Transient
-    @TableField(exist = false)
-    private String oldFileName;
+//    @Transient
+//    @TableField(exist = false)
+//    private String files;
 
-    @Transient
-    @TableField(exist = false)
-    private String files;
-
-    @Transient
-    @TableField(exist = false)
-    private Integer fileType;
+//    @Transient
+//    @TableField(exist = false)
+//    private Integer fileType;
 
     //切片上传相关参数
-    @Transient
-    @TableField(exist = false)
-    private String taskId;
-    @Transient
-    @TableField(exist = false)
-    private int chunkNumber;
-    @Transient
-    @TableField(exist = false)
-    private long chunkSize;
-    @Transient
-    @TableField(exist = false)
-    private int totalChunks;
-    @Transient
-    @TableField(exist = false)
-    private long totalSize;
-    @Transient
-    @TableField(exist = false)
-    private long currentChunkSize;
+//    @Transient
+//    @TableField(exist = false)
+//    private String taskId;
+//    @Transient
+//    @TableField(exist = false)
+//    private int chunkNumber;
+//    @Transient
+//    @TableField(exist = false)
+//    private long chunkSize;
+//    @Transient
+//    @TableField(exist = false)
+//    private int totalChunks;
+//    @Transient
+//    @TableField(exist = false)
+//    private long totalSize;
+//    @Transient
+//    @TableField(exist = false)
+//    private long currentChunkSize;
 
 
 }

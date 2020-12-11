@@ -120,13 +120,12 @@ public class FiletransferController {
             restResult.setErrorMessage("没权限，请联系管理员！");
             return restResult;
         }
-        FileBean fileBean = new FileBean();
-        BeanUtil.copyProperties(uploadFileDto, fileBean);
-        fileBean.setUserId(sessionUserBean.getUserId());
 
-        filetransferService.uploadFile(request, fileBean, sessionUserBean);
+        uploadFileDto.setUserId(sessionUserBean.getUserId());
+
+        filetransferService.uploadFile(request, uploadFileDto, sessionUserBean);
         UploadFileVo uploadFileVo = new UploadFileVo();
-        uploadFileVo.setTimeStampName(fileBean.getTimeStampName());
+        uploadFileVo.setTimeStampName(uploadFileDto.getTimeStampName());
         restResult.setData(uploadFileVo);
         return restResult;
     }

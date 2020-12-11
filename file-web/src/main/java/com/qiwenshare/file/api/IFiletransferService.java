@@ -4,6 +4,7 @@ import com.qiwenshare.common.cbb.RestResult;
 import com.qiwenshare.file.domain.FileBean;
 import com.qiwenshare.file.domain.StorageBean;
 import com.qiwenshare.file.domain.UserBean;
+import com.qiwenshare.file.dto.UploadFileDto;
 
 import java.util.List;
 
@@ -18,9 +19,9 @@ public interface IFiletransferService {
     /**
      * 上传文件
      * @param request 请求
-     * @param fileBean 文件信息
+     * @param UploadFileDto 文件信息
      */
-    void uploadFile(HttpServletRequest request, FileBean fileBean, UserBean sessionUserBean);
+    void uploadFile(HttpServletRequest request, UploadFileDto UploadFileDto, UserBean sessionUserBean);
 
     StorageBean selectStorageBean(StorageBean storageBean);
 

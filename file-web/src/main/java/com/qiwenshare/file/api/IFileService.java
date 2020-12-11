@@ -10,11 +10,12 @@ public interface IFileService  extends IService<FileBean> {
 
 
     void batchInsertFile(List<FileBean> fileBeanList, Long userId);
-    void updateFile(FileBean fileBean);
-    List<FileBean> selectFileByNameAndPath(FileBean fileBean);
+    //void updateFile(FileBean fileBean);
+    List<FileBean> selectFileByNameAndPath(String fileName, String filePath);
 
     List<FileBean> selectFilePathTreeByUserId(FileBean fileBean);
     List<FileBean> selectFileListByPath(FileBean fileBean);
+    void replaceFilePath(String filePath, String oldFilePath);
 
 
     List<FileBean> selectFileTreeListLikeFilePath(String filePath);

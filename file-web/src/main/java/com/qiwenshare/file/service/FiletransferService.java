@@ -5,6 +5,7 @@ import java.util.List;
 import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
 
+import cn.hutool.core.bean.BeanUtil;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
 import com.qiwenshare.common.cbb.DateUtil;
@@ -16,6 +17,7 @@ import com.qiwenshare.file.api.IFiletransferService;
 
 import com.qiwenshare.common.domain.AliyunOSS;
 import com.qiwenshare.file.config.QiwenFileConfig;
+import com.qiwenshare.file.dto.UploadFileDto;
 import com.qiwenshare.file.mapper.FileMapper;
 import com.qiwenshare.file.domain.FileBean;
 import com.qiwenshare.file.domain.StorageBean;
@@ -38,17 +40,17 @@ public class FiletransferService implements IFiletransferService {
 
 
     @Override
-    public void uploadFile(HttpServletRequest request, FileBean fileBean, UserBean sessionUserBean) {
+    public void uploadFile(HttpServletRequest request, UploadFileDto UploadFileDto, UserBean sessionUserBean) {
         AliyunOSS oss = qiwenFileConfig.getAliyun().getOss();
         request.setAttribute("oss", oss);
         Uploader uploader;
         UploadFile uploadFile = new UploadFile();
-        uploadFile.setChunkNumber(fileBean.getChunkNumber());
-        uploadFile.setChunkSize(fileBean.getChunkSize());
-        uploadFile.setTotalChunks(fileBean.getTotalChunks());
-        uploadFile.setIdentifier(fileBean.getIdentifier());
-        uploadFile.setTotalSize(fileBean.getTotalSize());
-        uploadFile.setCurrentChunkSize(fileBean.getCurrentChunkSize());
+        uploadFile.setChunkNumber(UploadFileDto.getChunkNumber());
+        uploadFile.setChunkSize(UploadFileDto.getChunkSize());
+        uploadFile.setTotalChunks(UploadFileDto.getTotalChunks());
+        uploadFile.setIdentifier(UploadFileDto.getIdentifier());
+        uploadFile.setTotalSize(UploadFileDto.getTotalSize());
+        uploadFile.setCurrentChunkSize(UploadFileDto.getCurrentChunkSize());
         if (oss.isEnabled()) {
             uploader = new AliyunOSSUploaderFactory().getUploader(uploadFile);
         } else {
@@ -58,6 +60,8 @@ public class FiletransferService implements IFiletransferService {
         List<UploadFile> uploadFileList = uploader.upload(request);
         for (int i = 0; i < uploadFileList.size(); i++){
             uploadFile = uploadFileList.get(i);
+            FileBean fileBean = new FileBean();
+            BeanUtil.copyProperties(UploadFileDto, fileBean);
             fileBean.setTimeStampName(uploadFile.getTimeStampName());
             if (uploadFile.getSuccess() == 1){
                 fileBean.setFileUrl(uploadFile.getUrl());

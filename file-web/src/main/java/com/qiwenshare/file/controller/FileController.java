@@ -2,6 +2,7 @@ package com.qiwenshare.file.controller;
 
 import com.alibaba.fastjson.JSON;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
+import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
 import com.qiwenshare.common.cbb.DateUtil;
 import com.qiwenshare.common.cbb.RestResult;
 import com.qiwenshare.common.operation.FileOperation;
@@ -14,6 +15,10 @@ import com.qiwenshare.file.config.QiwenFileConfig;
 import com.qiwenshare.file.domain.FileBean;
 import com.qiwenshare.file.domain.TreeNode;
 import com.qiwenshare.file.domain.UserBean;
+import com.qiwenshare.file.dto.BatchDeleteFileDto;
+import com.qiwenshare.file.dto.BatchMoveFileDto;
+import com.qiwenshare.file.dto.MoveFileDto;
+import com.qiwenshare.file.dto.RenameFileDto;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.ArrayUtils;
 import org.springframework.web.bind.annotation.*;
@@ -52,7 +57,7 @@ public class FileController {
         if (!operationCheck(token).isSuccess()){
             return operationCheck(token);
         }
-        List<FileBean> fileBeans = fileService.selectFileByNameAndPath(fileBean);
+        List<FileBean> fileBeans = fileService.selectFileByNameAndPath(fileBean.getFileName(), fileBean.getFilePath());
         if (fileBeans != null && !fileBeans.isEmpty()) {
             restResult.setErrorMessage("同名文件已存在");
             restResult.setSuccess(false);
@@ -76,36 +81,57 @@ public class FileController {
      */
     @RequestMapping(value = "/renamefile", method = RequestMethod.POST)
     @ResponseBody
-    public RestResult<String> renameFile(@RequestBody FileBean fileBean, @RequestHeader("token") String token) {
+    public RestResult<String> renameFile(@RequestBody RenameFileDto renameFileDto, @RequestHeader("token") String token) {
         RestResult<String> restResult = new RestResult<>();
         if (!operationCheck(token).isSuccess()){
             return operationCheck(token);
         }
         UserBean sessionUserBean = userService.getUserBeanByToken(token);
-        fileBean.setUserId(sessionUserBean.getUserId());
-        fileBean.setUploadTime(DateUtil.getCurrentTime());
-        List<FileBean> fileBeans = fileService.selectFileByNameAndPath(fileBean);
+//        fileBean.setUserId(sessionUserBean.getUserId());
+//        fileBean.setUploadTime(DateUtil.getCurrentTime());
+        List<FileBean> fileBeans = fileService.selectFileByNameAndPath(renameFileDto.getFileName(), renameFileDto.getFilePath());
         if (fileBeans != null && !fileBeans.isEmpty()) {
             restResult.setErrorMessage("同名文件已存在");
             restResult.setSuccess(false);
             return restResult;
         }
-        if (1 == fileBean.getIsDir()) {
-            fileBean.setOldFilePath(fileBean.getFilePath() + fileBean.getOldFileName() + "/");
-            fileBean.setFilePath(fileBean.getFilePath() + fileBean.getFileName() + "/");
+        if (1 == renameFileDto.getIsDir()) {
+            LambdaUpdateWrapper<FileBean> lambdaUpdateWrapper = new LambdaUpdateWrapper<>();
+            lambdaUpdateWrapper.set(FileBean::getFileName, renameFileDto.getFileName())
+                    .set(FileBean::getUploadTime, DateUtil.getCurrentTime())
+                    .eq(FileBean::getFileId, renameFileDto.getFileId());
+            fileService.update(lambdaUpdateWrapper);
+            fileService.replaceFilePath(renameFileDto.getFilePath() + renameFileDto.getFileName() + "/",
+                    renameFileDto.getFilePath() + renameFileDto.getOldFileName() + "/");
+//            fileBean.setOldFilePath(renameFileDto.getFilePath() + renameFileDto.getOldFileName() + "/");
+//            fileBean.setFilePath(renameFileDto.getFilePath() + renameFileDto.getFileName() + "/");
         } else {
-            if (fileBean.getIsOSS() == 1) {
-                FileBean file = fileService.getById(fileBean.getFileId());
+            if (renameFileDto.getIsOSS() == 1) {
+                FileBean file = fileService.getById(renameFileDto.getFileId());
                 String fileUrl = file.getFileUrl();
-                String newFileUrl = fileUrl.replace(file.getFileName(), fileBean.getFileName());
-                fileBean.setFileUrl(newFileUrl);
+                String newFileUrl = fileUrl.replace(file.getFileName(), renameFileDto.getFileName());
+//                renameFileDto.setFileUrl(newFileUrl);
                 AliyunOSSRename.rename(qiwenFileConfig.getAliyun().getOss(),
                         fileUrl.substring(1),
                         newFileUrl.substring(1));
+                LambdaUpdateWrapper<FileBean> lambdaUpdateWrapper = new LambdaUpdateWrapper<>();
+                lambdaUpdateWrapper.set(FileBean::getFileName, renameFileDto.getFileName())
+                        .set(FileBean::getUploadTime, DateUtil.getCurrentTime())
+                        .set(FileBean::getFileUrl, newFileUrl)
+                        .eq(FileBean::getFileId, renameFileDto.getFileId());
+                fileService.update(lambdaUpdateWrapper);
+            } else {
+                LambdaUpdateWrapper<FileBean> lambdaUpdateWrapper = new LambdaUpdateWrapper<>();
+                lambdaUpdateWrapper.set(FileBean::getFileName, renameFileDto.getFileName())
+                        .set(FileBean::getUploadTime, DateUtil.getCurrentTime())
+                        .eq(FileBean::getFileId, renameFileDto.getFileId());
+                fileService.update(lambdaUpdateWrapper);
             }
+
+
         }
 
-        fileService.updateFile(fileBean);
+       // fileService.updateFile(fileBean);
         restResult.setSuccess(true);
         return restResult;
     }
@@ -148,13 +174,13 @@ public class FileController {
      */
     @RequestMapping(value = "/batchdeletefile", method = RequestMethod.POST)
     @ResponseBody
-    public RestResult<String> deleteImageByIds(@RequestBody FileBean fileBean, @RequestHeader("token") String token) {
+    public RestResult<String> deleteImageByIds(@RequestBody BatchDeleteFileDto batchDeleteFileDto, @RequestHeader("token") String token) {
         RestResult<String> result = new RestResult<String>();
         if (!operationCheck(token).isSuccess()) {
             return operationCheck(token);
         }
         UserBean sessionUserBean = userService.getUserBeanByToken(token);
-        List<FileBean> fileList = JSON.parseArray(fileBean.getFiles(), FileBean.class);
+        List<FileBean> fileList = JSON.parseArray(batchDeleteFileDto.getFiles(), FileBean.class);
 
         for (FileBean file : fileList) {
             fileService.deleteFile(file,sessionUserBean);
@@ -269,15 +295,15 @@ public class FileController {
      */
     @RequestMapping(value = "/movefile", method = RequestMethod.POST)
     @ResponseBody
-    public RestResult<String> moveFile(@RequestBody FileBean fileBean, @RequestHeader("token") String token) {
+    public RestResult<String> moveFile(@RequestBody MoveFileDto moveFileDto, @RequestHeader("token") String token) {
         RestResult<String> result = new RestResult<String>();
         if (!operationCheck(token).isSuccess()){
             return operationCheck(token);
         }
-        String oldfilePath = fileBean.getOldFilePath();
-        String newfilePath = fileBean.getFilePath();
-        String fileName = fileBean.getFileName();
-        String extendName = fileBean.getExtendName();
+        String oldfilePath = moveFileDto.getOldFilePath();
+        String newfilePath = moveFileDto.getFilePath();
+        String fileName = moveFileDto.getFileName();
+        String extendName = moveFileDto.getExtendName();
 
         fileService.updateFilepathByFilepath(oldfilePath, newfilePath, fileName, extendName);
         result.setSuccess(true);
@@ -292,15 +318,15 @@ public class FileController {
      */
     @RequestMapping(value = "/batchmovefile", method = RequestMethod.POST)
     @ResponseBody
-    public RestResult<String> batchMoveFile(@RequestBody FileBean fileBean, @RequestHeader("token") String token) {
+    public RestResult<String> batchMoveFile(@RequestBody BatchMoveFileDto batchMoveFileDto, @RequestHeader("token") String token) {
 
         RestResult<String> result = new RestResult<String>();
         if (!operationCheck(token).isSuccess()) {
             return operationCheck(token);
         }
 
-        String files = fileBean.getFiles();
-        String newfilePath = fileBean.getFilePath();
+        String files = batchMoveFileDto.getFiles();
+        String newfilePath = batchMoveFileDto.getFilePath();
 
         List<FileBean> fileList = JSON.parseArray(files, FileBean.class);
 
@@ -339,7 +365,7 @@ public class FileController {
      */
     @RequestMapping(value = "/selectfilebyfiletype", method = RequestMethod.GET)
     @ResponseBody
-    public RestResult<List<FileBean>> selectFileByFileType(FileBean fileBean, @RequestHeader("token") String token) {
+    public RestResult<List<FileBean>> selectFileByFileType(int fileType, @RequestHeader("token") String token) {
         RestResult<List<FileBean>> result = new RestResult<List<FileBean>>();
         UserBean sessionUserBean = userService.getUserBeanByToken(token);
         long userId = sessionUserBean.getUserId();
@@ -347,7 +373,7 @@ public class FileController {
             userId = 2;
         }
         List<FileBean> fileList = new ArrayList<>();
-        if (fileBean.getFileType() == FileUtil.OTHER_TYPE) {
+        if (fileType == FileUtil.OTHER_TYPE) {
 
             List<String> arrList = new ArrayList<>();
             arrList.addAll(Arrays.asList(FileUtil.DOC_FILE));
@@ -356,7 +382,7 @@ public class FileController {
             arrList.addAll(Arrays.asList(FileUtil.MUSIC_FILE));
             fileList = fileService.selectFileNotInExtendNames(arrList, userId);
         } else {
-            fileList = fileService.selectFileByExtendName(getFileExtendsByType(fileBean.getFileType()), userId);
+            fileList = fileService.selectFileByExtendName(getFileExtendsByType(fileType), userId);
         }
         result.setData(fileList);
         result.setSuccess(true);

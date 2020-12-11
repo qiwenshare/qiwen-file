@@ -53,16 +53,16 @@ public class FileService extends ServiceImpl<FileMapper, FileBean> implements IF
         }
     }
 
-    @Override
-    public void updateFile(FileBean fileBean) {
-        fileBean.setUploadTime(DateUtil.getCurrentTime());
-        fileMapper.updateFile(fileBean);
-    }
+//    @Override
+//    public void updateFile(FileBean fileBean) {
+//        fileBean.setUploadTime(DateUtil.getCurrentTime());
+//        fileMapper.updateFile(fileBean);
+//    }
 
     @Override
-    public List<FileBean> selectFileByNameAndPath(FileBean fileBean) {
+    public List<FileBean> selectFileByNameAndPath(String fileName, String filePath) {
         LambdaQueryWrapper<FileBean> lambdaQueryWrapper = new LambdaQueryWrapper<>();
-        lambdaQueryWrapper.eq(FileBean::getFileName, fileBean.getFileName()).eq(FileBean::getFilePath, fileBean.getFilePath());
+        lambdaQueryWrapper.eq(FileBean::getFileName, fileName).eq(FileBean::getFilePath, filePath);
         return fileMapper.selectList(lambdaQueryWrapper);
     }
 
@@ -80,6 +80,11 @@ public class FileService extends ServiceImpl<FileMapper, FileBean> implements IF
         lambdaQueryWrapper.eq(FileBean::getFilePath, fileBean.getFilePath())
                 .eq(FileBean::getUserId, fileBean.getUserId()).orderByDesc(FileBean::getIsDir);
         return fileMapper.selectList(lambdaQueryWrapper);
+    }
+
+    @Override
+    public void replaceFilePath(String filePath, String oldFilePath) {
+        fileMapper.replaceFilePath(filePath, oldFilePath);
     }
 
 
