@@ -12,11 +12,13 @@ import com.qiwenshare.common.util.PathUtil;
 import com.qiwenshare.common.cbb.RestResult;
 import com.qiwenshare.file.api.IFileService;
 import com.qiwenshare.file.api.IFiletransferService;
+import com.qiwenshare.file.api.IUserFileService;
 import com.qiwenshare.file.api.IUserService;
 import com.qiwenshare.file.config.QiwenFileConfig;
 import com.qiwenshare.file.domain.FileBean;
 import com.qiwenshare.file.domain.StorageBean;
 import com.qiwenshare.file.domain.UserBean;
+import com.qiwenshare.file.domain.UserFile;
 import com.qiwenshare.file.dto.UploadFileDto;
 import com.qiwenshare.file.vo.file.UploadFileVo;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -46,6 +48,8 @@ public class FiletransferController {
     IFileService fileService;
     @Resource
     IUserService userService;
+    @Resource
+    IUserFileService userFileService;
 
     /**
      * 上传文件
@@ -76,14 +80,17 @@ public class FiletransferController {
             List<FileBean> list = fileService.listByMap(param);
             if (list != null && !list.isEmpty()) {
                 FileBean file = list.get(0);
-                file.setUserId(sessionUserBean.getUserId());
-                file.setUploadTime(DateUtil.getCurrentTime());
-                file.setFilePath(uploadFileDto.getFilePath());
+
+                UserFile userFile = new UserFile();
+                userFile.setFileId(file.getFileId());
+                userFile.setUserId(sessionUserBean.getUserId());
+                userFile.setFilePath(uploadFileDto.getFilePath());
                 String fileName = uploadFileDto.getFilename();
-                file.setFileName(fileName.substring(0, fileName.lastIndexOf(".")));
-                file.setExtendName(FileUtil.getFileType(fileName));
-                file.setPointCount(file.getPointCount() + 1);
-                fileService.save(file);
+                userFile.setFileName(fileName.substring(0, fileName.lastIndexOf(".")));
+                userFile.setExtendName(FileUtil.getFileType(fileName));
+                userFile.setDeleteFlag(0);
+                userFileService.save(userFile);
+                fileService.increaseFilePointCount(file.getFileId());
                 uploadFileVo.setSkipUpload(true);
 
             } else {
@@ -92,7 +99,6 @@ public class FiletransferController {
             }
         }
 
-        //fileBean.setUserId(sessionUserBean.getUserId());
         restResult.setData(uploadFileVo);
         restResult.setSuccess(true);
         return restResult;
@@ -107,7 +113,7 @@ public class FiletransferController {
     @RequestMapping(value = "/uploadfile", method = RequestMethod.POST)
     @ResponseBody
     public RestResult<UploadFileVo> uploadFile(HttpServletRequest request, UploadFileDto uploadFileDto, @RequestHeader("token") String token) {
-        RestResult<UploadFileVo> restResult = new RestResult<UploadFileVo>();
+        RestResult<UploadFileVo> restResult = new RestResult<>();
         UserBean sessionUserBean = userService.getUserBeanByToken(token);
         if (sessionUserBean == null){
             restResult.setSuccess(false);
@@ -121,97 +127,12 @@ public class FiletransferController {
             return restResult;
         }
 
-        uploadFileDto.setUserId(sessionUserBean.getUserId());
-
-        filetransferService.uploadFile(request, uploadFileDto, sessionUserBean);
+        filetransferService.uploadFile(request, uploadFileDto, sessionUserBean.getUserId());
         UploadFileVo uploadFileVo = new UploadFileVo();
-        uploadFileVo.setTimeStampName(uploadFileDto.getTimeStampName());
+
         restResult.setData(uploadFileVo);
         return restResult;
     }
-    /**
-     * 下载文件
-     *
-     * @return
-     */
-    @RequestMapping(value = "/downloadfile", method = RequestMethod.GET)
-    public String downloadFile(HttpServletResponse response, FileBean fileBean) {
-        RestResult<String> restResult = new RestResult<>();
-        String fileName = null;// 文件名
-        try {
-            fileName = new String(fileBean.getFileName().getBytes("utf-8"), "ISO-8859-1");
-        } catch (UnsupportedEncodingException e) {
-            e.printStackTrace();
-        }
-        fileName = fileName + "." + fileBean.getExtendName();
-        response.setContentType("application/force-download");// 设置强制下载不打开
-        response.addHeader("Content-Disposition", "attachment;fileName=" + fileName);// 设置文件名
-        byte[] buffer = new byte[1024];
-        BufferedInputStream bis = null;
-        FileBean fileBean1 = fileService.getById(fileBean.getFileId());
-        if (fileBean1.getIsOSS() != null && fileBean1.getIsOSS() == 1) {
-
-            AliyunOSSDownload aliyunOSSDownload= new AliyunOSSDownload();
-            OSS ossClient = aliyunOSSDownload.createOSSClient(qiwenFileConfig.getAliyun().getOss());
-            OSSObject ossObject = ossClient.getObject(qiwenFileConfig.getAliyun().getOss().getBucketName(), fileBean1.getTimeStampName());
-            InputStream inputStream = ossObject.getObjectContent();
-            try {
-                bis = new BufferedInputStream(inputStream);
-                OutputStream os = response.getOutputStream();
-                int i = bis.read(buffer);
-                while (i != -1) {
-                    os.write(buffer, 0, i);
-                    i = bis.read(buffer);
-                }
-            } catch (IOException e) {
-                e.printStackTrace();
-            } finally {
-                if (bis != null) {
-                    try {
-                        bis.close();
-                    } catch (IOException e) {
-                        e.printStackTrace();
-                    }
-                }
-
-            }
-            ossClient.shutdown();
-        } else {
-            //设置文件路径
-            File file = FileOperation.newFile(PathUtil.getStaticPath() + fileBean.getFileUrl());
-            if (file.exists()) {
-
-
-                FileInputStream fis = null;
-
-                try {
-                    fis = new FileInputStream(file);
-                    bis = new BufferedInputStream(fis);
-                    OutputStream os = response.getOutputStream();
-                    int i = bis.read(buffer);
-                    while (i != -1) {
-                        os.write(buffer, 0, i);
-                        i = bis.read(buffer);
-                    }
-
-                } catch (Exception e) {
-                    e.printStackTrace();
-                } finally {
-                    if (bis != null) {
-                        try {
-                            bis.close();
-                        } catch (IOException e) {
-                            e.printStackTrace();
-                        }
-                    }
-                }
-            }
-
-        }
-        return null;
-
-    }
-
 
     /**
      * 获取存储信息

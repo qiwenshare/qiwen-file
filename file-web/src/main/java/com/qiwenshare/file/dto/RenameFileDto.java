@@ -4,7 +4,7 @@ import lombok.Data;
 
 @Data
 public class RenameFileDto {
-    private Long fileId;
+    private Long userFileId;
     /**
      * 文件路径
      */

@@ -13,17 +13,6 @@ import javax.persistence.*;
 @Schema(name = "上传文件DTO",required = true)
 public class UploadFileDto {
 
-    private Long fileId;
-
-
-
-    private Long userId;
-
-    /**
-     * 文件URL
-     */
-    private String fileUrl;
-
     /**
      * 文件路径
      */
@@ -33,11 +22,6 @@ public class UploadFileDto {
      * 上传时间
      */
     private String uploadTime;
-
-    /**
-     * 时间戳名称
-     */
-    private String timeStampName;
 
     /**
      * 扩展名
@@ -53,25 +37,6 @@ public class UploadFileDto {
      * 文件大小
      */
     private Long fileSize;
-
-    /**
-     * 是否是目录
-     */
-    private Integer isDir;
-
-    private Integer isOSS;
-
-    private Integer pointCount;
-
-    private String oldFilePath;
-
-    private String oldFileName;
-
-    private String files;
-
-    private Integer fileType;
-
-    private String taskId;
 
     private int chunkNumber;
 

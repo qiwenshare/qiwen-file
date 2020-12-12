@@ -17,12 +17,14 @@ import com.qiwenshare.file.api.IFiletransferService;
 
 import com.qiwenshare.common.domain.AliyunOSS;
 import com.qiwenshare.file.config.QiwenFileConfig;
+import com.qiwenshare.file.domain.UserFile;
 import com.qiwenshare.file.dto.UploadFileDto;
 import com.qiwenshare.file.mapper.FileMapper;
 import com.qiwenshare.file.domain.FileBean;
 import com.qiwenshare.file.domain.StorageBean;
 import com.qiwenshare.file.domain.UserBean;
 import com.qiwenshare.file.mapper.StorageMapper;
+import com.qiwenshare.file.mapper.UserFileMapper;
 import org.springframework.stereotype.Service;
 
 
@@ -36,11 +38,13 @@ public class FiletransferService implements IFiletransferService {
 
     @Resource
     QiwenFileConfig qiwenFileConfig;
+    @Resource
+    UserFileMapper userFileMapper;
 
 
 
     @Override
-    public void uploadFile(HttpServletRequest request, UploadFileDto UploadFileDto, UserBean sessionUserBean) {
+    public void uploadFile(HttpServletRequest request, UploadFileDto UploadFileDto, Long userId) {
         AliyunOSS oss = qiwenFileConfig.getAliyun().getOss();
         request.setAttribute("oss", oss);
         Uploader uploader;
@@ -66,19 +70,27 @@ public class FiletransferService implements IFiletransferService {
             if (uploadFile.getSuccess() == 1){
                 fileBean.setFileUrl(uploadFile.getUrl());
                 fileBean.setFileSize(uploadFile.getFileSize());
-                fileBean.setFileName(uploadFile.getFileName());
-                fileBean.setExtendName(uploadFile.getFileType());
-                fileBean.setUploadTime(DateUtil.getCurrentTime());
+                //fileBean.setUploadTime(DateUtil.getCurrentTime());
                 fileBean.setIsOSS(uploadFile.getIsOSS());
-                fileBean.setIsDir(0);
+
                 fileBean.setPointCount(1);
                 fileMapper.insert(fileBean);
+                UserFile userFile = new UserFile();
+                userFile.setFileId(fileBean.getFileId());
+                userFile.setExtendName(uploadFile.getFileType());
+                userFile.setFileName(uploadFile.getFileName());
+                userFile.setFilePath(UploadFileDto.getFilePath());
+                userFile.setDeleteFlag(0);
+                userFile.setUserId(userId);
+                userFile.setIsDir(0);
+                userFile.setUploadTime(DateUtil.getCurrentTime());
+                userFileMapper.insert(userFile);
 
                 synchronized (FiletransferService.class) {
-                    long sessionUserId = sessionUserBean.getUserId();
-                    StorageBean storageBean = selectStorageBean(new StorageBean(sessionUserId));
+
+                    StorageBean storageBean = selectStorageBean(new StorageBean(userId));
                     if (storageBean == null) {
-                        StorageBean storage = new StorageBean(sessionUserId);
+                        StorageBean storage = new StorageBean(userId);
                         storage.setStorageSize(fileBean.getFileSize());
                         insertStorageBean(storage);
                     } else {

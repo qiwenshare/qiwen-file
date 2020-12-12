@@ -18,9 +18,7 @@
         </foreach>
     </insert>
 
-    <update id="replaceFilePath" parameterType="java.lang.String">
-        UPDATE file SET filepath=REPLACE(filepath, #{oldFilePath}, #{filePath}) WHERE filepath LIKE N'${oldFilePath}%';
-    </update>
+
 
 <!--    <update id="updateFile" parameterType="java">-->
 <!--        <choose>-->

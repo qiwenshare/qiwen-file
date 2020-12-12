@@ -6,7 +6,15 @@
 
 <mapper namespace="com.qiwenshare.file.mapper.UserFileMapper">
 
-    <select id="selectFileListByPath" >
+    <update id="replaceFilePath">
+        UPDATE userfile SET filepath=REPLACE(filepath, #{oldFilePath}, #{filePath})
+        WHERE filepath LIKE N'${oldFilePath}%' and userId = #{userId};
+    </update>
+
+    <select id="userFileList" parameterType="com.qiwenshare.file.domain.UserFile" resultType="java.util.Map">
+        select * from userfile
+        left join file on file.fileId = userfile.fileId
+        where userId = #{userId}
 
     </select>
 

@@ -16,10 +16,7 @@ import com.qiwenshare.file.domain.FileBean;
 import com.qiwenshare.file.domain.TreeNode;
 import com.qiwenshare.file.domain.UserBean;
 import com.qiwenshare.file.domain.UserFile;
-import com.qiwenshare.file.dto.BatchDeleteFileDto;
-import com.qiwenshare.file.dto.BatchMoveFileDto;
-import com.qiwenshare.file.dto.MoveFileDto;
-import com.qiwenshare.file.dto.RenameFileDto;
+import com.qiwenshare.file.dto.*;
 import com.qiwenshare.file.service.UserFileService;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.ArrayUtils;
@@ -56,29 +53,29 @@ public class FileController {
      */
     @RequestMapping(value = "/createfile", method = RequestMethod.POST)
     @ResponseBody
-    public RestResult<String> createFile(@RequestBody FileBean fileBean, @RequestHeader("token") String token) {
+    public RestResult<String> createFile(@RequestBody CreateFileDto createFileDto, @RequestHeader("token") String token) {
         RestResult<String> restResult = new RestResult<>();
         if (!operationCheck(token).isSuccess()){
             return operationCheck(token);
         }
-        List<FileBean> fileBeans = fileService.selectFileByNameAndPath(fileBean.getFileName(), fileBean.getFilePath());
-        if (fileBeans != null && !fileBeans.isEmpty()) {
+
+        UserBean sessionUserBean = userService.getUserBeanByToken(token);
+
+        List<UserFile> userFiles = userFileService.selectUserFileByNameAndPath(createFileDto.getFileName(), createFileDto.getFilePath(), sessionUserBean.getUserId());
+        if (userFiles != null && !userFiles.isEmpty()) {
             restResult.setErrorMessage("同名文件已存在");
             restResult.setSuccess(false);
             return restResult;
         }
-        UserBean sessionUserBean = userService.getUserBeanByToken(token);
-
-//        fileBean.setUserId(sessionUserBean.getUserId());
-
-        fileBean.setUploadTime(DateUtil.getCurrentTime());
-
-        fileService.save(fileBean);
 
         UserFile userFile = new UserFile();
-        userFile.setFileId(fileBean.getFileId());
         userFile.setUserId(sessionUserBean.getUserId());
+        userFile.setFileName(createFileDto.getFileName());
+        userFile.setFilePath(createFileDto.getFilePath());
         userFile.setDeleteFlag(0);
+        userFile.setIsDir(1);
+        userFile.setUploadTime(DateUtil.getCurrentTime());
+
         userFileService.save(userFile);
 
         restResult.setSuccess(true);
@@ -100,43 +97,53 @@ public class FileController {
         UserBean sessionUserBean = userService.getUserBeanByToken(token);
 //        fileBean.setUserId(sessionUserBean.getUserId());
 //        fileBean.setUploadTime(DateUtil.getCurrentTime());
-        List<FileBean> fileBeans = fileService.selectFileByNameAndPath(renameFileDto.getFileName(), renameFileDto.getFilePath());
-        if (fileBeans != null && !fileBeans.isEmpty()) {
+        List<UserFile> userFiles = userFileService.selectUserFileByNameAndPath(renameFileDto.getFileName(), renameFileDto.getFilePath(), sessionUserBean.getUserId());
+        if (userFiles != null && !userFiles.isEmpty()) {
             restResult.setErrorMessage("同名文件已存在");
             restResult.setSuccess(false);
             return restResult;
         }
         if (1 == renameFileDto.getIsDir()) {
-            LambdaUpdateWrapper<FileBean> lambdaUpdateWrapper = new LambdaUpdateWrapper<>();
-            lambdaUpdateWrapper.set(FileBean::getFileName, renameFileDto.getFileName())
-                    .set(FileBean::getUploadTime, DateUtil.getCurrentTime())
-                    .eq(FileBean::getFileId, renameFileDto.getFileId());
-            fileService.update(lambdaUpdateWrapper);
-            fileService.replaceFilePath(renameFileDto.getFilePath() + renameFileDto.getFileName() + "/",
-                    renameFileDto.getFilePath() + renameFileDto.getOldFileName() + "/");
-//            fileBean.setOldFilePath(renameFileDto.getFilePath() + renameFileDto.getOldFileName() + "/");
-//            fileBean.setFilePath(renameFileDto.getFilePath() + renameFileDto.getFileName() + "/");
+            LambdaUpdateWrapper<UserFile> lambdaUpdateWrapper = new LambdaUpdateWrapper<>();
+            lambdaUpdateWrapper.set(UserFile::getFileName, renameFileDto.getFileName())
+                    .set(UserFile::getUploadTime, DateUtil.getCurrentTime())
+                    .eq(UserFile::getUserFileId, renameFileDto.getUserFileId());
+            userFileService.update(lambdaUpdateWrapper);
+            userFileService.replaceUserFilePath(renameFileDto.getFilePath() + renameFileDto.getFileName() + "/",
+                    renameFileDto.getFilePath() + renameFileDto.getOldFileName() + "/", sessionUserBean.getUserId());
         } else {
             if (renameFileDto.getIsOSS() == 1) {
-                FileBean file = fileService.getById(renameFileDto.getFileId());
+                LambdaQueryWrapper<UserFile> lambdaQueryWrapper = new LambdaQueryWrapper<>();
+                lambdaQueryWrapper.eq(UserFile::getUserFileId, renameFileDto.getUserFileId());
+                UserFile userFile = userFileService.getOne(lambdaQueryWrapper);
+
+                FileBean file = fileService.getById(userFile.getFileId());
                 String fileUrl = file.getFileUrl();
-                String newFileUrl = fileUrl.replace(file.getFileName(), renameFileDto.getFileName());
+                String newFileUrl = fileUrl.replace(userFile.getFileName(), renameFileDto.getFileName());
 //                renameFileDto.setFileUrl(newFileUrl);
                 AliyunOSSRename.rename(qiwenFileConfig.getAliyun().getOss(),
                         fileUrl.substring(1),
                         newFileUrl.substring(1));
                 LambdaUpdateWrapper<FileBean> lambdaUpdateWrapper = new LambdaUpdateWrapper<>();
-                lambdaUpdateWrapper.set(FileBean::getFileName, renameFileDto.getFileName())
-                        .set(FileBean::getUploadTime, DateUtil.getCurrentTime())
+                lambdaUpdateWrapper
+//                        .set(FileBean::getFileName, renameFileDto.getFileName())
+//                        .set(FileBean::getUploadTime, DateUtil.getCurrentTime())
                         .set(FileBean::getFileUrl, newFileUrl)
-                        .eq(FileBean::getFileId, renameFileDto.getFileId());
+                        .eq(FileBean::getFileId, file.getFileId());
                 fileService.update(lambdaUpdateWrapper);
+
+                LambdaUpdateWrapper<UserFile> userFileLambdaUpdateWrapper = new LambdaUpdateWrapper<>();
+                userFileLambdaUpdateWrapper
+                        .set(UserFile::getFileName, renameFileDto.getFileName())
+                        .set(UserFile::getUploadTime, DateUtil.getCurrentTime())
+                        .eq(UserFile::getUserFileId, renameFileDto.getUserFileId());
+                userFileService.update(userFileLambdaUpdateWrapper);
             } else {
-                LambdaUpdateWrapper<FileBean> lambdaUpdateWrapper = new LambdaUpdateWrapper<>();
-                lambdaUpdateWrapper.set(FileBean::getFileName, renameFileDto.getFileName())
-                        .set(FileBean::getUploadTime, DateUtil.getCurrentTime())
-                        .eq(FileBean::getFileId, renameFileDto.getFileId());
-                fileService.update(lambdaUpdateWrapper);
+                LambdaUpdateWrapper<UserFile> lambdaUpdateWrapper = new LambdaUpdateWrapper<>();
+                lambdaUpdateWrapper.set(UserFile::getFileName, renameFileDto.getFileName())
+                        .set(UserFile::getUploadTime, DateUtil.getCurrentTime())
+                        .eq(UserFile::getUserFileId, renameFileDto.getUserFileId());
+                userFileService.update(lambdaUpdateWrapper);
             }
 
 

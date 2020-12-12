@@ -21,7 +21,7 @@ public interface IFiletransferService {
      * @param request 请求
      * @param UploadFileDto 文件信息
      */
-    void uploadFile(HttpServletRequest request, UploadFileDto UploadFileDto, UserBean sessionUserBean);
+    void uploadFile(HttpServletRequest request, UploadFileDto UploadFileDto, Long userId);
 
     StorageBean selectStorageBean(StorageBean storageBean);
 

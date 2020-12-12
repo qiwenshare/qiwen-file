@@ -53,18 +53,27 @@ public class FileService extends ServiceImpl<FileMapper, FileBean> implements IF
         }
     }
 
+    @Override
+    public void increaseFilePointCount(Long fileId) {
+        FileBean fileBean = fileMapper.selectById(fileId);
+        fileBean.setPointCount(fileBean.getPointCount()+1);
+        fileMapper.updateById(fileBean);
+    }
+
+    @Override
+    public void decreaseFilePointCount(Long fileId) {
+        FileBean fileBean = fileMapper.selectById(fileId);
+        fileBean.setPointCount(fileBean.getPointCount()-1);
+        fileMapper.updateById(fileBean);
+    }
+
 //    @Override
 //    public void updateFile(FileBean fileBean) {
 //        fileBean.setUploadTime(DateUtil.getCurrentTime());
 //        fileMapper.updateFile(fileBean);
 //    }
 
-    @Override
-    public List<FileBean> selectFileByNameAndPath(String fileName, String filePath) {
-        LambdaQueryWrapper<FileBean> lambdaQueryWrapper = new LambdaQueryWrapper<>();
-        lambdaQueryWrapper.eq(FileBean::getFileName, fileName).eq(FileBean::getFilePath, filePath);
-        return fileMapper.selectList(lambdaQueryWrapper);
-    }
+
 
 
     @Override
@@ -83,10 +92,7 @@ public class FileService extends ServiceImpl<FileMapper, FileBean> implements IF
         return fileMapper.selectList(lambdaQueryWrapper);
     }
 
-    @Override
-    public void replaceFilePath(String filePath, String oldFilePath) {
-        fileMapper.replaceFilePath(filePath, oldFilePath);
-    }
+
 
 
     @Override

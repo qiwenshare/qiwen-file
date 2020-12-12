@@ -21,6 +21,21 @@ public class UserFile {
     @Column(columnDefinition="bigint(20) comment '文件id'")
     private Long fileId;
 
+    @Column(columnDefinition="varchar(100) comment '文件名'")
+    private String fileName;
+
+    @Column(columnDefinition="varchar(500) comment '文件路径'")
+    private String filePath;
+
+    @Column(columnDefinition="varchar(10) comment '扩展名'")
+    private String extendName;
+
+    @Column(columnDefinition="int(1) comment '是否是目录 0-否, 1-是'")
+    private Integer isDir;
+
+    @Column(columnDefinition="varchar(25) comment '上传时间'")
+    private String uploadTime;
+
     @Column(columnDefinition="int(11) comment '文件删除标志 0/null-正常, 1-删除'")
     private Integer deleteFlag;
 

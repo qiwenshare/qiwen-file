@@ -25,29 +25,14 @@ public class FileBean {
     @Column(columnDefinition="bigint(20) comment '文件id'")
     private Long fileId;
 
-    @Column(columnDefinition="varchar(500) comment '文件url'")
-    private String fileUrl;
-
-    @Column(columnDefinition="varchar(500) comment '文件路径'")
-    private String filePath;
-
-    @Column(columnDefinition="varchar(25) comment '上传时间'")
-    private String uploadTime;
-
     @Column(columnDefinition="varchar(50) comment '时间戳名称'")
     private String timeStampName;
 
-    @Column(columnDefinition="varchar(10) comment '扩展名'")
-    private String extendName;
-
-    @Column(columnDefinition="varchar(100) comment '文件名'")
-    private String fileName;
+    @Column(columnDefinition="varchar(500) comment '文件url'")
+    private String fileUrl;
 
     @Column(columnDefinition="bigint(10) comment '文件大小'")
     private Long fileSize;
-
-    @Column(columnDefinition="int(1) comment '是否是目录 0-否, 1-是'")
-    private Integer isDir;
 
     @Column(columnDefinition="int(1) comment '是否是OSS云存储 0-否, 1-是'")
     private Integer isOSS;
