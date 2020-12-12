@@ -6,7 +6,8 @@ import lombok.Data;
 import javax.persistence.*;
 
 @Data
-@Table(name = "userfile")
+@Table(name = "userfile", uniqueConstraints = {
+        @UniqueConstraint(name = "fileindex", columnNames = {"fileName", "filePath", "extendName"})})
 @Entity
 @TableName("userfile")
 public class UserFile {

@@ -13,8 +13,7 @@ import javax.persistence.*;
  * @author ma116
  */
 @Data
-@Table(name = "file", uniqueConstraints = {
-        @UniqueConstraint(name = "fileindex", columnNames = {"fileName", "filePath", "extendName"})})
+@Table(name = "file")
 @Entity
 @TableName("file")
 public class FileBean {

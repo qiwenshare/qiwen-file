@@ -15,7 +15,7 @@ public interface FileMapper extends BaseMapper<FileBean> {
 
 
 
-    void updateFilepathByFilepath(String oldfilePath, String newfilePath);
-    void updateFilepathByPathAndName(String oldfilePath, String newfilePath, String fileName, String extendName);
+
+
 
 }

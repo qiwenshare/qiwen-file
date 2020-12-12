@@ -47,21 +47,6 @@
 <!--    </update>-->
 
 
-    <update id="updateFilepathByFilepath">
-        UPDATE file SET filePath=REPLACE(filePath, #{param1}, #{param2})
-        WHERE filePath like N'${param1}%'
-    </update>
-
-    <update id="updateFilepathByPathAndName">
-        update file set filePath = #{param2}
-        where filePath = #{param1} and fileName = #{param3}
-         <if test="param4 != null">
-         and extendName = #{param4}
-         </if>
-        <if test="param4 == null">
-            and extendName is null
-        </if>
-    </update>
 
 
 

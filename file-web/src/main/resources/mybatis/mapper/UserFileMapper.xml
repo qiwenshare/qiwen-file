@@ -14,8 +14,55 @@
     <select id="userFileList" parameterType="com.qiwenshare.file.domain.UserFile" resultType="java.util.Map">
         select * from userfile
         left join file on file.fileId = userfile.fileId
-        where userId = #{userId} and filePath = #{filePath}
+        <where>
+            <if test="userId != null">
+                and userId = #{userId}
+            </if>
+            <if test="filePath != null">
+                and filePath = #{filePath}
+            </if>
+            <if test="extendName != null">
+                and extendName = #{extendName}
+            </if>
+        </where>
 
     </select>
+
+    <select id="selectFileByExtendName" parameterType="com.qiwenshare.file.domain.UserFile" resultType="java.util.Map">
+        select * from userfile
+        left join file on file.fileId = userfile.fileId
+        where extendName in
+        <foreach collection="fileNameList" open="(" close=")" separator="," item="fileName" >
+            #{fileName}
+        </foreach>
+        and userId = #{userId}
+    </select>
+
+    <select id="selectFileNotInExtendNames" parameterType="com.qiwenshare.file.domain.UserFile" resultType="java.util.Map">
+        select * from userfile
+        left join file on file.fileId = userfile.fileId
+        where extendName not in
+        <foreach collection="fileNameList" open="(" close=")" separator="," item="fileName" >
+            #{fileName}
+        </foreach>
+        and userId = #{userId}
+    </select>
+
+
+    <update id="updateFilepathByFilepath">
+        UPDATE file SET filePath=REPLACE(filePath, #{param1}, #{param2})
+        WHERE filePath like N'${param1}%'
+    </update>
+
+    <update id="updateFilepathByPathAndName">
+        update userfile set filePath = #{param2}
+        where filePath = #{param1} and fileName = #{param3}
+        <if test="param4 != null">
+            and extendName = #{param4}
+        </if>
+        <if test="param4 == null">
+            and extendName is null
+        </if>
+    </update>
 
 </mapper>

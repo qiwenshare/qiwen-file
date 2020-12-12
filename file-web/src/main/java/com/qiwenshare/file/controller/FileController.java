@@ -1,5 +1,6 @@
 package com.qiwenshare.file.controller;
 
+import cn.hutool.core.bean.BeanUtil;
 import com.alibaba.fastjson.JSON;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
@@ -200,10 +201,10 @@ public class FileController {
             return operationCheck(token);
         }
         UserBean sessionUserBean = userService.getUserBeanByToken(token);
-        List<FileBean> fileList = JSON.parseArray(batchDeleteFileDto.getFiles(), FileBean.class);
+        List<UserFile> userFiles = JSON.parseArray(batchDeleteFileDto.getFiles(), UserFile.class);
 
-        for (FileBean file : fileList) {
-            fileService.deleteFile(file,sessionUserBean);
+        for (UserFile userFile : userFiles) {
+            userFileService.deleteUserFile(userFile,sessionUserBean);
         }
 
         result.setData("批量删除文件成功");
@@ -218,13 +219,16 @@ public class FileController {
      */
     @RequestMapping(value = "/deletefile", method = RequestMethod.POST)
     @ResponseBody
-    public String deleteFile(@RequestBody FileBean fileBean, @RequestHeader("token") String token) {
+    public String deleteFile(@RequestBody DeleteFileDto deleteFileDto, @RequestHeader("token") String token) {
         RestResult<String> result = new RestResult<String>();
         if (!operationCheck(token).isSuccess()){
             return JSON.toJSONString(operationCheck(token));
         }
         UserBean sessionUserBean = userService.getUserBeanByToken(token);
-        fileService.deleteFile(fileBean, sessionUserBean);
+        UserFile userFile = new UserFile();
+        userFile.setUserFileId(deleteFileDto.getUserFileId());
+        BeanUtil.copyProperties(deleteFileDto, userFile);
+        userFileService.deleteUserFile(userFile, sessionUserBean);
 
         result.setSuccess(true);
         String resultJson = JSON.toJSONString(result);
@@ -238,16 +242,16 @@ public class FileController {
      */
     @RequestMapping(value = "/unzipfile", method = RequestMethod.POST)
     @ResponseBody
-    public RestResult<String> unzipFile(@RequestBody FileBean fileBean, @RequestHeader("token") String token) {
+    public RestResult<String> unzipFile(@RequestBody UnzipFileDto unzipFileDto, @RequestHeader("token") String token) {
         RestResult<String> result = new RestResult<String>();
         if (!operationCheck(token).isSuccess()){
             return operationCheck(token);
         }
 
-        String zipFileUrl = PathUtil.getStaticPath() + fileBean.getFileUrl();
+        String zipFileUrl = PathUtil.getStaticPath() + unzipFileDto.getFileUrl();
         File file = FileOperation.newFile(zipFileUrl);
         String unzipUrl = file.getParent();
-        String[] arr = fileBean.getFileUrl().split("\\.");
+        String[] arr = unzipFileDto.getFileUrl().split("\\.");
         if (arr.length <= 1) {
             result.setErrorMessage("文件名格式错误！");
             result.setSuccess(false);
@@ -279,29 +283,34 @@ public class FileController {
             File currentFile = FileOperation.newFile(totalFileUrl);
 
             FileBean tempFileBean = new FileBean();
-            tempFileBean.setUploadTime(DateUtil.getCurrentTime());
-            tempFileBean.setUserId(sessionUserBean.getUserId());
-            tempFileBean.setFilePath(FileUtil.pathSplitFormat(fileBean.getFilePath() + entryName.replace(currentFile.getName(), "")).replace("\\", "/"));
+            UserFile userFile = new UserFile();
+
+            userFile.setUploadTime(DateUtil.getCurrentTime());
+            userFile.setUserId(sessionUserBean.getUserId());
+            userFile.setFilePath(FileUtil.pathSplitFormat(unzipFileDto.getFilePath() + entryName.replace(currentFile.getName(), "")).replace("\\", "/"));
+
             if (currentFile.isDirectory()){
 
-                tempFileBean.setIsDir(1);
+                userFile.setIsDir(1);
 
-                tempFileBean.setFileName(currentFile.getName());
+                userFile.setFileName(currentFile.getName());
                 tempFileBean.setTimeStampName(currentFile.getName());
-                //tempFileBean.setFileUrl(File.separator + (file.getParent() + File.separator + currentFile.getName()).replace(PathUtil.getStaticPath(), ""));
             }else{
 
-                tempFileBean.setIsDir(0);
-
-                tempFileBean.setExtendName(FileUtil.getFileType(totalFileUrl));
-                tempFileBean.setFileName(FileUtil.getFileNameNotExtend(currentFile.getName()));
+                userFile.setIsDir(0);
+                userFile.setExtendName(FileUtil.getFileType(totalFileUrl));
+                userFile.setFileName(FileUtil.getFileNameNotExtend(currentFile.getName()));
                 tempFileBean.setFileSize(currentFile.length());
                 tempFileBean.setTimeStampName(FileUtil.getFileNameNotExtend(currentFile.getName()));
                 tempFileBean.setFileUrl(File.separator + (currentFile.getPath()).replace(PathUtil.getStaticPath(), ""));
             }
-            fileBeanList.add(tempFileBean);
+            fileService.save(tempFileBean);
+            userFile.setFileId(tempFileBean.getFileId());
+            userFileService.save(userFile);
+            //fileBeanList.add(tempFileBean);
         }
-        fileService.batchInsertFile(fileBeanList, sessionUserBean.getUserId());
+
+//        fileService.batchInsertFile(fileBeanList, sessionUserBean.getUserId());
         result.setSuccess(true);
 
         return result;
@@ -325,7 +334,7 @@ public class FileController {
         String fileName = moveFileDto.getFileName();
         String extendName = moveFileDto.getExtendName();
 
-        fileService.updateFilepathByFilepath(oldfilePath, newfilePath, fileName, extendName);
+        userFileService.updateFilepathByFilepath(oldfilePath, newfilePath, fileName, extendName);
         result.setSuccess(true);
         return result;
     }
@@ -348,10 +357,10 @@ public class FileController {
         String files = batchMoveFileDto.getFiles();
         String newfilePath = batchMoveFileDto.getFilePath();
 
-        List<FileBean> fileList = JSON.parseArray(files, FileBean.class);
+        List<UserFile> fileList = JSON.parseArray(files, UserFile.class);
 
-        for (FileBean file : fileList) {
-            fileService.updateFilepathByFilepath(file.getFilePath(), newfilePath, file.getFileName(), file.getExtendName());
+        for (UserFile userFile : fileList) {
+            userFileService.updateFilepathByFilepath(userFile.getFilePath(), newfilePath, userFile.getFileName(), userFile.getExtendName());
         }
 
         result.setData("批量移动文件成功");
@@ -385,14 +394,14 @@ public class FileController {
      */
     @RequestMapping(value = "/selectfilebyfiletype", method = RequestMethod.GET)
     @ResponseBody
-    public RestResult<List<FileBean>> selectFileByFileType(int fileType, @RequestHeader("token") String token) {
-        RestResult<List<FileBean>> result = new RestResult<List<FileBean>>();
+    public RestResult<List<Map<String, Object>>> selectFileByFileType(int fileType, @RequestHeader("token") String token) {
+        RestResult<List<Map<String, Object>>> result = new RestResult<List<Map<String, Object>>>();
         UserBean sessionUserBean = userService.getUserBeanByToken(token);
         long userId = sessionUserBean.getUserId();
         if (qiwenFileConfig.isShareMode()){
             userId = 2;
         }
-        List<FileBean> fileList = new ArrayList<>();
+        List<Map<String, Object>> fileList = new ArrayList<>();
         if (fileType == FileUtil.OTHER_TYPE) {
 
             List<String> arrList = new ArrayList<>();
@@ -400,9 +409,9 @@ public class FileController {
             arrList.addAll(Arrays.asList(FileUtil.IMG_FILE));
             arrList.addAll(Arrays.asList(FileUtil.VIDEO_FILE));
             arrList.addAll(Arrays.asList(FileUtil.MUSIC_FILE));
-            fileList = fileService.selectFileNotInExtendNames(arrList, userId);
+            fileList = userFileService.selectFileNotInExtendNames(arrList, userId);
         } else {
-            fileList = fileService.selectFileByExtendName(getFileExtendsByType(fileType), userId);
+            fileList = userFileService.selectFileByExtendName(getFileExtendsByType(fileType), userId);
         }
         result.setData(fileList);
         result.setSuccess(true);
@@ -417,15 +426,15 @@ public class FileController {
     @ResponseBody
     public RestResult<TreeNode> getFileTree(@RequestHeader("token") String token){
         RestResult<TreeNode> result = new RestResult<TreeNode>();
-        FileBean fileBean = new FileBean();
+        UserFile userFile = new UserFile();
         UserBean sessionUserBean = userService.getUserBeanByToken(token);
         if (qiwenFileConfig.isShareMode()){
-            fileBean.setUserId(2L);
+            userFile.setUserId(2L);
         }else{
-            fileBean.setUserId(sessionUserBean.getUserId());
+            userFile.setUserId(sessionUserBean.getUserId());
         }
 
-        List<FileBean> filePathList = fileService.selectFilePathTreeByUserId(fileBean);
+        List<UserFile> filePathList = userFileService.selectFilePathTreeByUserId(sessionUserBean.getUserId());
         TreeNode resultTreeNode = new TreeNode();
         resultTreeNode.setLabel("/");
 
