@@ -15,10 +15,12 @@ import com.qiwenshare.file.config.QiwenFileConfig;
 import com.qiwenshare.file.domain.FileBean;
 import com.qiwenshare.file.domain.TreeNode;
 import com.qiwenshare.file.domain.UserBean;
+import com.qiwenshare.file.domain.UserFile;
 import com.qiwenshare.file.dto.BatchDeleteFileDto;
 import com.qiwenshare.file.dto.BatchMoveFileDto;
 import com.qiwenshare.file.dto.MoveFileDto;
 import com.qiwenshare.file.dto.RenameFileDto;
+import com.qiwenshare.file.service.UserFileService;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.ArrayUtils;
 import org.springframework.web.bind.annotation.*;
@@ -39,6 +41,8 @@ public class FileController {
     IFileService fileService;
     @Resource
     IUserService userService;
+    @Resource
+    UserFileService userFileService;
 
     @Resource
     QiwenFileConfig qiwenFileConfig;
@@ -65,11 +69,18 @@ public class FileController {
         }
         UserBean sessionUserBean = userService.getUserBeanByToken(token);
 
-        fileBean.setUserId(sessionUserBean.getUserId());
+//        fileBean.setUserId(sessionUserBean.getUserId());
 
         fileBean.setUploadTime(DateUtil.getCurrentTime());
 
         fileService.save(fileBean);
+
+        UserFile userFile = new UserFile();
+        userFile.setFileId(fileBean.getFileId());
+        userFile.setUserId(sessionUserBean.getUserId());
+        userFile.setDeleteFlag(0);
+        userFileService.save(userFile);
+
         restResult.setSuccess(true);
         return restResult;
     }

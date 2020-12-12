@@ -78,7 +78,8 @@ public class FileService extends ServiceImpl<FileMapper, FileBean> implements IF
     public List<FileBean> selectFileListByPath(FileBean fileBean) {
         LambdaQueryWrapper<FileBean> lambdaQueryWrapper = new LambdaQueryWrapper<>();
         lambdaQueryWrapper.eq(FileBean::getFilePath, fileBean.getFilePath())
-                .eq(FileBean::getUserId, fileBean.getUserId()).orderByDesc(FileBean::getIsDir);
+                .eq(FileBean::getUserId, fileBean.getUserId())
+                .orderByDesc(FileBean::getIsDir);
         return fileMapper.selectList(lambdaQueryWrapper);
     }
 

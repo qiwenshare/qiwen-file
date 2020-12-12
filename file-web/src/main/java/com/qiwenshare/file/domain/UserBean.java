@@ -47,9 +47,9 @@ public class UserBean {
     /**
      * 重复密码
      */
-    @Transient
-    @TableField(exist = false)
-    private String passwordAgain;
+//    @Transient
+//    @TableField(exist = false)
+//    private String passwordAgain;
 
     @Column(columnDefinition = "varchar(15) comment '手机号码'")
     private String telephone;
@@ -91,21 +91,6 @@ public class UserBean {
 
     @Column(columnDefinition = "varchar(30) comment '注册时间'")
     private String registerTime;
-
-
-    /**
-     * 与某个客户端的连接会话，需要通过它来给客户端发送数据
-     */
-    @Transient
-    @TableField(exist = false)
-    private Session session;
-
-    /**
-     * 消息未读数
-     */
-    @Transient
-    @TableField(exist = false)
-    private Integer notReadCount;
 
     /**
      * 验证码
