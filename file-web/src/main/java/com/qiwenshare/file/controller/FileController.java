@@ -163,22 +163,24 @@ public class FileController {
 
     @RequestMapping(value = "/getfilelist", method = RequestMethod.GET)
     @ResponseBody
-    public RestResult<List<FileBean>> getFileList(FileBean fileBean, @RequestHeader("token") String token){
-        RestResult<List<FileBean>> restResult = new RestResult<>();
+    public RestResult<List<Map<String, Object>>> getFileList(FileListDto fileListDto, @RequestHeader("token") String token){
+        RestResult<List<Map<String, Object>>> restResult = new RestResult<>();
+        UserFile userFile = new UserFile();
         if(qiwenFileConfig.isShareMode()){
-            fileBean.setUserId(2L);
+            userFile.setUserId(2L);
         }else {
             UserBean sessionUserBean = userService.getUserBeanByToken(token);
-            if (fileBean == null) {
+            if (userFile == null) {
                 restResult.setSuccess(false);
                 return restResult;
             }
-            fileBean.setUserId(sessionUserBean.getUserId());
+            userFile.setUserId(sessionUserBean.getUserId());
         }
 
-        fileBean.setFilePath(PathUtil.urlDecode(fileBean.getFilePath()));
 
-        List<FileBean> fileList = fileService.selectFileListByPath(fileBean);
+        userFile.setFilePath(PathUtil.urlDecode(fileListDto.getFilePath()));
+
+        List<Map<String, Object>> fileList = userFileService.userFileList(userFile); //fileService.selectFileListByPath(fileBean);
 
         restResult.setData(fileList);
         restResult.setSuccess(true);

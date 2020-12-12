@@ -10,6 +10,7 @@ import com.qiwenshare.file.mapper.UserFileMapper;
 
 import javax.annotation.Resource;
 import java.util.List;
+import java.util.Map;
 
 public class UserFileService  extends ServiceImpl<UserFileMapper, UserFile> implements IUserFileService {
     @Resource
@@ -24,5 +25,10 @@ public class UserFileService  extends ServiceImpl<UserFileMapper, UserFile> impl
     @Override
     public void replaceUserFilePath(String filePath, String oldFilePath, Long userId) {
         userFileMapper.replaceFilePath(filePath, oldFilePath, userId);
+    }
+
+    @Override
+    public List<Map<String, Object>> userFileList(UserFile userFile) {
+        return userFileMapper.userFileList(userFile);
     }
 }

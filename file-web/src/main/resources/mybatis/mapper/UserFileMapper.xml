@@ -14,7 +14,7 @@
     <select id="userFileList" parameterType="com.qiwenshare.file.domain.UserFile" resultType="java.util.Map">
         select * from userfile
         left join file on file.fileId = userfile.fileId
-        where userId = #{userId}
+        where userId = #{userId} and filePath = #{filePath}
 
     </select>
 
