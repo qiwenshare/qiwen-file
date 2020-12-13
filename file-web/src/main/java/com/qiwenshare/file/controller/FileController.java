@@ -27,6 +27,8 @@ import javax.annotation.Resource;
 import java.io.File;
 import java.io.Serializable;
 import java.util.*;
+import java.util.concurrent.Executor;
+import java.util.concurrent.Executors;
 
 import static com.qiwenshare.common.util.FileUtil.getFileExtendsByType;
 
@@ -44,8 +46,12 @@ public class FileController {
 
     @Resource
     QiwenFileConfig qiwenFileConfig;
+    public static Executor executor = Executors.newFixedThreadPool(20);
+
+    public static int COMPLETE_COUNT = 0;
 
     public static long treeid = 0;
+
 
     /**
      * 创建文件
@@ -277,36 +283,45 @@ public class FileController {
 
         List<FileBean> fileBeanList = new ArrayList<>();
         UserBean sessionUserBean = userService.getUserBeanByToken(token);
+        log.info("解压缩文件数量：" + fileBeanList);
+
         for (int i = 0; i < fileEntryNameList.size(); i++){
             String entryName = fileEntryNameList.get(i);
-            String totalFileUrl = unzipUrl + entryName;
-            File currentFile = FileOperation.newFile(totalFileUrl);
+            log.info("文件名："+ entryName);
+            executor.execute(() -> {
+                String totalFileUrl = unzipUrl + entryName;
+                File currentFile = FileOperation.newFile(totalFileUrl);
 
-            FileBean tempFileBean = new FileBean();
-            UserFile userFile = new UserFile();
+                FileBean tempFileBean = new FileBean();
+                UserFile userFile = new UserFile();
 
-            userFile.setUploadTime(DateUtil.getCurrentTime());
-            userFile.setUserId(sessionUserBean.getUserId());
-            userFile.setFilePath(FileUtil.pathSplitFormat(unzipFileDto.getFilePath() + entryName.replace(currentFile.getName(), "")).replace("\\", "/"));
+                userFile.setUploadTime(DateUtil.getCurrentTime());
+                userFile.setUserId(sessionUserBean.getUserId());
+                userFile.setFilePath(FileUtil.pathSplitFormat(unzipFileDto.getFilePath() + entryName.replace(currentFile.getName(), "")).replace("\\", "/"));
 
-            if (currentFile.isDirectory()){
+                if (currentFile.isDirectory()){
 
-                userFile.setIsDir(1);
+                    userFile.setIsDir(1);
 
-                userFile.setFileName(currentFile.getName());
-                tempFileBean.setTimeStampName(currentFile.getName());
-            }else{
+                    userFile.setFileName(currentFile.getName());
+                    tempFileBean.setTimeStampName(currentFile.getName());
+                }else{
 
-                userFile.setIsDir(0);
-                userFile.setExtendName(FileUtil.getFileType(totalFileUrl));
-                userFile.setFileName(FileUtil.getFileNameNotExtend(currentFile.getName()));
-                tempFileBean.setFileSize(currentFile.length());
-                tempFileBean.setTimeStampName(FileUtil.getFileNameNotExtend(currentFile.getName()));
-                tempFileBean.setFileUrl(File.separator + (currentFile.getPath()).replace(PathUtil.getStaticPath(), ""));
-            }
-            fileService.save(tempFileBean);
-            userFile.setFileId(tempFileBean.getFileId());
-            userFileService.save(userFile);
+                    userFile.setIsDir(0);
+                    userFile.setExtendName(FileUtil.getFileType(totalFileUrl));
+                    userFile.setFileName(FileUtil.getFileNameNotExtend(currentFile.getName()));
+                    tempFileBean.setFileSize(currentFile.length());
+                    tempFileBean.setTimeStampName(FileUtil.getFileNameNotExtend(currentFile.getName()));
+                    tempFileBean.setFileUrl(File.separator + (currentFile.getPath()).replace(PathUtil.getStaticPath(), ""));
+                }
+                tempFileBean.setPointCount(1);
+
+                fileService.save(tempFileBean);
+                userFile.setFileId(tempFileBean.getFileId());
+                userFile.setDeleteFlag(0);
+                userFileService.save(userFile);
+            });
+
             //fileBeanList.add(tempFileBean);
         }
 

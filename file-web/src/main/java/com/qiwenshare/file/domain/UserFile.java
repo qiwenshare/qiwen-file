@@ -1,5 +1,7 @@
 package com.qiwenshare.file.domain;
 
+import com.baomidou.mybatisplus.annotation.IdType;
+import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableName;
 import lombok.Data;
 
@@ -13,6 +15,7 @@ import javax.persistence.*;
 public class UserFile {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @TableId(type = IdType.AUTO)
     @Column(columnDefinition = "bigint(20) comment '用户文件id'")
     private Long userFileId;
 
@@ -28,7 +31,7 @@ public class UserFile {
     @Column(columnDefinition="varchar(500) comment '文件路径'")
     private String filePath;
 
-    @Column(columnDefinition="varchar(10) comment '扩展名'")
+    @Column(columnDefinition="varchar(100) comment '扩展名'")
     private String extendName;
 
     @Column(columnDefinition="int(1) comment '是否是目录 0-否, 1-是'")

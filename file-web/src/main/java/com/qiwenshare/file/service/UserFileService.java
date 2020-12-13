@@ -122,7 +122,7 @@ public class UserFileService  extends ServiceImpl<UserFileMapper, UserFile> impl
     public void deleteUserFile(UserFile userFile, UserBean sessionUserBean) {
         StorageBean storageBean = filetransferService.selectStorageBean(new StorageBean(sessionUserBean.getUserId()));
         long deleteSize = 0;
-        //String fileUrl = PathUtil.getStaticPath() + fileBean.getFileUrl();
+
         if (userFile.getIsDir() == 1) {
             //1、先删除子目录
             String filePath = userFile.getFilePath() + userFile.getFileName() + "/";
@@ -130,29 +130,18 @@ public class UserFileService  extends ServiceImpl<UserFileMapper, UserFile> impl
 
             for (int i = 0; i < fileList.size(); i++){
                 UserFile userFileTemp = fileList.get(i);
-                //1.1、删除数据库文件
-                //userFileMapper.deleteById(userFileTemp.getUserFileId());
-                //1.2、如果是文件，需要记录文件大小
+
                 if (userFileTemp.getIsDir() != 1){
                     FileBean fileBean = fileMapper.selectById(userFileTemp.getFileId());
                     deleteSize += fileBean.getFileSize();
-                    //1.3、删除服务器文件，只删除文件，目录是虚拟的
-//                    if (file.getFileUrl() != null && file.getFileUrl().indexOf("upload") != -1){
-//                        if (file.getIsOSS() != null && file.getIsOSS() == 1) {
-//                            AliyunOSSDelete.deleteObject(qiwenFileConfig.getAliyun().getOss(), file.getFileUrl().substring(1));
-//                        } else {
-//                            FileOperation.deleteFile(PathUtil.getStaticPath() + file.getFileUrl());
-//                            if (FileUtil.isImageFile(file.getExtendName())) {
-//                                FileOperation.deleteFile(PathUtil.getStaticPath() + file.getFileUrl().replace(file.getTimeStampName(), file.getTimeStampName() + "_min"));
-//                            }
-//                        }
-//
-//                    }
+                    if (fileBean.getPointCount() != null) {
 
-                    LambdaUpdateWrapper<FileBean> fileBeanLambdaUpdateWrapper = new LambdaUpdateWrapper<>();
-                    fileBeanLambdaUpdateWrapper.set(FileBean::getPointCount, fileBean.getPointCount() -1)
-                            .eq(FileBean::getFileId, fileBean.getFileId());
-//                    fileService.decreaseFilePointCount(fileBean.getFileId());
+                        LambdaUpdateWrapper<FileBean> fileBeanLambdaUpdateWrapper = new LambdaUpdateWrapper<>();
+                        fileBeanLambdaUpdateWrapper.set(FileBean::getPointCount, fileBean.getPointCount() -1)
+                                .eq(FileBean::getFileId, fileBean.getFileId());
+                        fileMapper.update(null, fileBeanLambdaUpdateWrapper);
+
+                    }
                 }
                 //标记删除标志
                 LambdaUpdateWrapper<UserFile> userFileLambdaUpdateWrapper = new LambdaUpdateWrapper<>();
@@ -162,8 +151,7 @@ public class UserFileService  extends ServiceImpl<UserFileMapper, UserFile> impl
                 userFileMapper.update(null, userFileLambdaUpdateWrapper);
 
             }
-            //2、根目录单独删除
-            //userFileMapper.deleteById(userFile.getUserFileId());
+
             LambdaUpdateWrapper<UserFile> userFileLambdaUpdateWrapper = new LambdaUpdateWrapper<>();
             userFileLambdaUpdateWrapper.set(UserFile::getDeleteFlag, 1)
                     .set(UserFile::getDeleteTime, DateUtil.getCurrentTime())

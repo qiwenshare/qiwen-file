@@ -24,6 +24,7 @@
             <if test="extendName != null">
                 and extendName = #{extendName}
             </if>
+            and deleteFlag = 0
         </where>
 
     </select>
@@ -36,6 +37,7 @@
             #{fileName}
         </foreach>
         and userId = #{userId}
+        and deleteFlag = 0
     </select>
 
     <select id="selectFileNotInExtendNames" parameterType="com.qiwenshare.file.domain.UserFile" resultType="java.util.Map">
@@ -46,11 +48,12 @@
             #{fileName}
         </foreach>
         and userId = #{userId}
+        and deleteFlag = 0
     </select>
 
 
     <update id="updateFilepathByFilepath">
-        UPDATE file SET filePath=REPLACE(filePath, #{param1}, #{param2})
+        UPDATE userfile SET filePath=REPLACE(filePath, #{param1}, #{param2})
         WHERE filePath like N'${param1}%'
     </update>
 
@@ -64,5 +67,11 @@
             and extendName is null
         </if>
     </update>
+
+    <select id="selectStorageSizeByUserId" resultType="java.lang.Long" parameterType="java.lang.Long">
+        SELECT SUM(fileSize) FROM userfile
+        LEFT JOIN file ON file.fileId = userfile.fileId
+        WHERE userId = 2
+    </select>
 
 </mapper>

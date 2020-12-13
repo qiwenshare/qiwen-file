@@ -132,4 +132,9 @@ public class FiletransferService implements IFiletransferService {
         lambdaQueryWrapper.eq(StorageBean::getUserId, storageBean.getUserId());
         return storageMapper.selectOne(lambdaQueryWrapper);
     }
+
+    @Override
+    public Long selectStorageSizeByUserId(Long userId){
+        return userFileMapper.selectStorageSizeByUserId(userId);
+    }
 }

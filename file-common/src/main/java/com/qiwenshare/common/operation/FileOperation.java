@@ -224,6 +224,7 @@ public class FileOperation {
                 ZipEntry entry = (ZipEntry) entries.nextElement();
 
                 String[] nameStrArr = entry.getName().split("/");
+
                 String nameStr = "/";
                 for (int i = 0; i < nameStrArr.length; i++) {
                     if (!"".equals(nameStrArr[i])) {
@@ -235,6 +236,8 @@ public class FileOperation {
 
                 logger.info("解压" + entry.getName());
                 String zipPath = "/" + entry.getName();
+
+
                 fileEntryNameList.add(zipPath);
                 //如果是文件夹，就创建个文件夹
                 if (entry.isDirectory()) {
@@ -269,6 +272,17 @@ public class FileOperation {
             if (zipFile != null) {
                 try {
                     zipFile.close();
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+            }
+        }
+        for (String zipPath : fileEntryNameList) {
+            if (FileUtil.isImageFile(FileUtil.getFileType(zipPath))) {
+                File file = new File(destDirPath + zipPath);
+                File minFile = new File(destDirPath + FileUtil.getFileNameNotExtend(zipPath) + "_min." + FileUtil.getFileType(zipPath));
+                try {
+                    ImageOperation.thumbnailsImage(file, minFile, 300);
                 } catch (IOException e) {
                     e.printStackTrace();
                 }

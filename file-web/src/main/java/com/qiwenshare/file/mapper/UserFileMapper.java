@@ -18,4 +18,6 @@ public interface UserFileMapper extends BaseMapper<UserFile> {
 
     List<Map<String, Object>> selectFileByExtendName(List<String> fileNameList, long userId);
     List<Map<String, Object>> selectFileNotInExtendNames(List<String> fileNameList, long userId);
+
+    Long selectStorageSizeByUserId(Long userId);
 }

@@ -30,4 +30,5 @@ public interface IFiletransferService {
     void updateStorageBean(StorageBean storageBean);
 
     StorageBean selectStorageByUser(StorageBean storageBean);
+    Long selectStorageSizeByUserId(Long userId);
 }

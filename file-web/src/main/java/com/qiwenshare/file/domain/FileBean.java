@@ -24,7 +24,7 @@ public class FileBean {
     @Column(columnDefinition="bigint(20) comment '文件id'")
     private Long fileId;
 
-    @Column(columnDefinition="varchar(50) comment '时间戳名称'")
+    @Column(columnDefinition="varchar(500) comment '时间戳名称'")
     private String timeStampName;
 
     @Column(columnDefinition="varchar(500) comment '文件url'")
