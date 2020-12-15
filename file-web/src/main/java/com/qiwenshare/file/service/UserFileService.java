@@ -44,8 +44,8 @@ public class UserFileService  extends ServiceImpl<UserFileMapper, UserFile> impl
     }
 
     @Override
-    public List<Map<String, Object>> userFileList(UserFile userFile) {
-        return userFileMapper.userFileList(userFile);
+    public List<Map<String, Object>> userFileList(UserFile userFile, Long beginCount, Long pageCount) {
+        return userFileMapper.userFileList(userFile, beginCount, pageCount);
     }
 
 

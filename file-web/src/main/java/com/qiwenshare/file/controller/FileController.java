@@ -184,10 +184,16 @@ public class FileController {
             userFile.setUserId(sessionUserBean.getUserId());
         }
 
-
+        List<Map<String, Object>> fileList = null;
         userFile.setFilePath(PathUtil.urlDecode(fileListDto.getFilePath()));
+        if (fileListDto.getCurrentPage() == null || fileListDto.getPageCount() == null) {
+            fileList = userFileService.userFileList(userFile, 0L, 10L);
+        } else {
+            Long beginCount = (fileListDto.getCurrentPage() - 1) * fileListDto.getPageCount();
 
-        List<Map<String, Object>> fileList = userFileService.userFileList(userFile); //fileService.selectFileListByPath(fileBean);
+            fileList = userFileService.userFileList(userFile, beginCount, fileListDto.getPageCount()); //fileService.selectFileListByPath(fileBean);
+
+        }
 
         restResult.setData(fileList);
         restResult.setSuccess(true);

@@ -26,6 +26,7 @@
             </if>
             and deleteFlag = 0
         </where>
+        limit #{beginCount} #{pageCount}
 
     </select>
 

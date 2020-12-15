@@ -11,7 +11,7 @@ import java.util.Map;
 
 public interface UserFileMapper extends BaseMapper<UserFile> {
     void replaceFilePath(@Param("filePath") String filePath, @Param("oldFilePath") String oldFilePath, @Param("userId") Long userId);
-    List<Map<String, Object>> userFileList(UserFile userFile);
+    List<Map<String, Object>> userFileList(UserFile userFile, Long beginCount, Long pageCount);
 
     void updateFilepathByPathAndName(String oldfilePath, String newfilePath, String fileName, String extendName);
     void updateFilepathByFilepath(String oldfilePath, String newfilePath);
