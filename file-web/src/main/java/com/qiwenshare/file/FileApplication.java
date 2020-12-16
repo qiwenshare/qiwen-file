@@ -12,6 +12,7 @@ import org.springframework.web.client.RestTemplate;
 @SpringBootApplication
 @EnableFeignClients
 @MapperScan("com.qiwenshare.file.mapper")
+@EnableScheduling
 @EnableDiscoveryClient
 public class FileApplication {
 

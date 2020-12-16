@@ -19,7 +19,7 @@ public interface IFileService  extends IService<FileBean> {
 
 //    List<FileBean> selectFileListByPath(FileBean fileBean);
 
-
+    void deleteLocalFile(FileBean fileBean);
 
 
 

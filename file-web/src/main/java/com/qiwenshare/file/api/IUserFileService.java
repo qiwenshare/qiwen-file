@@ -19,4 +19,5 @@ public interface IUserFileService extends IService<UserFile> {
     List<UserFile> selectFileTreeListLikeFilePath(String filePath);
     List<UserFile> selectFilePathTreeByUserId(Long userId);
     void deleteUserFile(UserFile userFile, UserBean sessionUserBean);
+
 }

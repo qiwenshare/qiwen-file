@@ -319,10 +319,10 @@ public class FileController {
                     tempFileBean.setFileSize(currentFile.length());
                     tempFileBean.setTimeStampName(FileUtil.getFileNameNotExtend(currentFile.getName()));
                     tempFileBean.setFileUrl(File.separator + (currentFile.getPath()).replace(PathUtil.getStaticPath(), ""));
+                    tempFileBean.setPointCount(1);
+                    fileService.save(tempFileBean);
                 }
-                tempFileBean.setPointCount(1);
 
-                fileService.save(tempFileBean);
                 userFile.setFileId(tempFileBean.getFileId());
                 userFile.setDeleteFlag(0);
                 userFileService.save(userFile);

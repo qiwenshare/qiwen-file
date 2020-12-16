@@ -89,6 +89,8 @@ public class FiletransferController {
                 userFile.setFileName(fileName.substring(0, fileName.lastIndexOf(".")));
                 userFile.setExtendName(FileUtil.getFileType(fileName));
                 userFile.setDeleteFlag(0);
+                userFile.setIsDir(0);
+                userFile.setUploadTime(DateUtil.getCurrentTime());
                 userFileService.save(userFile);
                 fileService.increaseFilePointCount(file.getFileId());
                 uploadFileVo.setSkipUpload(true);

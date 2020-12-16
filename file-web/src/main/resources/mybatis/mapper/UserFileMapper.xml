@@ -11,22 +11,22 @@
         WHERE filepath LIKE N'${oldFilePath}%' and userId = #{userId};
     </update>
 
-    <select id="userFileList" parameterType="com.qiwenshare.file.domain.UserFile" resultType="java.util.Map">
-        select * from userfile
-        left join file on file.fileId = userfile.fileId
+    <select id="userFileList" resultType="java.util.Map">
+        select * from userfile a
+        left join file on file.fileId = a.fileId
         <where>
-            <if test="userId != null">
-                and userId = #{userId}
+            <if test="userFile.userId != null">
+                and a.userId = #{userFile.userId}
             </if>
-            <if test="filePath != null">
-                and filePath = #{filePath}
+            <if test="userFile.filePath != null">
+                and a.filePath = #{userFile.filePath}
             </if>
-            <if test="extendName != null">
-                and extendName = #{extendName}
+            <if test="userFile.extendName != null">
+                and a.extendName = #{userFile.extendName}
             </if>
-            and deleteFlag = 0
+            and a.deleteFlag = 0
         </where>
-        limit #{beginCount} #{pageCount}
+        limit #{beginCount}, #{pageCount}
 
     </select>
 
@@ -72,7 +72,7 @@
     <select id="selectStorageSizeByUserId" resultType="java.lang.Long" parameterType="java.lang.Long">
         SELECT SUM(fileSize) FROM userfile
         LEFT JOIN file ON file.fileId = userfile.fileId
-        WHERE userId = 2
+        WHERE userfile.userId = 2
     </select>
 
 </mapper>

@@ -1,5 +1,6 @@
 package com.qiwenshare.file.service;
 
+import com.alibaba.fastjson.JSON;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
@@ -88,8 +89,21 @@ public class FileService extends ServiceImpl<FileMapper, FileBean> implements IF
 //                .orderByDesc(FileBean::getIsDir);
 //        return fileMapper.selectList(lambdaQueryWrapper);
 //    }
-
-
+    @Override
+    public void deleteLocalFile(FileBean fileBean) {
+        log.info("删除本地文件：" + JSON.toJSONString(fileBean));
+        //删除服务器文件
+        if (fileBean.getFileUrl() != null && fileBean.getFileUrl().indexOf("upload") != -1){
+            if (fileBean.getIsOSS() != null && fileBean.getIsOSS() == 1) {
+                AliyunOSSDelete.deleteObject(qiwenFileConfig.getAliyun().getOss(), fileBean.getFileUrl().substring(1));
+            } else {
+                FileOperation.deleteFile(PathUtil.getStaticPath() + fileBean.getFileUrl());
+                if (FileUtil.isImageFile(FileUtil.getFileType(fileBean.getFileUrl()))) {
+                    FileOperation.deleteFile(PathUtil.getStaticPath() + fileBean.getFileUrl().replace(fileBean.getTimeStampName(), fileBean.getTimeStampName() + "_min"));
+                }
+            }
+        }
+    }
 
 
 
