@@ -19,6 +19,7 @@ import com.qiwenshare.file.domain.UserBean;
 import com.qiwenshare.file.domain.UserFile;
 import com.qiwenshare.file.dto.*;
 import com.qiwenshare.file.service.UserFileService;
+import io.swagger.v3.oas.annotations.Operation;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.ArrayUtils;
 import org.springframework.web.bind.annotation.*;
@@ -53,11 +54,7 @@ public class FileController {
     public static long treeid = 0;
 
 
-    /**
-     * 创建文件
-     *
-     * @return
-     */
+    @Operation(summary = "创建文件")
     @RequestMapping(value = "/createfile", method = RequestMethod.POST)
     @ResponseBody
     public RestResult<String> createFile(@RequestBody CreateFileDto createFileDto, @RequestHeader("token") String token) {
@@ -89,11 +86,7 @@ public class FileController {
         return restResult;
     }
 
-    /**
-     * 文件重命名
-     *
-     * @return
-     */
+    @Operation(summary = "文件重命名")
     @RequestMapping(value = "/renamefile", method = RequestMethod.POST)
     @ResponseBody
     public RestResult<String> renameFile(@RequestBody RenameFileDto renameFileDto, @RequestHeader("token") String token) {
@@ -161,13 +154,15 @@ public class FileController {
         return restResult;
     }
 
-    @RequestMapping(value = "/recyclefile", method = RequestMethod.POST)
-    @ResponseBody
-    public RestResult<String> recycleFile(@RequestBody FileBean fileBean, @RequestHeader("token") String token) {
-        
-        return null;
-    }
+//    @Operation(summary = "文件重命名")
+//    @RequestMapping(value = "/recyclefile", method = RequestMethod.POST)
+//    @ResponseBody
+//    public RestResult<String> recycleFile(@RequestBody FileBean fileBean, @RequestHeader("token") String token) {
+//
+//        return null;
+//    }
 
+    @Operation(summary = "获取文件列表")
     @RequestMapping(value = "/getfilelist", method = RequestMethod.GET)
     @ResponseBody
     public RestResult<List<Map<String, Object>>> getFileList(FileListDto fileListDto, @RequestHeader("token") String token){
@@ -200,11 +195,7 @@ public class FileController {
         return restResult;
     }
 
-    /**
-     * 批量删除文件
-     *
-     * @return
-     */
+    @Operation(summary = "批量删除文件")
     @RequestMapping(value = "/batchdeletefile", method = RequestMethod.POST)
     @ResponseBody
     public RestResult<String> deleteImageByIds(@RequestBody BatchDeleteFileDto batchDeleteFileDto, @RequestHeader("token") String token) {
@@ -224,11 +215,7 @@ public class FileController {
         return result;
     }
 
-    /**
-     * 删除文件
-     *
-     * @return
-     */
+    @Operation(summary = "删除文件")
     @RequestMapping(value = "/deletefile", method = RequestMethod.POST)
     @ResponseBody
     public String deleteFile(@RequestBody DeleteFileDto deleteFileDto, @RequestHeader("token") String token) {
@@ -247,11 +234,7 @@ public class FileController {
         return resultJson;
     }
 
-    /**
-     * 解压文件
-     *
-     * @return
-     */
+    @Operation(summary = "解压文件")
     @RequestMapping(value = "/unzipfile", method = RequestMethod.POST)
     @ResponseBody
     public RestResult<String> unzipFile(@RequestBody UnzipFileDto unzipFileDto, @RequestHeader("token") String token) {
@@ -337,12 +320,8 @@ public class FileController {
         return result;
     }
 
-    /**
-     * 文件移动
-     *
-     *
-     * @return 返回前台移动结果
-     */
+
+    @Operation(summary = "文件移动")
     @RequestMapping(value = "/movefile", method = RequestMethod.POST)
     @ResponseBody
     public RestResult<String> moveFile(@RequestBody MoveFileDto moveFileDto, @RequestHeader("token") String token) {
@@ -360,12 +339,7 @@ public class FileController {
         return result;
     }
 
-    /**
-     * 批量移动文件
-     *
-     *
-     * @return 返回前台移动结果
-     */
+    @Operation(summary = "批量移动文件")
     @RequestMapping(value = "/batchmovefile", method = RequestMethod.POST)
     @ResponseBody
     public RestResult<String> batchMoveFile(@RequestBody BatchMoveFileDto batchMoveFileDto, @RequestHeader("token") String token) {
@@ -408,11 +382,7 @@ public class FileController {
         return result;
     }
 
-    /**
-     * 通过文件类型选择文件
-     *
-     * @return
-     */
+    @Operation(summary = "通过文件类型选择文件")
     @RequestMapping(value = "/selectfilebyfiletype", method = RequestMethod.GET)
     @ResponseBody
     public RestResult<List<Map<String, Object>>> selectFileByFileType(int fileType, @RequestHeader("token") String token) {
@@ -439,10 +409,7 @@ public class FileController {
         return result;
     }
 
-    /**
-     * 获取文件树
-     * @return
-     */
+    @Operation(summary = "获取文件树")
     @RequestMapping(value = "/getfiletree", method = RequestMethod.GET)
     @ResponseBody
     public RestResult<TreeNode> getFileTree(@RequestHeader("token") String token){

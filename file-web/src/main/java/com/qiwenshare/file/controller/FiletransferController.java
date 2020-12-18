@@ -21,6 +21,7 @@ import com.qiwenshare.file.domain.UserBean;
 import com.qiwenshare.file.domain.UserFile;
 import com.qiwenshare.file.dto.UploadFileDto;
 import com.qiwenshare.file.vo.file.UploadFileVo;
+import io.swagger.v3.oas.annotations.Operation;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
@@ -51,12 +52,7 @@ public class FiletransferController {
     @Resource
     IUserFileService userFileService;
 
-    /**
-     * 上传文件
-     *
-     * @param request
-     * @return
-     */
+    @Operation(summary = "极速上传")
     @RequestMapping(value = "/uploadfile", method = RequestMethod.GET)
     @ResponseBody
     public RestResult<UploadFileVo> uploadFileSpeed(HttpServletRequest request, UploadFileDto uploadFileDto, @RequestHeader("token") String token) {
@@ -112,6 +108,7 @@ public class FiletransferController {
      * @param request
      * @return
      */
+    @Operation(summary = "上传文件")
     @RequestMapping(value = "/uploadfile", method = RequestMethod.POST)
     @ResponseBody
     public RestResult<UploadFileVo> uploadFile(HttpServletRequest request, UploadFileDto uploadFileDto, @RequestHeader("token") String token) {
@@ -136,11 +133,7 @@ public class FiletransferController {
         return restResult;
     }
 
-    /**
-     * 获取存储信息
-     *
-     * @return
-     */
+    @Operation(summary = "获取存储信息")
     @RequestMapping(value = "/getstorage", method = RequestMethod.GET)
     @ResponseBody
     public RestResult<StorageBean> getStorage(@RequestHeader("token") String token) {

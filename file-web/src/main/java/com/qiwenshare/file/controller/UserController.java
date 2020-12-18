@@ -9,6 +9,7 @@ import com.qiwenshare.file.api.IUserService;
 import com.qiwenshare.file.config.QiwenFileConfig;
 import com.qiwenshare.file.domain.UserBean;
 import com.qiwenshare.file.vo.user.UserLoginVo;
+import io.swagger.v3.oas.annotations.Operation;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.shiro.crypto.hash.SimpleHash;
 import org.slf4j.Logger;
@@ -46,7 +47,7 @@ public class UserController {
      */
     public static final String CURRENT_MODULE = "用户管理";
 
-
+    @Operation(summary = "用户注册")
     @RequestMapping(value = "/adduser", method = RequestMethod.POST)
     @ResponseBody
     public RestResult<String> addUser(@RequestBody UserBean userBean) {
@@ -57,12 +58,7 @@ public class UserController {
         return restResult;
     }
 
-    /**
-     * 用户登录
-     *
-     * @param userBean
-     * @return
-     */
+    @Operation(summary = "用户登录")
     @RequestMapping("/userlogin")
     @ResponseBody
     public RestResult<UserLoginVo> userLogin(@RequestBody UserBean userBean) {
@@ -95,10 +91,7 @@ public class UserController {
         return restResult;
     }
 
-     /* 检查用户登录信息
-     *
-     * @return
-     */
+    @Operation(summary = "检查用户登录信息")
     @GetMapping("/checkuserlogininfo")
     @ResponseBody
     public RestResult<UserBean> checkUserLoginInfo(@RequestHeader("token") String token) {
@@ -123,12 +116,7 @@ public class UserController {
         return restResult;
     }
 
-    /**
-     * 得到用户信息通过id
-     *
-     * @param userId
-     * @return
-     */
+    @Operation(summary = "得到用户信息通过id")
     @RequestMapping("/getuserinfobyid")
     @ResponseBody
     public String getUserInfoById(int userId) {

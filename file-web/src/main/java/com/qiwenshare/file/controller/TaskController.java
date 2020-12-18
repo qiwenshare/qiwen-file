@@ -25,8 +25,9 @@ public class TaskController {
     @Resource
     FileService fileService;
 
-    @Scheduled(cron = "* * * 0/1 * ?")
+    @Scheduled(cron = "0 0 0 0/1 * ?")
     public void deleteFile() {
+        log.info("111112");
         Calendar calendar = Calendar.getInstance();
         calendar.add(Calendar.DATE, -3);
         SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
