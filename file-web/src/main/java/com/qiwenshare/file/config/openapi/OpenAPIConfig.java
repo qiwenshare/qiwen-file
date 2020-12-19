@@ -13,13 +13,12 @@ public class OpenAPIConfig {
     @Bean
     public OpenAPI qiwenFileOpenAPI() {
         return new OpenAPI()
-                .info(new Info().title("qiwenFileOpenAPI")
-                .title("qiwenfile")
+                .info(new Info().title("qiwen-file API")
                 .description("desc")
                 .version("v0.0.1")
-                .license(new License().name("Apache 2.0").url("http://springdoc.org")))
+                .license(new License().name("MIT").url("http://springdoc.org")))
                 .externalDocs(new ExternalDocumentation()
-                .description("spring wiki")
-                .url("http://www.qiwenshare.com"));
+                .description("gitee")
+                .url("https://www.gitee.com/qiwen-cloud/qiwen-file"));
     }
 }

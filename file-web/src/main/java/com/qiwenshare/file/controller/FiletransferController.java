@@ -22,6 +22,7 @@ import com.qiwenshare.file.domain.UserFile;
 import com.qiwenshare.file.dto.UploadFileDto;
 import com.qiwenshare.file.vo.file.UploadFileVo;
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
@@ -33,6 +34,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+@Tag(name = "文件传输", description = "进行文件的上传和下载")
 @RestController
 @RequestMapping("/filetransfer")
 public class FiletransferController {

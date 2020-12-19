@@ -20,19 +20,19 @@ import com.qiwenshare.file.domain.UserFile;
 import com.qiwenshare.file.dto.*;
 import com.qiwenshare.file.service.UserFileService;
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.commons.lang3.ArrayUtils;
 import org.springframework.web.bind.annotation.*;
 
 import javax.annotation.Resource;
 import java.io.File;
-import java.io.Serializable;
 import java.util.*;
 import java.util.concurrent.Executor;
 import java.util.concurrent.Executors;
 
 import static com.qiwenshare.common.util.FileUtil.getFileExtendsByType;
 
+@Tag(name = "文件接口", description = "进行文件的基本操作")
 @RestController
 @Slf4j
 @RequestMapping("/file")
@@ -198,7 +198,7 @@ public class FileController {
     @Operation(summary = "批量删除文件")
     @RequestMapping(value = "/batchdeletefile", method = RequestMethod.POST)
     @ResponseBody
-    public RestResult<String> deleteImageByIds(@RequestBody BatchDeleteFileDto batchDeleteFileDto, @RequestHeader("token") String token) {
+    public RestResult<String> deleteImageByIds(@RequestBody BatchDeleteFileDTO batchDeleteFileDto, @RequestHeader("token") String token) {
         RestResult<String> result = new RestResult<String>();
         if (!operationCheck(token).isSuccess()) {
             return operationCheck(token);

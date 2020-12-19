@@ -10,6 +10,8 @@ import com.qiwenshare.file.config.QiwenFileConfig;
 import com.qiwenshare.file.domain.UserBean;
 import com.qiwenshare.file.vo.user.UserLoginVo;
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.shiro.crypto.hash.SimpleHash;
 import org.slf4j.Logger;
@@ -26,6 +28,7 @@ import java.util.Map;
  *
  * @author ma116
  */
+@Tag(name = "user", description = "进行用户的基本操作")
 @RestController
 @Slf4j
 @RequestMapping("/user")
@@ -48,7 +51,7 @@ public class UserController {
     public static final String CURRENT_MODULE = "用户管理";
 
     @Operation(summary = "用户注册")
-    @RequestMapping(value = "/adduser", method = RequestMethod.POST)
+    @PostMapping(value = "/adduser")
     @ResponseBody
     public RestResult<String> addUser(@RequestBody UserBean userBean) {
         RestResult<String> restResult = null;
@@ -58,12 +61,14 @@ public class UserController {
         return restResult;
     }
 
-    @Operation(summary = "用户登录")
-    @RequestMapping("/userlogin")
+    @Operation(summary = "用户登录", description = "用户登录认证后才能进入系统", tags = {"user"})
+    @GetMapping("/userlogin")
     @ResponseBody
-    public RestResult<UserLoginVo> userLogin(@RequestBody UserBean userBean) {
+    public RestResult<UserLoginVo> userLogin(
+            @Parameter(description = "登录用户名", required = false) String username,
+            @Parameter(description = "登录密码") String password) {
         RestResult<UserLoginVo> restResult = new RestResult<UserLoginVo>();
-        UserBean saveUserBean = userService.findUserInfoByTelephone(userBean.getUsername());
+        UserBean saveUserBean = userService.findUserInfoByTelephone(username);
 
         String jwt = "";
         try {
@@ -75,11 +80,11 @@ public class UserController {
             return restResult;
         }
 
-        String password = new SimpleHash("MD5", userBean.getPassword(), saveUserBean.getSalt(), 1024).toHex();
-        if (password.equals(saveUserBean.getPassword())) {
+        String passwordHash = new SimpleHash("MD5", password, saveUserBean.getSalt(), 1024).toHex();
+        if (passwordHash.equals(saveUserBean.getPassword())) {
 
             UserLoginVo userLoginVo = new UserLoginVo();
-            BeanUtil.copyProperties(userBean, userLoginVo);
+            BeanUtil.copyProperties(saveUserBean, userLoginVo);
             userLoginVo.setToken(jwt);
             restResult.setData(userLoginVo);
             restResult.setSuccess(true);
@@ -91,7 +96,7 @@ public class UserController {
         return restResult;
     }
 
-    @Operation(summary = "检查用户登录信息")
+    @Operation(summary = "检查用户登录信息", description = "", tags = {"user"})
     @GetMapping("/checkuserlogininfo")
     @ResponseBody
     public RestResult<UserBean> checkUserLoginInfo(@RequestHeader("token") String token) {
@@ -116,8 +121,8 @@ public class UserController {
         return restResult;
     }
 
-    @Operation(summary = "得到用户信息通过id")
-    @RequestMapping("/getuserinfobyid")
+    @Operation(summary = "得到用户信息通过id", description = "", tags = {"user"})
+    @GetMapping("/getuserinfobyid")
     @ResponseBody
     public String getUserInfoById(int userId) {
         RestResult<UserBean> restResult = new RestResult<UserBean>();
