@@ -4,7 +4,7 @@ import com.qiwenshare.common.domain.AliyunOSS;
 import lombok.Data;
 
 @Data
-public class AliyunConfig {
+public class  AliyunConfig {
     private AliyunOSS oss = new AliyunOSS();
 
 

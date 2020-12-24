@@ -1,14 +1,7 @@
 package com.qiwenshare.file.controller;
 
-import cn.hutool.core.bean.BeanUtil;
-import com.alibaba.fastjson.JSON;
-import com.aliyun.oss.OSS;
-import com.aliyun.oss.model.OSSObject;
 import com.qiwenshare.common.cbb.DateUtil;
-import com.qiwenshare.common.operation.FileOperation;
-import com.qiwenshare.common.oss.AliyunOSSDownload;
 import com.qiwenshare.common.util.FileUtil;
-import com.qiwenshare.common.util.PathUtil;
 import com.qiwenshare.common.cbb.RestResult;
 import com.qiwenshare.file.api.IFileService;
 import com.qiwenshare.file.api.IFiletransferService;
@@ -19,7 +12,7 @@ import com.qiwenshare.file.domain.FileBean;
 import com.qiwenshare.file.domain.StorageBean;
 import com.qiwenshare.file.domain.UserBean;
 import com.qiwenshare.file.domain.UserFile;
-import com.qiwenshare.file.dto.UploadFileDto;
+import com.qiwenshare.file.dto.UploadFileDTO;
 import com.qiwenshare.file.vo.file.UploadFileVo;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -28,13 +21,11 @@ import org.springframework.web.bind.annotation.*;
 
 import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
-import java.io.*;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-@Tag(name = "文件传输", description = "进行文件的上传和下载")
+@Tag(name = "filetransfer", description = "该接口为文件传输接口，主要用来做文件的上传和下载")
 @RestController
 @RequestMapping("/filetransfer")
 public class FiletransferController {
@@ -54,10 +45,10 @@ public class FiletransferController {
     @Resource
     IUserFileService userFileService;
 
-    @Operation(summary = "极速上传")
+    @Operation(summary = "极速上传", description = "校验文件MD5判断文件是否存在，如果存在直接上传成功并返回skipUpload=true，如果不存在返回skipUpload=false需要再次调用该接口的POST方法", tags = {"filetransfer"})
     @RequestMapping(value = "/uploadfile", method = RequestMethod.GET)
     @ResponseBody
-    public RestResult<UploadFileVo> uploadFileSpeed(HttpServletRequest request, UploadFileDto uploadFileDto, @RequestHeader("token") String token) {
+    public RestResult<UploadFileVo> uploadFileSpeed(HttpServletRequest request, UploadFileDTO uploadFileDto, @RequestHeader("token") String token) {
         RestResult<UploadFileVo> restResult = new RestResult<UploadFileVo>();
         UserBean sessionUserBean = userService.getUserBeanByToken(token);
         if (sessionUserBean == null){
@@ -110,10 +101,10 @@ public class FiletransferController {
      * @param request
      * @return
      */
-    @Operation(summary = "上传文件")
+    @Operation(summary = "上传文件", description = "真正的上次文件接口", tags = {"filetransfer"})
     @RequestMapping(value = "/uploadfile", method = RequestMethod.POST)
     @ResponseBody
-    public RestResult<UploadFileVo> uploadFile(HttpServletRequest request, UploadFileDto uploadFileDto, @RequestHeader("token") String token) {
+    public RestResult<UploadFileVo> uploadFile(HttpServletRequest request, UploadFileDTO uploadFileDto, @RequestHeader("token") String token) {
         RestResult<UploadFileVo> restResult = new RestResult<>();
         UserBean sessionUserBean = userService.getUserBeanByToken(token);
         if (sessionUserBean == null){
@@ -135,7 +126,7 @@ public class FiletransferController {
         return restResult;
     }
 
-    @Operation(summary = "获取存储信息")
+    @Operation(summary = "获取存储信息", description = "获取存储信息", tags = {"filetransfer"})
     @RequestMapping(value = "/getstorage", method = RequestMethod.GET)
     @ResponseBody
     public RestResult<StorageBean> getStorage(@RequestHeader("token") String token) {

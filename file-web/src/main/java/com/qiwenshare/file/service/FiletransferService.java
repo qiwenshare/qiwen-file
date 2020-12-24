@@ -18,11 +18,10 @@ import com.qiwenshare.file.api.IFiletransferService;
 import com.qiwenshare.common.domain.AliyunOSS;
 import com.qiwenshare.file.config.QiwenFileConfig;
 import com.qiwenshare.file.domain.UserFile;
-import com.qiwenshare.file.dto.UploadFileDto;
+import com.qiwenshare.file.dto.UploadFileDTO;
 import com.qiwenshare.file.mapper.FileMapper;
 import com.qiwenshare.file.domain.FileBean;
 import com.qiwenshare.file.domain.StorageBean;
-import com.qiwenshare.file.domain.UserBean;
 import com.qiwenshare.file.mapper.StorageMapper;
 import com.qiwenshare.file.mapper.UserFileMapper;
 import org.springframework.stereotype.Service;
@@ -44,7 +43,7 @@ public class FiletransferService implements IFiletransferService {
 
 
     @Override
-    public void uploadFile(HttpServletRequest request, UploadFileDto UploadFileDto, Long userId) {
+    public void uploadFile(HttpServletRequest request, UploadFileDTO UploadFileDto, Long userId) {
         AliyunOSS oss = qiwenFileConfig.getAliyun().getOss();
         request.setAttribute("oss", oss);
         Uploader uploader;

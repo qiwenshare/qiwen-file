@@ -32,7 +32,7 @@ import java.util.concurrent.Executors;
 
 import static com.qiwenshare.common.util.FileUtil.getFileExtendsByType;
 
-@Tag(name = "文件接口", description = "进行文件的基本操作")
+@Tag(name = "file", description = "该接口为文件接口，主要用来做一些文件的基本操作，如创建目录，删除，移动，复制等。")
 @RestController
 @Slf4j
 @RequestMapping("/file")
@@ -54,10 +54,10 @@ public class FileController {
     public static long treeid = 0;
 
 
-    @Operation(summary = "创建文件")
+    @Operation(summary = "创建文件", description = "目录(文件夹)的创建", tags = {"file"})
     @RequestMapping(value = "/createfile", method = RequestMethod.POST)
     @ResponseBody
-    public RestResult<String> createFile(@RequestBody CreateFileDto createFileDto, @RequestHeader("token") String token) {
+    public RestResult<String> createFile(@RequestBody CreateFileDTO createFileDto, @RequestHeader("token") String token) {
         RestResult<String> restResult = new RestResult<>();
         if (!operationCheck(token).isSuccess()){
             return operationCheck(token);
@@ -86,10 +86,10 @@ public class FileController {
         return restResult;
     }
 
-    @Operation(summary = "文件重命名")
+    @Operation(summary = "文件重命名", description = "文件重命名", tags = {"file"})
     @RequestMapping(value = "/renamefile", method = RequestMethod.POST)
     @ResponseBody
-    public RestResult<String> renameFile(@RequestBody RenameFileDto renameFileDto, @RequestHeader("token") String token) {
+    public RestResult<String> renameFile(@RequestBody RenameFileDTO renameFileDto, @RequestHeader("token") String token) {
         RestResult<String> restResult = new RestResult<>();
         if (!operationCheck(token).isSuccess()){
             return operationCheck(token);
@@ -162,10 +162,10 @@ public class FileController {
 //        return null;
 //    }
 
-    @Operation(summary = "获取文件列表")
+    @Operation(summary = "获取文件列表", description = "用来做前台列表展示", tags = {"file"})
     @RequestMapping(value = "/getfilelist", method = RequestMethod.GET)
     @ResponseBody
-    public RestResult<List<Map<String, Object>>> getFileList(FileListDto fileListDto, @RequestHeader("token") String token){
+    public RestResult<List<Map<String, Object>>> getFileList(FileListDTO fileListDto, @RequestHeader("token") String token){
         RestResult<List<Map<String, Object>>> restResult = new RestResult<>();
         UserFile userFile = new UserFile();
         if(qiwenFileConfig.isShareMode()){
@@ -195,7 +195,7 @@ public class FileController {
         return restResult;
     }
 
-    @Operation(summary = "批量删除文件")
+    @Operation(summary = "批量删除文件", description = "批量删除文件", tags = {"file"})
     @RequestMapping(value = "/batchdeletefile", method = RequestMethod.POST)
     @ResponseBody
     public RestResult<String> deleteImageByIds(@RequestBody BatchDeleteFileDTO batchDeleteFileDto, @RequestHeader("token") String token) {
@@ -215,10 +215,10 @@ public class FileController {
         return result;
     }
 
-    @Operation(summary = "删除文件")
+    @Operation(summary = "删除文件", description = "可以删除文件或者目录", tags = {"file"})
     @RequestMapping(value = "/deletefile", method = RequestMethod.POST)
     @ResponseBody
-    public String deleteFile(@RequestBody DeleteFileDto deleteFileDto, @RequestHeader("token") String token) {
+    public String deleteFile(@RequestBody DeleteFileDTO deleteFileDto, @RequestHeader("token") String token) {
         RestResult<String> result = new RestResult<String>();
         if (!operationCheck(token).isSuccess()){
             return JSON.toJSONString(operationCheck(token));
@@ -234,10 +234,10 @@ public class FileController {
         return resultJson;
     }
 
-    @Operation(summary = "解压文件")
+    @Operation(summary = "解压文件", description = "压缩功能为体验功能，目前持续优化中。", tags = {"file"})
     @RequestMapping(value = "/unzipfile", method = RequestMethod.POST)
     @ResponseBody
-    public RestResult<String> unzipFile(@RequestBody UnzipFileDto unzipFileDto, @RequestHeader("token") String token) {
+    public RestResult<String> unzipFile(@RequestBody UnzipFileDTO unzipFileDto, @RequestHeader("token") String token) {
         RestResult<String> result = new RestResult<String>();
         if (!operationCheck(token).isSuccess()){
             return operationCheck(token);
@@ -321,10 +321,10 @@ public class FileController {
     }
 
 
-    @Operation(summary = "文件移动")
+    @Operation(summary = "文件移动", description = "可以移动文件或者目录", tags = {"file"})
     @RequestMapping(value = "/movefile", method = RequestMethod.POST)
     @ResponseBody
-    public RestResult<String> moveFile(@RequestBody MoveFileDto moveFileDto, @RequestHeader("token") String token) {
+    public RestResult<String> moveFile(@RequestBody MoveFileDTO moveFileDto, @RequestHeader("token") String token) {
         RestResult<String> result = new RestResult<String>();
         if (!operationCheck(token).isSuccess()){
             return operationCheck(token);
@@ -339,10 +339,10 @@ public class FileController {
         return result;
     }
 
-    @Operation(summary = "批量移动文件")
+    @Operation(summary = "批量移动文件", description = "可以同时选择移动多个文件或者目录", tags = {"file"})
     @RequestMapping(value = "/batchmovefile", method = RequestMethod.POST)
     @ResponseBody
-    public RestResult<String> batchMoveFile(@RequestBody BatchMoveFileDto batchMoveFileDto, @RequestHeader("token") String token) {
+    public RestResult<String> batchMoveFile(@RequestBody BatchMoveFileDTO batchMoveFileDto, @RequestHeader("token") String token) {
 
         RestResult<String> result = new RestResult<String>();
         if (!operationCheck(token).isSuccess()) {
@@ -382,7 +382,7 @@ public class FileController {
         return result;
     }
 
-    @Operation(summary = "通过文件类型选择文件")
+    @Operation(summary = "通过文件类型选择文件", description = "该接口可以实现文件格式分类查看", tags = {"file"})
     @RequestMapping(value = "/selectfilebyfiletype", method = RequestMethod.GET)
     @ResponseBody
     public RestResult<List<Map<String, Object>>> selectFileByFileType(int fileType, @RequestHeader("token") String token) {
@@ -409,7 +409,7 @@ public class FileController {
         return result;
     }
 
-    @Operation(summary = "获取文件树")
+    @Operation(summary = "获取文件树", description = "文件移动的时候需要用到该接口，用来展示目录树，展示机制为饱汉模式", tags = {"file"})
     @RequestMapping(value = "/getfiletree", method = RequestMethod.GET)
     @ResponseBody
     public RestResult<TreeNode> getFileTree(@RequestHeader("token") String token){
