@@ -51,8 +51,9 @@ public class UserController {
      */
     public static final String CURRENT_MODULE = "用户管理";
 
+
     @Operation(summary = "用户注册", description = "注册账号", tags = {"user"})
-    @PostMapping(value = "/adduser")
+    @PostMapping(value = "/register")
     @ResponseBody
     public RestResult<String> addUser(@RequestBody RegisterDTO registerDTO) {
         RestResult<String> restResult = null;
@@ -64,10 +65,10 @@ public class UserController {
     }
 
     @Operation(summary = "用户登录", description = "用户登录认证后才能进入系统", tags = {"user"})
-    @GetMapping("/userlogin")
+    @GetMapping("/login")
     @ResponseBody
     public RestResult<UserLoginVo> userLogin(
-            @Parameter(description = "登录用户名", required = false) String username,
+            @Parameter(description = "登录用户名") String username,
             @Parameter(description = "登录密码") String password) {
         RestResult<UserLoginVo> restResult = new RestResult<UserLoginVo>();
         UserBean saveUserBean = userService.findUserInfoByTelephone(username);
@@ -122,24 +123,5 @@ public class UserController {
 
         return restResult;
     }
-
-//    @Operation(summary = "得到用户信息通过id", description = "", tags = {"user"})
-//    @GetMapping("/getuserinfobyid")
-//    @ResponseBody
-//    public String getUserInfoById(int userId) {
-//        RestResult<UserBean> restResult = new RestResult<UserBean>();
-//
-//        UserBean userBean = userService.getById(userId);
-//        if (userBean == null) {
-//            restResult.setSuccess(false);
-//            restResult.setErrorCode("100001");
-//            restResult.setErrorMessage("用户不存在！");
-//        } else {
-//            restResult.setSuccess(true);
-//            restResult.setData(userBean);
-//        }
-//        String resultJson = JSON.toJSONString(restResult);
-//        return resultJson;
-//    }
 
 }

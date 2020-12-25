@@ -11,13 +11,13 @@ import com.qiwenshare.common.oss.AliyunOSSRename;
 import com.qiwenshare.common.util.FileUtil;
 import com.qiwenshare.common.util.PathUtil;
 import com.qiwenshare.file.api.IFileService;
+import com.qiwenshare.file.api.IRecoveryFileService;
+import com.qiwenshare.file.api.IUserFileService;
 import com.qiwenshare.file.api.IUserService;
 import com.qiwenshare.file.config.QiwenFileConfig;
-import com.qiwenshare.file.domain.FileBean;
-import com.qiwenshare.file.domain.TreeNode;
-import com.qiwenshare.file.domain.UserBean;
-import com.qiwenshare.file.domain.UserFile;
+import com.qiwenshare.file.domain.*;
 import com.qiwenshare.file.dto.*;
+import com.qiwenshare.file.service.RecoveryFileService;
 import com.qiwenshare.file.service.UserFileService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -43,7 +43,9 @@ public class FileController {
     @Resource
     IUserService userService;
     @Resource
-    UserFileService userFileService;
+    IUserFileService userFileService;
+    @Resource
+    IRecoveryFileService recoveryFileService;
 
     @Resource
     QiwenFileConfig qiwenFileConfig;
@@ -208,6 +210,11 @@ public class FileController {
 
         for (UserFile userFile : userFiles) {
             userFileService.deleteUserFile(userFile,sessionUserBean);
+
+            RecoveryFile recoveryFile = new RecoveryFile();
+            recoveryFile.setUserFileId(userFile.getUserFileId());
+            recoveryFile.setDeleteTime(DateUtil.getCurrentTime());
+            recoveryFileService.save(recoveryFile);
         }
 
         result.setData("批量删除文件成功");
@@ -229,6 +236,10 @@ public class FileController {
         BeanUtil.copyProperties(deleteFileDto, userFile);
         userFileService.deleteUserFile(userFile, sessionUserBean);
 
+        RecoveryFile recoveryFile = new RecoveryFile();
+        recoveryFile.setUserFileId(deleteFileDto.getUserFileId());
+        recoveryFile.setDeleteTime(DateUtil.getCurrentTime());
+        recoveryFileService.save(recoveryFile);
         result.setSuccess(true);
         String resultJson = JSON.toJSONString(result);
         return resultJson;

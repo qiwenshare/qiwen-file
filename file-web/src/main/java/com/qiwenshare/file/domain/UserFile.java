@@ -46,4 +46,7 @@ public class UserFile {
     @Column(columnDefinition="varchar(25) comment '删除时间'")
     private String deleteTime;
 
+    @Column(columnDefinition = "varchar(50) comment '删除批次号'")
+    private String deleteBatchNum;
+
 }

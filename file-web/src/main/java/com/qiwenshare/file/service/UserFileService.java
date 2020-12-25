@@ -18,6 +18,7 @@ import com.qiwenshare.file.mapper.FileMapper;
 import com.qiwenshare.file.mapper.UserFileMapper;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import javax.annotation.Resource;
 import java.util.List;
@@ -85,18 +86,11 @@ public class UserFileService  extends ServiceImpl<UserFileMapper, UserFile> impl
 
     @Override
     public List<Map<String, Object>> selectFileByExtendName(List<String> fileNameList, long userId) {
-//        LambdaQueryWrapper<FileBean> wrapper = new LambdaQueryWrapper<>();
-//        wrapper.in(FileBean::getExtendName, fileNameList).eq(FileBean::getUserId, userId);
-//        List<FileBean> fileBeans = fileMapper.selectList(wrapper);
-//        return fileBeans;
         return userFileMapper.selectFileByExtendName(fileNameList, userId);
     }
 
     @Override
     public List<Map<String, Object>> selectFileNotInExtendNames(List<String> fileNameList, long userId) {
-//        LambdaQueryWrapper<FileBean> wrapper = new LambdaQueryWrapper<>();
-//        wrapper.notIn(FileBean::getExtendName, fileNameList).eq(FileBean::getUserId, userId);
-//        List<FileBean> fileBeans = fileMapper.selectList(wrapper);
         return userFileMapper.selectFileNotInExtendNames(fileNameList, userId);
     }
 
@@ -122,19 +116,21 @@ public class UserFileService  extends ServiceImpl<UserFileMapper, UserFile> impl
     public List<UserFile> selectFilePathTreeByUserId(Long userId) {
         LambdaQueryWrapper<UserFile> lambdaQueryWrapper = new LambdaQueryWrapper<>();
         lambdaQueryWrapper.eq(UserFile::getUserId, userId)
-                .eq(UserFile::getIsDir, 1);
+                .eq(UserFile::getIsDir, 1)
+                .eq(UserFile::getDeleteFlag, 0);
         return userFileMapper.selectList(lambdaQueryWrapper);
     }
 
 
     @Override
     public void deleteUserFile(UserFile userFile, UserBean sessionUserBean) {
+
         StorageBean storageBean = filetransferService.selectStorageBean(new StorageBean(sessionUserBean.getUserId()));
 
         if (userFile.getIsDir() == 1) {
-
             LambdaUpdateWrapper<UserFile> userFileLambdaUpdateWrapper = new LambdaUpdateWrapper<UserFile>();
             userFileLambdaUpdateWrapper.set(UserFile::getDeleteFlag, 1).set(UserFile::getDeleteTime, DateUtil.getCurrentTime())
+
                     .eq(UserFile::getUserFileId, userFile.getUserFileId());
             userFileMapper.update(null, userFileLambdaUpdateWrapper);
 
@@ -142,13 +138,9 @@ public class UserFileService  extends ServiceImpl<UserFileMapper, UserFile> impl
             updateFileDeleteStateByFilePath(filePath);
 
         }else{
-            //userFileMapper.deleteById(userFile.getUserFileId());
+
             UserFile userFileTemp = userFileMapper.selectById(userFile.getUserFileId());
             FileBean fileBean = fileMapper.selectById(userFileTemp.getFileId());
-
-
-
-
 
             LambdaUpdateWrapper<UserFile> userFileLambdaUpdateWrapper = new LambdaUpdateWrapper<>();
             userFileLambdaUpdateWrapper.set(UserFile::getDeleteFlag, 1)
@@ -160,6 +152,7 @@ public class UserFileService  extends ServiceImpl<UserFileMapper, UserFile> impl
             fileBeanLambdaUpdateWrapper.set(FileBean::getPointCount, fileBean.getPointCount() -1)
                     .eq(FileBean::getFileId, fileBean.getFileId());
         }
+
 
     }
 
@@ -194,7 +187,6 @@ public class UserFileService  extends ServiceImpl<UserFileMapper, UserFile> impl
             }
         }).start();
     }
-
 
 
 }
