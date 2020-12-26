@@ -129,13 +129,14 @@ public class UserFileService  extends ServiceImpl<UserFileMapper, UserFile> impl
 
         if (userFile.getIsDir() == 1) {
             LambdaUpdateWrapper<UserFile> userFileLambdaUpdateWrapper = new LambdaUpdateWrapper<UserFile>();
-            userFileLambdaUpdateWrapper.set(UserFile::getDeleteFlag, 1).set(UserFile::getDeleteTime, DateUtil.getCurrentTime())
-
+            userFileLambdaUpdateWrapper.set(UserFile::getDeleteFlag, 1)
+                    .set(UserFile::getDeleteBatchNum, userFile.getDeleteBatchNum())
+                    .set(UserFile::getDeleteTime, DateUtil.getCurrentTime())
                     .eq(UserFile::getUserFileId, userFile.getUserFileId());
             userFileMapper.update(null, userFileLambdaUpdateWrapper);
 
             String filePath = userFile.getFilePath() + userFile.getFileName() + "/";
-            updateFileDeleteStateByFilePath(filePath);
+            updateFileDeleteStateByFilePath(filePath, userFile.getDeleteBatchNum());
 
         }else{
 
@@ -145,6 +146,7 @@ public class UserFileService  extends ServiceImpl<UserFileMapper, UserFile> impl
             LambdaUpdateWrapper<UserFile> userFileLambdaUpdateWrapper = new LambdaUpdateWrapper<>();
             userFileLambdaUpdateWrapper.set(UserFile::getDeleteFlag, 1)
                     .set(UserFile::getDeleteTime, DateUtil.getCurrentTime())
+                    .set(UserFile::getDeleteBatchNum, userFile.getDeleteBatchNum())
                     .eq(UserFile::getUserFileId, userFileTemp.getUserFileId());
             userFileMapper.update(null, userFileLambdaUpdateWrapper);
 
@@ -156,7 +158,7 @@ public class UserFileService  extends ServiceImpl<UserFileMapper, UserFile> impl
 
     }
 
-    private void updateFileDeleteStateByFilePath(String filePath) {
+    private void updateFileDeleteStateByFilePath(String filePath, String deleteBatchNum) {
         new Thread(()->{
             List<UserFile> fileList = selectFileTreeListLikeFilePath(filePath);
             for (int i = 0; i < fileList.size(); i++){
@@ -179,6 +181,7 @@ public class UserFileService  extends ServiceImpl<UserFileMapper, UserFile> impl
                         LambdaUpdateWrapper<UserFile> userFileLambdaUpdateWrapper1 = new LambdaUpdateWrapper<>();
                         userFileLambdaUpdateWrapper1.set(UserFile::getDeleteFlag, 1)
                                 .set(UserFile::getDeleteTime, DateUtil.getCurrentTime())
+                                .set(UserFile::getDeleteBatchNum, deleteBatchNum)
                                 .eq(UserFile::getUserFileId, userFileTemp.getUserFileId());
                         userFileMapper.update(null, userFileLambdaUpdateWrapper1);
                     }

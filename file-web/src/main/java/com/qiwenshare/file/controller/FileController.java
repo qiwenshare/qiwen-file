@@ -207,13 +207,16 @@ public class FileController {
         }
         UserBean sessionUserBean = userService.getUserBeanByToken(token);
         List<UserFile> userFiles = JSON.parseArray(batchDeleteFileDto.getFiles(), UserFile.class);
+        String uuid = UUID.randomUUID().toString();
 
         for (UserFile userFile : userFiles) {
+            userFile.setDeleteBatchNum(uuid);
             userFileService.deleteUserFile(userFile,sessionUserBean);
 
             RecoveryFile recoveryFile = new RecoveryFile();
             recoveryFile.setUserFileId(userFile.getUserFileId());
             recoveryFile.setDeleteTime(DateUtil.getCurrentTime());
+            recoveryFile.setDeleteBatchNum(uuid);
             recoveryFileService.save(recoveryFile);
         }
 
@@ -230,15 +233,20 @@ public class FileController {
         if (!operationCheck(token).isSuccess()){
             return JSON.toJSONString(operationCheck(token));
         }
+
+        String uuid = UUID.randomUUID().toString();
         UserBean sessionUserBean = userService.getUserBeanByToken(token);
         UserFile userFile = new UserFile();
         userFile.setUserFileId(deleteFileDto.getUserFileId());
+        userFile.setDeleteBatchNum(uuid);
         BeanUtil.copyProperties(deleteFileDto, userFile);
         userFileService.deleteUserFile(userFile, sessionUserBean);
+
 
         RecoveryFile recoveryFile = new RecoveryFile();
         recoveryFile.setUserFileId(deleteFileDto.getUserFileId());
         recoveryFile.setDeleteTime(DateUtil.getCurrentTime());
+        recoveryFile.setDeleteBatchNum(uuid);
         recoveryFileService.save(recoveryFile);
         result.setSuccess(true);
         String resultJson = JSON.toJSONString(result);
