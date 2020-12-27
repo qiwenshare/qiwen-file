@@ -1,7 +1,10 @@
 package com.qiwenshare.file.controller;
 
 import com.qiwenshare.common.cbb.RestResult;
+import com.qiwenshare.file.api.IRecoveryFileService;
+import com.qiwenshare.file.api.IUserFileService;
 import com.qiwenshare.file.domain.RecoveryFile;
+import com.qiwenshare.file.domain.UserFile;
 import com.qiwenshare.file.dto.BatchDeleteRecoveryFileDTO;
 import com.qiwenshare.file.dto.DeleteRecoveryFileDTO;
 import com.qiwenshare.file.service.RecoveryFileService;
@@ -19,7 +22,9 @@ import java.util.List;
 @RequestMapping("/recoveryfile")
 public class RecoveryFileController {
     @Resource
-    RecoveryFileService recoveryFileService;
+    IRecoveryFileService recoveryFileService;
+    @Resource
+    IUserFileService userFileService;
 
 
     public RestResult<String> batchDeleteRecoveryFile(@RequestBody BatchDeleteRecoveryFileDTO batchDeleteRecoveryFileDto, @RequestHeader("token") String token) {
@@ -33,8 +38,13 @@ public class RecoveryFileController {
     @ResponseBody
     public RestResult<String> deleteRecoveryFile(@RequestBody DeleteRecoveryFileDTO deleteRecoveryFileDTO, @RequestHeader("token") String token) {
         RestResult<String> restResult = new RestResult<String>();
-        recoveryFileService.removeById(deleteRecoveryFileDTO.getRecoveryFileId());
 
+
+        RecoveryFile recoveryFile = recoveryFileService.getById(deleteRecoveryFileDTO.getRecoveryFileId());
+        UserFile userFile =userFileService.getById(recoveryFile.getUserFileId());
+
+        recoveryFileService.deleteRecoveryFile(userFile);
+        recoveryFileService.removeById(deleteRecoveryFileDTO.getRecoveryFileId());
         
         restResult.setSuccess(true);
         restResult.setData("删除成功");

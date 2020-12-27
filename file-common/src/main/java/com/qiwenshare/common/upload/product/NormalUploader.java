@@ -1,5 +1,6 @@
 package com.qiwenshare.common.upload.product;
 
+import com.aliyuncs.utils.StringUtils;
 import com.qiwenshare.common.domain.UploadFile;
 import com.qiwenshare.common.operation.ImageOperation;
 import com.qiwenshare.common.upload.Uploader;
@@ -54,7 +55,6 @@ public class NormalUploader extends Uploader {
             e.printStackTrace();
         }
 
-
         return saveUploadFileList;
     }
 
@@ -76,8 +76,12 @@ public class NormalUploader extends Uploader {
         uploadFile.setFileType(fileType);
         uploadFile.setTimeStampName(timeStampName);
 
-        String saveFilePath = savePath + FILE_SEPARATOR + timeStampName + "." + fileType;
-        String minFilePath = savePath + FILE_SEPARATOR + timeStampName + "_min" + "." + fileType;
+        String saveFilePath = savePath + FILE_SEPARATOR + timeStampName;
+        String minFilePath = savePath + FILE_SEPARATOR + timeStampName;
+        if (StringUtils.isNotEmpty(fileType)) {
+            saveFilePath += "." + fileType;
+            minFilePath += "_min" + "." + fileType;
+        }
 
         File file = new File(PathUtil.getStaticPath() + FILE_SEPARATOR + saveFilePath);
         File minFile = new File(PathUtil.getStaticPath() + FILE_SEPARATOR + minFilePath);

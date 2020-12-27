@@ -97,8 +97,7 @@ public class FileController {
             return operationCheck(token);
         }
         UserBean sessionUserBean = userService.getUserBeanByToken(token);
-//        fileBean.setUserId(sessionUserBean.getUserId());
-//        fileBean.setUploadTime(DateUtil.getCurrentTime());
+
         List<UserFile> userFiles = userFileService.selectUserFileByNameAndPath(renameFileDto.getFileName(), renameFileDto.getFilePath(), sessionUserBean.getUserId());
         if (userFiles != null && !userFiles.isEmpty()) {
             restResult.setErrorMessage("同名文件已存在");
@@ -122,14 +121,12 @@ public class FileController {
                 FileBean file = fileService.getById(userFile.getFileId());
                 String fileUrl = file.getFileUrl();
                 String newFileUrl = fileUrl.replace(userFile.getFileName(), renameFileDto.getFileName());
-//                renameFileDto.setFileUrl(newFileUrl);
+
                 AliyunOSSRename.rename(qiwenFileConfig.getAliyun().getOss(),
                         fileUrl.substring(1),
                         newFileUrl.substring(1));
                 LambdaUpdateWrapper<FileBean> lambdaUpdateWrapper = new LambdaUpdateWrapper<>();
                 lambdaUpdateWrapper
-//                        .set(FileBean::getFileName, renameFileDto.getFileName())
-//                        .set(FileBean::getUploadTime, DateUtil.getCurrentTime())
                         .set(FileBean::getFileUrl, newFileUrl)
                         .eq(FileBean::getFileId, file.getFileId());
                 fileService.update(lambdaUpdateWrapper);
@@ -151,18 +148,11 @@ public class FileController {
 
         }
 
-       // fileService.updateFile(fileBean);
+
         restResult.setSuccess(true);
         return restResult;
     }
 
-//    @Operation(summary = "文件重命名")
-//    @RequestMapping(value = "/recyclefile", method = RequestMethod.POST)
-//    @ResponseBody
-//    public RestResult<String> recycleFile(@RequestBody FileBean fileBean, @RequestHeader("token") String token) {
-//
-//        return null;
-//    }
 
     @Operation(summary = "获取文件列表", description = "用来做前台列表展示", tags = {"file"})
     @RequestMapping(value = "/getfilelist", method = RequestMethod.GET)
@@ -207,9 +197,9 @@ public class FileController {
         }
         UserBean sessionUserBean = userService.getUserBeanByToken(token);
         List<UserFile> userFiles = JSON.parseArray(batchDeleteFileDto.getFiles(), UserFile.class);
-        String uuid = UUID.randomUUID().toString();
 
         for (UserFile userFile : userFiles) {
+            String uuid = UUID.randomUUID().toString();
             userFile.setDeleteBatchNum(uuid);
             userFileService.deleteUserFile(userFile,sessionUserBean);
 

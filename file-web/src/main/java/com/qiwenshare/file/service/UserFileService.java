@@ -125,8 +125,6 @@ public class UserFileService  extends ServiceImpl<UserFileMapper, UserFile> impl
     @Override
     public void deleteUserFile(UserFile userFile, UserBean sessionUserBean) {
 
-        StorageBean storageBean = filetransferService.selectStorageBean(new StorageBean(sessionUserBean.getUserId()));
-
         if (userFile.getIsDir() == 1) {
             LambdaUpdateWrapper<UserFile> userFileLambdaUpdateWrapper = new LambdaUpdateWrapper<UserFile>();
             userFileLambdaUpdateWrapper.set(UserFile::getDeleteFlag, 1)
@@ -150,9 +148,9 @@ public class UserFileService  extends ServiceImpl<UserFileMapper, UserFile> impl
                     .eq(UserFile::getUserFileId, userFileTemp.getUserFileId());
             userFileMapper.update(null, userFileLambdaUpdateWrapper);
 
-            LambdaUpdateWrapper<FileBean> fileBeanLambdaUpdateWrapper = new LambdaUpdateWrapper<>();
-            fileBeanLambdaUpdateWrapper.set(FileBean::getPointCount, fileBean.getPointCount() -1)
-                    .eq(FileBean::getFileId, fileBean.getFileId());
+//            LambdaUpdateWrapper<FileBean> fileBeanLambdaUpdateWrapper = new LambdaUpdateWrapper<>();
+//            fileBeanLambdaUpdateWrapper.set(FileBean::getPointCount, fileBean.getPointCount() -1)
+//                    .eq(FileBean::getFileId, fileBean.getFileId());
         }
 
 
@@ -166,23 +164,13 @@ public class UserFileService  extends ServiceImpl<UserFileMapper, UserFile> impl
                 executor.execute(new Runnable() {
                     @Override
                     public void run() {
-                        if (userFileTemp.getIsDir() != 1){
-                            FileBean fileBean = fileMapper.selectById(userFileTemp.getFileId());
-                            if (fileBean.getPointCount() != null) {
-
-                                LambdaUpdateWrapper<FileBean> fileBeanLambdaUpdateWrapper = new LambdaUpdateWrapper<>();
-                                fileBeanLambdaUpdateWrapper.set(FileBean::getPointCount, fileBean.getPointCount() -1)
-                                        .eq(FileBean::getFileId, fileBean.getFileId());
-                                fileMapper.update(null, fileBeanLambdaUpdateWrapper);
-
-                            }
-                        }
                         //标记删除标志
                         LambdaUpdateWrapper<UserFile> userFileLambdaUpdateWrapper1 = new LambdaUpdateWrapper<>();
                         userFileLambdaUpdateWrapper1.set(UserFile::getDeleteFlag, 1)
                                 .set(UserFile::getDeleteTime, DateUtil.getCurrentTime())
                                 .set(UserFile::getDeleteBatchNum, deleteBatchNum)
-                                .eq(UserFile::getUserFileId, userFileTemp.getUserFileId());
+                                .eq(UserFile::getUserFileId, userFileTemp.getUserFileId())
+                                .eq(UserFile::getDeleteFlag, 0);
                         userFileMapper.update(null, userFileLambdaUpdateWrapper1);
                     }
                 });

@@ -96,6 +96,9 @@ public abstract class Uploader {
     }
 
     protected String getFileName(String fileName){
+        if (!fileName.contains(".")) {
+            return fileName;
+        }
         return fileName.substring(0, fileName.lastIndexOf("."));
     }
 }
