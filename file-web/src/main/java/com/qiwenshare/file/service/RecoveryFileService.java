@@ -12,6 +12,7 @@ import com.qiwenshare.file.domain.UserFile;
 import com.qiwenshare.file.mapper.FileMapper;
 import com.qiwenshare.file.mapper.RecoveryFileMapper;
 import com.qiwenshare.file.mapper.UserFileMapper;
+import com.qiwenshare.file.vo.file.RecoveryFileListVo;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
@@ -27,6 +28,8 @@ public class RecoveryFileService  extends ServiceImpl<RecoveryFileMapper, Recove
     UserFileMapper userFileMapper;
     @Resource
     FileMapper fileMapper;
+    @Resource
+    RecoveryFileMapper recoveryFileMapper;
 
     public static Executor executor = Executors.newFixedThreadPool(20);
 
@@ -82,5 +85,9 @@ public class RecoveryFileService  extends ServiceImpl<RecoveryFileMapper, Recove
 
             }
         }).start();
+    }
+
+    public List<RecoveryFileListVo> selectRecoveryFileList() {
+        return recoveryFileMapper.selectRecoveryFileList();
     }
 }

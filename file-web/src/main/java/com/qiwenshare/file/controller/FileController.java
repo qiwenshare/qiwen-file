@@ -182,6 +182,13 @@ public class FileController {
 
         }
 
+        LambdaQueryWrapper<UserFile> userFileLambdaQueryWrapper = new LambdaQueryWrapper<>();
+        userFileLambdaQueryWrapper.eq(UserFile::getUserId, userFile.getUserId())
+                .eq(UserFile::getFilePath, userFile.getFilePath())
+                .eq(UserFile::getDeleteFlag, 0);
+        int total = userFileService.count(userFileLambdaQueryWrapper);
+
+        restResult.setTotal(total);
         restResult.setData(fileList);
         restResult.setSuccess(true);
         return restResult;
