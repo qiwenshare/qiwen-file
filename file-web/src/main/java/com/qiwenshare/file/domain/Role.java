@@ -3,6 +3,8 @@ package com.qiwenshare.file.domain;
 //import com.baomidou.mybatisplus.annotation.IdType;
 //import com.baomidou.mybatisplus.annotation.TableId;
 //import com.baomidou.mybatisplus.annotation.TableName;
+import com.baomidou.mybatisplus.annotation.IdType;
+import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableName;
 import lombok.Data;
 
@@ -22,7 +24,7 @@ public class Role {
      */
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-//    @TableId(type = IdType.AUTO)
+    @TableId(type = IdType.AUTO)
     private Long roleId; // 编号
 
     /**

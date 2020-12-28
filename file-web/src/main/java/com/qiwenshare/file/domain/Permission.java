@@ -1,5 +1,8 @@
 package com.qiwenshare.file.domain;
 
+import com.baomidou.mybatisplus.annotation.IdType;
+import com.baomidou.mybatisplus.annotation.TableField;
+import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableName;
 import lombok.Data;
 
@@ -19,7 +22,7 @@ public class Permission {
      */
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-//    @TableId(type = IdType.AUTO)
+    @TableId(type = IdType.AUTO)
     private Long permissionId;//主键.
     /**
      * 权限名称
@@ -66,7 +69,7 @@ public class Permission {
      * 角色列表
      */
     @Transient
-//    @TableField(exist = false)
+    @TableField(exist = false)
     private List<Role> roles;
 
 }
