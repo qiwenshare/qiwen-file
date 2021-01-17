@@ -39,10 +39,34 @@
         </foreach>
         and userId = #{userId}
         and deleteFlag = 0
+        limit #{beginCount}, #{pageCount}
+    </select>
+
+    <select id="selectCountByExtendName" parameterType="com.qiwenshare.file.domain.UserFile" resultType="java.lang.Long">
+        select count(*) from userfile
+        left join file on file.fileId = userfile.fileId
+        where extendName in
+        <foreach collection="fileNameList" open="(" close=")" separator="," item="fileName" >
+            #{fileName}
+        </foreach>
+        and userId = #{userId}
+        and deleteFlag = 0
     </select>
 
     <select id="selectFileNotInExtendNames" parameterType="com.qiwenshare.file.domain.UserFile" resultType="java.util.Map">
         select * from userfile
+        left join file on file.fileId = userfile.fileId
+        where extendName not in
+        <foreach collection="fileNameList" open="(" close=")" separator="," item="fileName" >
+            #{fileName}
+        </foreach>
+        and userId = #{userId}
+        and deleteFlag = 0
+        limit #{beginCount}, #{pageCount}
+    </select>
+
+    <select id="selectCountNotInExtendNames" parameterType="com.qiwenshare.file.domain.UserFile" resultType="java.lang.Long">
+        select count(*) from userfile
         left join file on file.fileId = userfile.fileId
         where extendName not in
         <foreach collection="fileNameList" open="(" close=")" separator="," item="fileName" >

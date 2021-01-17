@@ -85,7 +85,7 @@ public class UserService extends ServiceImpl<UserMapper, UserBean> implements IU
      */
     @Override
     public RestResult<String> registerUser(UserBean userBean) {
-        RestResult<String> restResult = new RestResult<String>();
+        //RestResult<String> restResult = new RestResult<String>();
         //判断验证码
         String telephone = userBean.getTelephone();
 //        String saveVerificationCode = UserController.verificationCodeMap.get(telephone);
@@ -96,35 +96,24 @@ public class UserService extends ServiceImpl<UserMapper, UserBean> implements IU
 //        }
         UserController.verificationCodeMap.remove(telephone);
         if (userBean.getTelephone() == null || "".equals(userBean.getTelephone())){
-            restResult.setSuccess(false);
-            restResult.setErrorMessage("用户名不能为空！");
-            return restResult;
+            return RestResult.fail().message("用户名不能为空！");
         }
         if (userBean.getPassword() == null || "".equals(userBean.getPassword())){
-            restResult.setSuccess(false);
-            restResult.setErrorMessage("密码不能为空！");
-            return restResult;
+            return RestResult.fail().message("密码不能为空！");
+
         }
 
         if (userBean.getUsername() == null || "".equals(userBean.getUsername())){
-            restResult.setSuccess(false);
-            restResult.setErrorMessage("用户名不能为空！");
-            return restResult;
+            return RestResult.fail().message("用户名不能为空！");
         }
         if (isUserNameExit(userBean)) {
-            restResult.setSuccess(false);
-            restResult.setErrorMessage("用户名已存在！");
-            return restResult;
+            return RestResult.fail().message("用户名已存在！");
         }
         if (!isPhoneFormatRight(userBean.getTelephone())){
-            restResult.setSuccess(false);
-            restResult.setErrorMessage("手机号格式不正确！");
-            return restResult;
+            return RestResult.fail().message("手机号格式不正确！");
         }
         if (isPhoneExit(userBean)) {
-            restResult.setSuccess(false);
-            restResult.setErrorMessage("手机号已存在！");
-            return restResult;
+            return RestResult.fail().message("手机号已存在！");
         }
 
 
@@ -141,13 +130,9 @@ public class UserService extends ServiceImpl<UserMapper, UserBean> implements IU
 //        userImageBean.setImageUrl("");
 //        userImageBean.setUserId(userBean.getUserId());
         if (result == 1) {
-            restResult.setSuccess(true);
-            return restResult;
+            return RestResult.success();
         } else {
-            restResult.setSuccess(false);
-            restResult.setErrorCode("100000");
-            restResult.setErrorMessage("注册用户失败，请检查输入信息！");
-            return restResult;
+            return RestResult.fail().message("注册用户失败，请检查输入信息！");
         }
     }
 

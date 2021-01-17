@@ -4,21 +4,15 @@ import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.qiwenshare.common.cbb.DateUtil;
-import com.qiwenshare.common.operation.FileOperation;
-import com.qiwenshare.common.oss.AliyunOSSDelete;
-import com.qiwenshare.common.util.FileUtil;
-import com.qiwenshare.common.util.PathUtil;
 import com.qiwenshare.file.api.IUserFileService;
 import com.qiwenshare.file.config.QiwenFileConfig;
 import com.qiwenshare.file.domain.FileBean;
-import com.qiwenshare.file.domain.StorageBean;
 import com.qiwenshare.file.domain.UserBean;
 import com.qiwenshare.file.domain.UserFile;
 import com.qiwenshare.file.mapper.FileMapper;
 import com.qiwenshare.file.mapper.UserFileMapper;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 
 import javax.annotation.Resource;
 import java.util.List;
@@ -85,13 +79,23 @@ public class UserFileService  extends ServiceImpl<UserFileMapper, UserFile> impl
 
 
     @Override
-    public List<Map<String, Object>> selectFileByExtendName(List<String> fileNameList, long userId) {
-        return userFileMapper.selectFileByExtendName(fileNameList, userId);
+    public List<Map<String, Object>> selectFileByExtendName(List<String> fileNameList, Long beginCount, Long pageCount, long userId) {
+        return userFileMapper.selectFileByExtendName(fileNameList, beginCount, pageCount, userId);
     }
 
     @Override
-    public List<Map<String, Object>> selectFileNotInExtendNames(List<String> fileNameList, long userId) {
-        return userFileMapper.selectFileNotInExtendNames(fileNameList, userId);
+    public Long selectCountByExtendName(List<String> fileNameList, Long beginCount, Long pageCount, long userId) {
+        return userFileMapper.selectCountByExtendName(fileNameList, beginCount, pageCount, userId);
+    }
+
+    @Override
+    public List<Map<String, Object>> selectFileNotInExtendNames(List<String> fileNameList, Long beginCount, Long pageCount, long userId) {
+        return userFileMapper.selectFileNotInExtendNames(fileNameList, beginCount, pageCount, userId);
+    }
+
+    @Override
+    public Long selectCountNotInExtendNames(List<String> fileNameList, Long beginCount, Long pageCount, long userId) {
+        return userFileMapper.selectCountNotInExtendNames(fileNameList, beginCount, pageCount, userId);
     }
 
     @Override

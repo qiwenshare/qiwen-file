@@ -16,8 +16,9 @@ public interface UserFileMapper extends BaseMapper<UserFile> {
     void updateFilepathByPathAndName(String oldfilePath, String newfilePath, String fileName, String extendName);
     void updateFilepathByFilepath(String oldfilePath, String newfilePath);
 
-    List<Map<String, Object>> selectFileByExtendName(List<String> fileNameList, long userId);
-    List<Map<String, Object>> selectFileNotInExtendNames(List<String> fileNameList, long userId);
-
+    List<Map<String, Object>> selectFileByExtendName(List<String> fileNameList, Long beginCount, Long pageCount, long userId);
+    Long selectCountByExtendName(List<String> fileNameList, Long beginCount, Long pageCount, long userId);
+    List<Map<String, Object>> selectFileNotInExtendNames(List<String> fileNameList, Long beginCount, Long pageCount, long userId);
+    Long selectCountNotInExtendNames(List<String> fileNameList, Long beginCount, Long pageCount, long userId);
     Long selectStorageSizeByUserId(Long userId);
 }

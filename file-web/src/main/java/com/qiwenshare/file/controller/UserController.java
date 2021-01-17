@@ -77,7 +77,7 @@ public class UserController {
         } catch (Exception e) {
             log.info("登录失败：{}", e);
             restResult.setSuccess(false);
-            restResult.setErrorMessage("登录失败！");
+            restResult.setMessage("登录失败！");
             return restResult;
         }
 
@@ -91,7 +91,7 @@ public class UserController {
             restResult.setSuccess(true);
         } else {
             restResult.setSuccess(false);
-            restResult.setErrorMessage("手机号或密码错误！");
+            restResult.setMessage("手机号或密码错误！");
         }
 
         return restResult;
@@ -116,7 +116,7 @@ public class UserController {
             restResult.getData().setDownloadDomain(bucketName + "." + endPoint);
         } else {
             restResult.setSuccess(false);
-            restResult.setErrorMessage("用户暂未登录");
+            restResult.setMessage("用户暂未登录");
         }
 
         return restResult;

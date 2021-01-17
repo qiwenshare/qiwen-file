@@ -53,13 +53,13 @@ public class FiletransferController {
         UserBean sessionUserBean = userService.getUserBeanByToken(token);
         if (sessionUserBean == null){
             restResult.setSuccess(false);
-            restResult.setErrorMessage("未登录");
+            restResult.setMessage("未登录");
             return restResult;
         }
         RestResult<String> operationCheckResult = fileController.operationCheck(token);
-        if (!operationCheckResult.isSuccess()){
+        if (!operationCheckResult.getSuccess()){
             restResult.setSuccess(false);
-            restResult.setErrorMessage("没权限，请联系管理员！");
+            restResult.setMessage("没权限，请联系管理员！");
             return restResult;
         }
         UploadFileVo uploadFileVo = new UploadFileVo();
@@ -109,13 +109,13 @@ public class FiletransferController {
         UserBean sessionUserBean = userService.getUserBeanByToken(token);
         if (sessionUserBean == null){
             restResult.setSuccess(false);
-            restResult.setErrorMessage("未登录");
+            restResult.setMessage("未登录");
             return restResult;
         }
         RestResult<String> operationCheckResult = fileController.operationCheck(token);
-        if (!operationCheckResult.isSuccess()){
+        if (!operationCheckResult.getSuccess()){
             restResult.setSuccess(false);
-            restResult.setErrorMessage("没权限，请联系管理员！");
+            restResult.setMessage("没权限，请联系管理员！");
             return restResult;
         }
 
