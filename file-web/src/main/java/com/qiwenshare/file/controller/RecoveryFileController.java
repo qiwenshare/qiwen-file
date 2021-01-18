@@ -1,5 +1,6 @@
 package com.qiwenshare.file.controller;
 
+import com.alibaba.fastjson.JSON;
 import com.qiwenshare.common.cbb.RestResult;
 import com.qiwenshare.file.api.IRecoveryFileService;
 import com.qiwenshare.file.api.IUserFileService;
@@ -28,12 +29,6 @@ public class RecoveryFileController {
     IUserFileService userFileService;
 
 
-    public RestResult<String> batchDeleteRecoveryFile(@RequestBody BatchDeleteRecoveryFileDTO batchDeleteRecoveryFileDto, @RequestHeader("token") String token) {
-        RestResult<String> restResult = new RestResult<>();
-
-        return null;
-    }
-
     @Operation(summary = "删除回收文件", description = "删除回收文件", tags = {"recoveryfile"})
     @RequestMapping(value = "/deleterecoveryfile", method = RequestMethod.POST)
     @ResponseBody
@@ -46,10 +41,27 @@ public class RecoveryFileController {
 
         recoveryFileService.deleteRecoveryFile(userFile);
         recoveryFileService.removeById(deleteRecoveryFileDTO.getRecoveryFileId());
-        
-        restResult.setSuccess(true);
-        restResult.setData("删除成功");
-        return restResult;
+
+        return RestResult.success().data("删除成功");
+    }
+
+    @Operation(summary = "批量删除回收文件", description = "批量删除回收文件", tags = {"recoveryfile"})
+    @RequestMapping(value = "/batchdelete", method = RequestMethod.POST)
+    @ResponseBody
+    public RestResult<String> batchDeleteRecoveryFile(@RequestBody BatchDeleteRecoveryFileDTO batchDeleteRecoveryFileDTO, @RequestHeader("token") String token) {
+        RestResult<String> restResult = new RestResult<String>();
+
+
+        List<RecoveryFile> recoveryFileList = JSON.parseArray(batchDeleteRecoveryFileDTO.getRecoveryFileIds(), RecoveryFile.class);
+        for (RecoveryFile recoveryFile : recoveryFileList) {
+
+            RecoveryFile recoveryFile1 = recoveryFileService.getById(recoveryFile.getRecoveryFileId());
+            UserFile userFile =userFileService.getById(recoveryFile1.getUserFileId());
+
+            recoveryFileService.deleteRecoveryFile(userFile);
+            recoveryFileService.removeById(recoveryFile.getRecoveryFileId());
+        }
+        return RestResult.success().data("批量删除成功");
     }
 
     @Operation(summary = "回收文件列表", description = "回收文件列表", tags = {"recoveryfile"})
