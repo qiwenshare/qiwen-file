@@ -72,21 +72,55 @@
 
     <build>
         <plugins>
-            <plugin>
-                <groupId>org.springframework.boot</groupId>
-                <artifactId>spring-boot-maven-plugin</artifactId>
-
-            </plugin>
+<!--            <plugin>-->
+<!--                <groupId>org.springframework.boot</groupId>-->
+<!--                <artifactId>spring-boot-maven-plugin</artifactId>-->
+<!--            </plugin>-->
             <!--排除静态文件-->
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-jar-plugin</artifactId>
                 <configuration>
+                    <archive>
+                        <!-- 添加index则不从mainfest中读取classpath，而是从Index.list中读取 -->
+                        <!-- <index>true</index> -->
+                        <manifest>
+                            <mainClass>com.qiwenshare.file.FileApplication</mainClass>
+                            <addClasspath>true</addClasspath>
+                            <classpathPrefix>lib/</classpathPrefix>
+                        </manifest>
+                        <manifestEntries>
+                            <Class-Path>./</Class-Path>
+                        </manifestEntries>
+                    </archive>
+
                     <excludes>
                         <exclude>static/**</exclude>
                     </excludes>
                 </configuration>
             </plugin>
+
+            <plugin>
+                <artifactId>maven-assembly-plugin</artifactId>
+                <configuration>
+                    <!-- not append assembly id in release file name -->
+                    <appendAssemblyId>false</appendAssemblyId>
+                    <descriptors>
+                        <descriptor>../file-common/src/main/resources/conf/assembly.xml</descriptor>
+                    </descriptors>
+                </configuration>
+                <executions>
+                    <execution>
+                        <id>make-assembly</id>
+                        <phase>package</phase>
+                        <goals>
+                            <goal>single</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
+
+
             <!--ant插件执行自定义动作-->
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
@@ -99,15 +133,15 @@
                         </goals>
                         <configuration>
                             <target>
-                                <copy file="target/${app-name}.jar" tofile="${release-path}/app/${project.artifactId}/${app-name}.jar" />
-                                <copy file="target/classes/script/startup.bat" tofile="${release-path}/startup.bat"/>
-                                <copy file="target/classes/script/startup.sh" tofile="${release-path}/startup.sh"/>
-                                <copy file="target/classes/script/stop.sh" tofile="${release-path}/stop.sh"/>
-                                <copy todir="${release-path}">
-                                    <fileset dir="target/classes">
-                                        <include name="**/static/**" />
-                                    </fileset>
-                                </copy>
+                                <copy file="target/${app-name}.zip" tofile="${release-path}/${app-name}.zip" />
+<!--                                <copy file="target/classes/script/startup.bat" tofile="${release-path}/startup.bat"/>-->
+<!--                                <copy file="target/classes/script/startup.sh" tofile="${release-path}/startup.sh"/>-->
+<!--                                <copy file="target/classes/script/stop.sh" tofile="${release-path}/stop.sh"/>-->
+<!--                                <copy todir="${release-path}">-->
+<!--                                    <fileset dir="target/classes">-->
+<!--                                        <include name="**/static/**" />-->
+<!--                                    </fileset>-->
+<!--                                </copy>-->
                             </target>
                         </configuration>
                     </execution>
