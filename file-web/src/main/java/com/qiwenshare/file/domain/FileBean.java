@@ -21,25 +21,25 @@ public class FileBean {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @TableId(type = IdType.AUTO)
-    @Column(columnDefinition="bigint(20) comment '文件id'")
+    @Column(columnDefinition="bigint(20)")
     private Long fileId;
 
-    @Column(columnDefinition="varchar(500) comment '时间戳名称'")
+    @Column(columnDefinition="varchar(500)")
     private String timeStampName;
 
-    @Column(columnDefinition="varchar(500) comment '文件url'")
+    @Column(columnDefinition="varchar(500)")
     private String fileUrl;
 
-    @Column(columnDefinition="bigint(10) comment '文件大小'")
+    @Column(columnDefinition="bigint(10)")
     private Long fileSize;
 
-    @Column(columnDefinition="int(1) comment '是否是OSS云存储 0-否, 1-是'")
+    @Column(columnDefinition="int(1)")
     private Integer isOSS;
 
-    @Column(columnDefinition="int(11) comment '文件引用数量'")
+    @Column(columnDefinition="int(11)")
     private Integer pointCount;
 
-    @Column(columnDefinition="varchar(32) comment 'md5标识'")
+    @Column(columnDefinition="varchar(32)")
     private String identifier;
 
 }

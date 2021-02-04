@@ -16,13 +16,13 @@ public class StorageBean {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(columnDefinition="bigint(20) comment '存储id'")
+    @Column(columnDefinition="bigint(20)")
     private Long storageId;
 
-    @Column(columnDefinition="bigint(20) comment '用户id'")
+    @Column(columnDefinition="bigint(20)")
     private Long userId;
 
-    @Column(columnDefinition="bigint(20) comment '存储大小'")
+    @Column(columnDefinition="bigint(20)")
     private Long storageSize;
 
     public StorageBean() {
