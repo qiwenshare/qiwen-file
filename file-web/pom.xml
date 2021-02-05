@@ -138,7 +138,10 @@
                         </goals>
                         <configuration>
                             <target>
-                                <copy file="target/${app-name}.zip" tofile="${release-path}/${app-name}.zip" />
+                                <copy todir="${release-path}" >
+                                    <fileset dir="target/${app-name}/${app-name}">
+                                    </fileset>
+                                </copy>
 <!--                                <copy file="target/classes/script/startup.bat" tofile="${release-path}/startup.bat"/>-->
 <!--                                <copy file="target/classes/script/startup.sh" tofile="${release-path}/startup.sh"/>-->
 <!--                                <copy file="target/classes/script/stop.sh" tofile="${release-path}/stop.sh"/>-->

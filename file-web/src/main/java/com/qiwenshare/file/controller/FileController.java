@@ -17,6 +17,7 @@ import com.qiwenshare.file.api.IUserService;
 import com.qiwenshare.file.config.QiwenFileConfig;
 import com.qiwenshare.file.domain.*;
 import com.qiwenshare.file.dto.*;
+import com.qiwenshare.file.vo.file.FileListVo;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.extern.slf4j.Slf4j;
@@ -147,7 +148,7 @@ public class FileController {
     @Operation(summary = "获取文件列表", description = "用来做前台列表展示", tags = {"file"})
     @RequestMapping(value = "/getfilelist", method = RequestMethod.GET)
     @ResponseBody
-    public RestResult<Map<String, Object>> getFileList(FileListDTO fileListDto, @RequestHeader("token") String token){
+    public RestResult getFileList(FileListDTO fileListDto, @RequestHeader("token") String token){
 
         UserFile userFile = new UserFile();
         if(qiwenFileConfig.isShareMode()){
@@ -161,7 +162,7 @@ public class FileController {
             userFile.setUserId(sessionUserBean.getUserId());
         }
 
-        List<Map<String, Object>> fileList = null;
+        List<FileListVo> fileList = null;
         userFile.setFilePath(PathUtil.urlDecode(fileListDto.getFilePath()));
         if (fileListDto.getCurrentPage() == null || fileListDto.getPageCount() == null) {
             fileList = userFileService.userFileList(userFile, 0L, 10L);
@@ -181,6 +182,8 @@ public class FileController {
         Map<String, Object> map = new HashMap<>();
         map.put("total", total);
         map.put("list", fileList);
+
+
         return RestResult.success().data(map);
 
     }
@@ -390,7 +393,7 @@ public class FileController {
         if (qiwenFileConfig.isShareMode()){
             userId = 2;
         }
-        List<Map<String, Object>> fileList = new ArrayList<>();
+        List<FileListVo> fileList = new ArrayList<>();
         Long beginCount = 0L;
         if (pageCount == null || currentPage == null) {
             beginCount = 0L;

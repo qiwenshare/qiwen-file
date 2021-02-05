@@ -11,6 +11,7 @@ import com.qiwenshare.file.domain.UserBean;
 import com.qiwenshare.file.domain.UserFile;
 import com.qiwenshare.file.mapper.FileMapper;
 import com.qiwenshare.file.mapper.UserFileMapper;
+import com.qiwenshare.file.vo.file.FileListVo;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
@@ -48,7 +49,7 @@ public class UserFileService  extends ServiceImpl<UserFileMapper, UserFile> impl
     }
 
     @Override
-    public List<Map<String, Object>> userFileList(UserFile userFile, Long beginCount, Long pageCount) {
+    public List<FileListVo> userFileList(UserFile userFile, Long beginCount, Long pageCount) {
         return userFileMapper.userFileList(userFile, beginCount, pageCount);
     }
 
@@ -79,7 +80,7 @@ public class UserFileService  extends ServiceImpl<UserFileMapper, UserFile> impl
 
 
     @Override
-    public List<Map<String, Object>> selectFileByExtendName(List<String> fileNameList, Long beginCount, Long pageCount, long userId) {
+    public List<FileListVo> selectFileByExtendName(List<String> fileNameList, Long beginCount, Long pageCount, long userId) {
         return userFileMapper.selectFileByExtendName(fileNameList, beginCount, pageCount, userId);
     }
 
@@ -89,7 +90,7 @@ public class UserFileService  extends ServiceImpl<UserFileMapper, UserFile> impl
     }
 
     @Override
-    public List<Map<String, Object>> selectFileNotInExtendNames(List<String> fileNameList, Long beginCount, Long pageCount, long userId) {
+    public List<FileListVo> selectFileNotInExtendNames(List<String> fileNameList, Long beginCount, Long pageCount, long userId) {
         return userFileMapper.selectFileNotInExtendNames(fileNameList, beginCount, pageCount, userId);
     }
 
