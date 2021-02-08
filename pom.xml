@@ -124,6 +124,7 @@
     <modules>
         <module>file-common</module>
         <module>file-web</module>
+        <module>file-office</module>
 
     </modules>
 
