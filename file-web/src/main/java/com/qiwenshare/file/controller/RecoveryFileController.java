@@ -6,6 +6,7 @@ import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
 import com.qiwenshare.common.cbb.DateUtil;
 import com.qiwenshare.common.cbb.RestResult;
 import com.qiwenshare.common.util.PathUtil;
+import com.qiwenshare.file.anno.MyLog;
 import com.qiwenshare.file.api.IRecoveryFileService;
 import com.qiwenshare.file.api.IUserFileService;
 import com.qiwenshare.file.api.IUserService;
@@ -35,9 +36,10 @@ public class RecoveryFileController {
     IUserFileService userFileService;
     @Resource
     IUserService userService;
-
+    public static final String CURRENT_MODULE = "回收站文件接口";
 
     @Operation(summary = "删除回收文件", description = "删除回收文件", tags = {"recoveryfile"})
+    @MyLog(operation = "删除回收文件", module = CURRENT_MODULE)
     @RequestMapping(value = "/deleterecoveryfile", method = RequestMethod.POST)
     @ResponseBody
     public RestResult<String> deleteRecoveryFile(@RequestBody DeleteRecoveryFileDTO deleteRecoveryFileDTO, @RequestHeader("token") String token) {
@@ -55,6 +57,7 @@ public class RecoveryFileController {
 
     @Operation(summary = "批量删除回收文件", description = "批量删除回收文件", tags = {"recoveryfile"})
     @RequestMapping(value = "/batchdelete", method = RequestMethod.POST)
+    @MyLog(operation = "批量删除回收文件", module = CURRENT_MODULE)
     @ResponseBody
     public RestResult<String> batchDeleteRecoveryFile(@RequestBody BatchDeleteRecoveryFileDTO batchDeleteRecoveryFileDTO, @RequestHeader("token") String token) {
         RestResult<String> restResult = new RestResult<String>();
@@ -86,6 +89,7 @@ public class RecoveryFileController {
 
     @Operation(summary = "还原文件", description = "还原文件", tags = {"recoveryfile"})
     @RequestMapping(value = "/restorefile", method = RequestMethod.POST)
+    @MyLog(operation = "还原文件", module = CURRENT_MODULE)
     @ResponseBody
     public RestResult restoreFile(RestoreFileDto restoreFileDto, @RequestHeader("token") String token) {
         UserBean sessionUserBean = userService.getUserBeanByToken(token);

@@ -5,6 +5,7 @@ import com.alibaba.fastjson.JSON;
 import com.qiwenshare.common.cbb.RestResult;
 import com.qiwenshare.common.domain.AliyunOSS;
 import com.qiwenshare.common.util.JjwtUtil;
+import com.qiwenshare.file.anno.MyLog;
 import com.qiwenshare.file.api.IUserService;
 import com.qiwenshare.file.config.QiwenFileConfig;
 import com.qiwenshare.file.domain.UserBean;
@@ -52,6 +53,7 @@ public class UserController {
 
     @Operation(summary = "用户注册", description = "注册账号", tags = {"user"})
     @PostMapping(value = "/register")
+    @MyLog(operation = "用户注册", module = CURRENT_MODULE)
     @ResponseBody
     public RestResult<String> addUser(@RequestBody RegisterDTO registerDTO) {
         RestResult<String> restResult = null;
@@ -64,6 +66,7 @@ public class UserController {
 
     @Operation(summary = "用户登录", description = "用户登录认证后才能进入系统", tags = {"user"})
     @GetMapping("/login")
+    @MyLog(operation = "用户登录", module = CURRENT_MODULE)
     @ResponseBody
     public RestResult<UserLoginVo> userLogin(
             @Parameter(description = "登录用户名") String username,

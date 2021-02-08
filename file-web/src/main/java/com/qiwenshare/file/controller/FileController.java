@@ -10,6 +10,7 @@ import com.qiwenshare.common.operation.FileOperation;
 import com.qiwenshare.common.oss.AliyunOSSRename;
 import com.qiwenshare.common.util.FileUtil;
 import com.qiwenshare.common.util.PathUtil;
+import com.qiwenshare.file.anno.MyLog;
 import com.qiwenshare.file.api.IFileService;
 import com.qiwenshare.file.api.IRecoveryFileService;
 import com.qiwenshare.file.api.IUserFileService;
@@ -50,6 +51,8 @@ public class FileController {
     QiwenFileConfig qiwenFileConfig;
     public static Executor executor = Executors.newFixedThreadPool(20);
 
+    public static final String CURRENT_MODULE = "文件接口";
+
     public static int COMPLETE_COUNT = 0;
 
     public static long treeid = 0;
@@ -57,6 +60,7 @@ public class FileController {
 
     @Operation(summary = "创建文件", description = "目录(文件夹)的创建", tags = {"file"})
     @RequestMapping(value = "/createfile", method = RequestMethod.POST)
+    @MyLog(operation = "创建文件", module = CURRENT_MODULE)
     @ResponseBody
     public RestResult<String> createFile(@RequestBody CreateFileDTO createFileDto, @RequestHeader("token") String token) {
         if (!operationCheck(token).getSuccess()){
@@ -84,6 +88,7 @@ public class FileController {
 
     @Operation(summary = "文件重命名", description = "文件重命名", tags = {"file"})
     @RequestMapping(value = "/renamefile", method = RequestMethod.POST)
+    @MyLog(operation = "文件重命名", module = CURRENT_MODULE)
     @ResponseBody
     public RestResult<String> renameFile(@RequestBody RenameFileDTO renameFileDto, @RequestHeader("token") String token) {
         RestResult<String> restResult = new RestResult<>();
@@ -190,6 +195,7 @@ public class FileController {
 
     @Operation(summary = "批量删除文件", description = "批量删除文件", tags = {"file"})
     @RequestMapping(value = "/batchdeletefile", method = RequestMethod.POST)
+    @MyLog(operation = "批量删除文件", module = CURRENT_MODULE)
     @ResponseBody
     public RestResult<String> deleteImageByIds(@RequestBody BatchDeleteFileDTO batchDeleteFileDto, @RequestHeader("token") String token) {
 
@@ -216,6 +222,7 @@ public class FileController {
 
     @Operation(summary = "删除文件", description = "可以删除文件或者目录", tags = {"file"})
     @RequestMapping(value = "/deletefile", method = RequestMethod.POST)
+    @MyLog(operation = "删除文件", module = CURRENT_MODULE)
     @ResponseBody
     public RestResult deleteFile(@RequestBody DeleteFileDTO deleteFileDto, @RequestHeader("token") String token) {
 
@@ -243,6 +250,7 @@ public class FileController {
 
     @Operation(summary = "解压文件", description = "压缩功能为体验功能，目前持续优化中。", tags = {"file"})
     @RequestMapping(value = "/unzipfile", method = RequestMethod.POST)
+    @MyLog(operation = "解压文件", module = CURRENT_MODULE)
     @ResponseBody
     public RestResult<String> unzipFile(@RequestBody UnzipFileDTO unzipFileDto, @RequestHeader("token") String token) {
 
@@ -326,6 +334,7 @@ public class FileController {
 
     @Operation(summary = "文件移动", description = "可以移动文件或者目录", tags = {"file"})
     @RequestMapping(value = "/movefile", method = RequestMethod.POST)
+    @MyLog(operation = "文件移动", module = CURRENT_MODULE)
     @ResponseBody
     public RestResult<String> moveFile(@RequestBody MoveFileDTO moveFileDto, @RequestHeader("token") String token) {
 
@@ -344,6 +353,7 @@ public class FileController {
 
     @Operation(summary = "批量移动文件", description = "可以同时选择移动多个文件或者目录", tags = {"file"})
     @RequestMapping(value = "/batchmovefile", method = RequestMethod.POST)
+    @MyLog(operation = "批量移动文件", module = CURRENT_MODULE)
     @ResponseBody
     public RestResult<String> batchMoveFile(@RequestBody BatchMoveFileDTO batchMoveFileDto, @RequestHeader("token") String token) {
 
