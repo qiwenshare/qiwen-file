@@ -91,7 +91,7 @@ public class RecoveryFileController {
     @RequestMapping(value = "/restorefile", method = RequestMethod.POST)
     @MyLog(operation = "还原文件", module = CURRENT_MODULE)
     @ResponseBody
-    public RestResult restoreFile(RestoreFileDto restoreFileDto, @RequestHeader("token") String token) {
+    public RestResult restoreFile(@RequestBody RestoreFileDto restoreFileDto, @RequestHeader("token") String token) {
         UserBean sessionUserBean = userService.getUserBeanByToken(token);
         LambdaUpdateWrapper<UserFile> userFileLambdaUpdateWrapper = new LambdaUpdateWrapper<>();
         userFileLambdaUpdateWrapper.set(UserFile::getDeleteFlag, 0)

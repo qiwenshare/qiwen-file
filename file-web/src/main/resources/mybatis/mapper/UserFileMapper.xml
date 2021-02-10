@@ -26,6 +26,7 @@
             </if>
             and a.deleteFlag = 0
         </where>
+        ORDER BY  isDir desc
         limit #{beginCount}, #{pageCount}
 
     </select>
