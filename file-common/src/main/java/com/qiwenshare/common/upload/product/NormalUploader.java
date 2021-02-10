@@ -1,6 +1,5 @@
 package com.qiwenshare.common.upload.product;
 
-import com.aliyuncs.utils.StringUtils;
 import com.qiwenshare.common.domain.UploadFile;
 import com.qiwenshare.common.operation.ImageOperation;
 import com.qiwenshare.common.upload.Uploader;
@@ -9,6 +8,7 @@ import com.qiwenshare.common.util.PathUtil;
 import org.apache.commons.fileupload.disk.DiskFileItemFactory;
 import org.apache.commons.fileupload.servlet.ServletFileUpload;
 import org.apache.commons.fileupload.util.Streams;
+import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.web.multipart.MultipartFile;

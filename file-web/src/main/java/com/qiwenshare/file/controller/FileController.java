@@ -10,6 +10,7 @@ import com.qiwenshare.common.operation.FileOperation;
 import com.qiwenshare.common.oss.AliyunOSSRename;
 import com.qiwenshare.common.util.FileUtil;
 import com.qiwenshare.common.util.PathUtil;
+import com.qiwenshare.file.anno.MyLog;
 import com.qiwenshare.file.api.IFileService;
 import com.qiwenshare.file.api.IRecoveryFileService;
 import com.qiwenshare.file.api.IUserFileService;
@@ -17,8 +18,7 @@ import com.qiwenshare.file.api.IUserService;
 import com.qiwenshare.file.config.QiwenFileConfig;
 import com.qiwenshare.file.domain.*;
 import com.qiwenshare.file.dto.*;
-import com.qiwenshare.file.service.RecoveryFileService;
-import com.qiwenshare.file.service.UserFileService;
+import com.qiwenshare.file.vo.file.FileListVo;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.extern.slf4j.Slf4j;
@@ -51,6 +51,8 @@ public class FileController {
     QiwenFileConfig qiwenFileConfig;
     public static Executor executor = Executors.newFixedThreadPool(20);
 
+    public static final String CURRENT_MODULE = "文件接口";
+
     public static int COMPLETE_COUNT = 0;
 
     public static long treeid = 0;
@@ -58,10 +60,10 @@ public class FileController {
 
     @Operation(summary = "创建文件", description = "目录(文件夹)的创建", tags = {"file"})
     @RequestMapping(value = "/createfile", method = RequestMethod.POST)
+    @MyLog(operation = "创建文件", module = CURRENT_MODULE)
     @ResponseBody
     public RestResult<String> createFile(@RequestBody CreateFileDTO createFileDto, @RequestHeader("token") String token) {
-        RestResult<String> restResult = new RestResult<>();
-        if (!operationCheck(token).isSuccess()){
+        if (!operationCheck(token).getSuccess()){
             return operationCheck(token);
         }
 
@@ -69,9 +71,7 @@ public class FileController {
 
         List<UserFile> userFiles = userFileService.selectUserFileByNameAndPath(createFileDto.getFileName(), createFileDto.getFilePath(), sessionUserBean.getUserId());
         if (userFiles != null && !userFiles.isEmpty()) {
-            restResult.setErrorMessage("同名文件已存在");
-            restResult.setSuccess(false);
-            return restResult;
+            return RestResult.fail().message("同名文件已存在");
         }
 
         UserFile userFile = new UserFile();
@@ -83,26 +83,24 @@ public class FileController {
         userFile.setUploadTime(DateUtil.getCurrentTime());
 
         userFileService.save(userFile);
-
-        restResult.setSuccess(true);
-        return restResult;
+        return RestResult.success();
     }
 
     @Operation(summary = "文件重命名", description = "文件重命名", tags = {"file"})
     @RequestMapping(value = "/renamefile", method = RequestMethod.POST)
+    @MyLog(operation = "文件重命名", module = CURRENT_MODULE)
     @ResponseBody
     public RestResult<String> renameFile(@RequestBody RenameFileDTO renameFileDto, @RequestHeader("token") String token) {
         RestResult<String> restResult = new RestResult<>();
-        if (!operationCheck(token).isSuccess()){
+        if (!operationCheck(token).getSuccess()){
             return operationCheck(token);
         }
         UserBean sessionUserBean = userService.getUserBeanByToken(token);
 
         List<UserFile> userFiles = userFileService.selectUserFileByNameAndPath(renameFileDto.getFileName(), renameFileDto.getFilePath(), sessionUserBean.getUserId());
         if (userFiles != null && !userFiles.isEmpty()) {
-            restResult.setErrorMessage("同名文件已存在");
-            restResult.setSuccess(false);
-            return restResult;
+            return RestResult.fail().message("同名文件已存在");
+
         }
         if (1 == renameFileDto.getIsDir()) {
             LambdaUpdateWrapper<UserFile> lambdaUpdateWrapper = new LambdaUpdateWrapper<>();
@@ -148,30 +146,28 @@ public class FileController {
 
         }
 
-
-        restResult.setSuccess(true);
-        return restResult;
+        return RestResult.success();
     }
 
 
     @Operation(summary = "获取文件列表", description = "用来做前台列表展示", tags = {"file"})
     @RequestMapping(value = "/getfilelist", method = RequestMethod.GET)
     @ResponseBody
-    public RestResult<List<Map<String, Object>>> getFileList(FileListDTO fileListDto, @RequestHeader("token") String token){
-        RestResult<List<Map<String, Object>>> restResult = new RestResult<>();
+    public RestResult getFileList(FileListDTO fileListDto, @RequestHeader("token") String token){
+
         UserFile userFile = new UserFile();
         if(qiwenFileConfig.isShareMode()){
             userFile.setUserId(2L);
         }else {
             UserBean sessionUserBean = userService.getUserBeanByToken(token);
             if (userFile == null) {
-                restResult.setSuccess(false);
-                return restResult;
+                return RestResult.fail();
+
             }
             userFile.setUserId(sessionUserBean.getUserId());
         }
 
-        List<Map<String, Object>> fileList = null;
+        List<FileListVo> fileList = null;
         userFile.setFilePath(PathUtil.urlDecode(fileListDto.getFilePath()));
         if (fileListDto.getCurrentPage() == null || fileListDto.getPageCount() == null) {
             fileList = userFileService.userFileList(userFile, 0L, 10L);
@@ -188,18 +184,22 @@ public class FileController {
                 .eq(UserFile::getDeleteFlag, 0);
         int total = userFileService.count(userFileLambdaQueryWrapper);
 
-        restResult.setTotal(total);
-        restResult.setData(fileList);
-        restResult.setSuccess(true);
-        return restResult;
+        Map<String, Object> map = new HashMap<>();
+        map.put("total", total);
+        map.put("list", fileList);
+
+
+        return RestResult.success().data(map);
+
     }
 
     @Operation(summary = "批量删除文件", description = "批量删除文件", tags = {"file"})
     @RequestMapping(value = "/batchdeletefile", method = RequestMethod.POST)
+    @MyLog(operation = "批量删除文件", module = CURRENT_MODULE)
     @ResponseBody
     public RestResult<String> deleteImageByIds(@RequestBody BatchDeleteFileDTO batchDeleteFileDto, @RequestHeader("token") String token) {
-        RestResult<String> result = new RestResult<String>();
-        if (!operationCheck(token).isSuccess()) {
+
+        if (!operationCheck(token).getSuccess()) {
             return operationCheck(token);
         }
         UserBean sessionUserBean = userService.getUserBeanByToken(token);
@@ -217,18 +217,17 @@ public class FileController {
             recoveryFileService.save(recoveryFile);
         }
 
-        result.setData("批量删除文件成功");
-        result.setSuccess(true);
-        return result;
+        return RestResult.success().message("批量删除文件成功");
     }
 
     @Operation(summary = "删除文件", description = "可以删除文件或者目录", tags = {"file"})
     @RequestMapping(value = "/deletefile", method = RequestMethod.POST)
+    @MyLog(operation = "删除文件", module = CURRENT_MODULE)
     @ResponseBody
-    public String deleteFile(@RequestBody DeleteFileDTO deleteFileDto, @RequestHeader("token") String token) {
-        RestResult<String> result = new RestResult<String>();
-        if (!operationCheck(token).isSuccess()){
-            return JSON.toJSONString(operationCheck(token));
+    public RestResult deleteFile(@RequestBody DeleteFileDTO deleteFileDto, @RequestHeader("token") String token) {
+
+        if (!operationCheck(token).getSuccess()){
+            return operationCheck(token);
         }
 
         String uuid = UUID.randomUUID().toString();
@@ -245,17 +244,17 @@ public class FileController {
         recoveryFile.setDeleteTime(DateUtil.getCurrentTime());
         recoveryFile.setDeleteBatchNum(uuid);
         recoveryFileService.save(recoveryFile);
-        result.setSuccess(true);
-        String resultJson = JSON.toJSONString(result);
-        return resultJson;
+        return RestResult.success();
+
     }
 
     @Operation(summary = "解压文件", description = "压缩功能为体验功能，目前持续优化中。", tags = {"file"})
     @RequestMapping(value = "/unzipfile", method = RequestMethod.POST)
+    @MyLog(operation = "解压文件", module = CURRENT_MODULE)
     @ResponseBody
     public RestResult<String> unzipFile(@RequestBody UnzipFileDTO unzipFileDto, @RequestHeader("token") String token) {
-        RestResult<String> result = new RestResult<String>();
-        if (!operationCheck(token).isSuccess()){
+
+        if (!operationCheck(token).getSuccess()){
             return operationCheck(token);
         }
 
@@ -264,9 +263,7 @@ public class FileController {
         String unzipUrl = file.getParent();
         String[] arr = unzipFileDto.getFileUrl().split("\\.");
         if (arr.length <= 1) {
-            result.setErrorMessage("文件名格式错误！");
-            result.setSuccess(false);
-            return result;
+            return RestResult.fail().message("文件名格式错误！");
         }
         List<String> fileEntryNameList = new ArrayList<>();
         if ("zip".equals(arr[1])) {
@@ -276,14 +273,13 @@ public class FileController {
                 fileEntryNameList = FileOperation.unrar(file, unzipUrl);
             } catch (Exception e) {
                 e.printStackTrace();
-                result.setErrorMessage("rar解压失败！");
-                result.setSuccess(false);
-                return result;
+                log.error("rar解压失败" + e);
+                return RestResult.fail().message("rar解压失败！");
+
+
             }
         } else {
-            result.setErrorMessage("不支持的文件格式！");
-            result.setSuccess(false);
-            return result;
+            return RestResult.fail().message("不支持的文件格式！");
         }
 
         List<FileBean> fileBeanList = new ArrayList<>();
@@ -331,18 +327,18 @@ public class FileController {
         }
 
 //        fileService.batchInsertFile(fileBeanList, sessionUserBean.getUserId());
-        result.setSuccess(true);
+        return RestResult.success();
 
-        return result;
     }
 
 
     @Operation(summary = "文件移动", description = "可以移动文件或者目录", tags = {"file"})
     @RequestMapping(value = "/movefile", method = RequestMethod.POST)
+    @MyLog(operation = "文件移动", module = CURRENT_MODULE)
     @ResponseBody
     public RestResult<String> moveFile(@RequestBody MoveFileDTO moveFileDto, @RequestHeader("token") String token) {
-        RestResult<String> result = new RestResult<String>();
-        if (!operationCheck(token).isSuccess()){
+
+        if (!operationCheck(token).getSuccess()){
             return operationCheck(token);
         }
         String oldfilePath = moveFileDto.getOldFilePath();
@@ -351,17 +347,17 @@ public class FileController {
         String extendName = moveFileDto.getExtendName();
 
         userFileService.updateFilepathByFilepath(oldfilePath, newfilePath, fileName, extendName);
-        result.setSuccess(true);
-        return result;
+        return RestResult.success();
+
     }
 
     @Operation(summary = "批量移动文件", description = "可以同时选择移动多个文件或者目录", tags = {"file"})
     @RequestMapping(value = "/batchmovefile", method = RequestMethod.POST)
+    @MyLog(operation = "批量移动文件", module = CURRENT_MODULE)
     @ResponseBody
     public RestResult<String> batchMoveFile(@RequestBody BatchMoveFileDTO batchMoveFileDto, @RequestHeader("token") String token) {
 
-        RestResult<String> result = new RestResult<String>();
-        if (!operationCheck(token).isSuccess()) {
+        if (!operationCheck(token).getSuccess()) {
             return operationCheck(token);
         }
 
@@ -374,9 +370,8 @@ public class FileController {
             userFileService.updateFilepathByFilepath(userFile.getFilePath(), newfilePath, userFile.getFileName(), userFile.getExtendName());
         }
 
-        result.setData("批量移动文件成功");
-        result.setSuccess(true);
-        return result;
+        return RestResult.success().data("批量移动文件成功");
+
     }
 
     public RestResult<String> operationCheck(String token){
@@ -384,13 +379,13 @@ public class FileController {
         UserBean sessionUserBean = userService.getUserBeanByToken(token);
         if (sessionUserBean == null){
             result.setSuccess(false);
-            result.setErrorMessage("未登录");
+            result.setMessage("未登录");
             return result;
         }
         if (qiwenFileConfig.isShareMode()){
             if (sessionUserBean.getUserId() > 2){
                 result.setSuccess(false);
-                result.setErrorMessage("没权限，请联系管理员！");
+                result.setMessage("没权限，请联系管理员！");
                 return result;
             }
         }
@@ -401,14 +396,23 @@ public class FileController {
     @Operation(summary = "通过文件类型选择文件", description = "该接口可以实现文件格式分类查看", tags = {"file"})
     @RequestMapping(value = "/selectfilebyfiletype", method = RequestMethod.GET)
     @ResponseBody
-    public RestResult<List<Map<String, Object>>> selectFileByFileType(int fileType, @RequestHeader("token") String token) {
-        RestResult<List<Map<String, Object>>> result = new RestResult<List<Map<String, Object>>>();
+    public RestResult<List<Map<String, Object>>> selectFileByFileType(int fileType, Long currentPage, Long pageCount, @RequestHeader("token") String token) {
+
         UserBean sessionUserBean = userService.getUserBeanByToken(token);
         long userId = sessionUserBean.getUserId();
         if (qiwenFileConfig.isShareMode()){
             userId = 2;
         }
-        List<Map<String, Object>> fileList = new ArrayList<>();
+        List<FileListVo> fileList = new ArrayList<>();
+        Long beginCount = 0L;
+        if (pageCount == null || currentPage == null) {
+            beginCount = 0L;
+            pageCount = 10L;
+        } else {
+            beginCount = (currentPage - 1) * pageCount;
+        }
+
+        Long total = 0L;
         if (fileType == FileUtil.OTHER_TYPE) {
 
             List<String> arrList = new ArrayList<>();
@@ -416,13 +420,19 @@ public class FileController {
             arrList.addAll(Arrays.asList(FileUtil.IMG_FILE));
             arrList.addAll(Arrays.asList(FileUtil.VIDEO_FILE));
             arrList.addAll(Arrays.asList(FileUtil.MUSIC_FILE));
-            fileList = userFileService.selectFileNotInExtendNames(arrList, userId);
+
+            fileList = userFileService.selectFileNotInExtendNames(arrList,beginCount, pageCount, userId);
+            total = userFileService.selectCountNotInExtendNames(arrList,beginCount, pageCount, userId);
         } else {
-            fileList = userFileService.selectFileByExtendName(getFileExtendsByType(fileType), userId);
+            fileList = userFileService.selectFileByExtendName(getFileExtendsByType(fileType), beginCount, pageCount,userId);
+            total = userFileService.selectCountByExtendName(getFileExtendsByType(fileType), beginCount, pageCount,userId);
         }
-        result.setData(fileList);
-        result.setSuccess(true);
-        return result;
+
+        Map<String, Object> map = new HashMap<>();
+        map.put("list",fileList);
+        map.put("total", total);
+        return RestResult.success().data(map);
+
     }
 
     @Operation(summary = "获取文件树", description = "文件移动的时候需要用到该接口，用来展示目录树，展示机制为饱汉模式", tags = {"file"})

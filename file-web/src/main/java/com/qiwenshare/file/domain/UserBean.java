@@ -23,25 +23,25 @@ public class UserBean {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(columnDefinition = "bigint(20) comment '用户id'")
+    @Column(columnDefinition = "bigint(20)")
     private Long userId;
 
-    @Column(columnDefinition = "varchar(30) comment 'openId qq登录使用'")
+    @Column(columnDefinition = "varchar(30)")
     private String openId;
 
-    @Column(columnDefinition = "varchar(30) comment '用户名'")
+    @Column(columnDefinition = "varchar(30)")
     private String username;
 
-    @Column(columnDefinition = "varchar(30) comment '真实名'")
+    @Column(columnDefinition = "varchar(30)")
     private String realname;
 
-    @Column(columnDefinition = "varchar(35) comment '密码'")
+    @Column(columnDefinition = "varchar(35)")
     private String password;
 
     /**
      * qq密码
      */
-    @Column(columnDefinition = "varchar(35) comment 'qq密码'")
+    @Column(columnDefinition = "varchar(35)")
     private String qqPassword;
 
     /**
@@ -51,45 +51,45 @@ public class UserBean {
 //    @TableField(exist = false)
 //    private String passwordAgain;
 
-    @Column(columnDefinition = "varchar(15) comment '手机号码'")
+    @Column(columnDefinition = "varchar(15)")
     private String telephone;
 
-    @Column(columnDefinition = "varchar(100) comment '邮箱'")
+    @Column(columnDefinition = "varchar(100)")
     private String email;
 
-    @Column(columnDefinition = "varchar(3) comment '年龄'")
+    @Column(columnDefinition = "varchar(3)")
     private String sex;
 
 
-    @Column(columnDefinition = "varchar(30) comment '生日'")
+    @Column(columnDefinition = "varchar(30)")
     private String birthday;
 
-    @Column(columnDefinition = "varchar(10) comment '省'")
+    @Column(columnDefinition = "varchar(10)")
     private String addrProvince;
 
-    @Column(columnDefinition = "varchar(10) comment '市'")
+    @Column(columnDefinition = "varchar(10)")
     private String addrCity;
 
-    @Column(columnDefinition = "varchar(10) comment '区'")
+    @Column(columnDefinition = "varchar(10)")
     private String addrArea;
 
-    @Column(columnDefinition = "varchar(50) comment '行业'")
+    @Column(columnDefinition = "varchar(50)")
     private String industry;
 
-    @Column(columnDefinition = "varchar(50) comment '职位'")
+    @Column(columnDefinition = "varchar(50)")
     private String position;
 
-    @Column(columnDefinition = "varchar(5000) comment '介绍'")
+    @Column(columnDefinition = "varchar(5000)")
     private String intro;
 
-    @Column(columnDefinition = "varchar(20) comment '盐值'")
+    @Column(columnDefinition = "varchar(20)")
     private String salt;//加密密码的盐
     //private byte state;//用户状态,0:创建未认证（比如没有激活，没有输入验证码等等）--等待验证的用户 , 1:正常状态,2：用户被锁定.
 
-    @Column(columnDefinition = "varchar(100) comment '用户头像URL'")
+    @Column(columnDefinition = "varchar(100)")
     private String imageUrl;
 
-    @Column(columnDefinition = "varchar(30) comment '注册时间'")
+    @Column(columnDefinition = "varchar(30)")
     private String registerTime;
 
     /**

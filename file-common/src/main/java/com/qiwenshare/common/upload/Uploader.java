@@ -24,7 +24,7 @@ public abstract class Uploader {
     public static final String ROOT_PATH = "upload";
     public static final String FILE_SEPARATOR = "/";
     // 文件大小限制，单位KB
-    public static final int maxSize = 10000000;
+    public final int maxSize = 10000000;
 
     protected StandardMultipartHttpServletRequest request = null;
 

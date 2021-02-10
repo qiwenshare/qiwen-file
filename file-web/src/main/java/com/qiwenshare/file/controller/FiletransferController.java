@@ -3,6 +3,7 @@ package com.qiwenshare.file.controller;
 import com.qiwenshare.common.cbb.DateUtil;
 import com.qiwenshare.common.util.FileUtil;
 import com.qiwenshare.common.cbb.RestResult;
+import com.qiwenshare.file.anno.MyLog;
 import com.qiwenshare.file.api.IFileService;
 import com.qiwenshare.file.api.IFiletransferService;
 import com.qiwenshare.file.api.IUserFileService;
@@ -44,22 +45,24 @@ public class FiletransferController {
     IUserService userService;
     @Resource
     IUserFileService userFileService;
+    public static final String CURRENT_MODULE = "文件传输接口";
 
     @Operation(summary = "极速上传", description = "校验文件MD5判断文件是否存在，如果存在直接上传成功并返回skipUpload=true，如果不存在返回skipUpload=false需要再次调用该接口的POST方法", tags = {"filetransfer"})
     @RequestMapping(value = "/uploadfile", method = RequestMethod.GET)
+    @MyLog(operation = "极速上传", module = CURRENT_MODULE)
     @ResponseBody
     public RestResult<UploadFileVo> uploadFileSpeed(HttpServletRequest request, UploadFileDTO uploadFileDto, @RequestHeader("token") String token) {
         RestResult<UploadFileVo> restResult = new RestResult<UploadFileVo>();
         UserBean sessionUserBean = userService.getUserBeanByToken(token);
         if (sessionUserBean == null){
             restResult.setSuccess(false);
-            restResult.setErrorMessage("未登录");
+            restResult.setMessage("未登录");
             return restResult;
         }
         RestResult<String> operationCheckResult = fileController.operationCheck(token);
-        if (!operationCheckResult.isSuccess()){
+        if (!operationCheckResult.getSuccess()){
             restResult.setSuccess(false);
-            restResult.setErrorMessage("没权限，请联系管理员！");
+            restResult.setMessage("没权限，请联系管理员！");
             return restResult;
         }
         UploadFileVo uploadFileVo = new UploadFileVo();
@@ -103,19 +106,20 @@ public class FiletransferController {
      */
     @Operation(summary = "上传文件", description = "真正的上次文件接口", tags = {"filetransfer"})
     @RequestMapping(value = "/uploadfile", method = RequestMethod.POST)
+    @MyLog(operation = "上传文件", module = CURRENT_MODULE)
     @ResponseBody
     public RestResult<UploadFileVo> uploadFile(HttpServletRequest request, UploadFileDTO uploadFileDto, @RequestHeader("token") String token) {
         RestResult<UploadFileVo> restResult = new RestResult<>();
         UserBean sessionUserBean = userService.getUserBeanByToken(token);
         if (sessionUserBean == null){
             restResult.setSuccess(false);
-            restResult.setErrorMessage("未登录");
+            restResult.setMessage("未登录");
             return restResult;
         }
         RestResult<String> operationCheckResult = fileController.operationCheck(token);
-        if (!operationCheckResult.isSuccess()){
+        if (!operationCheckResult.getSuccess()){
             restResult.setSuccess(false);
-            restResult.setErrorMessage("没权限，请联系管理员！");
+            restResult.setMessage("没权限，请联系管理员！");
             return restResult;
         }
 
