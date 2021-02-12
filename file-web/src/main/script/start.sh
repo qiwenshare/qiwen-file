@@ -1,7 +1,7 @@
 #!/bin/bash
-. /etc/profile
-. ~/.bashrc
-. ~/.bash_profile
+#. /etc/profile
+#. ~/.bashrc
+#. ~/.bash_profile
 #support jsch commons
 
 cd `dirname $0`
@@ -18,12 +18,12 @@ echo "--------start app ${DEPLOY_DIR}--------"
 PARENT_DIR=$(dirname "$PWD")
 CONF_DIR=$DEPLOY_DIR/conf
 LIB_DIR=$DEPLOY_DIR/lib
-SERVER_NAME=`cat $CONF_DIR/config/application.yml | grep -w "name:" | grep -v "#" | awk  'NR==1{print $2}' | tr -d '\r'`
-SERVER_PORT=`cat $CONF_DIR/config/application.yml | grep -w "port:" | grep -v "#" | awk  'NR==1{print $2}' | tr -d '\r'`
+SERVER_NAME=`cat $CONF_DIR/config/application.properties | grep -w "spring.application.name" | grep -v "#" | awk -F=  'NR==1{print $2}'`
+SERVER_PORT=`cat $CONF_DIR/config/application.properties | grep -w "server.port" | grep -v "#" | awk -F=  'NR==1{print $2}'`
 
 #REM **********************************************************************************************
-LOG_PATH="/export/log/qiwen-file"
-GC_LOG_PATH="/export/log/qiwen-file/gc"
+LOG_PATH=$DEPLOY_DIR/log/qiwen-file
+GC_LOG_PATH=$DEPLOY_DIR/log/qiwen-file/gc
 if [ "${LOG_PATH}" == "" ] ; then
 	LOG_PATH=$PARENT_DIR/logs/${SERVER_NAME}
 fi
