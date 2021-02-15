@@ -32,14 +32,11 @@
             <artifactId>commons-lang3</artifactId>
         </dependency>
 
-        <!--Swagger Start-->
         <dependency>
-            <groupId>org.springdoc</groupId>
-            <artifactId>springdoc-openapi-ui</artifactId>
-            <version>1.5.2</version>
+            <groupId>com.github.xiaoymin</groupId>
+            <artifactId>knife4j-spring-boot-starter</artifactId>
+            <version>3.0.2</version>
         </dependency>
-        <!--Swagger End-->
-
 
 
         <dependency>
@@ -51,8 +48,9 @@
         <dependency>
             <groupId>com.alibaba</groupId>
             <artifactId>fastjson</artifactId>
-            <version>1.2.28</version>
+            <version>1.2.75</version>
         </dependency>
+
         <!-- 导入Mysql数据库链接jar包-->
         <dependency>
             <groupId>mysql</groupId>
@@ -62,8 +60,9 @@
         <dependency>
             <groupId>cn.hutool</groupId>
             <artifactId>hutool-all</artifactId>
-            <version>5.3.4</version>
+            <version>5.5.8</version>
         </dependency>
+
 
         <!--jpa-->
         <dependency>
@@ -83,11 +82,7 @@
 <!--                <type>pom</type>-->
 <!--                <scope>import</scope>-->
 <!--            </dependency>-->
-            <dependency>
-                <groupId>org.mybatis.spring.boot</groupId>
-                <artifactId>mybatis-spring-boot-starter</artifactId>
-                <version>2.1.1</version>
-            </dependency>
+
             <dependency>
                 <groupId>com.baomidou</groupId>
                 <artifactId>mybatis-plus-boot-starter</artifactId>
@@ -124,7 +119,7 @@
     <modules>
         <module>file-common</module>
         <module>file-web</module>
-        <module>file-office</module>
+<!--        <module>file-office</module>-->
 
     </modules>
 
