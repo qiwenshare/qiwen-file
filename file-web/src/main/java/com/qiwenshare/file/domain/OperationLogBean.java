@@ -23,7 +23,7 @@ public class OperationLogBean {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @TableId(type = IdType.AUTO)
-    private long operationLogId;
+    private Long operationLogId;
 
     /**
      * 用户id

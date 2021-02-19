@@ -15,7 +15,7 @@ import com.qiwenshare.file.domain.UserBean;
 import com.qiwenshare.file.domain.UserFile;
 import com.qiwenshare.file.dto.BatchDeleteRecoveryFileDTO;
 import com.qiwenshare.file.dto.DeleteRecoveryFileDTO;
-import com.qiwenshare.file.dto.recoveryfile.RestoreFileDto;
+import com.qiwenshare.file.dto.recoveryfile.RestoreFileDTO;
 import com.qiwenshare.file.vo.file.RecoveryFileListVo;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -91,7 +91,7 @@ public class RecoveryFileController {
     @RequestMapping(value = "/restorefile", method = RequestMethod.POST)
     @MyLog(operation = "还原文件", module = CURRENT_MODULE)
     @ResponseBody
-    public RestResult restoreFile(@RequestBody RestoreFileDto restoreFileDto, @RequestHeader("token") String token) {
+    public RestResult restoreFile(@RequestBody RestoreFileDTO restoreFileDto, @RequestHeader("token") String token) {
         UserBean sessionUserBean = userService.getUserBeanByToken(token);
         LambdaUpdateWrapper<UserFile> userFileLambdaUpdateWrapper = new LambdaUpdateWrapper<>();
         userFileLambdaUpdateWrapper.set(UserFile::getDeleteFlag, 0)
@@ -112,7 +112,7 @@ public class RecoveryFileController {
                 UserFile userFile = new UserFile();
                 userFile.setUserId(sessionUserBean.getUserId());
                 userFile.setFileName(fileName);
-                userFile.setFilePath(filePath);
+                userFile.setFilePath(filePath + "/");
                 userFile.setDeleteFlag(0);
                 userFile.setIsDir(1);
                 userFile.setUploadTime(DateUtil.getCurrentTime());

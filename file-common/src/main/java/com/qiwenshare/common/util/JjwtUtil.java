@@ -24,7 +24,6 @@ public class JjwtUtil {
  
 	// 过期时间，单位毫秒
 	public static final int EXPIRE_TIME = 60 * 60 * 1000 * 24 * 7; // 一个星期
-//	public static final long EXPIRE_TIME = 7 * 24 * 3600 * 1000; // 一个星期
  
 	// 由字符串生成加密key
 	public static SecretKey generalKey() {
@@ -46,7 +45,7 @@ public class JjwtUtil {
 		// 指定header那部分签名的时候使用的签名算法，jjwt已经将这部分内容封装好了，只有{"alg":"HS256"}
 		SignatureAlgorithm signatureAlgorithm = SignatureAlgorithm.HS256;
 		// 创建payload的私有声明（根据特定的业务需要添加，如果要拿这个做验证，一般是需要和jwt的接收方提前沟通好验证的方式）
-		Map<String, Object> claims = new HashMap<>();
+		Map<String, Object> claims = new HashMap<>(2);
 		claims.put("username", "admin");
 		claims.put("password", "010203");
 		// jti用户id，例如：20da39f8-b74e-4a9b-9a0f-a39f1f73fe64

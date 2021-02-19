@@ -53,7 +53,6 @@ public class FileController {
 
     public static final String CURRENT_MODULE = "文件接口";
 
-    public static int COMPLETE_COUNT = 0;
 
     public static long treeid = 0;
 

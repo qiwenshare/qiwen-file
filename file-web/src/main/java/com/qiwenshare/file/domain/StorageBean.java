@@ -1,5 +1,7 @@
 package com.qiwenshare.file.domain;
 
+import com.baomidou.mybatisplus.annotation.IdType;
+import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableName;
 import lombok.Data;
 
@@ -17,6 +19,7 @@ public class StorageBean {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(columnDefinition="bigint(20)")
+    @TableId(type = IdType.AUTO)
     private Long storageId;
 
     @Column(columnDefinition="bigint(20)")
