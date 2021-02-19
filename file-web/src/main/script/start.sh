@@ -53,8 +53,8 @@ fi
 
 USER_VMARGS="-D64 -server -Xmx1g -Xms1g -Xmn521m -Xss256k "
 
-#GC_OPTS=""
-GC_OPTS="-XX:+HeapDumpOnOutOfMemoryError -XX:HeapDumpPath=$LOG_PATH/heapdump.$$.hprof -XX:ErrorFile=$LOG_PATH/hs_err_pid$$.log -Xloggc:$GC_LOG_PATH/gc.$$.log -XX:+PrintGCDetails -XX:+PrintGCDateStamps -XX:+UnlockExperimentalVMOptions -XX:+UseG1GC "
+GC_OPTS=""
+#GC_OPTS="-XX:+HeapDumpOnOutOfMemoryError -XX:HeapDumpPath=$LOG_PATH/heapdump.$$.hprof -XX:ErrorFile=$LOG_PATH/hs_err_pid$$.log -Xloggc:$GC_LOG_PATH/gc.$$.log -XX:+PrintGCDetails -XX:+PrintGCDateStamps -XX:+UnlockExperimentalVMOptions -XX:+UseG1GC "
 
 JMX_PORT=""
 JAVA_JMX_OPTS=""
