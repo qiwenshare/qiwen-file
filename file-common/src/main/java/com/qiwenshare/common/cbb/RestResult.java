@@ -1,5 +1,6 @@
 package com.qiwenshare.common.cbb;
 
+import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Data;
 
 import java.util.Map;
@@ -9,10 +10,15 @@ import java.util.Map;
  * @param <T>
  */
 @Data
+@Schema(name = "统一结果返回",required = true)
 public class RestResult<T> {
+    @Schema(description = "请求是否成功", example = "true")
     private Boolean success = true;
+    @Schema(description = "返回码", example = "20000")
     private Integer code;
+    @Schema(description = "返回信息", example = "成功")
     private String message;
+    @Schema(description = "返回数据")
     private T data;
 
     // 通用返回成功
