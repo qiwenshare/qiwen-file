@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.qiwenshare.file.mapper.ShareMapper">
+
+
+    <insert id="batchInsertShareFile" parameterType="java.util.List">
+        INSERT ignore INTO sharefile (shareBatchNum, userFileId)
+        VALUES
+        <foreach collection="list" item="file" index="index" separator=",">
+        (#{file.shareBatchNum}, #{file.userFileId})
+        </foreach>
+    </insert>
+
+
+
+<!--    <update id="updateFile" parameterType="java">-->
+<!--        <choose>-->
+<!--            <when test="isDir == 1">-->
+<!--                UPDATE file SET filename=#{fileName}, uploadTime = #{uploadTime}-->
+<!--                where fileId = #{fileId};-->
+<!--                UPDATE file SET filepath=REPLACE(filepath, #{oldFilePath}, #{filePath}) WHERE filepath LIKE N'${oldFilePath}%';-->
+<!--            </when>-->
+<!--            <otherwise>-->
+<!--                update file-->
+<!--                <set>-->
+<!--                    <if test="fileName != null">-->
+<!--                        fileName = #{fileName},-->
+<!--                    </if>-->
+<!--                    <if test="uploadTime != null">-->
+<!--                        uploadTime = #{uploadTime},-->
+<!--                    </if>-->
+<!--                    <if test="fileUrl != null">-->
+<!--                        fileUrl = #{fileUrl},-->
+<!--                    </if>-->
+<!--                </set>-->
+<!--                where fileId = #{fileId}-->
+<!--            </otherwise>-->
+<!--        </choose>-->
+
+<!--    </update>-->
+
+
+
+
+
+
+
+
+
+</mapper>

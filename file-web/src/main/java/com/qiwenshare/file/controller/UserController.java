@@ -69,7 +69,7 @@ public class UserController {
     @MyLog(operation = "用户登录", module = CURRENT_MODULE)
     @ResponseBody
     public RestResult<UserLoginVo> userLogin(
-            @Parameter(description = "登录用户名") String username,
+            @Parameter(description = "登录手机号") String username,
             @Parameter(description = "登录密码") String password) {
         RestResult<UserLoginVo> restResult = new RestResult<UserLoginVo>();
         UserBean saveUserBean = userService.findUserInfoByTelephone(username);
