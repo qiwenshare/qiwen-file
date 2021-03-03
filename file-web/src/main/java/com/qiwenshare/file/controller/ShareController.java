@@ -18,6 +18,7 @@ import com.qiwenshare.file.dto.sharefile.ShareFileListBySecretDTO;
 import com.qiwenshare.file.dto.sharefile.ShareSecretDTO;
 import com.qiwenshare.file.service.ShareService;
 import com.qiwenshare.file.service.UserService;
+import com.qiwenshare.file.vo.share.ShareSecretVO;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.extern.slf4j.Slf4j;
@@ -43,7 +44,8 @@ public class ShareController {
     @PostMapping(value = "/sharesecret")
     @MyLog(operation = "私密分享", module = CURRENT_MODULE)
     @ResponseBody
-    public RestResult shareSecret(ShareSecretDTO shareSecretDTO, @RequestHeader("token") String token) {
+    public RestResult<ShareSecretVO> shareSecret(ShareSecretDTO shareSecretDTO, @RequestHeader("token") String token) {
+        ShareSecretVO shareSecretVO = new ShareSecretVO();
         UserBean sessionUserBean = userService.getUserBeanByToken(token);
         Share share = new Share();
         BeanUtil.copyProperties(sessionUserBean, share);
@@ -55,7 +57,8 @@ public class ShareController {
         List<ShareFile> fileList = JSON.parseArray(shareSecretDTO.getFiles(), ShareFile.class);
         fileList.forEach(p->p.setShareBatchNum("S@#" + uuid.replace("-", "")));
         shareService.batchInsertShareFile(fileList);
-        return RestResult.success();
+        shareSecretVO.setShareBatchNum("S@#" + uuid.replace("-", ""));
+        return RestResult.success().data(shareSecretVO);
     }
 
     @Operation(summary = "分享列表", description = "分享列表", tags = {"share"})

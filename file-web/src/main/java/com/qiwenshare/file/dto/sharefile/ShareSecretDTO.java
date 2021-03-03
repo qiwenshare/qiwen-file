@@ -12,8 +12,6 @@ public class ShareSecretDTO {
     private String endTime;
     @Schema(description = "是否需要提取码", example="1-需要/0-不需要")
     private Integer isNeedExtractionCode;
-    @Schema(description = "提取码", example="asFwe3")
-    private Integer extractionCode;
     @Schema(description = "备注", example="")
     private String remarks;
 
