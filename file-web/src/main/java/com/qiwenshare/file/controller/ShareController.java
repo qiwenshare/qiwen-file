@@ -3,22 +3,21 @@ package com.qiwenshare.file.controller;
 import cn.hutool.core.bean.BeanUtil;
 import com.alibaba.fastjson.JSON;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
-import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.qiwenshare.common.cbb.DateUtil;
 import com.qiwenshare.common.cbb.RestResult;
+import com.qiwenshare.common.util.RandomUtil;
 import com.qiwenshare.file.anno.MyLog;
 import com.qiwenshare.file.api.IShareService;
 import com.qiwenshare.file.api.IUserService;
 import com.qiwenshare.file.domain.Share;
 import com.qiwenshare.file.domain.ShareFile;
 import com.qiwenshare.file.domain.UserBean;
-import com.qiwenshare.file.domain.UserFile;
 import com.qiwenshare.file.dto.sharefile.CheckExtractionCodeDTO;
 import com.qiwenshare.file.dto.sharefile.ShareFileListBySecretDTO;
-import com.qiwenshare.file.dto.sharefile.ShareSecretDTO;
-import com.qiwenshare.file.service.ShareService;
-import com.qiwenshare.file.service.UserService;
-import com.qiwenshare.file.vo.share.ShareSecretVO;
+import com.qiwenshare.file.dto.sharefile.ShareFileDTO;
+import com.qiwenshare.file.dto.sharefile.ShareTypeDTO;
+import com.qiwenshare.file.vo.share.ShareFileVO;
+import com.qiwenshare.file.vo.share.ShareTypeVO;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.extern.slf4j.Slf4j;
@@ -40,24 +39,29 @@ public class ShareController {
     @Resource
     IShareService shareService;
 
-    @Operation(summary = "私密分享", description = "私密分享", tags = {"share"})
-    @PostMapping(value = "/sharesecret")
-    @MyLog(operation = "私密分享", module = CURRENT_MODULE)
+    @Operation(summary = "分享文件", description = "分享文件统一接口", tags = {"share"})
+    @PostMapping(value = "/sharefile")
+    @MyLog(operation = "分享文件", module = CURRENT_MODULE)
     @ResponseBody
-    public RestResult<ShareSecretVO> shareSecret(ShareSecretDTO shareSecretDTO, @RequestHeader("token") String token) {
-        ShareSecretVO shareSecretVO = new ShareSecretVO();
+    public RestResult<ShareFileVO> shareFile(ShareFileDTO shareSecretDTO, @RequestHeader("token") String token) {
+        ShareFileVO shareSecretVO = new ShareFileVO();
         UserBean sessionUserBean = userService.getUserBeanByToken(token);
+        String extractionCode = RandomUtil.getStringRandom(6);
+        String uuid = UUID.randomUUID().toString();
         Share share = new Share();
         BeanUtil.copyProperties(sessionUserBean, share);
         share.setShareTime(DateUtil.getCurrentTime());
         share.setUserId(sessionUserBean.getUserId());
         share.setShareStatus(0);
+        share.setExtractionCode(extractionCode);
+        share.setShareBatchNum(uuid);
+
         shareService.save(share);
-        String uuid = UUID.randomUUID().toString();
+
         List<ShareFile> fileList = JSON.parseArray(shareSecretDTO.getFiles(), ShareFile.class);
-        fileList.forEach(p->p.setShareBatchNum("S@#" + uuid.replace("-", "")));
+        fileList.forEach(p->p.setShareBatchNum(uuid.replace("-", "")));
         shareService.batchInsertShareFile(fileList);
-        shareSecretVO.setShareBatchNum("S@#" + uuid.replace("-", ""));
+        shareSecretVO.setShareBatchNum(uuid.replace("-", ""));
         return RestResult.success().data(shareSecretVO);
     }
 
@@ -70,6 +74,19 @@ public class ShareController {
         lambdaQueryWrapper.eq(Share::getShareBatchNum, shareFileListBySecretDTO.getShareBatchNum());
         List<Share> list = shareService.list(lambdaQueryWrapper);
         return RestResult.success().data(list.get(0));
+    }
+
+    @Operation(summary = "分享类型", description = "可用此接口判断是否需要提取码", tags = {"share"})
+    @GetMapping(value = "/sharetype")
+    @ResponseBody
+    public RestResult shareType(ShareTypeDTO shareTypeDTO) {
+        LambdaQueryWrapper<Share> lambdaQueryWrapper = new LambdaQueryWrapper<>();
+        lambdaQueryWrapper.eq(Share::getShareBatchNum, shareTypeDTO.getShareBatchNum());
+        Share share = shareService.getOne(lambdaQueryWrapper);
+        ShareTypeVO shareTypeVO = new ShareTypeVO();
+        shareTypeVO.setShareType(share.getShareType());
+        return RestResult.success().data(shareTypeVO);
+
     }
 
     @Operation(summary = "校验提取码", description = "校验提取码", tags = {"share"})
