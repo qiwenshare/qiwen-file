@@ -68,18 +68,18 @@ public class ShareController {
     @Operation(summary = "分享列表", description = "分享列表", tags = {"share"})
     @GetMapping(value = "/sharefileList")
     @ResponseBody
-    public RestResult shareFileListBySecret(ShareFileListBySecretDTO shareFileListBySecretDTO) {
+    public RestResult<List<Share>> shareFileListBySecret(ShareFileListBySecretDTO shareFileListBySecretDTO) {
         log.info(JSON.toJSONString(shareFileListBySecretDTO));
         LambdaQueryWrapper<Share> lambdaQueryWrapper = new LambdaQueryWrapper<>();
         lambdaQueryWrapper.eq(Share::getShareBatchNum, shareFileListBySecretDTO.getShareBatchNum());
         List<Share> list = shareService.list(lambdaQueryWrapper);
-        return RestResult.success().data(list.get(0));
+        return RestResult.success().data(list);
     }
 
     @Operation(summary = "分享类型", description = "可用此接口判断是否需要提取码", tags = {"share"})
     @GetMapping(value = "/sharetype")
     @ResponseBody
-    public RestResult shareType(ShareTypeDTO shareTypeDTO) {
+    public RestResult<ShareTypeVO> shareType(ShareTypeDTO shareTypeDTO) {
         LambdaQueryWrapper<Share> lambdaQueryWrapper = new LambdaQueryWrapper<>();
         lambdaQueryWrapper.eq(Share::getShareBatchNum, shareTypeDTO.getShareBatchNum());
         Share share = shareService.getOne(lambdaQueryWrapper);
@@ -92,7 +92,7 @@ public class ShareController {
     @Operation(summary = "校验提取码", description = "校验提取码", tags = {"share"})
     @GetMapping(value = "/checkextractioncode")
     @ResponseBody
-    public RestResult checkExtractionCode(CheckExtractionCodeDTO checkExtractionCodeDTO) {
+    public RestResult<String> checkExtractionCode(CheckExtractionCodeDTO checkExtractionCodeDTO) {
 //        log.info(JSON.toJSONString(shareFileListBySecretDTO));
         LambdaQueryWrapper<Share> lambdaQueryWrapper = new LambdaQueryWrapper<>();
         lambdaQueryWrapper.eq(Share::getShareBatchNum, checkExtractionCodeDTO.getShareBatchNum())

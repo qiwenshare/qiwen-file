@@ -22,6 +22,7 @@ import com.qiwenshare.file.vo.file.FileListVo;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.codec.digest.DigestUtils;
 import org.springframework.web.bind.annotation.*;
 
 import javax.annotation.Resource;
@@ -203,7 +204,7 @@ public class FileController {
         }
         UserBean sessionUserBean = userService.getUserBeanByToken(token);
         List<UserFile> userFiles = JSON.parseArray(batchDeleteFileDto.getFiles(), UserFile.class);
-
+        DigestUtils.md5Hex("data");
         for (UserFile userFile : userFiles) {
             String uuid = UUID.randomUUID().toString();
             userFile.setDeleteBatchNum(uuid);
