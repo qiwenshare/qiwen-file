@@ -12,10 +12,8 @@ import com.qiwenshare.file.api.IUserService;
 import com.qiwenshare.file.domain.Share;
 import com.qiwenshare.file.domain.ShareFile;
 import com.qiwenshare.file.domain.UserBean;
-import com.qiwenshare.file.dto.sharefile.CheckExtractionCodeDTO;
-import com.qiwenshare.file.dto.sharefile.ShareFileListBySecretDTO;
-import com.qiwenshare.file.dto.sharefile.ShareFileDTO;
-import com.qiwenshare.file.dto.sharefile.ShareTypeDTO;
+import com.qiwenshare.file.dto.sharefile.*;
+import com.qiwenshare.file.vo.share.ShareFileListVO;
 import com.qiwenshare.file.vo.share.ShareFileVO;
 import com.qiwenshare.file.vo.share.ShareTypeVO;
 import io.swagger.v3.oas.annotations.Operation;
@@ -24,6 +22,8 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.bind.annotation.*;
 
 import javax.annotation.Resource;
+import java.text.ParseException;
+import java.util.Date;
 import java.util.List;
 import java.util.UUID;
 
@@ -68,11 +68,13 @@ public class ShareController {
     @Operation(summary = "分享列表", description = "分享列表", tags = {"share"})
     @GetMapping(value = "/sharefileList")
     @ResponseBody
-    public RestResult<List<Share>> shareFileListBySecret(ShareFileListBySecretDTO shareFileListBySecretDTO) {
+    public RestResult<List<ShareFileListVO>> shareFileListBySecret(ShareFileListBySecretDTO shareFileListBySecretDTO) {
         log.info(JSON.toJSONString(shareFileListBySecretDTO));
-        LambdaQueryWrapper<Share> lambdaQueryWrapper = new LambdaQueryWrapper<>();
-        lambdaQueryWrapper.eq(Share::getShareBatchNum, shareFileListBySecretDTO.getShareBatchNum());
-        List<Share> list = shareService.list(lambdaQueryWrapper);
+
+        Share share = new Share();
+        share.setShareBatchNum(shareFileListBySecretDTO.getShareBatchNum());
+
+        List<ShareFileListVO> list = shareService.selectShareFileListByBatchNum(share);
         return RestResult.success().data(list);
     }
 
@@ -103,5 +105,27 @@ public class ShareController {
         } else {
             return RestResult.success();
         }
+    }
+
+    @Operation(summary = "校验过期时间", description = "校验过期时间", tags = {"share"})
+    @GetMapping(value = "/checkendtime")
+    @ResponseBody
+    public RestResult<String> checkEndTime(CheckEndTimeDTO checkEndTimeDTO) {
+        LambdaQueryWrapper<Share> lambdaQueryWrapper = new LambdaQueryWrapper<>();
+        lambdaQueryWrapper.eq(Share::getShareBatchNum, checkEndTimeDTO.getShareBatchNum());
+        Share share = shareService.getOne(lambdaQueryWrapper);
+        String endTime = share.getEndTime();
+        Date endTimeDate = null;
+        try {
+            endTimeDate = DateUtil.getDateByFormatString(endTime, "yyyy-MM-dd HH:mm:ss");
+        } catch (ParseException e) {
+            log.error("日期解析失败：{}" , e);
+        }
+        if (new Date().after(endTimeDate))  {
+            return RestResult.fail().message("分享已过期");
+        } else {
+            return RestResult.success();
+        }
+
     }
 }

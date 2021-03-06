@@ -7,6 +7,7 @@ import com.qiwenshare.file.domain.Share;
 import com.qiwenshare.file.domain.ShareFile;
 import com.qiwenshare.file.mapper.RecoveryFileMapper;
 import com.qiwenshare.file.mapper.ShareMapper;
+import com.qiwenshare.file.vo.share.ShareFileListVO;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
@@ -21,5 +22,10 @@ public class ShareService extends ServiceImpl<ShareMapper, Share> implements ISh
     @Override
     public void batchInsertShareFile(List<ShareFile> shareFiles) {
         shareMapper.batchInsertShareFile(shareFiles);
+    }
+
+    @Override
+    public List<ShareFileListVO> selectShareFileListByBatchNum(Share share) {
+        return shareMapper.selectShareFileListByBatchNum(share);
     }
 }

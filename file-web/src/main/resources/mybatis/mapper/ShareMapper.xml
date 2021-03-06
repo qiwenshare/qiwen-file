@@ -14,6 +14,13 @@
         (#{file.shareBatchNum}, #{file.userFileId})
         </foreach>
     </insert>
+    
+    <select id="selectShareFileListByBatchNum" parameterType="com.qiwenshare.file.domain.Share" resultType="com.qiwenshare.file.vo.share.ShareFileListVO">
+        select * from sharefile a
+        left join userfile b on b.userFileId = a.userFileId
+        left join file c on c.fileId = b.fileId
+        where a.shareBatchNum = #{shareBatchNum}
+    </select>
 
 
 
