@@ -8,7 +8,5 @@ import com.qiwenshare.file.domain.OperationLogBean;
 import java.util.List;
 
 public interface OperationLogMapper extends BaseMapper<OperationLogBean> {
-    List<OperationLogBean> selectOperationLog();
 
-    void insertOperationLog(OperationLogBean operationlogBean);
 }
