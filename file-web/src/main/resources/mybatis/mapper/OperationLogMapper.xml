@@ -6,14 +6,5 @@
 
 <mapper namespace="com.qiwenshare.file.mapper.OperationLogMapper">
 
-    <select id="selectOperationLog" resultType="com.qiwenshare.file.domain.OperationLogBean">
-        SELECT * FROM operationLog
-    </select>
-
-    <insert id="insertOperationLog" parameterType="com.qiwenshare.file.domain.OperationLogBean" useGeneratedKeys="true"
-            keyProperty="operationLogId">
-        INSERT INTO operationLog (operation, userId, terminal, result, detail, source, time, logLevel)
-        VALUES (#{operation}, #{userId}, #{terminal}, #{result}, #{detail}, #{source}, #{time}, #{logLevel});
-    </insert>
 
 </mapper>

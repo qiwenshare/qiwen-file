@@ -28,13 +28,13 @@ public class OperationLogService  extends ServiceImpl<OperationLogMapper, Operat
 
     @Override
     public List<OperationLogBean> selectOperationLog() {
-        List<OperationLogBean> result = operationLogMapper.selectOperationLog();
+        List<OperationLogBean> result = operationLogMapper.selectList(null);
         return result;
     }
 
     @Override
     public void insertOperationLog(OperationLogBean operationlogBean) {
-        operationLogMapper.insertOperationLog(operationlogBean);
+        operationLogMapper.insert(operationlogBean);
 
     }
 
