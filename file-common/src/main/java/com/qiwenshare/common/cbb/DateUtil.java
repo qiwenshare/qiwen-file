@@ -19,28 +19,15 @@ public class DateUtil {
     }
 
     /**
-     * @param formatString 格式，如"yyyy-MM-dd"
      * @param stringDate   日期字符串，如"2000-03-19"
+     * @param formatString 格式，如"yyyy-MM-dd"
      * @return 日期
      * @throws ParseException 解析异常
      */
-    public static Date getDateByFormatString(String formatString, String stringDate) throws ParseException {
+    public static Date getDateByFormatString(String stringDate, String formatString) throws ParseException {
         DateFormat dateFormat = new SimpleDateFormat(formatString);
         Date date = dateFormat.parse(stringDate);
         return date;
-    }
-
-    /**
-     * 格式化date
-     *
-     * @param formatString 格式，如"yyyy-MM-dd"
-     * @param stringDate   日期字符串，如"2000-03-19"
-     * @return SQL日期
-     * @throws ParseException 解析异常
-     */
-    public static java.sql.Date getSqlDateByFormatString(String formatString, String stringDate) throws ParseException {
-        long longtime = DateUtil.getDateByFormatString("yyyyMMdd", stringDate).getTime();
-        return new java.sql.Date(longtime);
     }
 
     /**

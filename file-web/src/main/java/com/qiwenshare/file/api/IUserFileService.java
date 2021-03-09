@@ -19,7 +19,7 @@ public interface IUserFileService extends IService<UserFile> {
     Long selectCountByExtendName(List<String> fileNameList, Long beginCount, Long pageCount, long userId);
     List<FileListVo> selectFileNotInExtendNames(List<String> fileNameList, Long beginCount, Long pageCount, long userId);
     Long selectCountNotInExtendNames(List<String> fileNameList, Long beginCount, Long pageCount, long userId);
-    List<UserFile> selectFileTreeListLikeFilePath(String filePath);
+    List<UserFile> selectFileTreeListLikeFilePath(String filePath, long userId);
     List<UserFile> selectFilePathTreeByUserId(Long userId);
     void deleteUserFile(UserFile userFile, UserBean sessionUserBean);
 

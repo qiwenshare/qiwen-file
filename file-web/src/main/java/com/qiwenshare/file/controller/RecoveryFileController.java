@@ -43,8 +43,6 @@ public class RecoveryFileController {
     @RequestMapping(value = "/deleterecoveryfile", method = RequestMethod.POST)
     @ResponseBody
     public RestResult<String> deleteRecoveryFile(@RequestBody DeleteRecoveryFileDTO deleteRecoveryFileDTO, @RequestHeader("token") String token) {
-        RestResult<String> restResult = new RestResult<String>();
-
 
         RecoveryFile recoveryFile = recoveryFileService.getById(deleteRecoveryFileDTO.getRecoveryFileId());
         UserFile userFile =userFileService.getById(recoveryFile.getUserFileId());
@@ -60,7 +58,7 @@ public class RecoveryFileController {
     @MyLog(operation = "批量删除回收文件", module = CURRENT_MODULE)
     @ResponseBody
     public RestResult<String> batchDeleteRecoveryFile(@RequestBody BatchDeleteRecoveryFileDTO batchDeleteRecoveryFileDTO, @RequestHeader("token") String token) {
-        RestResult<String> restResult = new RestResult<String>();
+
 
 
         List<RecoveryFile> recoveryFileList = JSON.parseArray(batchDeleteRecoveryFileDTO.getRecoveryFileIds(), RecoveryFile.class);
@@ -119,15 +117,17 @@ public class RecoveryFileController {
 
                 userFileService.save(userFile);
             }
-//            else {
-//
-//                LambdaUpdateWrapper<UserFile> updateUserfileWp = new LambdaUpdateWrapper<>();
-//                updateUserfileWp.set(UserFile::getDeleteBatchNum, "")
-//                        .set(UserFile::getDeleteFlag, "0")
-//                        .eq(UserFile::getFilePath, filePath).eq(UserFile::getUserId, sessionUserBean.getUserId());
-//                userFileService.update(updateUserfileWp);
-//            }
+
         }
+
+        LambdaQueryWrapper<UserFile> lambdaQueryWrapper = new LambdaQueryWrapper<>();
+        lambdaQueryWrapper.likeRight(UserFile::getFilePath, restoreFileDto.getFilePath())
+                .eq(UserFile::getIsDir, 1)
+                .eq(UserFile::getDeleteFlag, 0)
+                .groupBy(UserFile::getFilePath, UserFile::getFileName)
+                .having("count(fileName) >= 2");
+        List<UserFile> repeatList = userFileService.list(lambdaQueryWrapper);
+        log.info(JSON.toJSONString(repeatList));
 
         LambdaQueryWrapper<RecoveryFile> recoveryFileServiceLambdaQueryWrapper = new LambdaQueryWrapper<>();
         recoveryFileServiceLambdaQueryWrapper.eq(RecoveryFile::getDeleteBatchNum, restoreFileDto.getDeleteBatchNum());
