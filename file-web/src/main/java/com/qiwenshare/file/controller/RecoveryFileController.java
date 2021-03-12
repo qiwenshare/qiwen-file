@@ -121,12 +121,22 @@ public class RecoveryFileController {
         }
 
         LambdaQueryWrapper<UserFile> lambdaQueryWrapper = new LambdaQueryWrapper<>();
-        lambdaQueryWrapper.likeRight(UserFile::getFilePath, restoreFileDto.getFilePath())
+        lambdaQueryWrapper.select(UserFile::getFilePath, UserFile::getFileName)
+                .likeRight(UserFile::getFilePath, restoreFileDto.getFilePath())
                 .eq(UserFile::getIsDir, 1)
                 .eq(UserFile::getDeleteFlag, 0)
                 .groupBy(UserFile::getFilePath, UserFile::getFileName)
                 .having("count(fileName) >= 2");
         List<UserFile> repeatList = userFileService.list(lambdaQueryWrapper);
+
+        for (UserFile userFile : repeatList) {
+            LambdaQueryWrapper<UserFile> lambdaQueryWrapper1 = new LambdaQueryWrapper<>();
+            lambdaQueryWrapper1.eq(UserFile::getFilePath, userFile.getFilePath())
+                    .eq(UserFile::getFileName, userFile.getFileName());
+            List<UserFile> userFiles = userFileService.list(lambdaQueryWrapper1);
+//            for (int i = 0; i < userFile)
+        }
+
         log.info(JSON.toJSONString(repeatList));
 
         LambdaQueryWrapper<RecoveryFile> recoveryFileServiceLambdaQueryWrapper = new LambdaQueryWrapper<>();
