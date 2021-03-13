@@ -121,7 +121,8 @@ public class RecoveryFileController {
         }
 
         LambdaQueryWrapper<UserFile> lambdaQueryWrapper = new LambdaQueryWrapper<>();
-        lambdaQueryWrapper.select(UserFile::getFilePath, UserFile::getFileName)
+
+        lambdaQueryWrapper.select(UserFile::getFileName, UserFile::getFilePath)
                 .likeRight(UserFile::getFilePath, restoreFileDto.getFilePath())
                 .eq(UserFile::getIsDir, 1)
                 .eq(UserFile::getDeleteFlag, 0)
@@ -132,9 +133,14 @@ public class RecoveryFileController {
         for (UserFile userFile : repeatList) {
             LambdaQueryWrapper<UserFile> lambdaQueryWrapper1 = new LambdaQueryWrapper<>();
             lambdaQueryWrapper1.eq(UserFile::getFilePath, userFile.getFilePath())
-                    .eq(UserFile::getFileName, userFile.getFileName());
+                    .eq(UserFile::getFileName, userFile.getFileName())
+                    .eq(UserFile::getDeleteFlag, "0");
             List<UserFile> userFiles = userFileService.list(lambdaQueryWrapper1);
-//            for (int i = 0; i < userFile)
+            log.info("重复的文件:" + JSON.toJSONString(userFiles));
+            for (int i = 0; i < userFiles.size() - 1; i ++) {
+                log.info("删除文件：" + JSON.toJSONString(userFiles.get(i)));
+                userFileService.removeById(userFiles.get(i).getUserFileId());
+            }
         }
 
         log.info(JSON.toJSONString(repeatList));
