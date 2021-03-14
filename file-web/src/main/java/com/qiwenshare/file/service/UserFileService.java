@@ -39,7 +39,10 @@ public class UserFileService  extends ServiceImpl<UserFileMapper, UserFile> impl
     @Override
     public List<UserFile> selectUserFileByNameAndPath(String fileName, String filePath, Long userId) {
         LambdaQueryWrapper<UserFile> lambdaQueryWrapper = new LambdaQueryWrapper<>();
-        lambdaQueryWrapper.eq(UserFile::getFileName, fileName).eq(UserFile::getFilePath, filePath).eq(UserFile::getUserId, userId);
+        lambdaQueryWrapper.eq(UserFile::getFileName, fileName)
+                .eq(UserFile::getFilePath, filePath)
+                .eq(UserFile::getUserId, userId)
+                .eq(UserFile::getDeleteFlag, "0");
         return userFileMapper.selectList(lambdaQueryWrapper);
     }
 
@@ -100,20 +103,20 @@ public class UserFileService  extends ServiceImpl<UserFileMapper, UserFile> impl
     }
 
     @Override
-    public List<UserFile> selectFileTreeListLikeFilePath(String filePath) {
-        UserFile userFile = new UserFile();
+    public List<UserFile> selectFileTreeListLikeFilePath(String filePath, long userId) {
+        //UserFile userFile = new UserFile();
         filePath = filePath.replace("\\", "\\\\\\\\");
         filePath = filePath.replace("'", "\\'");
         filePath = filePath.replace("%", "\\%");
         filePath = filePath.replace("_", "\\_");
 
-        userFile.setFilePath(filePath);
+        //userFile.setFilePath(filePath);
 
         LambdaQueryWrapper<UserFile> lambdaQueryWrapper = new LambdaQueryWrapper<>();
 
-        log.info("删除文件路径：" + filePath);
+        log.info("查询文件路径：" + filePath);
 
-        lambdaQueryWrapper.likeRight(UserFile::getFilePath, filePath);
+        lambdaQueryWrapper.eq(UserFile::getUserId, userId).likeRight(UserFile::getFilePath, filePath);
         return userFileMapper.selectList(lambdaQueryWrapper);
     }
 
@@ -139,7 +142,7 @@ public class UserFileService  extends ServiceImpl<UserFileMapper, UserFile> impl
             userFileMapper.update(null, userFileLambdaUpdateWrapper);
 
             String filePath = userFile.getFilePath() + userFile.getFileName() + "/";
-            updateFileDeleteStateByFilePath(filePath, userFile.getDeleteBatchNum());
+            updateFileDeleteStateByFilePath(filePath, userFile.getDeleteBatchNum(), sessionUserBean.getUserId());
 
         }else{
 
@@ -161,9 +164,9 @@ public class UserFileService  extends ServiceImpl<UserFileMapper, UserFile> impl
 
     }
 
-    private void updateFileDeleteStateByFilePath(String filePath, String deleteBatchNum) {
+    private void updateFileDeleteStateByFilePath(String filePath, String deleteBatchNum, Long userId) {
         new Thread(()->{
-            List<UserFile> fileList = selectFileTreeListLikeFilePath(filePath);
+            List<UserFile> fileList = selectFileTreeListLikeFilePath(filePath, userId);
             for (int i = 0; i < fileList.size(); i++){
                 UserFile userFileTemp = fileList.get(i);
                 executor.execute(new Runnable() {

@@ -51,19 +51,16 @@ public class FiletransferController {
     @RequestMapping(value = "/uploadfile", method = RequestMethod.GET)
     @MyLog(operation = "极速上传", module = CURRENT_MODULE)
     @ResponseBody
-    public RestResult<UploadFileVo> uploadFileSpeed(HttpServletRequest request, UploadFileDTO uploadFileDto, @RequestHeader("token") String token) {
-        RestResult<UploadFileVo> restResult = new RestResult<UploadFileVo>();
+    public RestResult<UploadFileVo> uploadFileSpeed(UploadFileDTO uploadFileDto, @RequestHeader("token") String token) {
+
         UserBean sessionUserBean = userService.getUserBeanByToken(token);
         if (sessionUserBean == null){
-            restResult.setSuccess(false);
-            restResult.setMessage("未登录");
-            return restResult;
+
+            return RestResult.fail().message("未登录");
         }
         RestResult<String> operationCheckResult = fileController.operationCheck(token);
         if (!operationCheckResult.getSuccess()){
-            restResult.setSuccess(false);
-            restResult.setMessage("没权限，请联系管理员！");
-            return restResult;
+            return RestResult.fail().message("没权限，请联系管理员！");
         }
         UploadFileVo uploadFileVo = new UploadFileVo();
         Map<String, Object> param = new HashMap<String, Object>();
@@ -92,10 +89,8 @@ public class FiletransferController {
 
             }
         }
+        return RestResult.success().data(uploadFileVo);
 
-        restResult.setData(uploadFileVo);
-        restResult.setSuccess(true);
-        return restResult;
     }
 
     /**
@@ -104,37 +99,31 @@ public class FiletransferController {
      * @param request
      * @return
      */
-    @Operation(summary = "上传文件", description = "真正的上次文件接口", tags = {"filetransfer"})
+    @Operation(summary = "上传文件", description = "真正的上传文件接口", tags = {"filetransfer"})
     @RequestMapping(value = "/uploadfile", method = RequestMethod.POST)
     @MyLog(operation = "上传文件", module = CURRENT_MODULE)
     @ResponseBody
     public RestResult<UploadFileVo> uploadFile(HttpServletRequest request, UploadFileDTO uploadFileDto, @RequestHeader("token") String token) {
-        RestResult<UploadFileVo> restResult = new RestResult<>();
+
         UserBean sessionUserBean = userService.getUserBeanByToken(token);
         if (sessionUserBean == null){
-            restResult.setSuccess(false);
-            restResult.setMessage("未登录");
-            return restResult;
+            return RestResult.fail().message("未登录");
         }
         RestResult<String> operationCheckResult = fileController.operationCheck(token);
         if (!operationCheckResult.getSuccess()){
-            restResult.setSuccess(false);
-            restResult.setMessage("没权限，请联系管理员！");
-            return restResult;
+            return RestResult.fail().message("没权限，请联系管理员！");
         }
 
         filetransferService.uploadFile(request, uploadFileDto, sessionUserBean.getUserId());
         UploadFileVo uploadFileVo = new UploadFileVo();
+        return RestResult.success().data(uploadFileVo);
 
-        restResult.setData(uploadFileVo);
-        return restResult;
     }
 
     @Operation(summary = "获取存储信息", description = "获取存储信息", tags = {"filetransfer"})
     @RequestMapping(value = "/getstorage", method = RequestMethod.GET)
     @ResponseBody
     public RestResult<StorageBean> getStorage(@RequestHeader("token") String token) {
-        RestResult<StorageBean> restResult = new RestResult<StorageBean>();
 
         UserBean sessionUserBean = userService.getUserBeanByToken(token);
         StorageBean storageBean = new StorageBean();
@@ -148,9 +137,8 @@ public class FiletransferController {
         StorageBean storage = new StorageBean();
         storage.setUserId(sessionUserBean.getUserId());
         storage.setStorageSize(storageSize);
-        restResult.setData(storage);
-        restResult.setSuccess(true);
-        return restResult;
+        return RestResult.success().data(storage);
+
     }
 
 
