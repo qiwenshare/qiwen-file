@@ -309,7 +309,7 @@ public class FileController {
                 }else{
 
                     userFile.setIsDir(0);
-                    userFile.setExtendName(FileUtil.getFileType(totalFileUrl));
+                    userFile.setExtendName(FileUtil.getFileExtendName(totalFileUrl));
                     userFile.setFileName(FileUtil.getFileNameNotExtend(currentFile.getName()));
                     tempFileBean.setFileSize(currentFile.length());
                     tempFileBean.setTimeStampName(FileUtil.getFileNameNotExtend(currentFile.getName()));

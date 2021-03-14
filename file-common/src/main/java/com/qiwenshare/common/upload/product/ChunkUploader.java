@@ -9,7 +9,6 @@ import com.qiwenshare.common.util.PathUtil;
 import org.apache.commons.codec.digest.DigestUtils;
 import org.apache.commons.fileupload.disk.DiskFileItemFactory;
 import org.apache.commons.fileupload.servlet.ServletFileUpload;
-import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -93,7 +92,7 @@ public class ChunkUploader extends Uploader {
         String originalName = multipartfile.getOriginalFilename();
 
         String fileName = getFileName(originalName);
-        String fileType = FileUtil.getFileType(originalName);
+        String fileType = FileUtil.getFileExtendName(originalName);
         uploadFile.setFileName(fileName);
         uploadFile.setFileType(fileType);
         uploadFile.setTimeStampName(timeStampName);

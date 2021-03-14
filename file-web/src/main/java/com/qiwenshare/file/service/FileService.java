@@ -87,7 +87,7 @@ public class FileService extends ServiceImpl<FileMapper, FileBean> implements IF
                 AliyunOSSDelete.deleteObject(qiwenFileConfig.getAliyun().getOss(), fileBean.getFileUrl().substring(1));
             } else {
                 FileOperation.deleteFile(PathUtil.getStaticPath() + fileBean.getFileUrl());
-                if (FileUtil.isImageFile(FileUtil.getFileType(fileBean.getFileUrl()))) {
+                if (FileUtil.isImageFile(FileUtil.getFileExtendName(fileBean.getFileUrl()))) {
                     FileOperation.deleteFile(PathUtil.getStaticPath() + fileBean.getFileUrl().replace(fileBean.getTimeStampName(), fileBean.getTimeStampName() + "_min"));
                 }
             }

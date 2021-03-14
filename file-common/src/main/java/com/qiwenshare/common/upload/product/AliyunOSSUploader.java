@@ -12,7 +12,6 @@ import com.qiwenshare.common.util.PathUtil;
 import lombok.Data;
 import org.apache.commons.fileupload.disk.DiskFileItemFactory;
 import org.apache.commons.fileupload.servlet.ServletFileUpload;
-import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -23,10 +22,7 @@ import javax.servlet.http.HttpServletRequest;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.RandomAccessFile;
 import java.util.*;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
 
 public class AliyunOSSUploader extends Uploader {
     private static final Logger logger = LoggerFactory.getLogger(AliyunOSSUploader.class);
@@ -111,7 +107,7 @@ public class AliyunOSSUploader extends Uploader {
 
             String fileName = getFileName(originalName);
 
-            String fileType = FileUtil.getFileType(originalName);
+            String fileType = FileUtil.getFileExtendName(originalName);
             uploadFile.setFileName(fileName);
             uploadFile.setFileType(fileType);
             uploadFile.setTimeStampName(timeStampName);

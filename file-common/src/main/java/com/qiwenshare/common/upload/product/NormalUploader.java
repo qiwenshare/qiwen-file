@@ -71,7 +71,7 @@ public class NormalUploader extends Uploader {
 
         String fileName = getFileName(originalName);
 
-        String fileType = FileUtil.getFileType(originalName);
+        String fileType = FileUtil.getFileExtendName(originalName);
         uploadFile.setFileName(fileName);
         uploadFile.setFileType(fileType);
         uploadFile.setTimeStampName(timeStampName);

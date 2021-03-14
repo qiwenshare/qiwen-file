@@ -278,9 +278,9 @@ public class FileOperation {
             }
         }
         for (String zipPath : fileEntryNameList) {
-            if (FileUtil.isImageFile(FileUtil.getFileType(zipPath))) {
+            if (FileUtil.isImageFile(FileUtil.getFileExtendName(zipPath))) {
                 File file = new File(destDirPath + zipPath);
-                File minFile = new File(destDirPath + FileUtil.getFileNameNotExtend(zipPath) + "_min." + FileUtil.getFileType(zipPath));
+                File minFile = new File(destDirPath + FileUtil.getFileNameNotExtend(zipPath) + "_min." + FileUtil.getFileExtendName(zipPath));
                 try {
                     ImageOperation.thumbnailsImage(file, minFile, 300);
                 } catch (IOException e) {
@@ -361,7 +361,7 @@ public class FileOperation {
 
     public static long deleteFileFromDisk(String fileurl) {
         String fileUrl = PathUtil.getStaticPath() + fileurl;
-        String extendName = FileUtil.getFileType(fileUrl);
+        String extendName = FileUtil.getFileExtendName(fileUrl);
         String minFileUrl = fileUrl.replace("." + extendName, "_min." + extendName);
         long filesize = getFileSize(fileUrl);
 

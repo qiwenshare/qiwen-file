@@ -13,6 +13,7 @@ import com.qiwenshare.common.domain.UploadFile;
 import com.qiwenshare.common.upload.factory.AliyunOSSUploaderFactory;
 import com.qiwenshare.common.upload.factory.ChunkUploaderFactory;
 import com.qiwenshare.common.upload.Uploader;
+import com.qiwenshare.common.upload.factory.FastDFSUploaderFactory;
 import com.qiwenshare.file.api.IFiletransferService;
 
 import com.qiwenshare.common.domain.AliyunOSS;
@@ -45,6 +46,7 @@ public class FiletransferService implements IFiletransferService {
     @Override
     public void uploadFile(HttpServletRequest request, UploadFileDTO UploadFileDto, Long userId) {
         AliyunOSS oss = qiwenFileConfig.getAliyun().getOss();
+        String storyType = qiwenFileConfig.getStorageType();
         request.setAttribute("oss", oss);
         Uploader uploader;
         UploadFile uploadFile = new UploadFile();
@@ -56,6 +58,8 @@ public class FiletransferService implements IFiletransferService {
         uploadFile.setCurrentChunkSize(UploadFileDto.getCurrentChunkSize());
         if (oss.isEnabled()) {
             uploader = new AliyunOSSUploaderFactory().getUploader(uploadFile);
+        } else if ("FastFDS".equals(storyType)) {
+            uploader = new FastDFSUploaderFactory().getUploader(uploadFile);
         } else {
             uploader = new ChunkUploaderFactory().getUploader(uploadFile);
         }

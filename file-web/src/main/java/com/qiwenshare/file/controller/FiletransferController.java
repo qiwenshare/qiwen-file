@@ -76,7 +76,7 @@ public class FiletransferController {
                 userFile.setFilePath(uploadFileDto.getFilePath());
                 String fileName = uploadFileDto.getFilename();
                 userFile.setFileName(fileName.substring(0, fileName.lastIndexOf(".")));
-                userFile.setExtendName(FileUtil.getFileType(fileName));
+                userFile.setExtendName(FileUtil.getFileExtendName(fileName));
                 userFile.setDeleteFlag(0);
                 userFile.setIsDir(0);
                 userFile.setUploadTime(DateUtil.getCurrentTime());
