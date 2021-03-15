@@ -6,6 +6,7 @@ import com.aliyun.oss.OSSClientBuilder;
 import com.aliyun.oss.model.*;
 import com.qiwenshare.common.domain.AliyunOSS;
 import com.qiwenshare.common.domain.UploadFile;
+import com.qiwenshare.common.exception.UploadGeneralException;
 import com.qiwenshare.common.upload.Uploader;
 import com.qiwenshare.common.util.FileUtil;
 import com.qiwenshare.common.util.PathUtil;
@@ -63,38 +64,32 @@ public class AliyunOSSUploader extends Uploader {
         bucketName = aliyunOSS.getBucketName();
         boolean isMultipart = ServletFileUpload.isMultipartContent(this.request);
         if (!isMultipart) {
-            UploadFile uploadFile = new UploadFile();
-            uploadFile.setSuccess(0);
-            uploadFile.setMessage("未包含文件上传域");
-            saveUploadFileList.add(uploadFile);
-            return saveUploadFileList;
+            throw new UploadGeneralException("未包含文件上传域");
+//            UploadFile uploadFile = new UploadFile();
+//            uploadFile.setSuccess(0);
+//            uploadFile.setMessage("未包含文件上传域");
+//            saveUploadFileList.add(uploadFile);
+//            return saveUploadFileList;
         }
         DiskFileItemFactory dff = new DiskFileItemFactory();//1、创建工厂
         String savePath = getSaveFilePath();
         dff.setRepository(new File(savePath));
 
-        try {
-            ServletFileUpload sfu = new ServletFileUpload(dff);//2、创建文件上传解析器
-            sfu.setSizeMax(this.maxSize * 1024L);
-            sfu.setHeaderEncoding("utf-8");//3、解决文件名的中文乱码
-            Iterator<String> iter = this.request.getFileNames();
-            while (iter.hasNext()) {
+        ServletFileUpload sfu = new ServletFileUpload(dff);//2、创建文件上传解析器
+        sfu.setSizeMax(this.maxSize * 1024L);
+        sfu.setHeaderEncoding("utf-8");//3、解决文件名的中文乱码
+        Iterator<String> iter = this.request.getFileNames();
+        while (iter.hasNext()) {
 
-                saveUploadFileList = doUpload(savePath, iter);
-            }
-        } catch (IOException e) {
-            UploadFile uploadFile = new UploadFile();
-            uploadFile.setSuccess(1);
-            uploadFile.setMessage("未知错误");
-            saveUploadFileList.add(uploadFile);
-            e.printStackTrace();
+            saveUploadFileList = doUpload(savePath, iter);
         }
+
 
         logger.info("结束上传");
         return saveUploadFileList;
     }
 
-    private List<UploadFile> doUpload(String savePath, Iterator<String> iter) throws IOException {
+    private List<UploadFile> doUpload(String savePath, Iterator<String> iter) {
         OSS ossClient = getClient();
 
         List<UploadFile> saveUploadFileList = new ArrayList<>();
@@ -174,6 +169,7 @@ public class AliyunOSSUploader extends Uploader {
 
         } catch (Exception e) {
             logger.error("上传出错：" + e);
+            throw new UploadGeneralException(e);
         }
 
         uploadFile.setIsOSS(1);

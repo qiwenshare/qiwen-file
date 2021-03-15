@@ -27,26 +27,7 @@ public abstract class Uploader {
     protected StandardMultipartHttpServletRequest request = null;
 
     public abstract List<UploadFile> upload(HttpServletRequest request);
-//
-//
-//    protected static TrackerServer trackerServer = null;
-//
-//    protected static StorageServer storageServer = null;
-//
-//    static {
-//        try {
-//            //String filePath = new ClassPathResource("fdfs_client.conf").getFile().getAbsolutePath();;
-//            Properties properties = new Properties();
-//            properties.setProperty("tracker_server ", "121.89.222.103");
-//            properties.setProperty("http.tracker_http_port", "8090");
-//            ClientGlobal.initByProperties(properties);
-//            TrackerClient trackerClient = new TrackerClient();
-//            trackerServer = trackerClient.getConnection();
-//            storageServer = trackerClient.getStoreStorage(trackerServer);
-//        } catch (Exception e) {
-//            log.error("FastDFS Client Init Fail!",e);
-//        }
-//    }
+
     /**
      * 根据字符串创建本地目录 并按照日期建立子目录返回
      *

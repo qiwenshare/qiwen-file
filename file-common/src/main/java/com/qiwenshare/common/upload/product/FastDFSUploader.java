@@ -3,6 +3,7 @@ package com.qiwenshare.common.upload.product;
 import com.github.tobato.fastdfs.domain.StorePath;
 import com.github.tobato.fastdfs.service.AppendFileStorageClient;
 import com.qiwenshare.common.domain.UploadFile;
+import com.qiwenshare.common.exception.UploadGeneralException;
 import com.qiwenshare.common.upload.Uploader;
 import com.qiwenshare.common.util.FileUtil;
 import com.qiwenshare.common.util.PathUtil;
@@ -50,11 +51,12 @@ public class FastDFSUploader extends Uploader {
 
         boolean isMultipart = ServletFileUpload.isMultipartContent(this.request);
         if (!isMultipart) {
-            UploadFile uploadFile = new UploadFile();
-            uploadFile.setSuccess(0);
-            uploadFile.setMessage("未包含文件上传域");
-            saveUploadFileList.add(uploadFile);
-            return saveUploadFileList;
+            throw new UploadGeneralException("未包含文件上传域");
+//            UploadFile uploadFile = new UploadFile();
+//            uploadFile.setSuccess(0);
+//            uploadFile.setMessage("未包含文件上传域");
+//            saveUploadFileList.add(uploadFile);
+//            return saveUploadFileList;
         }
         DiskFileItemFactory dff = new DiskFileItemFactory();//1、创建工厂
         String savePath = getSaveFilePath();
@@ -69,12 +71,13 @@ public class FastDFSUploader extends Uploader {
 
                 saveUploadFileList = doUpload(savePath, iter);
             }
-        } catch (IOException e) {
-            UploadFile uploadFile = new UploadFile();
-            uploadFile.setSuccess(1);
-            uploadFile.setMessage("未知错误");
-            saveUploadFileList.add(uploadFile);
-            e.printStackTrace();
+        } catch (Exception e) {
+            throw new UploadGeneralException(e);
+//            UploadFile uploadFile = new UploadFile();
+//            uploadFile.setSuccess(1);
+//            uploadFile.setMessage("未知错误");
+//            saveUploadFileList.add(uploadFile);
+//            e.printStackTrace();
         }
 
         log.info("结束上传");
@@ -83,16 +86,14 @@ public class FastDFSUploader extends Uploader {
 
 
 
-    private List<UploadFile> doUpload(String savePath, Iterator<String> iter) throws IOException{
+    private List<UploadFile> doUpload(String savePath, Iterator<String> iter){
 
         List<UploadFile> saveUploadFileList = new ArrayList<>();
 
         try {
             MultipartFile multipartfile = this.request.getFile(iter.next());
-            boolean uploadResult = uploadFileChunk(multipartfile);
-            if (!uploadResult) {
+            uploadFileChunk(multipartfile);
 
-            }
             String timeStampName = getTimeStampName();
             String originalName = multipartfile.getOriginalFilename();
 
@@ -122,7 +123,8 @@ public class FastDFSUploader extends Uploader {
             }
 
         } catch (Exception e) {
-            log.error("上传出错：" + e);
+            throw new UploadGeneralException(e);
+//            log.error("上传出错：" + e);
         }
 
         uploadFile.setIsOSS(1);
@@ -132,7 +134,7 @@ public class FastDFSUploader extends Uploader {
         return saveUploadFileList;
     }
 
-    public boolean uploadFileChunk(MultipartFile multipartFile) {
+    public void uploadFileChunk(MultipartFile multipartFile) {
 
         // 存储在fastdfs不带组的路径
 //        String noGroupPath = "";
@@ -150,7 +152,8 @@ public class FastDFSUploader extends Uploader {
 //                return false;
 //            }
             if (lock != null && lock) {
-                return false;
+                throw new UploadGeneralException("请求块锁失败");
+                //return false;
             }
             LOCK_MAP.put(uploadFile.getIdentifier(), true);
             // 写入锁的当前拥有者
@@ -167,10 +170,12 @@ public class FastDFSUploader extends Uploader {
             //此段代码保证顺序，如果满足条件则返回失败
             if (uploadFile.getChunkNumber() < currentChunkInRedis) {
                 log.info("当前文件块已上传");
-                return false;
+                throw new UploadGeneralException("当前文件块已上传");
+//                return false;
             } else if (uploadFile.getChunkNumber() > currentChunkInRedis) {
                 log.info("当前文件块需要等待上传,稍后请重试");
-                return false;
+                throw new UploadGeneralException("当前文件块需要等待上传,稍后请重试");
+//                return false;
             }
 
             log.info("***********开始上传第{}块**********", uploadFile.getChunkNumber());
@@ -190,12 +195,14 @@ public class FastDFSUploader extends Uploader {
                         if (storePath == null) {
                             CURRENT_UPLOAD_CHUNK_NUMBER.put(uploadFile.getIdentifier(), uploadFile.getChunkNumber());
                             log.info("获取远程文件路径出错");
-                            return false;
+                            throw new UploadGeneralException("获取远程文件路径出错");
+//                            return false;
                         }
                     } catch (Exception e) {
                         CURRENT_UPLOAD_CHUNK_NUMBER.put(uploadFile.getIdentifier(), uploadFile.getChunkNumber());
                         log.error("初次上传远程文件出错", e);
-                        return false;
+                        throw new UploadGeneralException("初次上传远程文件出错", e);
+//                        return false;
                     }
 
                     STORE_PATH.put(uploadFile.getIdentifier(), storePath.getPath());
@@ -207,7 +214,8 @@ public class FastDFSUploader extends Uploader {
                     if (path == null) {
                         log.error("无法获取已上传服务器文件地址");
                         CURRENT_UPLOAD_CHUNK_NUMBER.put(uploadFile.getIdentifier(), uploadFile.getChunkNumber());
-                        return false;
+                        throw new UploadGeneralException("无法获取已上传服务器文件地址");
+//                        return false;
                     }
                     try {
                         Long alreadySize = UPLOADED_SIZE.get(uploadFile.getIdentifier());
@@ -220,12 +228,14 @@ public class FastDFSUploader extends Uploader {
                     } catch (Exception e) {
                         CURRENT_UPLOAD_CHUNK_NUMBER.put(uploadFile.getIdentifier(), uploadFile.getChunkNumber());
                         log.error("更新远程文件出错", e);
-                        return false;
+                        throw new UploadGeneralException("更新远程文件出错", e);
+//                        return false;
                     }
                 }
             } catch (Exception e) {
                 log.error("上传文件错误", e);
-                return false;
+                throw new UploadGeneralException("上传文件错误", e);
+//                return false;
             }
         } finally {
             // 锁的当前拥有者才能释放块上传锁
@@ -235,6 +245,6 @@ public class FastDFSUploader extends Uploader {
             }
         }
         log.info("***********第{}块上传成功**********", uploadFile.getChunkNumber());
-        return true;
+//        return true;
     }
 }

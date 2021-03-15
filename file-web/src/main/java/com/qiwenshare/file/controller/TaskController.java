@@ -28,7 +28,7 @@ public class TaskController {
 
     @Scheduled(cron = "0 0/1 * * * ?")
     public void deleteFile() {
-        log.info("111112");
+
         LambdaQueryWrapper<FileBean> fileBeanLambdaQueryWrapper = new LambdaQueryWrapper<>();
         fileBeanLambdaQueryWrapper.eq(FileBean::getPointCount, 0);
 
@@ -39,8 +39,7 @@ public class TaskController {
             fileService.deleteLocalFile(fileBean);
             fileService.removeById(fileBean.getFileId());
         }
-        fileService.remove(fileBeanLambdaQueryWrapper);
+//        fileService.remove(fileBeanLambdaQueryWrapper);
 
-        log.info("11111");
     }
 }

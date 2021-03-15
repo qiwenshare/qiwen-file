@@ -2,6 +2,7 @@ package com.qiwenshare.common.upload.product;
 
 import com.qiwenshare.common.cbb.NotSameFileExpection;
 import com.qiwenshare.common.domain.UploadFile;
+import com.qiwenshare.common.exception.UploadGeneralException;
 import com.qiwenshare.common.operation.ImageOperation;
 import com.qiwenshare.common.upload.Uploader;
 import com.qiwenshare.common.util.FileUtil;
@@ -42,11 +43,12 @@ public class ChunkUploader extends Uploader {
         this.request = (StandardMultipartHttpServletRequest) httpServletRequest;
         boolean isMultipart = ServletFileUpload.isMultipartContent(this.request);
         if (!isMultipart) {
-            UploadFile uploadFile = new UploadFile();
-            uploadFile.setSuccess(0);
-            uploadFile.setMessage("未包含文件上传域");
-            saveUploadFileList.add(uploadFile);
-            return saveUploadFileList;
+            throw new UploadGeneralException("未包含文件上传域");
+//            UploadFile uploadFile = new UploadFile();
+//            uploadFile.setSuccess(0);
+//            uploadFile.setMessage("未包含文件上传域");
+//            saveUploadFileList.add(uploadFile);
+//            return saveUploadFileList;
         }
         DiskFileItemFactory dff = new DiskFileItemFactory();//1、创建工厂
         String savePath = getSaveFilePath();
@@ -61,11 +63,12 @@ public class ChunkUploader extends Uploader {
                 saveUploadFileList = doUpload(savePath, iter);
             }
         } catch (IOException e) {
-            UploadFile uploadFile = new UploadFile();
-            uploadFile.setSuccess(1);
-            uploadFile.setMessage("未知错误");
-            saveUploadFileList.add(uploadFile);
-            e.printStackTrace();
+//            UploadFile uploadFile = new UploadFile();
+//            uploadFile.setSuccess(1);
+//            uploadFile.setMessage("未知错误");
+//            saveUploadFileList.add(uploadFile);
+//            e.printStackTrace();
+            throw new UploadGeneralException("未包含文件上传域");
         } catch (NotSameFileExpection notSameFileExpection) {
             notSameFileExpection.printStackTrace();
         }
