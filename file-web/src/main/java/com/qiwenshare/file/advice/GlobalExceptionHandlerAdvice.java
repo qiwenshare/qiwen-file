@@ -3,9 +3,11 @@ package com.qiwenshare.file.advice;
 import com.qiwenshare.common.cbb.RestResult;
 import com.qiwenshare.common.cbb.ResultCodeEnum;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.ResponseBody;
+import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.client.HttpClientErrorException;
 
 /**
@@ -20,6 +22,7 @@ public class GlobalExceptionHandlerAdvice {
     /**-------- 通用异常处理方法 --------**/
     @ExceptionHandler(Exception.class)
     @ResponseBody
+    @ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
     public RestResult error(Exception e) {
         e.printStackTrace();
         log.error("全局异常捕获：" + e);
@@ -30,6 +33,7 @@ public class GlobalExceptionHandlerAdvice {
     /**-------- 指定异常处理方法 --------**/
     @ExceptionHandler(NullPointerException.class)
     @ResponseBody
+    @ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
     public RestResult error(NullPointerException e) {
         e.printStackTrace();
         log.error("全局异常捕获：" + e);
@@ -38,6 +42,7 @@ public class GlobalExceptionHandlerAdvice {
     /**-------- 下标越界处理方法 --------**/
     @ExceptionHandler(IndexOutOfBoundsException.class)
     @ResponseBody
+    @ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
     public RestResult error(IndexOutOfBoundsException e) {
         e.printStackTrace();
         log.error("全局异常捕获：" + e);
@@ -47,6 +52,7 @@ public class GlobalExceptionHandlerAdvice {
     /**-------- 自定义定异常处理方法 --------**/
     @ExceptionHandler(CMSException.class)
     @ResponseBody
+    @ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
     public RestResult error(CMSException e) {
         e.printStackTrace();
         log.error("全局异常捕获：" + e);

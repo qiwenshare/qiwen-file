@@ -206,15 +206,9 @@ public class FileController {
         List<UserFile> userFiles = JSON.parseArray(batchDeleteFileDto.getFiles(), UserFile.class);
         DigestUtils.md5Hex("data");
         for (UserFile userFile : userFiles) {
-            String uuid = UUID.randomUUID().toString();
-            userFile.setDeleteBatchNum(uuid);
-            userFileService.deleteUserFile(userFile,sessionUserBean);
 
-            RecoveryFile recoveryFile = new RecoveryFile();
-            recoveryFile.setUserFileId(userFile.getUserFileId());
-            recoveryFile.setDeleteTime(DateUtil.getCurrentTime());
-            recoveryFile.setDeleteBatchNum(uuid);
-            recoveryFileService.save(recoveryFile);
+            //userFile.setDeleteBatchNum(uuid);
+            userFileService.deleteUserFile(userFile.getUserFileId(),sessionUserBean.getUserId());
         }
 
         return RestResult.success().message("批量删除文件成功");
@@ -230,20 +224,16 @@ public class FileController {
             return operationCheck(token);
         }
 
-        String uuid = UUID.randomUUID().toString();
         UserBean sessionUserBean = userService.getUserBeanByToken(token);
-        UserFile userFile = new UserFile();
-        userFile.setUserFileId(deleteFileDto.getUserFileId());
-        userFile.setDeleteBatchNum(uuid);
-        BeanUtil.copyProperties(deleteFileDto, userFile);
-        userFileService.deleteUserFile(userFile, sessionUserBean);
+//        String uuid = UUID.randomUUID().toString();
+
+//        UserFile userFile = new UserFile();
+//        userFile.setUserFileId(deleteFileDto.getUserFileId());
+////        userFile.setDeleteBatchNum(uuid);
+//        BeanUtil.copyProperties(deleteFileDto, userFile);
+        userFileService.deleteUserFile(deleteFileDto.getUserFileId(), sessionUserBean.getUserId());
 
 
-        RecoveryFile recoveryFile = new RecoveryFile();
-        recoveryFile.setUserFileId(deleteFileDto.getUserFileId());
-        recoveryFile.setDeleteTime(DateUtil.getCurrentTime());
-        recoveryFile.setDeleteBatchNum(uuid);
-        recoveryFileService.save(recoveryFile);
         return RestResult.success();
 
     }
