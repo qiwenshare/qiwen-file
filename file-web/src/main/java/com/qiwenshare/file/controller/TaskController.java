@@ -21,9 +21,6 @@ import java.util.List;
 public class TaskController {
 
     @Resource
-    UserFileService userFileService;
-
-    @Resource
     FileService fileService;
 
     @Scheduled(cron = "0 0/1 * * * ?")

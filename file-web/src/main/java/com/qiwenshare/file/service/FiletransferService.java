@@ -8,6 +8,7 @@ import javax.servlet.http.HttpServletRequest;
 import cn.hutool.core.bean.BeanUtil;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
+import com.github.tobato.fastdfs.service.AppendFileStorageClient;
 import com.qiwenshare.common.cbb.DateUtil;
 import com.qiwenshare.common.domain.UploadFile;
 import com.qiwenshare.common.upload.factory.AliyunOSSUploaderFactory;
@@ -40,6 +41,8 @@ public class FiletransferService implements IFiletransferService {
     QiwenFileConfig qiwenFileConfig;
     @Resource
     UserFileMapper userFileMapper;
+    @Resource
+    AppendFileStorageClient defaultAppendFileStorageClient;
 
 
 
@@ -56,12 +59,14 @@ public class FiletransferService implements IFiletransferService {
         uploadFile.setIdentifier(UploadFileDto.getIdentifier());
         uploadFile.setTotalSize(UploadFileDto.getTotalSize());
         uploadFile.setCurrentChunkSize(UploadFileDto.getCurrentChunkSize());
-        if (oss.isEnabled()) {
-            uploader = new AliyunOSSUploaderFactory().getUploader(uploadFile);
-        } else if ("FastFDS".equals(storyType)) {
-            uploader = new FastDFSUploaderFactory().getUploader(uploadFile);
-        } else {
-            uploader = new ChunkUploaderFactory().getUploader(uploadFile);
+        synchronized (FiletransferService.class) {
+            if (oss.isEnabled()) {
+                uploader = new AliyunOSSUploaderFactory().getUploader(uploadFile);
+            } else if ("FastFDS".equals(storyType)) {
+                uploader = new FastDFSUploaderFactory().getUploader(uploadFile, defaultAppendFileStorageClient);
+            } else {
+                uploader = new ChunkUploaderFactory().getUploader(uploadFile);
+            }
         }
 
         List<UploadFile> uploadFileList = uploader.upload(request);

@@ -12,6 +12,7 @@ public enum ResultCodeEnum {
     PARAM_ERROR(false,20002,"参数错误"),
     NULL_POINT(false, 20003, "空指针异常"),
     INDEX_OUT_OF_BOUNDS(false, 20004, "下标越界异常"),
+    REQUEST_TIMEOUT(false, 20005, "请求超时"),
     ;
 
     // 响应是否成功

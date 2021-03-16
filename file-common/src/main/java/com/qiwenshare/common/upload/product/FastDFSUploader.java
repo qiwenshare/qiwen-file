@@ -17,13 +17,10 @@ import org.springframework.web.multipart.support.StandardMultipartHttpServletReq
 import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
 import java.io.File;
-import java.io.IOException;
 import java.util.*;
 
 @Slf4j
-@Component
 public class FastDFSUploader extends Uploader {
-    @Resource
     AppendFileStorageClient defaultAppendFileStorageClient;
 
     UploadFile uploadFile;
@@ -41,6 +38,11 @@ public class FastDFSUploader extends Uploader {
         this.uploadFile = uploadFile;
     }
 
+    public FastDFSUploader(UploadFile uploadFile, AppendFileStorageClient defaultAppendFileStorageClient) {
+        this.uploadFile = uploadFile;
+        this.defaultAppendFileStorageClient = defaultAppendFileStorageClient;
+    }
+
 
     @Override
     public List<UploadFile> upload(HttpServletRequest request) {
@@ -52,11 +54,6 @@ public class FastDFSUploader extends Uploader {
         boolean isMultipart = ServletFileUpload.isMultipartContent(this.request);
         if (!isMultipart) {
             throw new UploadGeneralException("未包含文件上传域");
-//            UploadFile uploadFile = new UploadFile();
-//            uploadFile.setSuccess(0);
-//            uploadFile.setMessage("未包含文件上传域");
-//            saveUploadFileList.add(uploadFile);
-//            return saveUploadFileList;
         }
         DiskFileItemFactory dff = new DiskFileItemFactory();//1、创建工厂
         String savePath = getSaveFilePath();
@@ -68,16 +65,10 @@ public class FastDFSUploader extends Uploader {
             sfu.setHeaderEncoding("utf-8");//3、解决文件名的中文乱码
             Iterator<String> iter = this.request.getFileNames();
             while (iter.hasNext()) {
-
                 saveUploadFileList = doUpload(savePath, iter);
             }
         } catch (Exception e) {
             throw new UploadGeneralException(e);
-//            UploadFile uploadFile = new UploadFile();
-//            uploadFile.setSuccess(1);
-//            uploadFile.setMessage("未知错误");
-//            saveUploadFileList.add(uploadFile);
-//            e.printStackTrace();
         }
 
         log.info("结束上传");
@@ -124,7 +115,6 @@ public class FastDFSUploader extends Uploader {
 
         } catch (Exception e) {
             throw new UploadGeneralException(e);
-//            log.error("上传出错：" + e);
         }
 
         uploadFile.setIsOSS(1);
@@ -146,14 +136,8 @@ public class FastDFSUploader extends Uploader {
         try {
 
             Boolean lock = LOCK_MAP.get(uploadFile.getIdentifier());
-//
-//            if (lock == null){
-//                log.info("请求块锁失败");
-//                return false;
-//            }
             if (lock != null && lock) {
                 throw new UploadGeneralException("请求块锁失败");
-                //return false;
             }
             LOCK_MAP.put(uploadFile.getIdentifier(), true);
             // 写入锁的当前拥有者
@@ -187,7 +171,7 @@ public class FastDFSUploader extends Uploader {
                     log.info("上传第一块");
                     CURRENT_UPLOAD_CHUNK_NUMBER.put(uploadFile.getIdentifier(), uploadFile.getChunkNumber() + 1);
                     try {
-                        storePath = defaultAppendFileStorageClient.uploadAppenderFile("default_group", multipartFile.getInputStream(),
+                        storePath = defaultAppendFileStorageClient.uploadAppenderFile("group1", multipartFile.getInputStream(),
                                 multipartFile.getSize(), FileUtil.getFileExtendName(multipartFile.getOriginalFilename()));
                         // 记录第一个分片上传的大小
                         UPLOADED_SIZE.put(uploadFile.getIdentifier(), uploadFile.getCurrentChunkSize());
@@ -220,7 +204,7 @@ public class FastDFSUploader extends Uploader {
                     try {
                         Long alreadySize = UPLOADED_SIZE.get(uploadFile.getIdentifier());
                         // 追加方式实际实用如果中途出错多次,可能会出现重复追加情况,这里改成修改模式,即时多次传来重复文件块,依然可以保证文件拼接正确
-                        defaultAppendFileStorageClient.modifyFile("default_group", path, multipartFile.getInputStream(),
+                        defaultAppendFileStorageClient.modifyFile("group1", path, multipartFile.getInputStream(),
                                 multipartFile.getSize(), alreadySize);
                         // 记录分片上传的大小
                         UPLOADED_SIZE.put(uploadFile.getIdentifier(), alreadySize + multipartFile.getSize());
@@ -241,10 +225,8 @@ public class FastDFSUploader extends Uploader {
             // 锁的当前拥有者才能释放块上传锁
             if (currOwner) {
                 LOCK_MAP.put(uploadFile.getIdentifier(), false);
-                //JedisConfig.setString(chunkLockName, "0");
             }
         }
         log.info("***********第{}块上传成功**********", uploadFile.getChunkNumber());
-//        return true;
     }
 }

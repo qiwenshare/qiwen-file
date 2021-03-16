@@ -44,11 +44,6 @@ public class ChunkUploader extends Uploader {
         boolean isMultipart = ServletFileUpload.isMultipartContent(this.request);
         if (!isMultipart) {
             throw new UploadGeneralException("未包含文件上传域");
-//            UploadFile uploadFile = new UploadFile();
-//            uploadFile.setSuccess(0);
-//            uploadFile.setMessage("未包含文件上传域");
-//            saveUploadFileList.add(uploadFile);
-//            return saveUploadFileList;
         }
         DiskFileItemFactory dff = new DiskFileItemFactory();//1、创建工厂
         String savePath = getSaveFilePath();
@@ -63,34 +58,18 @@ public class ChunkUploader extends Uploader {
                 saveUploadFileList = doUpload(savePath, iter);
             }
         } catch (IOException e) {
-//            UploadFile uploadFile = new UploadFile();
-//            uploadFile.setSuccess(1);
-//            uploadFile.setMessage("未知错误");
-//            saveUploadFileList.add(uploadFile);
-//            e.printStackTrace();
             throw new UploadGeneralException("未包含文件上传域");
         } catch (NotSameFileExpection notSameFileExpection) {
             notSameFileExpection.printStackTrace();
         }
-
-
         return saveUploadFileList;
-
-
     }
 
     private List<UploadFile> doUpload(String savePath, Iterator<String> iter) throws IOException, NotSameFileExpection {
         List<UploadFile> saveUploadFileList = new ArrayList<UploadFile>();
-        //UploadFile uploadFile = new UploadFile();
         MultipartFile multipartfile = this.request.getFile(iter.next());
 
-        //InputStream inputStream = multipartfile.getInputStream();
         String timeStampName = uploadFile.getIdentifier();
-//                .getTimeStampName();
-//        if (StringUtils.isEmpty(uploadFile.getTimeStampName())) {
-//            timeStampName = getTimeStampName();
-//        }
-
 
         String originalName = multipartfile.getOriginalFilename();
 
