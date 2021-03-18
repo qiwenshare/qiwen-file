@@ -239,6 +239,8 @@ public class AliyunOSSUploader extends Uploader {
         getClient().abortMultipartUpload(abortMultipartUploadRequest);
     }
 
+
+    @Override
     protected synchronized String getTimeStampName(){
         String timeStampName;
 
