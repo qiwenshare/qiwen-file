@@ -1,8 +1,13 @@
 package com.qiwenshare.file.controller;
 
+import com.aliyun.oss.OSS;
+import com.aliyun.oss.model.OSSObject;
 import com.qiwenshare.common.cbb.DateUtil;
+import com.qiwenshare.common.operation.FileOperation;
+import com.qiwenshare.common.oss.AliyunOSSDownload;
 import com.qiwenshare.common.util.FileUtil;
 import com.qiwenshare.common.cbb.RestResult;
+import com.qiwenshare.common.util.PathUtil;
 import com.qiwenshare.file.anno.MyLog;
 import com.qiwenshare.file.api.IFileService;
 import com.qiwenshare.file.api.IFiletransferService;
@@ -13,6 +18,7 @@ import com.qiwenshare.file.domain.FileBean;
 import com.qiwenshare.file.domain.StorageBean;
 import com.qiwenshare.file.domain.UserBean;
 import com.qiwenshare.file.domain.UserFile;
+import com.qiwenshare.file.dto.DownloadFileDTO;
 import com.qiwenshare.file.dto.UploadFileDTO;
 import com.qiwenshare.file.vo.file.UploadFileVo;
 import io.swagger.v3.oas.annotations.Operation;
@@ -22,6 +28,8 @@ import org.springframework.web.bind.annotation.*;
 
 import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+import java.io.*;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -117,6 +125,86 @@ public class FiletransferController {
         filetransferService.uploadFile(request, uploadFileDto, sessionUserBean.getUserId());
         UploadFileVo uploadFileVo = new UploadFileVo();
         return RestResult.success().data(uploadFileVo);
+
+    }
+
+    /**
+     * 下载文件
+     *
+     * @return
+     */
+    @Operation(summary = "下载文件", description = "下载文件接口", tags = {"filetransfer"})
+    @MyLog(operation = "下载文件", module = CURRENT_MODULE)
+    @RequestMapping(value = "/downloadfile", method = RequestMethod.GET)
+    public String downloadFile(HttpServletResponse response, DownloadFileDTO downloadFileDTO) {
+        UserFile userFile = userFileService.getById(downloadFileDTO.getUserFileId());
+
+        String fileName = userFile.getFileName() + "." + userFile.getExtendName();
+        response.setContentType("application/force-download");// 设置强制下载不打开
+        response.addHeader("Content-Disposition", "attachment;fileName=" + fileName);// 设置文件名
+        byte[] buffer = new byte[1024];
+        BufferedInputStream bis = null;
+        FileBean fileBean = fileService.getById(userFile.getFileId());
+        if (fileBean.getIsOSS() != null && fileBean.getIsOSS() == 1) {
+
+            AliyunOSSDownload aliyunOSSDownload= new AliyunOSSDownload();
+            OSS ossClient = aliyunOSSDownload.createOSSClient(qiwenFileConfig.getAliyun().getOss());
+            OSSObject ossObject = ossClient.getObject(qiwenFileConfig.getAliyun().getOss().getBucketName(), fileBean.getTimeStampName());
+            InputStream inputStream = ossObject.getObjectContent();
+            try {
+                bis = new BufferedInputStream(inputStream);
+                OutputStream os = response.getOutputStream();
+                int i = bis.read(buffer);
+                while (i != -1) {
+                    os.write(buffer, 0, i);
+                    i = bis.read(buffer);
+                }
+            } catch (IOException e) {
+                e.printStackTrace();
+            } finally {
+                if (bis != null) {
+                    try {
+                        bis.close();
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                    }
+                }
+
+            }
+            ossClient.shutdown();
+        } else {
+            //设置文件路径
+            File file = FileOperation.newFile(PathUtil.getStaticPath() + fileBean.getFileUrl());
+            if (file.exists()) {
+
+
+                FileInputStream fis = null;
+
+                try {
+                    fis = new FileInputStream(file);
+                    bis = new BufferedInputStream(fis);
+                    OutputStream os = response.getOutputStream();
+                    int i = bis.read(buffer);
+                    while (i != -1) {
+                        os.write(buffer, 0, i);
+                        i = bis.read(buffer);
+                    }
+
+                } catch (Exception e) {
+                    e.printStackTrace();
+                } finally {
+                    if (bis != null) {
+                        try {
+                            bis.close();
+                        } catch (IOException e) {
+                            e.printStackTrace();
+                        }
+                    }
+                }
+            }
+
+        }
+        return null;
 
     }
 

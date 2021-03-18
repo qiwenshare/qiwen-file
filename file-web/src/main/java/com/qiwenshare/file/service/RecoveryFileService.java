@@ -59,65 +59,65 @@ public class RecoveryFileService  extends ServiceImpl<RecoveryFileMapper, Recove
 
     }
     
-//    public void restorefile() {
-//        LambdaUpdateWrapper<UserFile> userFileLambdaUpdateWrapper = new LambdaUpdateWrapper<>();
-//        userFileLambdaUpdateWrapper.set(UserFile::getDeleteFlag, 0)
-//                .set(UserFile::getDeleteBatchNum, "")
-//                .eq(UserFile::getDeleteBatchNum, restoreFileDto.getDeleteBatchNum());
-//        userFileService.update(userFileLambdaUpdateWrapper);
-//
-//        String filePath = PathUtil.getParentPath(restoreFileDto.getFilePath());
-//        while(filePath.indexOf("/") != -1) {
-//            String fileName = filePath.substring(filePath.lastIndexOf("/") + 1);
-//            filePath = PathUtil.getParentPath(filePath);
-//            LambdaQueryWrapper<UserFile> lambdaQueryWrapper = new LambdaQueryWrapper<>();
-//            lambdaQueryWrapper.eq(UserFile::getFilePath, filePath + "/")
-//                    .eq(UserFile::getDeleteFlag, 0)
-//                    .eq(UserFile::getUserId, sessionUserBean.getUserId());
-//            List<UserFile> userFileList = userFileService.list(lambdaQueryWrapper);
-//            if (userFileList.size() == 0) {
-//                UserFile userFile = new UserFile();
-//                userFile.setUserId(sessionUserBean.getUserId());
-//                userFile.setFileName(fileName);
-//                userFile.setFilePath(filePath + "/");
-//                userFile.setDeleteFlag(0);
-//                userFile.setIsDir(1);
-//                userFile.setUploadTime(DateUtil.getCurrentTime());
-//
-//                userFileService.save(userFile);
-//            }
-//
-//        }
-//
-//        LambdaQueryWrapper<UserFile> lambdaQueryWrapper = new LambdaQueryWrapper<>();
-//
-//        lambdaQueryWrapper.select(UserFile::getFileName, UserFile::getFilePath)
-//                .likeRight(UserFile::getFilePath, restoreFileDto.getFilePath())
-//                .eq(UserFile::getIsDir, 1)
-//                .eq(UserFile::getDeleteFlag, 0)
-//                .groupBy(UserFile::getFilePath, UserFile::getFileName)
-//                .having("count(fileName) >= 2");
-//        List<UserFile> repeatList = userFileService.list(lambdaQueryWrapper);
-//
-//        for (UserFile userFile : repeatList) {
-//            LambdaQueryWrapper<UserFile> lambdaQueryWrapper1 = new LambdaQueryWrapper<>();
-//            lambdaQueryWrapper1.eq(UserFile::getFilePath, userFile.getFilePath())
-//                    .eq(UserFile::getFileName, userFile.getFileName())
-//                    .eq(UserFile::getDeleteFlag, "0");
-//            List<UserFile> userFiles = userFileService.list(lambdaQueryWrapper1);
-//            log.info("重复的文件:" + JSON.toJSONString(userFiles));
-//            for (int i = 0; i < userFiles.size() - 1; i ++) {
-//                log.info("删除文件：" + JSON.toJSONString(userFiles.get(i)));
-//                userFileService.removeById(userFiles.get(i).getUserFileId());
-//            }
-//        }
-//
-//        log.info(JSON.toJSONString(repeatList));
-//
-//        LambdaQueryWrapper<RecoveryFile> recoveryFileServiceLambdaQueryWrapper = new LambdaQueryWrapper<>();
-//        recoveryFileServiceLambdaQueryWrapper.eq(RecoveryFile::getDeleteBatchNum, restoreFileDto.getDeleteBatchNum());
-//        recoveryFileService.remove(recoveryFileServiceLambdaQueryWrapper);
-//    }
+    public void restorefile(String deleteBatchNum, String filePath, Long sessionUserId) {
+        LambdaUpdateWrapper<UserFile> userFileLambdaUpdateWrapper = new LambdaUpdateWrapper<>();
+        userFileLambdaUpdateWrapper.set(UserFile::getDeleteFlag, 0)
+                .set(UserFile::getDeleteBatchNum, "")
+                .eq(UserFile::getDeleteBatchNum, deleteBatchNum);
+        userFileMapper.update(null, userFileLambdaUpdateWrapper);
+
+        String parentFilePath = PathUtil.getParentPath(filePath);
+        while(parentFilePath.indexOf("/") != -1) {
+            String fileName = parentFilePath.substring(parentFilePath.lastIndexOf("/") + 1);
+            parentFilePath = PathUtil.getParentPath(parentFilePath);
+            LambdaQueryWrapper<UserFile> lambdaQueryWrapper = new LambdaQueryWrapper<>();
+            lambdaQueryWrapper.eq(UserFile::getFilePath, parentFilePath + "/")
+                    .eq(UserFile::getDeleteFlag, 0)
+                    .eq(UserFile::getUserId, sessionUserId);
+            List<UserFile> userFileList = userFileMapper.selectList(lambdaQueryWrapper);
+            if (userFileList.size() == 0) {
+                UserFile userFile = new UserFile();
+                userFile.setUserId(sessionUserId);
+                userFile.setFileName(fileName);
+                userFile.setFilePath(parentFilePath + "/");
+                userFile.setDeleteFlag(0);
+                userFile.setIsDir(1);
+                userFile.setUploadTime(DateUtil.getCurrentTime());
+
+                userFileMapper.insert(userFile);
+            }
+
+        }
+
+        LambdaQueryWrapper<UserFile> lambdaQueryWrapper = new LambdaQueryWrapper<>();
+
+        lambdaQueryWrapper.select(UserFile::getFileName, UserFile::getFilePath)
+                .likeRight(UserFile::getFilePath, filePath)
+                .eq(UserFile::getIsDir, 1)
+                .eq(UserFile::getDeleteFlag, 0)
+                .groupBy(UserFile::getFilePath, UserFile::getFileName)
+                .having("count(fileName) >= 2");
+        List<UserFile> repeatList = userFileMapper.selectList(lambdaQueryWrapper);
+
+        for (UserFile userFile : repeatList) {
+            LambdaQueryWrapper<UserFile> lambdaQueryWrapper1 = new LambdaQueryWrapper<>();
+            lambdaQueryWrapper1.eq(UserFile::getFilePath, userFile.getFilePath())
+                    .eq(UserFile::getFileName, userFile.getFileName())
+                    .eq(UserFile::getDeleteFlag, "0");
+            List<UserFile> userFiles = userFileMapper.selectList(lambdaQueryWrapper1);
+            log.info("重复的文件:" + JSON.toJSONString(userFiles));
+            for (int i = 0; i < userFiles.size() - 1; i ++) {
+                log.info("删除文件：" + JSON.toJSONString(userFiles.get(i)));
+                userFileMapper.deleteById(userFiles.get(i).getUserFileId());
+            }
+        }
+
+        log.info(JSON.toJSONString(repeatList));
+
+        LambdaQueryWrapper<RecoveryFile> recoveryFileServiceLambdaQueryWrapper = new LambdaQueryWrapper<>();
+        recoveryFileServiceLambdaQueryWrapper.eq(RecoveryFile::getDeleteBatchNum, deleteBatchNum);
+        recoveryFileMapper.delete(recoveryFileServiceLambdaQueryWrapper);
+    }
 
 
 
