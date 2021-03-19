@@ -140,6 +140,11 @@ public class FiletransferController {
         UserFile userFile = userFileService.getById(downloadFileDTO.getUserFileId());
 
         String fileName = userFile.getFileName() + "." + userFile.getExtendName();
+        try {
+            fileName = new String(fileName.getBytes("utf-8"), "ISO-8859-1");
+        } catch (UnsupportedEncodingException e) {
+            e.printStackTrace();
+        }
         response.setContentType("application/force-download");// 设置强制下载不打开
         response.addHeader("Content-Disposition", "attachment;fileName=" + fileName);// 设置文件名
         byte[] buffer = new byte[1024];
