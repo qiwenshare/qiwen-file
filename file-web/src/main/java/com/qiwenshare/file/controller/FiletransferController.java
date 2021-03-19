@@ -136,7 +136,7 @@ public class FiletransferController {
     @Operation(summary = "下载文件", description = "下载文件接口", tags = {"filetransfer"})
     @MyLog(operation = "下载文件", module = CURRENT_MODULE)
     @RequestMapping(value = "/downloadfile", method = RequestMethod.GET)
-    public String downloadFile(HttpServletResponse response, DownloadFileDTO downloadFileDTO) {
+    public void downloadFile(HttpServletResponse response, DownloadFileDTO downloadFileDTO) {
         UserFile userFile = userFileService.getById(downloadFileDTO.getUserFileId());
 
         String fileName = userFile.getFileName() + "." + userFile.getExtendName();
@@ -148,23 +148,36 @@ public class FiletransferController {
         response.setContentType("application/force-download");// 设置强制下载不打开
         response.addHeader("Content-Disposition", "attachment;fileName=" + fileName);// 设置文件名
         byte[] buffer = new byte[1024];
-        BufferedInputStream bis = null;
+
         FileBean fileBean = fileService.getById(userFile.getFileId());
         if (fileBean.getIsOSS() != null && fileBean.getIsOSS() == 1) {
+            aliyunDownload(response, buffer, fileBean);
+        } else {
+            localFileDownload(response, buffer, fileBean);
+        }
 
-            AliyunOSSDownload aliyunOSSDownload= new AliyunOSSDownload();
-            OSS ossClient = aliyunOSSDownload.createOSSClient(qiwenFileConfig.getAliyun().getOss());
-            OSSObject ossObject = ossClient.getObject(qiwenFileConfig.getAliyun().getOss().getBucketName(), fileBean.getTimeStampName());
-            InputStream inputStream = ossObject.getObjectContent();
+    }
+
+    private void localFileDownload(HttpServletResponse response, byte[] buffer, FileBean fileBean) {
+        BufferedInputStream bis = null;
+        //设置文件路径
+        File file = FileOperation.newFile(PathUtil.getStaticPath() + fileBean.getFileUrl());
+        if (file.exists()) {
+
+
+            FileInputStream fis = null;
+
             try {
-                bis = new BufferedInputStream(inputStream);
+                fis = new FileInputStream(file);
+                bis = new BufferedInputStream(fis);
                 OutputStream os = response.getOutputStream();
                 int i = bis.read(buffer);
                 while (i != -1) {
                     os.write(buffer, 0, i);
                     i = bis.read(buffer);
                 }
-            } catch (IOException e) {
+
+            } catch (Exception e) {
                 e.printStackTrace();
             } finally {
                 if (bis != null) {
@@ -174,43 +187,37 @@ public class FiletransferController {
                         e.printStackTrace();
                     }
                 }
-
             }
-            ossClient.shutdown();
-        } else {
-            //设置文件路径
-            File file = FileOperation.newFile(PathUtil.getStaticPath() + fileBean.getFileUrl());
-            if (file.exists()) {
+        }
+    }
 
-
-                FileInputStream fis = null;
-
+    private void aliyunDownload(HttpServletResponse response, byte[] buffer, FileBean fileBean) {
+        BufferedInputStream bis = null;
+        AliyunOSSDownload aliyunOSSDownload= new AliyunOSSDownload();
+        OSS ossClient = aliyunOSSDownload.createOSSClient(qiwenFileConfig.getAliyun().getOss());
+        OSSObject ossObject = ossClient.getObject(qiwenFileConfig.getAliyun().getOss().getBucketName(), fileBean.getTimeStampName());
+        InputStream inputStream = ossObject.getObjectContent();
+        try {
+            bis = new BufferedInputStream(inputStream);
+            OutputStream os = response.getOutputStream();
+            int i = bis.read(buffer);
+            while (i != -1) {
+                os.write(buffer, 0, i);
+                i = bis.read(buffer);
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+        } finally {
+            if (bis != null) {
                 try {
-                    fis = new FileInputStream(file);
-                    bis = new BufferedInputStream(fis);
-                    OutputStream os = response.getOutputStream();
-                    int i = bis.read(buffer);
-                    while (i != -1) {
-                        os.write(buffer, 0, i);
-                        i = bis.read(buffer);
-                    }
-
-                } catch (Exception e) {
+                    bis.close();
+                } catch (IOException e) {
                     e.printStackTrace();
-                } finally {
-                    if (bis != null) {
-                        try {
-                            bis.close();
-                        } catch (IOException e) {
-                            e.printStackTrace();
-                        }
-                    }
                 }
             }
 
         }
-        return null;
-
+        ossClient.shutdown();
     }
 
     @Operation(summary = "获取存储信息", description = "获取存储信息", tags = {"filetransfer"})

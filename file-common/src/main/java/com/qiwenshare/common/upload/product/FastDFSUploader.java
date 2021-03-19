@@ -10,17 +10,16 @@ import com.qiwenshare.common.util.PathUtil;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.fileupload.disk.DiskFileItemFactory;
 import org.apache.commons.fileupload.servlet.ServletFileUpload;
-import org.springframework.stereotype.Component;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.multipart.support.StandardMultipartHttpServletRequest;
 
-import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
 import java.io.File;
 import java.util.*;
 
 @Slf4j
 public class FastDFSUploader extends Uploader {
+    public static Object lock = new Object();
     AppendFileStorageClient defaultAppendFileStorageClient;
 
     UploadFile uploadFile;
@@ -28,14 +27,10 @@ public class FastDFSUploader extends Uploader {
     private static Map<String, Integer> CURRENT_UPLOAD_CHUNK_NUMBER = new HashMap<>();
     private static Map<String, Long> UPLOADED_SIZE = new HashMap<>();
     private static Map<String, String> STORE_PATH = new HashMap<>();
-    private static Map<String, Boolean> LOCK_MAP = new HashMap<>();
+    private static Map<String, Object> LOCK_MAP = new HashMap<>();
 
     public FastDFSUploader() {
 
-    }
-
-    public FastDFSUploader(UploadFile uploadFile) {
-        this.uploadFile = uploadFile;
     }
 
     public FastDFSUploader(UploadFile uploadFile, AppendFileStorageClient defaultAppendFileStorageClient) {
@@ -76,13 +71,17 @@ public class FastDFSUploader extends Uploader {
     }
 
 
-
-    private List<UploadFile> doUpload(String savePath, Iterator<String> iter){
+    private List<UploadFile> doUpload(String savePath, Iterator<String> iter) {
 
         List<UploadFile> saveUploadFileList = new ArrayList<>();
 
         try {
             MultipartFile multipartfile = this.request.getFile(iter.next());
+            synchronized (lock) {
+                if (LOCK_MAP.get(uploadFile.getIdentifier()) == null) {
+                    LOCK_MAP.put(uploadFile.getIdentifier(), new Object());
+                }
+            }
             uploadFileChunk(multipartfile);
 
             String timeStampName = getTimeStampName();
@@ -100,11 +99,10 @@ public class FastDFSUploader extends Uploader {
             File confFile = new File(PathUtil.getStaticPath() + FILE_SEPARATOR + confFilePath);
 
 
-
             boolean isComplete = checkUploadStatus(uploadFile, confFile);
             if (isComplete) {
                 log.info("分片上传完成");
-
+                LOCK_MAP.remove(uploadFile.getIdentifier());
                 uploadFile.setUrl(STORE_PATH.get(uploadFile.getIdentifier()));
                 uploadFile.setSuccess(1);
                 uploadFile.setMessage("上传成功");
@@ -126,40 +124,23 @@ public class FastDFSUploader extends Uploader {
 
     public void uploadFileChunk(MultipartFile multipartFile) {
 
-        // 存储在fastdfs不带组的路径
-//        String noGroupPath = "";
-        log.info("当前文件的Md5:{}", uploadFile.getIdentifier());
+        synchronized (LOCK_MAP.get(uploadFile.getIdentifier())) {
+            // 存储在fastdfs不带组的路径
 
-        // 真正的拥有者
-        boolean currOwner = false;
-
-        try {
-
-            Boolean lock = LOCK_MAP.get(uploadFile.getIdentifier());
-            if (lock != null && lock) {
-                throw new UploadGeneralException("请求块锁失败");
-            }
-            LOCK_MAP.put(uploadFile.getIdentifier(), true);
-            // 写入锁的当前拥有者
-            currOwner = true;
-
-            // redis中记录当前应该传第几块(从0开始)
-            Integer currentChunkInRedis =  CURRENT_UPLOAD_CHUNK_NUMBER.get(uploadFile.getIdentifier());
+            log.info("当前文件的Md5:{}", uploadFile.getIdentifier());
 
             log.info("当前块的大小:{}", uploadFile.getCurrentChunkSize());
-            if (currentChunkInRedis == null) {
-                currentChunkInRedis = 1;
+            if (CURRENT_UPLOAD_CHUNK_NUMBER.get(uploadFile.getIdentifier()) == null) {
+                CURRENT_UPLOAD_CHUNK_NUMBER.put(uploadFile.getIdentifier(), 1);
             }
 
-            //此段代码保证顺序，如果满足条件则返回失败
-            if (uploadFile.getChunkNumber() < currentChunkInRedis) {
-                log.info("当前文件块已上传");
-                throw new UploadGeneralException("当前文件块已上传");
-//                return false;
-            } else if (uploadFile.getChunkNumber() > currentChunkInRedis) {
-                log.info("当前文件块需要等待上传,稍后请重试");
-                throw new UploadGeneralException("当前文件块需要等待上传,稍后请重试");
-//                return false;
+            while (uploadFile.getChunkNumber() != CURRENT_UPLOAD_CHUNK_NUMBER.get(uploadFile.getIdentifier())) {
+                try {
+                    LOCK_MAP.get(uploadFile.getIdentifier()).wait();
+                } catch (InterruptedException e) {
+                    log.error("--------InterruptedException-------");
+                    e.printStackTrace();
+                }
             }
 
             log.info("***********开始上传第{}块**********", uploadFile.getChunkNumber());
@@ -180,13 +161,11 @@ public class FastDFSUploader extends Uploader {
                             CURRENT_UPLOAD_CHUNK_NUMBER.put(uploadFile.getIdentifier(), uploadFile.getChunkNumber());
                             log.info("获取远程文件路径出错");
                             throw new UploadGeneralException("获取远程文件路径出错");
-//                            return false;
                         }
                     } catch (Exception e) {
                         CURRENT_UPLOAD_CHUNK_NUMBER.put(uploadFile.getIdentifier(), uploadFile.getChunkNumber());
                         log.error("初次上传远程文件出错", e);
                         throw new UploadGeneralException("初次上传远程文件出错", e);
-//                        return false;
                     }
 
                     STORE_PATH.put(uploadFile.getIdentifier(), storePath.getPath());
@@ -199,7 +178,6 @@ public class FastDFSUploader extends Uploader {
                         log.error("无法获取已上传服务器文件地址");
                         CURRENT_UPLOAD_CHUNK_NUMBER.put(uploadFile.getIdentifier(), uploadFile.getChunkNumber());
                         throw new UploadGeneralException("无法获取已上传服务器文件地址");
-//                        return false;
                     }
                     try {
                         Long alreadySize = UPLOADED_SIZE.get(uploadFile.getIdentifier());
@@ -213,20 +191,16 @@ public class FastDFSUploader extends Uploader {
                         CURRENT_UPLOAD_CHUNK_NUMBER.put(uploadFile.getIdentifier(), uploadFile.getChunkNumber());
                         log.error("更新远程文件出错", e);
                         throw new UploadGeneralException("更新远程文件出错", e);
-//                        return false;
                     }
                 }
             } catch (Exception e) {
                 log.error("上传文件错误", e);
                 throw new UploadGeneralException("上传文件错误", e);
-//                return false;
             }
-        } finally {
-            // 锁的当前拥有者才能释放块上传锁
-            if (currOwner) {
-                LOCK_MAP.put(uploadFile.getIdentifier(), false);
-            }
+
+            log.info("***********第{}块上传成功**********", uploadFile.getChunkNumber());
+
+            LOCK_MAP.get(uploadFile.getIdentifier()).notifyAll();
         }
-        log.info("***********第{}块上传成功**********", uploadFile.getChunkNumber());
     }
 }
