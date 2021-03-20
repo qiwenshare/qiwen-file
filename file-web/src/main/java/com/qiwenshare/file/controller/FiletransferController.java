@@ -2,6 +2,9 @@ package com.qiwenshare.file.controller;
 
 import com.aliyun.oss.OSS;
 import com.aliyun.oss.model.OSSObject;
+import com.github.tobato.fastdfs.proto.storage.DownloadByteArray;
+import com.github.tobato.fastdfs.service.AppendFileStorageClient;
+import com.github.tobato.fastdfs.service.FastFileStorageClient;
 import com.qiwenshare.common.cbb.DateUtil;
 import com.qiwenshare.common.operation.FileOperation;
 import com.qiwenshare.common.oss.AliyunOSSDownload;
@@ -27,9 +30,11 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
 import javax.annotation.Resource;
+import javax.servlet.ServletOutputStream;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.*;
+import java.net.URLEncoder;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -53,6 +58,8 @@ public class FiletransferController {
     IUserService userService;
     @Resource
     IUserFileService userFileService;
+    @Autowired
+    private FastFileStorageClient fastFileStorageClient;
     public static final String CURRENT_MODULE = "文件传输接口";
 
     @Operation(summary = "极速上传", description = "校验文件MD5判断文件是否存在，如果存在直接上传成功并返回skipUpload=true，如果不存在返回skipUpload=false需要再次调用该接口的POST方法", tags = {"filetransfer"})
@@ -147,19 +154,20 @@ public class FiletransferController {
         }
         response.setContentType("application/force-download");// 设置强制下载不打开
         response.addHeader("Content-Disposition", "attachment;fileName=" + fileName);// 设置文件名
-        byte[] buffer = new byte[1024];
+
 
         FileBean fileBean = fileService.getById(userFile.getFileId());
         if (fileBean.getIsOSS() != null && fileBean.getIsOSS() == 1) {
-            aliyunDownload(response, buffer, fileBean);
+            aliyunDownload(response, fileBean);
         } else {
-            localFileDownload(response, buffer, fileBean);
+            localFileDownload(response, fileBean);
         }
 
     }
 
-    private void localFileDownload(HttpServletResponse response, byte[] buffer, FileBean fileBean) {
+    private void localFileDownload(HttpServletResponse response, FileBean fileBean) {
         BufferedInputStream bis = null;
+        byte[] buffer = new byte[1024];
         //设置文件路径
         File file = FileOperation.newFile(PathUtil.getStaticPath() + fileBean.getFileUrl());
         if (file.exists()) {
@@ -191,8 +199,9 @@ public class FiletransferController {
         }
     }
 
-    private void aliyunDownload(HttpServletResponse response, byte[] buffer, FileBean fileBean) {
+    private void aliyunDownload(HttpServletResponse response, FileBean fileBean) {
         BufferedInputStream bis = null;
+        byte[] buffer = new byte[1024];
         AliyunOSSDownload aliyunOSSDownload= new AliyunOSSDownload();
         OSS ossClient = aliyunOSSDownload.createOSSClient(qiwenFileConfig.getAliyun().getOss());
         OSSObject ossObject = ossClient.getObject(qiwenFileConfig.getAliyun().getOss().getBucketName(), fileBean.getTimeStampName());
@@ -219,6 +228,33 @@ public class FiletransferController {
         }
         ossClient.shutdown();
     }
+
+
+    public void fastFDSDownload(HttpServletResponse response, FileBean fileBean) throws IOException {
+        String group = fileBean.getFileUrl().substring(0, fileBean.getFileUrl().indexOf("/"));
+        String path = fileBean.getFileUrl().substring(fileBean.getFileUrl().indexOf("/") + 1);
+        DownloadByteArray downloadByteArray = new DownloadByteArray();
+        byte[] bytes = fastFileStorageClient.downloadFile(group, path, downloadByteArray);
+
+        // 这里只是为了整合fastdfs，所以写死了文件格式。需要在上传的时候保存文件名。下载的时候使用对应的格式
+        response.setHeader("Content-disposition", "attachment;filename=" + URLEncoder.encode("sb.xlsx", "UTF-8"));
+        response.setCharacterEncoding("UTF-8");
+        ServletOutputStream outputStream = null;
+        try {
+            outputStream = response.getOutputStream();
+            outputStream.write(bytes);
+        } catch (IOException e) {
+            e.printStackTrace();
+        } finally {
+            try {
+                outputStream.flush();
+                outputStream.close();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
+    }
+
 
     @Operation(summary = "获取存储信息", description = "获取存储信息", tags = {"filetransfer"})
     @RequestMapping(value = "/getstorage", method = RequestMethod.GET)

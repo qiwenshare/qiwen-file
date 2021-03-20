@@ -9,7 +9,7 @@ import com.qiwenshare.file.anno.MyLog;
 import com.qiwenshare.file.api.IUserService;
 import com.qiwenshare.file.config.QiwenFileConfig;
 import com.qiwenshare.file.domain.UserBean;
-import com.qiwenshare.file.dto.RegisterDTO;
+import com.qiwenshare.file.dto.user.RegisterDTO;
 import com.qiwenshare.file.vo.user.UserLoginVo;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;

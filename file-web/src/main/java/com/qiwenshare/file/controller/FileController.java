@@ -1,6 +1,5 @@
 package com.qiwenshare.file.controller;
 
-import cn.hutool.core.bean.BeanUtil;
 import com.alibaba.fastjson.JSON;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
@@ -16,13 +15,23 @@ import com.qiwenshare.file.api.IRecoveryFileService;
 import com.qiwenshare.file.api.IUserFileService;
 import com.qiwenshare.file.api.IUserService;
 import com.qiwenshare.file.config.QiwenFileConfig;
+import com.qiwenshare.file.config.es.FileSearch;
 import com.qiwenshare.file.domain.*;
 import com.qiwenshare.file.dto.*;
+import com.qiwenshare.file.dto.file.*;
 import com.qiwenshare.file.vo.file.FileListVo;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.codec.digest.DigestUtils;
+import org.elasticsearch.index.query.QueryBuilders;
+import org.elasticsearch.search.fetch.subphase.highlight.HighlightBuilder;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Sort;
+import org.springframework.data.elasticsearch.core.ElasticsearchRestTemplate;
+import org.springframework.data.elasticsearch.core.SearchHits;
+import org.springframework.data.elasticsearch.core.query.NativeSearchQueryBuilder;
 import org.springframework.web.bind.annotation.*;
 
 import javax.annotation.Resource;
@@ -54,7 +63,8 @@ public class FileController {
 
     public static final String CURRENT_MODULE = "文件接口";
 
-
+    @Autowired
+    private ElasticsearchRestTemplate elasticsearchRestTemplate;
     public static long treeid = 0;
 
 
@@ -86,12 +96,48 @@ public class FileController {
         return RestResult.success();
     }
 
+    @Operation(summary = "文件搜索", description = "文件搜索", tags = {"file"})
+    @GetMapping(value = "/search")
+    @MyLog(operation = "文件搜索", module = CURRENT_MODULE)
+    @ResponseBody
+    public RestResult<SearchHits<FileSearch>> searchFile(SearchFileDTO searchFileDTO) {
+        NativeSearchQueryBuilder queryBuilder = new NativeSearchQueryBuilder();
+        HighlightBuilder.Field allHighLight = new HighlightBuilder.Field("*").preTags("<span class='keyword'>")
+                .postTags("</span>");
+
+        queryBuilder.withHighlightFields(allHighLight);
+
+        //设置分页
+        int currentPage = (int)searchFileDTO.getCurrentPage() - 1;
+        int pageCount = (int)(searchFileDTO.getPageCount() == 0 ? 10 : searchFileDTO.getPageCount());
+        String order = searchFileDTO.getOrder();
+        Sort.Direction direction = null;
+        if (searchFileDTO.getDirection() == null) {
+            direction = Sort.Direction.DESC;
+        } else if ("asc".equals(searchFileDTO.getDirection())) {
+            direction = Sort.Direction.ASC;
+        } else if ("desc".equals(searchFileDTO.getDirection())) {
+            direction = Sort.Direction.DESC;
+        } else {
+            direction = Sort.Direction.DESC;
+        }
+        if (order == null) {
+            queryBuilder.withPageable(PageRequest.of(currentPage, pageCount));
+        } else {
+            queryBuilder.withPageable(PageRequest.of(currentPage, pageCount, Sort.by(direction, order)));
+        }
+
+        queryBuilder.withQuery(QueryBuilders.matchQuery("fileName", searchFileDTO.getFileName()));
+        SearchHits<FileSearch> search = elasticsearchRestTemplate.search(queryBuilder.build(), FileSearch.class);
+
+        return RestResult.success().data(search);
+    }
+
     @Operation(summary = "文件重命名", description = "文件重命名", tags = {"file"})
     @RequestMapping(value = "/renamefile", method = RequestMethod.POST)
     @MyLog(operation = "文件重命名", module = CURRENT_MODULE)
     @ResponseBody
     public RestResult<String> renameFile(@RequestBody RenameFileDTO renameFileDto, @RequestHeader("token") String token) {
-        RestResult<String> restResult = new RestResult<>();
         if (!operationCheck(token).getSuccess()){
             return operationCheck(token);
         }
