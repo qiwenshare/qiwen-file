@@ -4,6 +4,7 @@ import com.alibaba.fastjson.JSON;
 import com.aliyun.oss.OSS;
 import com.aliyun.oss.OSSClientBuilder;
 import com.aliyun.oss.model.*;
+import com.qiwenshare.common.config.QiwenFileConfig;
 import com.qiwenshare.common.domain.AliyunOSS;
 import com.qiwenshare.common.domain.UploadFile;
 import com.qiwenshare.common.exception.UploadGeneralException;
@@ -20,6 +21,7 @@ import org.springframework.stereotype.Component;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.multipart.support.StandardMultipartHttpServletRequest;
 
+import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
 import java.io.File;
 import java.io.IOException;
@@ -28,12 +30,13 @@ import java.util.*;
 @Component
 public class AliyunOSSUploader extends Uploader {
     private static final Logger logger = LoggerFactory.getLogger(AliyunOSSUploader.class);
-
+    @Resource
+    QiwenFileConfig qiwenFileConfig;
 //    private UploadFile uploadFile;
-    private String endpoint;
-    private String accessKeyId;
-    private String accessKeySecret;
-    private String bucketName;
+//    private String endpoint;
+//    private String accessKeyId;
+//    private String accessKeySecret;
+//    private String bucketName;
 
     // partETags是PartETag的集合。PartETag由分片的ETag和分片号组成。
     public static Map<String, List<PartETag>> partETagsMap = new HashMap<String, List<PartETag>>();
@@ -57,12 +60,12 @@ public class AliyunOSSUploader extends Uploader {
 
         List<UploadFile> saveUploadFileList = new ArrayList<>();
         StandardMultipartHttpServletRequest request = (StandardMultipartHttpServletRequest) httpServletRequest;
-        AliyunOSS aliyunOSS = (AliyunOSS) request.getAttribute("oss");
-
-        endpoint = aliyunOSS.getEndpoint();
-        accessKeyId = aliyunOSS.getAccessKeyId();
-        accessKeySecret = aliyunOSS.getAccessKeySecret();
-        bucketName = aliyunOSS.getBucketName();
+//        AliyunOSS aliyunOSS = (AliyunOSS) request.getAttribute("oss");
+//
+//        endpoint = aliyunOSS.getEndpoint();
+//        accessKeyId = aliyunOSS.getAccessKeyId();
+//        accessKeySecret = aliyunOSS.getAccessKeySecret();
+//        bucketName = aliyunOSS.getBucketName();
         boolean isMultipart = ServletFileUpload.isMultipartContent(request);
         if (!isMultipart) {
             throw new UploadGeneralException("未包含文件上传域");
@@ -114,12 +117,12 @@ public class AliyunOSSUploader extends Uploader {
 
             synchronized (AliyunOSSUploader.class) {
                 if (uploadPartRequestMap.get(uploadFile.getIdentifier()) == null) {
-                    InitiateMultipartUploadRequest request = new InitiateMultipartUploadRequest(bucketName, ossFilePath.substring(1));
+                    InitiateMultipartUploadRequest request = new InitiateMultipartUploadRequest(qiwenFileConfig.getAliyun().getOss().getBucketName(), ossFilePath.substring(1));
                     InitiateMultipartUploadResult upresult = ossClient.initiateMultipartUpload(request);
                     String uploadId = upresult.getUploadId();
 
                     UploadFileInfo uploadPartRequest = new UploadFileInfo();
-                    uploadPartRequest.setBucketName(bucketName);
+                    uploadPartRequest.setBucketName(qiwenFileConfig.getAliyun().getOss().getBucketName());
                     uploadPartRequest.setKey(ossFilePath.substring(1));
                     uploadPartRequest.setUploadId(uploadId);
                     uploadPartRequestMap.put(uploadFile.getIdentifier(), uploadPartRequest);
@@ -190,7 +193,7 @@ public class AliyunOSSUploader extends Uploader {
         Collections.sort(partETags, Comparator.comparingInt(PartETag::getPartNumber));
         UploadFileInfo uploadFileInfo = uploadPartRequestMap.get(uploadFile.getIdentifier());
         CompleteMultipartUploadRequest completeMultipartUploadRequest =
-                new CompleteMultipartUploadRequest(bucketName,
+                new CompleteMultipartUploadRequest(qiwenFileConfig.getAliyun().getOss().getBucketName(),
                         uploadFileInfo.getKey(),
                         uploadFileInfo.getUploadId(),
                         partETags);
@@ -207,7 +210,7 @@ public class AliyunOSSUploader extends Uploader {
 
     private void listFile(UploadFile uploadFile) {
         // 列举已上传的分片，其中uploadId来自于InitiateMultipartUpload返回的结果。
-        ListPartsRequest listPartsRequest = new ListPartsRequest(bucketName, uploadPartRequestMap.get(uploadFile.getIdentifier()).getKey(), uploadPartRequestMap.get(uploadFile.getIdentifier()).getUploadId());
+        ListPartsRequest listPartsRequest = new ListPartsRequest(qiwenFileConfig.getAliyun().getOss().getBucketName(), uploadPartRequestMap.get(uploadFile.getIdentifier()).getKey(), uploadPartRequestMap.get(uploadFile.getIdentifier()).getUploadId());
         // 设置uploadId。
         //listPartsRequest.setUploadId(uploadId);
         // 设置分页时每一页中分片数量为100个。默认列举1000个分片。
@@ -237,7 +240,7 @@ public class AliyunOSSUploader extends Uploader {
      */
     private void cancelUpload(UploadFile uploadFile) {
         AbortMultipartUploadRequest abortMultipartUploadRequest =
-                new AbortMultipartUploadRequest(bucketName, uploadPartRequestMap.get(uploadFile.getIdentifier()).getKey(), uploadPartRequestMap.get(uploadFile.getIdentifier()).getUploadId());
+                new AbortMultipartUploadRequest(qiwenFileConfig.getAliyun().getOss().getBucketName(), uploadPartRequestMap.get(uploadFile.getIdentifier()).getKey(), uploadPartRequestMap.get(uploadFile.getIdentifier()).getUploadId());
         getClient(uploadFile).abortMultipartUpload(abortMultipartUploadRequest);
     }
 
@@ -257,7 +260,7 @@ public class AliyunOSSUploader extends Uploader {
     private synchronized OSS getClient(UploadFile uploadFile) {
         OSS ossClient = null;
         if (ossMap.get(uploadFile.getIdentifier()) == null) {
-            ossClient = new OSSClientBuilder().build(endpoint, accessKeyId, accessKeySecret);
+            ossClient = new OSSClientBuilder().build(qiwenFileConfig.getAliyun().getOss().getEndpoint(), qiwenFileConfig.getAliyun().getOss().getAccessKeyId(), qiwenFileConfig.getAliyun().getOss().getAccessKeySecret());
             ossMap.put(uploadFile.getIdentifier(), ossClient);
         } else {
             ossClient = ossMap.get(uploadFile.getIdentifier());

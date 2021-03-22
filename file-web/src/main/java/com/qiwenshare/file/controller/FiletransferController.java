@@ -3,7 +3,6 @@ package com.qiwenshare.file.controller;
 import com.aliyun.oss.OSS;
 import com.aliyun.oss.model.OSSObject;
 import com.github.tobato.fastdfs.proto.storage.DownloadByteArray;
-import com.github.tobato.fastdfs.service.AppendFileStorageClient;
 import com.github.tobato.fastdfs.service.FastFileStorageClient;
 import com.qiwenshare.common.cbb.DateUtil;
 import com.qiwenshare.common.operation.FileOperation;
@@ -16,7 +15,7 @@ import com.qiwenshare.file.api.IFileService;
 import com.qiwenshare.file.api.IFiletransferService;
 import com.qiwenshare.file.api.IUserFileService;
 import com.qiwenshare.file.api.IUserService;
-import com.qiwenshare.file.config.QiwenFileConfig;
+import com.qiwenshare.common.config.QiwenFileConfig;
 import com.qiwenshare.file.domain.FileBean;
 import com.qiwenshare.file.domain.StorageBean;
 import com.qiwenshare.file.domain.UserBean;
@@ -34,7 +33,6 @@ import javax.servlet.ServletOutputStream;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.*;
-import java.net.URLEncoder;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -144,29 +142,7 @@ public class FiletransferController {
     @MyLog(operation = "下载文件", module = CURRENT_MODULE)
     @RequestMapping(value = "/downloadfile", method = RequestMethod.GET)
     public void downloadFile(HttpServletResponse response, DownloadFileDTO downloadFileDTO) {
-        UserFile userFile = userFileService.getById(downloadFileDTO.getUserFileId());
-
-        String fileName = userFile.getFileName() + "." + userFile.getExtendName();
-        try {
-            fileName = new String(fileName.getBytes("utf-8"), "ISO-8859-1");
-        } catch (UnsupportedEncodingException e) {
-            e.printStackTrace();
-        }
-        response.setContentType("application/force-download");// 设置强制下载不打开
-        response.addHeader("Content-Disposition", "attachment;fileName=" + fileName);// 设置文件名
-
-
-        FileBean fileBean = fileService.getById(userFile.getFileId());
-        if (fileBean.getIsOSS() != null && fileBean.getIsOSS() == 1) {
-            aliyunDownload(response, fileBean);
-        } else if (fileBean.getStorageType() == 0) {
-            localFileDownload(response, fileBean);
-        } else if (fileBean.getStorageType() == 1) {
-            aliyunDownload(response, fileBean);
-        } else if (fileBean.getStorageType() == 2) {
-            fastFDSDownload(response, fileBean);
-        }
-
+        filetransferService.downloadFile(response, downloadFileDTO);
     }
 
     private void localFileDownload(HttpServletResponse response, FileBean fileBean) {

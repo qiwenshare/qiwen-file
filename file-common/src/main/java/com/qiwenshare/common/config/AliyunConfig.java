@@ -1,4 +1,4 @@
-package com.qiwenshare.file.config;
+package com.qiwenshare.common.config;
 
 import com.qiwenshare.common.domain.AliyunOSS;
 import lombok.Data;

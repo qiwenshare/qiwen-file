@@ -1,26 +1,28 @@
 package com.qiwenshare.file.service;
 
+import java.io.UnsupportedEncodingException;
 import java.util.List;
 
 import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
 
 import cn.hutool.core.bean.BeanUtil;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
-import com.github.tobato.fastdfs.service.AppendFileStorageClient;
 import com.qiwenshare.common.cbb.DateUtil;
+import com.qiwenshare.common.domain.DownloadFile;
 import com.qiwenshare.common.domain.UploadFile;
-import com.qiwenshare.common.upload.factory.AliyunOSSUploaderFactory;
-import com.qiwenshare.common.upload.factory.ChunkUploaderFactory;
+//import com.qiwenshare.common.factory.FileOperationFactory;
+import com.qiwenshare.common.download.Downloader;
+import com.qiwenshare.common.factory.FileOperationFactory;
 import com.qiwenshare.common.upload.Uploader;
-import com.qiwenshare.common.upload.factory.FastDFSUploaderFactory;
-import com.qiwenshare.common.upload.factory.UploaderFactory;
+
 import com.qiwenshare.file.api.IFiletransferService;
 
-import com.qiwenshare.common.domain.AliyunOSS;
-import com.qiwenshare.file.config.QiwenFileConfig;
+import com.qiwenshare.common.config.QiwenFileConfig;
 import com.qiwenshare.file.domain.UserFile;
+import com.qiwenshare.file.dto.DownloadFileDTO;
 import com.qiwenshare.file.dto.UploadFileDTO;
 import com.qiwenshare.file.mapper.FileMapper;
 import com.qiwenshare.file.domain.FileBean;
@@ -37,27 +39,23 @@ public class FiletransferService implements IFiletransferService {
     StorageMapper storageMapper;
     @Resource
     FileMapper fileMapper;
-
     @Resource
     QiwenFileConfig qiwenFileConfig;
+
     @Resource
     UserFileMapper userFileMapper;
 
     @Resource
-    UploaderFactory fastDFSUploaderFactory;
+    FileOperationFactory fastDFSOperationFactory;
     @Resource
-    UploaderFactory aliyunOSSUploaderFactory;
+    FileOperationFactory aliyunOSSOperationFactory;
     @Resource
-    UploaderFactory chunkUploaderFactory;
-
-
+    FileOperationFactory localStorageOperationFactory;
 
     @Override
     public void uploadFile(HttpServletRequest request, UploadFileDTO UploadFileDto, Long userId) {
-        AliyunOSS oss = qiwenFileConfig.getAliyun().getOss();
-        String storyType = qiwenFileConfig.getStorageType();
-        request.setAttribute("oss", oss);
-        Uploader uploader;
+
+        Uploader uploader = null;
         UploadFile uploadFile = new UploadFile();
         uploadFile.setChunkNumber(UploadFileDto.getChunkNumber());
         uploadFile.setChunkSize(UploadFileDto.getChunkSize());
@@ -66,12 +64,13 @@ public class FiletransferService implements IFiletransferService {
         uploadFile.setTotalSize(UploadFileDto.getTotalSize());
         uploadFile.setCurrentChunkSize(UploadFileDto.getCurrentChunkSize());
         synchronized (FiletransferService.class) {
-            if (oss.isEnabled()) {
-                uploader = aliyunOSSUploaderFactory.getUploader();
-            } else if ("FastFDS".equals(storyType)) {
-                uploader = fastDFSUploaderFactory.getUploader();
-            } else {
-                uploader = chunkUploaderFactory.getUploader();
+            String storageType = qiwenFileConfig.getStorageType();
+            if ("0".equals(storageType)) {
+                uploader = localStorageOperationFactory.getUploader();
+            } else if ("1".equals(storageType)) {
+                uploader = aliyunOSSOperationFactory.getUploader();
+            } else if ("2".equals(storageType)) {
+                uploader = fastDFSOperationFactory.getUploader();
             }
         }
 
@@ -116,6 +115,37 @@ public class FiletransferService implements IFiletransferService {
             }
 
         }
+    }
+
+    @Override
+    public void downloadFile(HttpServletResponse httpServletResponse, DownloadFileDTO downloadFileDTO) {
+        UserFile userFile = userFileMapper.selectById(downloadFileDTO.getUserFileId());
+
+        String fileName = userFile.getFileName() + "." + userFile.getExtendName();
+        try {
+            fileName = new String(fileName.getBytes("utf-8"), "ISO-8859-1");
+        } catch (UnsupportedEncodingException e) {
+            e.printStackTrace();
+        }
+        httpServletResponse.setContentType("application/force-download");// 设置强制下载不打开
+        httpServletResponse.addHeader("Content-Disposition", "attachment;fileName=" + fileName);// 设置文件名
+
+
+        FileBean fileBean = fileMapper.selectById(userFile.getFileId());
+        Downloader downloader = null;
+        if (fileBean.getIsOSS() != null && fileBean.getIsOSS() == 1) {
+            downloader = aliyunOSSOperationFactory.getDownloader();
+        } else if (fileBean.getStorageType() == 0) {
+            downloader = localStorageOperationFactory.getDownloader();
+        } else if (fileBean.getStorageType() == 1) {
+            downloader = aliyunOSSOperationFactory.getDownloader();
+        } else if (fileBean.getStorageType() == 2) {
+            downloader = fastDFSOperationFactory.getDownloader();
+        }
+        DownloadFile uploadFile = new DownloadFile();
+        uploadFile.setFileUrl(fileBean.getFileUrl());
+        uploadFile.setTimeStampName(fileBean.getTimeStampName());
+        downloader.download(httpServletResponse, uploadFile);
     }
 
     @Override

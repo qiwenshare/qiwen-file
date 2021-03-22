@@ -8,7 +8,7 @@ import com.qiwenshare.common.oss.AliyunOSSDelete;
 import com.qiwenshare.common.util.FileUtil;
 import com.qiwenshare.common.util.PathUtil;
 import com.qiwenshare.file.api.IFileService;
-import com.qiwenshare.file.config.QiwenFileConfig;
+import com.qiwenshare.common.config.QiwenFileConfig;
 import com.qiwenshare.file.domain.FileBean;
 import com.qiwenshare.file.mapper.FileMapper;
 import com.qiwenshare.file.mapper.UserFileMapper;

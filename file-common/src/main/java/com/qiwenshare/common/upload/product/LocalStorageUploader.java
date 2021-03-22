@@ -26,11 +26,11 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.UUID;
 @Component
-public class ChunkUploader extends Uploader {
-    private static final Logger logger = LoggerFactory.getLogger(ChunkUploader.class);
+public class LocalStorageUploader extends Uploader {
+    private static final Logger logger = LoggerFactory.getLogger(LocalStorageUploader.class);
 //    private UploadFile uploadFile;
 
-    public ChunkUploader() {
+    public LocalStorageUploader() {
 
     }
 //

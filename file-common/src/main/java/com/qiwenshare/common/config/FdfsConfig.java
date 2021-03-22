@@ -1,4 +1,4 @@
-package com.qiwenshare.file.config;
+package com.qiwenshare.common.config;
 
 import com.github.tobato.fastdfs.FdfsClientConfig;
 import org.springframework.context.annotation.Configuration;

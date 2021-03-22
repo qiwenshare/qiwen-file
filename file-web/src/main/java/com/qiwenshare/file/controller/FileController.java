@@ -14,7 +14,7 @@ import com.qiwenshare.file.api.IFileService;
 import com.qiwenshare.file.api.IRecoveryFileService;
 import com.qiwenshare.file.api.IUserFileService;
 import com.qiwenshare.file.api.IUserService;
-import com.qiwenshare.file.config.QiwenFileConfig;
+import com.qiwenshare.common.config.QiwenFileConfig;
 import com.qiwenshare.file.config.es.FileSearch;
 import com.qiwenshare.file.domain.*;
 import com.qiwenshare.file.dto.*;

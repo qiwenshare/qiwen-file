@@ -7,7 +7,7 @@ import com.qiwenshare.common.domain.AliyunOSS;
 import com.qiwenshare.common.util.JjwtUtil;
 import com.qiwenshare.file.anno.MyLog;
 import com.qiwenshare.file.api.IUserService;
-import com.qiwenshare.file.config.QiwenFileConfig;
+import com.qiwenshare.common.config.QiwenFileConfig;
 import com.qiwenshare.file.domain.UserBean;
 import com.qiwenshare.file.dto.user.RegisterDTO;
 import com.qiwenshare.file.vo.user.UserLoginVo;

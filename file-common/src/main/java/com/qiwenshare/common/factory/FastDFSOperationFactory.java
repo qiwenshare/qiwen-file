@@ -1,7 +1,7 @@
-package com.qiwenshare.common.upload.factory;
+package com.qiwenshare.common.factory;
 
-import com.github.tobato.fastdfs.service.AppendFileStorageClient;
-import com.qiwenshare.common.domain.UploadFile;
+import com.qiwenshare.common.download.Downloader;
+import com.qiwenshare.common.download.product.FastDFSDownloader;
 import com.qiwenshare.common.upload.Uploader;
 import com.qiwenshare.common.upload.product.FastDFSUploader;
 import org.springframework.stereotype.Component;
@@ -9,15 +9,22 @@ import org.springframework.stereotype.Component;
 import javax.annotation.Resource;
 
 @Component
-public class FastDFSUploaderFactory implements UploaderFactory {
+public class FastDFSOperationFactory implements FileOperationFactory {
 
 //    @Resource
 //    AppendFileStorageClient defaultAppendFileStorageClient;
     @Resource
     FastDFSUploader fastDFSUploader;
+    @Resource
+    FastDFSDownloader fastDFSDownloader;
     @Override
     public Uploader getUploader() {
         return fastDFSUploader;
+    }
+
+    @Override
+    public Downloader getDownloader() {
+        return fastDFSDownloader;
     }
 
 //    @Override

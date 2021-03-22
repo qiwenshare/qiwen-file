@@ -1,4 +1,4 @@
-//package com.qiwenshare.common.upload.factory;
+//package com.qiwenshare.common.factory;
 //
 //import com.github.tobato.fastdfs.service.AppendFileStorageClient;
 //import com.qiwenshare.common.domain.UploadFile;

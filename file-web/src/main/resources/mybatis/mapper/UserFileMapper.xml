@@ -30,9 +30,7 @@
         limit #{beginCount}, #{pageCount}
 
     </select>
-
-    <select id="selectFileByExtendName" parameterType="com.qiwenshare.file.domain.UserFile" resultType="com.qiwenshare.file.vo.file.FileListVo">
-        select * from userfile
+    <sql id="selectByExtendName" >
         left join file on file.fileId = userfile.fileId
         where extendName in
         <foreach collection="fileNameList" open="(" close=")" separator="," item="fileName" >
@@ -40,41 +38,36 @@
         </foreach>
         and userId = #{userId}
         and deleteFlag = 0
+    </sql>
+    <sql id="selectByNotExtendName">
+        left join file on file.fileId = userfile.fileId
+        where extendName not in
+        <foreach collection="fileNameList" open="(" close=")" separator="," item="fileName" >
+            #{fileName}
+        </foreach>
+        and userId = #{userId}
+        and deleteFlag = 0
+    </sql>
+    <select id="selectFileByExtendName" parameterType="com.qiwenshare.file.domain.UserFile" resultType="com.qiwenshare.file.vo.file.FileListVo">
+        select * from userfile
+        <include refid="selectByExtendName"></include>
         limit #{beginCount}, #{pageCount}
     </select>
 
     <select id="selectCountByExtendName" parameterType="com.qiwenshare.file.domain.UserFile" resultType="java.lang.Long">
         select count(*) from userfile
-        left join file on file.fileId = userfile.fileId
-        where extendName in
-        <foreach collection="fileNameList" open="(" close=")" separator="," item="fileName" >
-            #{fileName}
-        </foreach>
-        and userId = #{userId}
-        and deleteFlag = 0
+        <include refid="selectByExtendName"></include>
     </select>
 
     <select id="selectFileNotInExtendNames" parameterType="com.qiwenshare.file.domain.UserFile" resultType="com.qiwenshare.file.vo.file.FileListVo">
         select * from userfile
-        left join file on file.fileId = userfile.fileId
-        where extendName not in
-        <foreach collection="fileNameList" open="(" close=")" separator="," item="fileName" >
-            #{fileName}
-        </foreach>
-        and userId = #{userId}
-        and deleteFlag = 0
+        <include refid="selectByNotExtendName"></include>
         limit #{beginCount}, #{pageCount}
     </select>
 
     <select id="selectCountNotInExtendNames" parameterType="com.qiwenshare.file.domain.UserFile" resultType="java.lang.Long">
         select count(*) from userfile
-        left join file on file.fileId = userfile.fileId
-        where extendName not in
-        <foreach collection="fileNameList" open="(" close=")" separator="," item="fileName" >
-            #{fileName}
-        </foreach>
-        and userId = #{userId}
-        and deleteFlag = 0
+        <include refid="selectByNotExtendName"></include>
     </select>
 
 
