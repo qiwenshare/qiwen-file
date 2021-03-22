@@ -16,6 +16,7 @@ import org.apache.commons.fileupload.servlet.ServletFileUpload;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.stereotype.Component;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.multipart.support.StandardMultipartHttpServletRequest;
 
@@ -24,11 +25,11 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.*;
-
+@Component
 public class AliyunOSSUploader extends Uploader {
     private static final Logger logger = LoggerFactory.getLogger(AliyunOSSUploader.class);
 
-    private UploadFile uploadFile;
+//    private UploadFile uploadFile;
     private String endpoint;
     private String accessKeyId;
     private String accessKeySecret;
@@ -46,23 +47,23 @@ public class AliyunOSSUploader extends Uploader {
 
     }
 
-    public AliyunOSSUploader(UploadFile uploadFile) {
-        this.uploadFile = uploadFile;
-    }
+//    public AliyunOSSUploader(UploadFile uploadFile) {
+//        this.uploadFile = uploadFile;
+//    }
 
     @Override
-    public List<UploadFile> upload(HttpServletRequest httpServletRequest) {
+    public List<UploadFile> upload(HttpServletRequest httpServletRequest, UploadFile uploadFile) {
         logger.info("开始上传upload");
 
         List<UploadFile> saveUploadFileList = new ArrayList<>();
-        this.request = (StandardMultipartHttpServletRequest) httpServletRequest;
+        StandardMultipartHttpServletRequest request = (StandardMultipartHttpServletRequest) httpServletRequest;
         AliyunOSS aliyunOSS = (AliyunOSS) request.getAttribute("oss");
 
         endpoint = aliyunOSS.getEndpoint();
         accessKeyId = aliyunOSS.getAccessKeyId();
         accessKeySecret = aliyunOSS.getAccessKeySecret();
         bucketName = aliyunOSS.getBucketName();
-        boolean isMultipart = ServletFileUpload.isMultipartContent(this.request);
+        boolean isMultipart = ServletFileUpload.isMultipartContent(request);
         if (!isMultipart) {
             throw new UploadGeneralException("未包含文件上传域");
 //            UploadFile uploadFile = new UploadFile();
@@ -78,10 +79,10 @@ public class AliyunOSSUploader extends Uploader {
         ServletFileUpload sfu = new ServletFileUpload(dff);//2、创建文件上传解析器
         sfu.setSizeMax(this.maxSize * 1024L);
         sfu.setHeaderEncoding("utf-8");//3、解决文件名的中文乱码
-        Iterator<String> iter = this.request.getFileNames();
+        Iterator<String> iter = request.getFileNames();
         while (iter.hasNext()) {
 
-            saveUploadFileList = doUpload(savePath, iter);
+            saveUploadFileList = doUpload(request, savePath, iter, uploadFile);
         }
 
 
@@ -89,13 +90,13 @@ public class AliyunOSSUploader extends Uploader {
         return saveUploadFileList;
     }
 
-    private List<UploadFile> doUpload(String savePath, Iterator<String> iter) {
-        OSS ossClient = getClient();
+    private List<UploadFile> doUpload(StandardMultipartHttpServletRequest standardMultipartHttpServletRequest, String savePath, Iterator<String> iter, UploadFile uploadFile) {
+        OSS ossClient = getClient(uploadFile);
 
         List<UploadFile> saveUploadFileList = new ArrayList<>();
 
         try {
-            MultipartFile multipartfile = this.request.getFile(iter.next());
+            MultipartFile multipartfile = standardMultipartHttpServletRequest.getFile(iter.next());
 
             String timeStampName = getTimeStampName();
             String originalName = multipartfile.getOriginalFilename();
@@ -157,7 +158,7 @@ public class AliyunOSSUploader extends Uploader {
             boolean isComplete = checkUploadStatus(uploadFile, confFile);
             if (isComplete) {
                 logger.info("分片上传完成");
-                completeMultipartUpload();
+                completeMultipartUpload(uploadFile);
 
                 uploadFile.setUrl(ossFilePath);
                 uploadFile.setSuccess(1);
@@ -173,6 +174,7 @@ public class AliyunOSSUploader extends Uploader {
         }
 
         uploadFile.setIsOSS(1);
+        uploadFile.setStorageType(1);
 
         uploadFile.setFileSize(uploadFile.getTotalSize());
         saveUploadFileList.add(uploadFile);
@@ -182,7 +184,7 @@ public class AliyunOSSUploader extends Uploader {
     /**
      * 将文件分块进行升序排序并执行文件上传。
      */
-    protected void completeMultipartUpload() {
+    protected void completeMultipartUpload(UploadFile uploadFile) {
 
         List<PartETag> partETags = partETagsMap.get(uploadFile.getIdentifier());
         Collections.sort(partETags, Comparator.comparingInt(PartETag::getPartNumber));
@@ -194,16 +196,16 @@ public class AliyunOSSUploader extends Uploader {
                         partETags);
         logger.info("----:" + JSON.toJSONString(partETags));
         // 完成上传。
-        CompleteMultipartUploadResult completeMultipartUploadResult = getClient().completeMultipartUpload(completeMultipartUploadRequest);
+        CompleteMultipartUploadResult completeMultipartUploadResult = getClient(uploadFile).completeMultipartUpload(completeMultipartUploadRequest);
         logger.info("----:" + JSON.toJSONString(completeMultipartUploadRequest));
-        getClient().shutdown();
+        getClient(uploadFile).shutdown();
         partETagsMap.remove(uploadFile.getIdentifier());
         uploadPartRequestMap.remove(uploadFile.getIdentifier());
         ossMap.remove(uploadFile.getIdentifier());
 //
     }
 
-    private void listFile() {
+    private void listFile(UploadFile uploadFile) {
         // 列举已上传的分片，其中uploadId来自于InitiateMultipartUpload返回的结果。
         ListPartsRequest listPartsRequest = new ListPartsRequest(bucketName, uploadPartRequestMap.get(uploadFile.getIdentifier()).getKey(), uploadPartRequestMap.get(uploadFile.getIdentifier()).getUploadId());
         // 设置uploadId。
@@ -212,7 +214,7 @@ public class AliyunOSSUploader extends Uploader {
         listPartsRequest.setMaxParts(100);
         // 指定List的起始位置。只有分片号大于此参数值的分片会被列举。
 //            listPartsRequest.setPartNumberMarker(1);
-        PartListing partListing = getClient().listParts(listPartsRequest);
+        PartListing partListing = getClient(uploadFile).listParts(listPartsRequest);
 
         for (PartSummary part : partListing.getParts()) {
             logger.info("分片号："+part.getPartNumber() + ", 分片数据大小: "+
@@ -233,15 +235,14 @@ public class AliyunOSSUploader extends Uploader {
     /**
      * 取消上传
      */
-    private void cancelUpload() {
+    private void cancelUpload(UploadFile uploadFile) {
         AbortMultipartUploadRequest abortMultipartUploadRequest =
                 new AbortMultipartUploadRequest(bucketName, uploadPartRequestMap.get(uploadFile.getIdentifier()).getKey(), uploadPartRequestMap.get(uploadFile.getIdentifier()).getUploadId());
-        getClient().abortMultipartUpload(abortMultipartUploadRequest);
+        getClient(uploadFile).abortMultipartUpload(abortMultipartUploadRequest);
     }
 
 
-    @Override
-    protected synchronized String getTimeStampName(){
+    protected synchronized String getTimeStampName(UploadFile uploadFile){
         String timeStampName;
 
         if (StringUtils.isEmpty(timeStampNameMap.get(uploadFile.getIdentifier()))) {
@@ -253,7 +254,7 @@ public class AliyunOSSUploader extends Uploader {
         return timeStampName;
     }
 
-    private synchronized OSS getClient() {
+    private synchronized OSS getClient(UploadFile uploadFile) {
         OSS ossClient = null;
         if (ossMap.get(uploadFile.getIdentifier()) == null) {
             ossClient = new OSSClientBuilder().build(endpoint, accessKeyId, accessKeySecret);

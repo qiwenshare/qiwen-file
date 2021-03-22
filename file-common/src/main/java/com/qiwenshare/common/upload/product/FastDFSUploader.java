@@ -10,19 +10,22 @@ import com.qiwenshare.common.util.PathUtil;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.fileupload.disk.DiskFileItemFactory;
 import org.apache.commons.fileupload.servlet.ServletFileUpload;
+import org.springframework.stereotype.Component;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.multipart.support.StandardMultipartHttpServletRequest;
 
+import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
 import java.io.File;
 import java.util.*;
-
+@Component
 @Slf4j
 public class FastDFSUploader extends Uploader {
     public static Object lock = new Object();
+    @Resource
     AppendFileStorageClient defaultAppendFileStorageClient;
 
-    UploadFile uploadFile;
+//    UploadFile uploadFile;
 
     private static Map<String, Integer> CURRENT_UPLOAD_CHUNK_NUMBER = new HashMap<>();
     private static Map<String, Long> UPLOADED_SIZE = new HashMap<>();
@@ -33,20 +36,24 @@ public class FastDFSUploader extends Uploader {
 
     }
 
-    public FastDFSUploader(UploadFile uploadFile, AppendFileStorageClient defaultAppendFileStorageClient) {
-        this.uploadFile = uploadFile;
-        this.defaultAppendFileStorageClient = defaultAppendFileStorageClient;
-    }
+//    public FastDFSUploader(UploadFile uploadFile) {
+//        this.uploadFile = uploadFile;
+//    }
+//
+//    public FastDFSUploader(UploadFile uploadFile, AppendFileStorageClient defaultAppendFileStorageClient) {
+////        this.uploadFile = uploadFile;
+//        this.defaultAppendFileStorageClient = defaultAppendFileStorageClient;
+//    }
 
 
     @Override
-    public List<UploadFile> upload(HttpServletRequest request) {
+    public List<UploadFile> upload(HttpServletRequest request, UploadFile uploadFile) {
         log.info("开始上传upload");
 
         List<UploadFile> saveUploadFileList = new ArrayList<>();
-        this.request = (StandardMultipartHttpServletRequest) request;
+        StandardMultipartHttpServletRequest standardMultipartHttpServletRequest = (StandardMultipartHttpServletRequest) request;
 
-        boolean isMultipart = ServletFileUpload.isMultipartContent(this.request);
+        boolean isMultipart = ServletFileUpload.isMultipartContent(standardMultipartHttpServletRequest);
         if (!isMultipart) {
             throw new UploadGeneralException("未包含文件上传域");
         }
@@ -58,9 +65,9 @@ public class FastDFSUploader extends Uploader {
             ServletFileUpload sfu = new ServletFileUpload(dff);//2、创建文件上传解析器
             sfu.setSizeMax(this.maxSize * 1024L);
             sfu.setHeaderEncoding("utf-8");//3、解决文件名的中文乱码
-            Iterator<String> iter = this.request.getFileNames();
+            Iterator<String> iter = standardMultipartHttpServletRequest.getFileNames();
             while (iter.hasNext()) {
-                saveUploadFileList = doUpload(savePath, iter);
+                saveUploadFileList = doUpload(standardMultipartHttpServletRequest, savePath, iter, uploadFile);
             }
         } catch (Exception e) {
             throw new UploadGeneralException(e);
@@ -71,18 +78,18 @@ public class FastDFSUploader extends Uploader {
     }
 
 
-    private List<UploadFile> doUpload(String savePath, Iterator<String> iter) {
+    private List<UploadFile> doUpload(StandardMultipartHttpServletRequest standardMultipartHttpServletRequest, String savePath, Iterator<String> iter, UploadFile uploadFile) {
 
         List<UploadFile> saveUploadFileList = new ArrayList<>();
 
         try {
-            MultipartFile multipartfile = this.request.getFile(iter.next());
+            MultipartFile multipartfile = standardMultipartHttpServletRequest.getFile(iter.next());
             synchronized (lock) {
                 if (LOCK_MAP.get(uploadFile.getIdentifier()) == null) {
                     LOCK_MAP.put(uploadFile.getIdentifier(), new Object());
                 }
             }
-            uploadFileChunk(multipartfile);
+            uploadFileChunk(multipartfile, uploadFile);
 
             String timeStampName = getTimeStampName();
             String originalName = multipartfile.getOriginalFilename();
@@ -115,14 +122,14 @@ public class FastDFSUploader extends Uploader {
             throw new UploadGeneralException(e);
         }
 
-        uploadFile.setIsOSS(1);
-
+        uploadFile.setIsOSS(0);
+        uploadFile.setStorageType(2);
         uploadFile.setFileSize(uploadFile.getTotalSize());
         saveUploadFileList.add(uploadFile);
         return saveUploadFileList;
     }
 
-    public void uploadFileChunk(MultipartFile multipartFile) {
+    public void uploadFileChunk(MultipartFile multipartFile, UploadFile uploadFile) {
 
         synchronized (LOCK_MAP.get(uploadFile.getIdentifier())) {
             // 存储在fastdfs不带组的路径

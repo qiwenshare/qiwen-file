@@ -23,7 +23,10 @@ public class FileSearch {
     @Field(type = FieldType.Long)
     private Long fileSize;
     @Field(type = FieldType.Integer)
+    @Deprecated
     private Integer isOSS;
+    @Field(type = FieldType.Integer)
+    private Integer storageType;
     @Field(type = FieldType.Integer)
     private Integer pointCount;
     @Field(type = FieldType.Keyword)

@@ -6,5 +6,5 @@ import com.qiwenshare.common.upload.Uploader;
 
 public interface UploaderFactory {
     Uploader getUploader();
-    Uploader getUploader(UploadFile uploadFile);
+//    Uploader getUploader(UploadFile uploadFile);
 }

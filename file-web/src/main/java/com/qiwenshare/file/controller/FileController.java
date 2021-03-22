@@ -142,27 +142,29 @@ public class FileController {
             return operationCheck(token);
         }
         UserBean sessionUserBean = userService.getUserBeanByToken(token);
+        UserFile userFile = userFileService.getById(renameFileDto.getUserFileId());
 
         List<UserFile> userFiles = userFileService.selectUserFileByNameAndPath(renameFileDto.getFileName(), renameFileDto.getFilePath(), sessionUserBean.getUserId());
         if (userFiles != null && !userFiles.isEmpty()) {
             return RestResult.fail().message("同名文件已存在");
 
         }
-        if (1 == renameFileDto.getIsDir()) {
+        if (1 == userFile.getIsDir()) {
             LambdaUpdateWrapper<UserFile> lambdaUpdateWrapper = new LambdaUpdateWrapper<>();
             lambdaUpdateWrapper.set(UserFile::getFileName, renameFileDto.getFileName())
                     .set(UserFile::getUploadTime, DateUtil.getCurrentTime())
                     .eq(UserFile::getUserFileId, renameFileDto.getUserFileId());
             userFileService.update(lambdaUpdateWrapper);
-            userFileService.replaceUserFilePath(renameFileDto.getFilePath() + renameFileDto.getFileName() + "/",
-                    renameFileDto.getFilePath() + renameFileDto.getOldFileName() + "/", sessionUserBean.getUserId());
+            userFileService.replaceUserFilePath(userFile.getFilePath() + renameFileDto.getFileName() + "/",
+                    userFile.getFilePath() + userFile.getFileName() + "/", sessionUserBean.getUserId());
         } else {
-            if (renameFileDto.getIsOSS() == 1) {
-                LambdaQueryWrapper<UserFile> lambdaQueryWrapper = new LambdaQueryWrapper<>();
-                lambdaQueryWrapper.eq(UserFile::getUserFileId, renameFileDto.getUserFileId());
-                UserFile userFile = userFileService.getOne(lambdaQueryWrapper);
+            FileBean file = fileService.getById(userFile.getFileId());
+            if (file.getIsOSS() == 1 || file.getStorageType() == 1) {
+//                LambdaQueryWrapper<UserFile> lambdaQueryWrapper = new LambdaQueryWrapper<>();
+//                lambdaQueryWrapper.eq(UserFile::getUserFileId, renameFileDto.getUserFileId());
+//                UserFile userFile = userFileService.getOne(lambdaQueryWrapper);
 
-                FileBean file = fileService.getById(userFile.getFileId());
+
                 String fileUrl = file.getFileUrl();
                 String newFileUrl = fileUrl.replace(userFile.getFileName(), renameFileDto.getFileName());
 
@@ -188,7 +190,6 @@ public class FileController {
                         .eq(UserFile::getUserFileId, renameFileDto.getUserFileId());
                 userFileService.update(lambdaUpdateWrapper);
             }
-
 
         }
 

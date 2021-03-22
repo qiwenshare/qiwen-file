@@ -13,6 +13,7 @@ import org.apache.commons.fileupload.servlet.ServletFileUpload;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.stereotype.Component;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.multipart.support.StandardMultipartHttpServletRequest;
 
@@ -24,24 +25,24 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 import java.util.UUID;
-
+@Component
 public class ChunkUploader extends Uploader {
     private static final Logger logger = LoggerFactory.getLogger(ChunkUploader.class);
-    private UploadFile uploadFile;
+//    private UploadFile uploadFile;
 
     public ChunkUploader() {
 
     }
-
-    public ChunkUploader(UploadFile uploadFile) {
-        this.uploadFile = uploadFile;
-    }
+//
+//    public ChunkUploader(UploadFile uploadFile) {
+//        this.uploadFile = uploadFile;
+//    }
 
     @Override
-    public List<UploadFile> upload(HttpServletRequest httpServletRequest) {
+    public List<UploadFile> upload(HttpServletRequest httpServletRequest,UploadFile uploadFile) {
         List<UploadFile> saveUploadFileList = new ArrayList<UploadFile>();
-        this.request = (StandardMultipartHttpServletRequest) httpServletRequest;
-        boolean isMultipart = ServletFileUpload.isMultipartContent(this.request);
+        StandardMultipartHttpServletRequest standardMultipartHttpServletRequest = (StandardMultipartHttpServletRequest) httpServletRequest;
+        boolean isMultipart = ServletFileUpload.isMultipartContent(standardMultipartHttpServletRequest);
         if (!isMultipart) {
             throw new UploadGeneralException("未包含文件上传域");
         }
@@ -53,9 +54,9 @@ public class ChunkUploader extends Uploader {
             ServletFileUpload sfu = new ServletFileUpload(dff);//2、创建文件上传解析器
             sfu.setSizeMax(this.maxSize * 1024L);
             sfu.setHeaderEncoding("utf-8");//3、解决文件名的中文乱码
-            Iterator<String> iter = this.request.getFileNames();
+            Iterator<String> iter = standardMultipartHttpServletRequest.getFileNames();
             while (iter.hasNext()) {
-                saveUploadFileList = doUpload(savePath, iter);
+                saveUploadFileList = doUpload(standardMultipartHttpServletRequest, savePath, iter, uploadFile);
             }
         } catch (IOException e) {
             throw new UploadGeneralException("未包含文件上传域");
@@ -65,9 +66,9 @@ public class ChunkUploader extends Uploader {
         return saveUploadFileList;
     }
 
-    private List<UploadFile> doUpload(String savePath, Iterator<String> iter) throws IOException, NotSameFileExpection {
+    private List<UploadFile> doUpload(StandardMultipartHttpServletRequest standardMultipartHttpServletRequest, String savePath, Iterator<String> iter, UploadFile uploadFile) throws IOException, NotSameFileExpection {
         List<UploadFile> saveUploadFileList = new ArrayList<UploadFile>();
-        MultipartFile multipartfile = this.request.getFile(iter.next());
+        MultipartFile multipartfile = standardMultipartHttpServletRequest.getFile(iter.next());
 
         String timeStampName = uploadFile.getIdentifier();
 
@@ -88,6 +89,7 @@ public class ChunkUploader extends Uploader {
         File minFile = new File(PathUtil.getStaticPath() + FILE_SEPARATOR + minFilePath);
         File confFile = new File(PathUtil.getStaticPath() + FILE_SEPARATOR + confFilePath);
         uploadFile.setIsOSS(0);
+        uploadFile.setStorageType(0);
         uploadFile.setUrl(saveFilePath);
 
         if (StringUtils.isEmpty(uploadFile.getTaskId())) {// == null || "".equals(uploadFile.getTaskId())) {

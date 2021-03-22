@@ -11,6 +11,7 @@ public class RenameFileDTO {
      * 文件路径
      */
     @Schema(description = "文件路径")
+    @Deprecated
     private String filePath;
 
     /**
@@ -19,9 +20,12 @@ public class RenameFileDTO {
     @Schema(description = "文件名")
     private String fileName;
     @Schema(description = "是否是目录")
+    @Deprecated
     private Integer isDir;
     @Schema(description = "旧文件名")
+    @Deprecated
     private String oldFileName;
     @Schema(description = "是否是OSS")
+    @Deprecated
     private Integer isOSS;
 }

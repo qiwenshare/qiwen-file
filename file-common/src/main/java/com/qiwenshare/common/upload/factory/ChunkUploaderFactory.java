@@ -11,15 +11,17 @@ import javax.annotation.Resource;
 @Component
 public class ChunkUploaderFactory implements UploaderFactory {
 
+    @Resource
+    ChunkUploader ChunkUploader;
     @Override
     public Uploader getUploader() {
-        return new ChunkUploader();
+        return ChunkUploader;
     }
 
-    @Override
-    public Uploader getUploader(UploadFile uploadFile) {
-        return new ChunkUploader(uploadFile);
-    }
+//    @Override
+//    public Uploader getUploader(UploadFile uploadFile) {
+//        return new ChunkUploader(uploadFile);
+//    }
 
 
 }

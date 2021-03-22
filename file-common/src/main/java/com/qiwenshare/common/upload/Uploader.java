@@ -24,9 +24,9 @@ public abstract class Uploader {
     // 文件大小限制，单位KB
     public final int maxSize = 10000000;
 
-    protected StandardMultipartHttpServletRequest request = null;
+//    protected StandardMultipartHttpServletRequest request = null;
 
-    public abstract List<UploadFile> upload(HttpServletRequest request);
+    public abstract List<UploadFile> upload(HttpServletRequest request, UploadFile uploadFile);
 
     /**
      * 根据字符串创建本地目录 并按照日期建立子目录返回

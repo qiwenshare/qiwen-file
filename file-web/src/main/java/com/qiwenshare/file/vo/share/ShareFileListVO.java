@@ -15,7 +15,10 @@ public class ShareFileListVO {
     @Schema(description="文件大小")
     private Long fileSize;
     @Schema(description="是否sso存储")
+    @Deprecated
     private Integer isOSS;
+    @Schema(description="存储类型")
+    private Integer storageType;
 //
 //    private Long userFileId;
 //

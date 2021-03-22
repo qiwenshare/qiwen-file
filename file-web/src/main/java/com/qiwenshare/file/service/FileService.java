@@ -2,6 +2,7 @@ package com.qiwenshare.file.service;
 
 import com.alibaba.fastjson.JSON;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
+import com.github.tobato.fastdfs.service.FastFileStorageClient;
 import com.qiwenshare.common.operation.FileOperation;
 import com.qiwenshare.common.oss.AliyunOSSDelete;
 import com.qiwenshare.common.util.FileUtil;
@@ -12,6 +13,7 @@ import com.qiwenshare.file.domain.FileBean;
 import com.qiwenshare.file.mapper.FileMapper;
 import com.qiwenshare.file.mapper.UserFileMapper;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
@@ -28,6 +30,8 @@ public class FileService extends ServiceImpl<FileMapper, FileBean> implements IF
     FiletransferService filetransferService;
     @Resource
     QiwenFileConfig qiwenFileConfig;
+    @Autowired
+    private FastFileStorageClient fastFileStorageClient;
 
 //    @Override
 //    public void batchInsertFile(List<FileBean> fileBeanList, Long userId) {
@@ -85,6 +89,16 @@ public class FileService extends ServiceImpl<FileMapper, FileBean> implements IF
         if (fileBean.getFileUrl() != null && fileBean.getFileUrl().indexOf("upload") != -1){
             if (fileBean.getIsOSS() != null && fileBean.getIsOSS() == 1) {
                 AliyunOSSDelete.deleteObject(qiwenFileConfig.getAliyun().getOss(), fileBean.getFileUrl().substring(1));
+            } else if (fileBean.getStorageType() == 0) {
+                FileOperation.deleteFile(PathUtil.getStaticPath() + fileBean.getFileUrl());
+                if (FileUtil.isImageFile(FileUtil.getFileExtendName(fileBean.getFileUrl()))) {
+                    FileOperation.deleteFile(PathUtil.getStaticPath() + fileBean.getFileUrl().replace(fileBean.getTimeStampName(), fileBean.getTimeStampName() + "_min"));
+                }
+            } else if (fileBean.getStorageType() == 1) {
+                AliyunOSSDelete.deleteObject(qiwenFileConfig.getAliyun().getOss(), fileBean.getFileUrl().substring(1));
+            } else if (fileBean.getStorageType() == 2){
+                fastFileStorageClient.deleteFile(fileBean.getFileUrl());
+
             } else {
                 FileOperation.deleteFile(PathUtil.getStaticPath() + fileBean.getFileUrl());
                 if (FileUtil.isImageFile(FileUtil.getFileExtendName(fileBean.getFileUrl()))) {

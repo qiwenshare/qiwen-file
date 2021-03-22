@@ -11,16 +11,18 @@ import javax.annotation.Resource;
 @Component
 public class FastDFSUploaderFactory implements UploaderFactory {
 
+//    @Resource
+//    AppendFileStorageClient defaultAppendFileStorageClient;
     @Resource
-    AppendFileStorageClient defaultAppendFileStorageClient;
+    FastDFSUploader fastDFSUploader;
     @Override
     public Uploader getUploader() {
-        return new FastDFSUploader();
+        return fastDFSUploader;
     }
 
-    @Override
-    public Uploader getUploader(UploadFile uploadFile) {
-        return new FastDFSUploader(uploadFile, defaultAppendFileStorageClient);
-    }
+//    @Override
+//    public Uploader getUploader(UploadFile uploadFile) {
+//        return new FastDFSUploader(uploadFile, defaultAppendFileStorageClient);
+//    }
 
 }

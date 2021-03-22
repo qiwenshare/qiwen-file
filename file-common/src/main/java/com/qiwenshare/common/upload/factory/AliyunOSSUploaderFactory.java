@@ -11,15 +11,16 @@ import javax.annotation.Resource;
 
 @Component
 public class AliyunOSSUploaderFactory implements UploaderFactory {
-
+    @Resource
+    AliyunOSSUploader aliyunOSSUploader;
     @Override
     public Uploader getUploader() {
-        return new AliyunOSSUploader();
+        return aliyunOSSUploader;
     }
 
-    @Override
-    public Uploader getUploader(UploadFile uploadFile) {
-        return new AliyunOSSUploader(uploadFile);
-    }
+//    @Override
+//    public Uploader getUploader(UploadFile uploadFile) {
+//        return new AliyunOSSUploader(uploadFile);
+//    }
 
 }

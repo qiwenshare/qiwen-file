@@ -159,8 +159,12 @@ public class FiletransferController {
         FileBean fileBean = fileService.getById(userFile.getFileId());
         if (fileBean.getIsOSS() != null && fileBean.getIsOSS() == 1) {
             aliyunDownload(response, fileBean);
-        } else {
+        } else if (fileBean.getStorageType() == 0) {
             localFileDownload(response, fileBean);
+        } else if (fileBean.getStorageType() == 1) {
+            aliyunDownload(response, fileBean);
+        } else if (fileBean.getStorageType() == 2) {
+            fastFDSDownload(response, fileBean);
         }
 
     }
@@ -230,15 +234,15 @@ public class FiletransferController {
     }
 
 
-    public void fastFDSDownload(HttpServletResponse response, FileBean fileBean) throws IOException {
+    public void fastFDSDownload(HttpServletResponse response, FileBean fileBean){
         String group = fileBean.getFileUrl().substring(0, fileBean.getFileUrl().indexOf("/"));
         String path = fileBean.getFileUrl().substring(fileBean.getFileUrl().indexOf("/") + 1);
         DownloadByteArray downloadByteArray = new DownloadByteArray();
         byte[] bytes = fastFileStorageClient.downloadFile(group, path, downloadByteArray);
 
-        // 这里只是为了整合fastdfs，所以写死了文件格式。需要在上传的时候保存文件名。下载的时候使用对应的格式
-        response.setHeader("Content-disposition", "attachment;filename=" + URLEncoder.encode("sb.xlsx", "UTF-8"));
-        response.setCharacterEncoding("UTF-8");
+//        // 这里只是为了整合fastdfs，所以写死了文件格式。需要在上传的时候保存文件名。下载的时候使用对应的格式
+//        response.setHeader("Content-disposition", "attachment;filename=" + URLEncoder.encode("sb.xlsx", "UTF-8"));
+//        response.setCharacterEncoding("UTF-8");
         ServletOutputStream outputStream = null;
         try {
             outputStream = response.getOutputStream();

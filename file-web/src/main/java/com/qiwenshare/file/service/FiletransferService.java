@@ -67,15 +67,15 @@ public class FiletransferService implements IFiletransferService {
         uploadFile.setCurrentChunkSize(UploadFileDto.getCurrentChunkSize());
         synchronized (FiletransferService.class) {
             if (oss.isEnabled()) {
-                uploader = aliyunOSSUploaderFactory.getUploader(uploadFile);
+                uploader = aliyunOSSUploaderFactory.getUploader();
             } else if ("FastFDS".equals(storyType)) {
-                uploader = fastDFSUploaderFactory.getUploader(uploadFile);
+                uploader = fastDFSUploaderFactory.getUploader();
             } else {
-                uploader = chunkUploaderFactory.getUploader(uploadFile);
+                uploader = chunkUploaderFactory.getUploader();
             }
         }
 
-        List<UploadFile> uploadFileList = uploader.upload(request);
+        List<UploadFile> uploadFileList = uploader.upload(request, uploadFile);
         for (int i = 0; i < uploadFileList.size(); i++){
             uploadFile = uploadFileList.get(i);
             FileBean fileBean = new FileBean();
@@ -86,7 +86,7 @@ public class FiletransferService implements IFiletransferService {
                 fileBean.setFileSize(uploadFile.getFileSize());
                 //fileBean.setUploadTime(DateUtil.getCurrentTime());
                 fileBean.setIsOSS(uploadFile.getIsOSS());
-
+                fileBean.setStorageType(uploadFile.getStorageType());
                 fileBean.setPointCount(1);
                 fileMapper.insert(fileBean);
                 UserFile userFile = new UserFile();

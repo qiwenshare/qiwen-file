@@ -62,53 +62,53 @@ public class UserFileService  extends ServiceImpl<UserFileMapper, UserFile> impl
         return userFileMapper.userFileList(userFile, beginCount, pageCount);
     }
 
-    public void renameUserFile(Long userFileId, String newFileName, Long userId) {
-        UserFile userFile = userFileMapper.selectById(userFileId);
-        if (1 == userFile.getIsDir()) {
-            LambdaUpdateWrapper<UserFile> lambdaUpdateWrapper = new LambdaUpdateWrapper<>();
-            lambdaUpdateWrapper.set(UserFile::getFileName, newFileName)
-                    .set(UserFile::getUploadTime, DateUtil.getCurrentTime())
-                    .eq(UserFile::getUserFileId, userFile.getUserFileId());
-            userFileMapper.update(null, lambdaUpdateWrapper);
-            replaceUserFilePath(userFile.getFilePath() + newFileName + "/",
-                    userFile.getFilePath() + userFile.getFileName() + "/", userId);
-        } else {
-            FileBean fileBean = fileMapper.selectById(userFile.getFileId());
-            if (fileBean.getIsOSS() == 1) {
-//                LambdaQueryWrapper<UserFile> lambdaQueryWrapper = new LambdaQueryWrapper<>();
-//                lambdaQueryWrapper.eq(UserFile::getUserFileId, renameFileDto.getUserFileId());
-//                UserFile userFile = userFileService.getOne(lambdaQueryWrapper);
+//    public void renameUserFile(Long userFileId, String newFileName, Long userId) {
+//        UserFile userFile = userFileMapper.selectById(userFileId);
+//        if (1 == userFile.getIsDir()) {
+//            LambdaUpdateWrapper<UserFile> lambdaUpdateWrapper = new LambdaUpdateWrapper<>();
+//            lambdaUpdateWrapper.set(UserFile::getFileName, newFileName)
+//                    .set(UserFile::getUploadTime, DateUtil.getCurrentTime())
+//                    .eq(UserFile::getUserFileId, userFile.getUserFileId());
+//            userFileMapper.update(null, lambdaUpdateWrapper);
+//            replaceUserFilePath(userFile.getFilePath() + newFileName + "/",
+//                    userFile.getFilePath() + userFile.getFileName() + "/", userId);
+//        } else {
+//            FileBean fileBean = fileMapper.selectById(userFile.getFileId());
+//            if (fileBean.getIsOSS() == 1) {
+////                LambdaQueryWrapper<UserFile> lambdaQueryWrapper = new LambdaQueryWrapper<>();
+////                lambdaQueryWrapper.eq(UserFile::getUserFileId, renameFileDto.getUserFileId());
+////                UserFile userFile = userFileService.getOne(lambdaQueryWrapper);
+////
+////                FileBean file = fileService.getById(userFile.getFileId());
+//                String fileUrl = fileBean.getFileUrl();
+//                String newFileUrl = fileUrl.replace(userFile.getFileName(), newFileName);
 //
-//                FileBean file = fileService.getById(userFile.getFileId());
-                String fileUrl = fileBean.getFileUrl();
-                String newFileUrl = fileUrl.replace(userFile.getFileName(), newFileName);
-
-                AliyunOSSRename.rename(qiwenFileConfig.getAliyun().getOss(),
-                        fileUrl.substring(1),
-                        newFileUrl.substring(1));
-                LambdaUpdateWrapper<FileBean> lambdaUpdateWrapper = new LambdaUpdateWrapper<>();
-                lambdaUpdateWrapper
-                        .set(FileBean::getFileUrl, newFileUrl)
-                        .eq(FileBean::getFileId, fileBean.getFileId());
-                fileMapper.update(null, lambdaUpdateWrapper);
-
-                LambdaUpdateWrapper<UserFile> userFileLambdaUpdateWrapper = new LambdaUpdateWrapper<>();
-                userFileLambdaUpdateWrapper
-                        .set(UserFile::getFileName, newFileName)
-                        .set(UserFile::getUploadTime, DateUtil.getCurrentTime())
-                        .eq(UserFile::getUserFileId, userFileId);
-                userFileMapper.update(null, userFileLambdaUpdateWrapper);
-            } else {
-                LambdaUpdateWrapper<UserFile> lambdaUpdateWrapper = new LambdaUpdateWrapper<>();
-                lambdaUpdateWrapper.set(UserFile::getFileName, newFileName)
-                        .set(UserFile::getUploadTime, DateUtil.getCurrentTime())
-                        .eq(UserFile::getUserFileId, userFileId);
-                userFileMapper.update(null, lambdaUpdateWrapper);
-            }
-
-
-        }
-    }
+//                AliyunOSSRename.rename(qiwenFileConfig.getAliyun().getOss(),
+//                        fileUrl.substring(1),
+//                        newFileUrl.substring(1));
+//                LambdaUpdateWrapper<FileBean> lambdaUpdateWrapper = new LambdaUpdateWrapper<>();
+//                lambdaUpdateWrapper
+//                        .set(FileBean::getFileUrl, newFileUrl)
+//                        .eq(FileBean::getFileId, fileBean.getFileId());
+//                fileMapper.update(null, lambdaUpdateWrapper);
+//
+//                LambdaUpdateWrapper<UserFile> userFileLambdaUpdateWrapper = new LambdaUpdateWrapper<>();
+//                userFileLambdaUpdateWrapper
+//                        .set(UserFile::getFileName, newFileName)
+//                        .set(UserFile::getUploadTime, DateUtil.getCurrentTime())
+//                        .eq(UserFile::getUserFileId, userFileId);
+//                userFileMapper.update(null, userFileLambdaUpdateWrapper);
+//            } else {
+//                LambdaUpdateWrapper<UserFile> lambdaUpdateWrapper = new LambdaUpdateWrapper<>();
+//                lambdaUpdateWrapper.set(UserFile::getFileName, newFileName)
+//                        .set(UserFile::getUploadTime, DateUtil.getCurrentTime())
+//                        .eq(UserFile::getUserFileId, userFileId);
+//                userFileMapper.update(null, lambdaUpdateWrapper);
+//            }
+//
+//
+//        }
+//    }
 
     @Override
     public void updateFilepathByFilepath(String oldfilePath, String newfilePath, String fileName, String extendName) {
