@@ -1,23 +1,30 @@
 package com.qiwenshare.file.service;
 
+import java.io.UnsupportedEncodingException;
 import java.util.List;
 
 import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
 
 import cn.hutool.core.bean.BeanUtil;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
-import com.qiwenshare.common.cbb.DateUtil;
+import com.qiwenshare.common.util.DateUtil;
+import com.qiwenshare.common.domain.DeleteFile;
+import com.qiwenshare.common.domain.DownloadFile;
 import com.qiwenshare.common.domain.UploadFile;
-import com.qiwenshare.common.upload.factory.AliyunOSSUploaderFactory;
-import com.qiwenshare.common.upload.factory.ChunkUploaderFactory;
-import com.qiwenshare.common.upload.Uploader;
+//import com.qiwenshare.common.factory.FileOperationFactory;
+import com.qiwenshare.common.operation.delete.Deleter;
+import com.qiwenshare.common.operation.download.Downloader;
+import com.qiwenshare.common.factory.FileOperationFactory;
+import com.qiwenshare.common.operation.upload.Uploader;
+
 import com.qiwenshare.file.api.IFiletransferService;
 
-import com.qiwenshare.common.domain.AliyunOSS;
-import com.qiwenshare.file.config.QiwenFileConfig;
+import com.qiwenshare.common.config.QiwenFileConfig;
 import com.qiwenshare.file.domain.UserFile;
+import com.qiwenshare.file.dto.DownloadFileDTO;
 import com.qiwenshare.file.dto.UploadFileDTO;
 import com.qiwenshare.file.mapper.FileMapper;
 import com.qiwenshare.file.domain.FileBean;
@@ -34,19 +41,23 @@ public class FiletransferService implements IFiletransferService {
     StorageMapper storageMapper;
     @Resource
     FileMapper fileMapper;
-
     @Resource
     QiwenFileConfig qiwenFileConfig;
+
     @Resource
     UserFileMapper userFileMapper;
 
-
+    @Resource
+    FileOperationFactory fastDFSOperationFactory;
+    @Resource
+    FileOperationFactory aliyunOSSOperationFactory;
+    @Resource
+    FileOperationFactory localStorageOperationFactory;
 
     @Override
     public void uploadFile(HttpServletRequest request, UploadFileDTO UploadFileDto, Long userId) {
-        AliyunOSS oss = qiwenFileConfig.getAliyun().getOss();
-        request.setAttribute("oss", oss);
-        Uploader uploader;
+
+        Uploader uploader = null;
         UploadFile uploadFile = new UploadFile();
         uploadFile.setChunkNumber(UploadFileDto.getChunkNumber());
         uploadFile.setChunkSize(UploadFileDto.getChunkSize());
@@ -54,13 +65,18 @@ public class FiletransferService implements IFiletransferService {
         uploadFile.setIdentifier(UploadFileDto.getIdentifier());
         uploadFile.setTotalSize(UploadFileDto.getTotalSize());
         uploadFile.setCurrentChunkSize(UploadFileDto.getCurrentChunkSize());
-        if (oss.isEnabled()) {
-            uploader = new AliyunOSSUploaderFactory().getUploader(uploadFile);
-        } else {
-            uploader = new ChunkUploaderFactory().getUploader(uploadFile);
+        synchronized (FiletransferService.class) {
+            String storageType = qiwenFileConfig.getStorageType();
+            if ("0".equals(storageType)) {
+                uploader = localStorageOperationFactory.getUploader();
+            } else if ("1".equals(storageType)) {
+                uploader = aliyunOSSOperationFactory.getUploader();
+            } else if ("2".equals(storageType)) {
+                uploader = fastDFSOperationFactory.getUploader();
+            }
         }
 
-        List<UploadFile> uploadFileList = uploader.upload(request);
+        List<UploadFile> uploadFileList = uploader.upload(request, uploadFile);
         for (int i = 0; i < uploadFileList.size(); i++){
             uploadFile = uploadFileList.get(i);
             FileBean fileBean = new FileBean();
@@ -71,7 +87,7 @@ public class FiletransferService implements IFiletransferService {
                 fileBean.setFileSize(uploadFile.getFileSize());
                 //fileBean.setUploadTime(DateUtil.getCurrentTime());
                 fileBean.setIsOSS(uploadFile.getIsOSS());
-
+                fileBean.setStorageType(uploadFile.getStorageType());
                 fileBean.setPointCount(1);
                 fileMapper.insert(fileBean);
                 UserFile userFile = new UserFile();
@@ -101,6 +117,55 @@ public class FiletransferService implements IFiletransferService {
             }
 
         }
+    }
+
+    @Override
+    public void downloadFile(HttpServletResponse httpServletResponse, DownloadFileDTO downloadFileDTO) {
+        UserFile userFile = userFileMapper.selectById(downloadFileDTO.getUserFileId());
+
+        String fileName = userFile.getFileName() + "." + userFile.getExtendName();
+        try {
+            fileName = new String(fileName.getBytes("utf-8"), "ISO-8859-1");
+        } catch (UnsupportedEncodingException e) {
+            e.printStackTrace();
+        }
+        httpServletResponse.setContentType("application/force-download");// 设置强制下载不打开
+        httpServletResponse.addHeader("Content-Disposition", "attachment;fileName=" + fileName);// 设置文件名
+
+
+        FileBean fileBean = fileMapper.selectById(userFile.getFileId());
+        Downloader downloader = null;
+        if (fileBean.getIsOSS() != null && fileBean.getIsOSS() == 1) {
+            downloader = aliyunOSSOperationFactory.getDownloader();
+        } else if (fileBean.getStorageType() == 0) {
+            downloader = localStorageOperationFactory.getDownloader();
+        } else if (fileBean.getStorageType() == 1) {
+            downloader = aliyunOSSOperationFactory.getDownloader();
+        } else if (fileBean.getStorageType() == 2) {
+            downloader = fastDFSOperationFactory.getDownloader();
+        }
+        DownloadFile uploadFile = new DownloadFile();
+        uploadFile.setFileUrl(fileBean.getFileUrl());
+        uploadFile.setTimeStampName(fileBean.getTimeStampName());
+        downloader.download(httpServletResponse, uploadFile);
+    }
+
+    @Override
+    public void deleteFile(FileBean fileBean) {
+        Deleter deleter = null;
+        if (fileBean.getIsOSS() != null && fileBean.getIsOSS() == 1) {
+            deleter = aliyunOSSOperationFactory.getDeleter();
+        } else if (fileBean.getStorageType() == 0) {
+            deleter = localStorageOperationFactory.getDeleter();
+        } else if (fileBean.getStorageType() == 1) {
+            deleter = aliyunOSSOperationFactory.getDeleter();
+        } else if (fileBean.getStorageType() == 2) {
+            deleter = fastDFSOperationFactory.getDeleter();
+        }
+        DeleteFile deleteFile = new DeleteFile();
+        deleteFile.setFileUrl(fileBean.getFileUrl());
+        deleteFile.setTimeStampName(fileBean.getTimeStampName());
+        deleter.delete(deleteFile);
     }
 
     @Override

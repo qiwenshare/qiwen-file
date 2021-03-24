@@ -11,7 +11,9 @@ public class UploadFile {
     private int success;
     private String message;
     private String url;
+    @Deprecated
     private Integer isOSS;
+    private Integer storageType;
     //切片上传相关参数
     private String taskId;
     private int chunkNumber;

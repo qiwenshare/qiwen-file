@@ -1,11 +1,11 @@
 package com.qiwenshare.file.controller;
 
 import cn.hutool.core.bean.BeanUtil;
+import cn.hutool.core.util.RandomUtil;
 import com.alibaba.fastjson.JSON;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
-import com.qiwenshare.common.cbb.DateUtil;
-import com.qiwenshare.common.cbb.RestResult;
-import com.qiwenshare.common.util.RandomUtil;
+import com.qiwenshare.common.util.DateUtil;
+import com.qiwenshare.common.result.RestResult;
 import com.qiwenshare.file.anno.MyLog;
 import com.qiwenshare.file.api.IShareService;
 import com.qiwenshare.file.api.IUserService;
@@ -46,7 +46,7 @@ public class ShareController {
     public RestResult<ShareFileVO> shareFile(ShareFileDTO shareSecretDTO, @RequestHeader("token") String token) {
         ShareFileVO shareSecretVO = new ShareFileVO();
         UserBean sessionUserBean = userService.getUserBeanByToken(token);
-        String extractionCode = RandomUtil.getStringRandom(6);
+        String extractionCode = RandomUtil.randomNumbers(6);
         String uuid = UUID.randomUUID().toString();
         Share share = new Share();
         BeanUtil.copyProperties(sessionUserBean, share);

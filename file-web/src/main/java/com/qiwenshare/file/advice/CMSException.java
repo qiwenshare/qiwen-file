@@ -1,6 +1,6 @@
 package com.qiwenshare.file.advice;
 
-import com.qiwenshare.common.cbb.ResultCodeEnum;
+import com.qiwenshare.common.result.ResultCodeEnum;
 import lombok.Data;
 
 /**

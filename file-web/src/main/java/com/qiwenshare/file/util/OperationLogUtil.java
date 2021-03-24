@@ -1,10 +1,9 @@
 package com.qiwenshare.file.util;
 
-import com.qiwenshare.common.cbb.CollectUtil;
-import com.qiwenshare.common.cbb.DateUtil;
+import com.qiwenshare.common.util.CollectUtil;
+import com.qiwenshare.common.util.DateUtil;
 import com.qiwenshare.file.domain.OperationLogBean;
 import com.qiwenshare.file.domain.UserBean;
-import org.apache.shiro.SecurityUtils;
 
 import javax.servlet.http.HttpServletRequest;
 

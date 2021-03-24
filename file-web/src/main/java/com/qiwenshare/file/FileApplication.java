@@ -3,6 +3,8 @@ package com.qiwenshare.file;
 import org.mybatis.spring.annotation.MapperScan;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
+import org.springframework.context.annotation.ComponentScan;
+import org.springframework.context.annotation.FilterType;
 import org.springframework.scheduling.annotation.EnableScheduling;
 import org.springframework.transaction.annotation.EnableTransactionManagement;
 
@@ -11,6 +13,11 @@ import org.springframework.transaction.annotation.EnableTransactionManagement;
 @EnableScheduling
 //@EnableDiscoveryClient
 @EnableTransactionManagement
+@ComponentScan(value = "com.qiwenshare", excludeFilters = @ComponentScan.Filter(
+        type = FilterType.ASSIGNABLE_TYPE,
+        classes = {
+        }
+))
 public class FileApplication {
 
     public static void main(String[] args) {

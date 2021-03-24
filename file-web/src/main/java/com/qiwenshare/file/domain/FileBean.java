@@ -34,7 +34,11 @@ public class FileBean {
     private Long fileSize;
 
     @Column(columnDefinition="int(1)")
+    @Deprecated
     private Integer isOSS;
+
+    @Column(columnDefinition="int(1)")
+    private Integer storageType;
 
     @Column(columnDefinition="int(11)")
     private Integer pointCount;

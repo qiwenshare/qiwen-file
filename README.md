@@ -3,7 +3,7 @@
 	<a href="http://fileos.qiwenshare.com/"><img width="30%" src="https://images.gitee.com/uploads/images/2020/0810/131432_e00bbf82_947714.png" ></a>
 </p>
 <p align="center">
-	<strong>基于springboot + vue 框架开发的Web文件系统，旨在为用户提供一个简单、方便的文件存储方案，能够以完善的目录结构体系，对文件进行管理 。</strong>
+	<strong>基于Spring Boot + VUE CLI@3 框架开发的分布式文件系统，旨在为用户和企业提供一个简单、方便的文件存储方案，能够以完善的目录结构体系，对文件进行管理 。</strong>
 </p>
 <p align="center">
 	<a target="_blank" href="https://baike.baidu.com/item/MIT%E8%AE%B8%E5%8F%AF%E8%AF%81/6671281?fr=aladdin">
@@ -15,7 +15,6 @@
 	<a target="_blank" href="https://gitee.com/mingSoft/MCMS/stargazers">
 		<img src="https://gitee.com/qiwen-cloud/qiwen-file/badge/star.svg?theme=dark" alt='gitee star'/>
 	</a>
-	
 </p>
 <p align="center">
 	<a href="http://pan.qiwenshare.com/" target="_blank">在线演示环境</a> &nbsp;|
@@ -42,13 +41,24 @@
 3. 支持对zip文件和rar文件的在线解压缩 
 4. 支持文件和目录的移动和复制 
 5. 多文件格式分类查看
-6. 支持阿里云OSS对象存储
-7. 增加分片上传，该功能同时支持本地存储和阿里云OSS
+6. 支持阿里云OSS对象存储,FastDFS存储
+7. 增加分片上传，该功能同时支持本地存储和阿里云OSS,FastDFS
 8. 支持极速秒传功能，提高上传效率
 9. 上传文件前台实时显示上传文件进度，上传速率，百分比等信息
 10. 支持文件重命名
 11. 可实时显示文件存储占用情况及总占用容量
-12. ...
+12. 支持ElasticSearch文件搜索
+13. ...
+
+## 项目代码地址
+|系统|地址|
+|-|-|
+|奇文网盘前台|[https://gitee.com/qiwen-cloud/qiwen-file-web](https://gitee.com/qiwen-cloud/qiwen-file-web)|
+|奇文网盘后台|[https://gitee.com/qiwen-cloud/qiwen-file](https://gitee.com/qiwen-cloud/qiwen-file)|
+
+## 网络拓扑图
+
+![输入图片说明](https://images.gitee.com/uploads/images/2021/0324/225520_d55b109e_947714.png "屏幕截图.png")
 
 ## 软件架构
 该项目采用前后端分离的方式进行开发和部署,主要用到以下关键技术

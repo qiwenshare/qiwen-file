@@ -1,13 +1,16 @@
 package com.qiwenshare.file.controller;
 
-import cn.hutool.core.bean.BeanUtil;
 import com.alibaba.fastjson.JSON;
+import com.aliyun.oss.OSS;
+import com.aliyun.oss.OSSClientBuilder;
+import com.aliyun.oss.model.CopyObjectResult;
+import com.aliyun.oss.model.ObjectMetadata;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
-import com.qiwenshare.common.cbb.DateUtil;
-import com.qiwenshare.common.cbb.RestResult;
+import com.qiwenshare.common.util.DateUtil;
+import com.qiwenshare.common.result.RestResult;
+import com.qiwenshare.common.domain.AliyunOSS;
 import com.qiwenshare.common.operation.FileOperation;
-import com.qiwenshare.common.oss.AliyunOSSRename;
 import com.qiwenshare.common.util.FileUtil;
 import com.qiwenshare.common.util.PathUtil;
 import com.qiwenshare.file.anno.MyLog;
@@ -15,14 +18,24 @@ import com.qiwenshare.file.api.IFileService;
 import com.qiwenshare.file.api.IRecoveryFileService;
 import com.qiwenshare.file.api.IUserFileService;
 import com.qiwenshare.file.api.IUserService;
-import com.qiwenshare.file.config.QiwenFileConfig;
+import com.qiwenshare.common.config.QiwenFileConfig;
+import com.qiwenshare.file.config.es.FileSearch;
 import com.qiwenshare.file.domain.*;
 import com.qiwenshare.file.dto.*;
+import com.qiwenshare.file.dto.file.*;
 import com.qiwenshare.file.vo.file.FileListVo;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.codec.digest.DigestUtils;
+import org.elasticsearch.index.query.QueryBuilders;
+import org.elasticsearch.search.fetch.subphase.highlight.HighlightBuilder;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Sort;
+import org.springframework.data.elasticsearch.core.ElasticsearchRestTemplate;
+import org.springframework.data.elasticsearch.core.SearchHits;
+import org.springframework.data.elasticsearch.core.query.NativeSearchQueryBuilder;
 import org.springframework.web.bind.annotation.*;
 
 import javax.annotation.Resource;
@@ -54,7 +67,8 @@ public class FileController {
 
     public static final String CURRENT_MODULE = "文件接口";
 
-
+    @Autowired
+    private ElasticsearchRestTemplate elasticsearchRestTemplate;
     public static long treeid = 0;
 
 
@@ -86,41 +100,79 @@ public class FileController {
         return RestResult.success();
     }
 
+    @Operation(summary = "文件搜索", description = "文件搜索", tags = {"file"})
+    @GetMapping(value = "/search")
+    @MyLog(operation = "文件搜索", module = CURRENT_MODULE)
+    @ResponseBody
+    public RestResult<SearchHits<FileSearch>> searchFile(SearchFileDTO searchFileDTO) {
+        NativeSearchQueryBuilder queryBuilder = new NativeSearchQueryBuilder();
+        HighlightBuilder.Field allHighLight = new HighlightBuilder.Field("*").preTags("<span class='keyword'>")
+                .postTags("</span>");
+
+        queryBuilder.withHighlightFields(allHighLight);
+
+        //设置分页
+        int currentPage = (int)searchFileDTO.getCurrentPage() - 1;
+        int pageCount = (int)(searchFileDTO.getPageCount() == 0 ? 10 : searchFileDTO.getPageCount());
+        String order = searchFileDTO.getOrder();
+        Sort.Direction direction = null;
+        if (searchFileDTO.getDirection() == null) {
+            direction = Sort.Direction.DESC;
+        } else if ("asc".equals(searchFileDTO.getDirection())) {
+            direction = Sort.Direction.ASC;
+        } else if ("desc".equals(searchFileDTO.getDirection())) {
+            direction = Sort.Direction.DESC;
+        } else {
+            direction = Sort.Direction.DESC;
+        }
+        if (order == null) {
+            queryBuilder.withPageable(PageRequest.of(currentPage, pageCount));
+        } else {
+            queryBuilder.withPageable(PageRequest.of(currentPage, pageCount, Sort.by(direction, order)));
+        }
+
+        queryBuilder.withQuery(QueryBuilders.matchQuery("fileName", searchFileDTO.getFileName()));
+        SearchHits<FileSearch> search = elasticsearchRestTemplate.search(queryBuilder.build(), FileSearch.class);
+
+        return RestResult.success().data(search);
+    }
+
     @Operation(summary = "文件重命名", description = "文件重命名", tags = {"file"})
     @RequestMapping(value = "/renamefile", method = RequestMethod.POST)
     @MyLog(operation = "文件重命名", module = CURRENT_MODULE)
     @ResponseBody
     public RestResult<String> renameFile(@RequestBody RenameFileDTO renameFileDto, @RequestHeader("token") String token) {
-        RestResult<String> restResult = new RestResult<>();
         if (!operationCheck(token).getSuccess()){
             return operationCheck(token);
         }
         UserBean sessionUserBean = userService.getUserBeanByToken(token);
+        UserFile userFile = userFileService.getById(renameFileDto.getUserFileId());
 
         List<UserFile> userFiles = userFileService.selectUserFileByNameAndPath(renameFileDto.getFileName(), renameFileDto.getFilePath(), sessionUserBean.getUserId());
         if (userFiles != null && !userFiles.isEmpty()) {
             return RestResult.fail().message("同名文件已存在");
 
         }
-        if (1 == renameFileDto.getIsDir()) {
+        if (1 == userFile.getIsDir()) {
             LambdaUpdateWrapper<UserFile> lambdaUpdateWrapper = new LambdaUpdateWrapper<>();
             lambdaUpdateWrapper.set(UserFile::getFileName, renameFileDto.getFileName())
                     .set(UserFile::getUploadTime, DateUtil.getCurrentTime())
                     .eq(UserFile::getUserFileId, renameFileDto.getUserFileId());
             userFileService.update(lambdaUpdateWrapper);
-            userFileService.replaceUserFilePath(renameFileDto.getFilePath() + renameFileDto.getFileName() + "/",
-                    renameFileDto.getFilePath() + renameFileDto.getOldFileName() + "/", sessionUserBean.getUserId());
+            userFileService.replaceUserFilePath(userFile.getFilePath() + renameFileDto.getFileName() + "/",
+                    userFile.getFilePath() + userFile.getFileName() + "/", sessionUserBean.getUserId());
         } else {
-            if (renameFileDto.getIsOSS() == 1) {
-                LambdaQueryWrapper<UserFile> lambdaQueryWrapper = new LambdaQueryWrapper<>();
-                lambdaQueryWrapper.eq(UserFile::getUserFileId, renameFileDto.getUserFileId());
-                UserFile userFile = userFileService.getOne(lambdaQueryWrapper);
+            FileBean file = fileService.getById(userFile.getFileId());
+            if (file.getIsOSS() == 1 || file.getStorageType() == 1) {
+//                LambdaQueryWrapper<UserFile> lambdaQueryWrapper = new LambdaQueryWrapper<>();
+//                lambdaQueryWrapper.eq(UserFile::getUserFileId, renameFileDto.getUserFileId());
+//                UserFile userFile = userFileService.getOne(lambdaQueryWrapper);
 
-                FileBean file = fileService.getById(userFile.getFileId());
+
                 String fileUrl = file.getFileUrl();
                 String newFileUrl = fileUrl.replace(userFile.getFileName(), renameFileDto.getFileName());
 
-                AliyunOSSRename.rename(qiwenFileConfig.getAliyun().getOss(),
+                rename(qiwenFileConfig.getAliyun().getOss(),
                         fileUrl.substring(1),
                         newFileUrl.substring(1));
                 LambdaUpdateWrapper<FileBean> lambdaUpdateWrapper = new LambdaUpdateWrapper<>();
@@ -143,10 +195,30 @@ public class FileController {
                 userFileService.update(lambdaUpdateWrapper);
             }
 
-
         }
 
         return RestResult.success();
+    }
+
+    private void rename(AliyunOSS aliyunOSS, String sourceObjectName, String destinationObjectName) {
+        String endpoint = aliyunOSS.getEndpoint();
+        String accessKeyId = aliyunOSS.getAccessKeyId();
+        String accessKeySecret = aliyunOSS.getAccessKeySecret();
+        String bucketName = aliyunOSS.getBucketName();
+        OSS ossClient = new OSSClientBuilder().build(endpoint, accessKeyId, accessKeySecret);
+        CopyObjectResult result = ossClient.copyObject(bucketName, sourceObjectName, bucketName, destinationObjectName);
+
+        ossClient.deleteObject(bucketName, sourceObjectName);
+        ObjectMetadata metadata = new ObjectMetadata();
+//        if ("pdf".equals(FileUtil.getFileType(objectName))) {
+//            metadata.setContentDisposition("attachment");
+//        }
+
+//        ossClient.putObject(bucketName, objectName, inputStream, metadata);
+
+
+        // 关闭OSSClient。
+        ossClient.shutdown();
     }
 
 
@@ -206,15 +278,9 @@ public class FileController {
         List<UserFile> userFiles = JSON.parseArray(batchDeleteFileDto.getFiles(), UserFile.class);
         DigestUtils.md5Hex("data");
         for (UserFile userFile : userFiles) {
-            String uuid = UUID.randomUUID().toString();
-            userFile.setDeleteBatchNum(uuid);
-            userFileService.deleteUserFile(userFile,sessionUserBean);
 
-            RecoveryFile recoveryFile = new RecoveryFile();
-            recoveryFile.setUserFileId(userFile.getUserFileId());
-            recoveryFile.setDeleteTime(DateUtil.getCurrentTime());
-            recoveryFile.setDeleteBatchNum(uuid);
-            recoveryFileService.save(recoveryFile);
+            //userFile.setDeleteBatchNum(uuid);
+            userFileService.deleteUserFile(userFile.getUserFileId(),sessionUserBean.getUserId());
         }
 
         return RestResult.success().message("批量删除文件成功");
@@ -230,20 +296,16 @@ public class FileController {
             return operationCheck(token);
         }
 
-        String uuid = UUID.randomUUID().toString();
         UserBean sessionUserBean = userService.getUserBeanByToken(token);
-        UserFile userFile = new UserFile();
-        userFile.setUserFileId(deleteFileDto.getUserFileId());
-        userFile.setDeleteBatchNum(uuid);
-        BeanUtil.copyProperties(deleteFileDto, userFile);
-        userFileService.deleteUserFile(userFile, sessionUserBean);
+//        String uuid = UUID.randomUUID().toString();
+
+//        UserFile userFile = new UserFile();
+//        userFile.setUserFileId(deleteFileDto.getUserFileId());
+////        userFile.setDeleteBatchNum(uuid);
+//        BeanUtil.copyProperties(deleteFileDto, userFile);
+        userFileService.deleteUserFile(deleteFileDto.getUserFileId(), sessionUserBean.getUserId());
 
 
-        RecoveryFile recoveryFile = new RecoveryFile();
-        recoveryFile.setUserFileId(deleteFileDto.getUserFileId());
-        recoveryFile.setDeleteTime(DateUtil.getCurrentTime());
-        recoveryFile.setDeleteBatchNum(uuid);
-        recoveryFileService.save(recoveryFile);
         return RestResult.success();
 
     }
@@ -309,7 +371,7 @@ public class FileController {
                 }else{
 
                     userFile.setIsDir(0);
-                    userFile.setExtendName(FileUtil.getFileType(totalFileUrl));
+                    userFile.setExtendName(FileUtil.getFileExtendName(totalFileUrl));
                     userFile.setFileName(FileUtil.getFileNameNotExtend(currentFile.getName()));
                     tempFileBean.setFileSize(currentFile.length());
                     tempFileBean.setTimeStampName(FileUtil.getFileNameNotExtend(currentFile.getName()));

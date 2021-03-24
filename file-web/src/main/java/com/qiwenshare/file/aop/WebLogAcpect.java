@@ -1,6 +1,6 @@
 package com.qiwenshare.file.aop;
 
-import com.qiwenshare.common.cbb.RestResult;
+import com.qiwenshare.common.result.RestResult;
 import com.qiwenshare.file.anno.MyLog;
 import com.qiwenshare.file.api.IOperationLogService;
 import com.qiwenshare.file.api.IUserService;

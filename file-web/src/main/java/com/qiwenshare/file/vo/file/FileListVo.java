@@ -12,7 +12,10 @@ public class FileListVo {
 
     private Long fileSize;
 
+    @Deprecated
     private Integer isOSS;
+
+    private Integer storageType;
 
     private Integer pointCount;
 

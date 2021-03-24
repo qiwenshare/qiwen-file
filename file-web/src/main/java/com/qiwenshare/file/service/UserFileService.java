@@ -3,13 +3,14 @@ package com.qiwenshare.file.service;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
-import com.qiwenshare.common.cbb.DateUtil;
+import com.qiwenshare.common.util.DateUtil;
 import com.qiwenshare.file.api.IUserFileService;
-import com.qiwenshare.file.config.QiwenFileConfig;
+import com.qiwenshare.common.config.QiwenFileConfig;
 import com.qiwenshare.file.domain.FileBean;
-import com.qiwenshare.file.domain.UserBean;
+import com.qiwenshare.file.domain.RecoveryFile;
 import com.qiwenshare.file.domain.UserFile;
 import com.qiwenshare.file.mapper.FileMapper;
+import com.qiwenshare.file.mapper.RecoveryFileMapper;
 import com.qiwenshare.file.mapper.UserFileMapper;
 import com.qiwenshare.file.vo.file.FileListVo;
 import lombok.extern.slf4j.Slf4j;
@@ -17,7 +18,7 @@ import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
 import java.util.List;
-import java.util.Map;
+import java.util.UUID;
 import java.util.concurrent.Executor;
 import java.util.concurrent.Executors;
 
@@ -28,6 +29,8 @@ public class UserFileService  extends ServiceImpl<UserFileMapper, UserFile> impl
     UserFileMapper userFileMapper;
     @Resource
     FileMapper fileMapper;
+    @Resource
+    RecoveryFileMapper recoveryFileMapper;
     @Resource
     FiletransferService filetransferService;
     @Resource
@@ -56,7 +59,53 @@ public class UserFileService  extends ServiceImpl<UserFileMapper, UserFile> impl
         return userFileMapper.userFileList(userFile, beginCount, pageCount);
     }
 
-
+//    public void renameUserFile(Long userFileId, String newFileName, Long userId) {
+//        UserFile userFile = userFileMapper.selectById(userFileId);
+//        if (1 == userFile.getIsDir()) {
+//            LambdaUpdateWrapper<UserFile> lambdaUpdateWrapper = new LambdaUpdateWrapper<>();
+//            lambdaUpdateWrapper.set(UserFile::getFileName, newFileName)
+//                    .set(UserFile::getUploadTime, DateUtil.getCurrentTime())
+//                    .eq(UserFile::getUserFileId, userFile.getUserFileId());
+//            userFileMapper.update(null, lambdaUpdateWrapper);
+//            replaceUserFilePath(userFile.getFilePath() + newFileName + "/",
+//                    userFile.getFilePath() + userFile.getFileName() + "/", userId);
+//        } else {
+//            FileBean fileBean = fileMapper.selectById(userFile.getFileId());
+//            if (fileBean.getIsOSS() == 1) {
+////                LambdaQueryWrapper<UserFile> lambdaQueryWrapper = new LambdaQueryWrapper<>();
+////                lambdaQueryWrapper.eq(UserFile::getUserFileId, renameFileDto.getUserFileId());
+////                UserFile userFile = userFileService.getOne(lambdaQueryWrapper);
+////
+////                FileBean file = fileService.getById(userFile.getFileId());
+//                String fileUrl = fileBean.getFileUrl();
+//                String newFileUrl = fileUrl.replace(userFile.getFileName(), newFileName);
+//
+//                AliyunOSSRename.rename(qiwenFileConfig.getAliyun().getOss(),
+//                        fileUrl.substring(1),
+//                        newFileUrl.substring(1));
+//                LambdaUpdateWrapper<FileBean> lambdaUpdateWrapper = new LambdaUpdateWrapper<>();
+//                lambdaUpdateWrapper
+//                        .set(FileBean::getFileUrl, newFileUrl)
+//                        .eq(FileBean::getFileId, fileBean.getFileId());
+//                fileMapper.update(null, lambdaUpdateWrapper);
+//
+//                LambdaUpdateWrapper<UserFile> userFileLambdaUpdateWrapper = new LambdaUpdateWrapper<>();
+//                userFileLambdaUpdateWrapper
+//                        .set(UserFile::getFileName, newFileName)
+//                        .set(UserFile::getUploadTime, DateUtil.getCurrentTime())
+//                        .eq(UserFile::getUserFileId, userFileId);
+//                userFileMapper.update(null, userFileLambdaUpdateWrapper);
+//            } else {
+//                LambdaUpdateWrapper<UserFile> lambdaUpdateWrapper = new LambdaUpdateWrapper<>();
+//                lambdaUpdateWrapper.set(UserFile::getFileName, newFileName)
+//                        .set(UserFile::getUploadTime, DateUtil.getCurrentTime())
+//                        .eq(UserFile::getUserFileId, userFileId);
+//                userFileMapper.update(null, lambdaUpdateWrapper);
+//            }
+//
+//
+//        }
+//    }
 
     @Override
     public void updateFilepathByFilepath(String oldfilePath, String newfilePath, String fileName, String extendName) {
@@ -131,35 +180,41 @@ public class UserFileService  extends ServiceImpl<UserFileMapper, UserFile> impl
 
 
     @Override
-    public void deleteUserFile(UserFile userFile, UserBean sessionUserBean) {
-
+    public void deleteUserFile(Long userFileId, Long sessionUserId) {
+//        UserFile userFile
+        UserFile userFile = userFileMapper.selectById(userFileId);
+        String uuid = UUID.randomUUID().toString();
         if (userFile.getIsDir() == 1) {
             LambdaUpdateWrapper<UserFile> userFileLambdaUpdateWrapper = new LambdaUpdateWrapper<UserFile>();
             userFileLambdaUpdateWrapper.set(UserFile::getDeleteFlag, 1)
-                    .set(UserFile::getDeleteBatchNum, userFile.getDeleteBatchNum())
+                    .set(UserFile::getDeleteBatchNum, uuid)
                     .set(UserFile::getDeleteTime, DateUtil.getCurrentTime())
-                    .eq(UserFile::getUserFileId, userFile.getUserFileId());
+                    .eq(UserFile::getUserFileId, userFileId);
             userFileMapper.update(null, userFileLambdaUpdateWrapper);
 
             String filePath = userFile.getFilePath() + userFile.getFileName() + "/";
-            updateFileDeleteStateByFilePath(filePath, userFile.getDeleteBatchNum(), sessionUserBean.getUserId());
+            updateFileDeleteStateByFilePath(filePath, userFile.getDeleteBatchNum(), sessionUserId);
 
         }else{
 
-            UserFile userFileTemp = userFileMapper.selectById(userFile.getUserFileId());
+            UserFile userFileTemp = userFileMapper.selectById(userFileId);
             FileBean fileBean = fileMapper.selectById(userFileTemp.getFileId());
 
             LambdaUpdateWrapper<UserFile> userFileLambdaUpdateWrapper = new LambdaUpdateWrapper<>();
             userFileLambdaUpdateWrapper.set(UserFile::getDeleteFlag, 1)
                     .set(UserFile::getDeleteTime, DateUtil.getCurrentTime())
-                    .set(UserFile::getDeleteBatchNum, userFile.getDeleteBatchNum())
+                    .set(UserFile::getDeleteBatchNum, uuid)
                     .eq(UserFile::getUserFileId, userFileTemp.getUserFileId());
             userFileMapper.update(null, userFileLambdaUpdateWrapper);
 
-//            LambdaUpdateWrapper<FileBean> fileBeanLambdaUpdateWrapper = new LambdaUpdateWrapper<>();
-//            fileBeanLambdaUpdateWrapper.set(FileBean::getPointCount, fileBean.getPointCount() -1)
-//                    .eq(FileBean::getFileId, fileBean.getFileId());
         }
+
+
+        RecoveryFile recoveryFile = new RecoveryFile();
+        recoveryFile.setUserFileId(userFileId);
+        recoveryFile.setDeleteTime(DateUtil.getCurrentTime());
+        recoveryFile.setDeleteBatchNum(uuid);
+        recoveryFileMapper.insert(recoveryFile);
 
 
     }

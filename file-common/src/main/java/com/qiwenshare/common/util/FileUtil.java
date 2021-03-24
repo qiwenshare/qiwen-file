@@ -1,6 +1,5 @@
 package com.qiwenshare.common.util;
 
-import java.io.*;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -74,7 +73,7 @@ public class FileUtil {
      * @param fileName 文件名
      * @return 文件扩展名
      */
-    public static String getFileType(String fileName) {
+    public static String getFileExtendName(String fileName) {
         if (fileName.lastIndexOf(".") == -1) {
             return "";
             //这里暂时用jpg，后续应该去获取真实的文件类型
@@ -89,7 +88,7 @@ public class FileUtil {
      * @return 文件名（不带扩展名）
      */
     public static String getFileNameNotExtend(String fileName) {
-        String fileType = getFileType(fileName);
+        String fileType = getFileExtendName(fileName);
         return fileName.replace("." + fileType, "");
     }
 
