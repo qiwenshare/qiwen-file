@@ -1,14 +1,13 @@
-package com.qiwenshare.common.upload.product;
+package com.qiwenshare.common.operation.upload.product;
 
 import com.alibaba.fastjson.JSON;
 import com.aliyun.oss.OSS;
 import com.aliyun.oss.OSSClientBuilder;
 import com.aliyun.oss.model.*;
 import com.qiwenshare.common.config.QiwenFileConfig;
-import com.qiwenshare.common.domain.AliyunOSS;
 import com.qiwenshare.common.domain.UploadFile;
 import com.qiwenshare.common.exception.UploadGeneralException;
-import com.qiwenshare.common.upload.Uploader;
+import com.qiwenshare.common.operation.upload.Uploader;
 import com.qiwenshare.common.util.FileUtil;
 import com.qiwenshare.common.util.PathUtil;
 import lombok.Data;
@@ -24,7 +23,6 @@ import org.springframework.web.multipart.support.StandardMultipartHttpServletReq
 import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
 import java.io.File;
-import java.io.IOException;
 import java.io.InputStream;
 import java.util.*;
 @Component
@@ -32,11 +30,7 @@ public class AliyunOSSUploader extends Uploader {
     private static final Logger logger = LoggerFactory.getLogger(AliyunOSSUploader.class);
     @Resource
     QiwenFileConfig qiwenFileConfig;
-//    private UploadFile uploadFile;
-//    private String endpoint;
-//    private String accessKeyId;
-//    private String accessKeySecret;
-//    private String bucketName;
+
 
     // partETags是PartETag的集合。PartETag由分片的ETag和分片号组成。
     public static Map<String, List<PartETag>> partETagsMap = new HashMap<String, List<PartETag>>();
@@ -46,40 +40,22 @@ public class AliyunOSSUploader extends Uploader {
 
     public static Map<String, String> timeStampNameMap = new HashMap<>();
 
-    public AliyunOSSUploader() {
-
-    }
-
-//    public AliyunOSSUploader(UploadFile uploadFile) {
-//        this.uploadFile = uploadFile;
-//    }
-
     @Override
     public List<UploadFile> upload(HttpServletRequest httpServletRequest, UploadFile uploadFile) {
         logger.info("开始上传upload");
 
         List<UploadFile> saveUploadFileList = new ArrayList<>();
         StandardMultipartHttpServletRequest request = (StandardMultipartHttpServletRequest) httpServletRequest;
-//        AliyunOSS aliyunOSS = (AliyunOSS) request.getAttribute("oss");
-//
-//        endpoint = aliyunOSS.getEndpoint();
-//        accessKeyId = aliyunOSS.getAccessKeyId();
-//        accessKeySecret = aliyunOSS.getAccessKeySecret();
-//        bucketName = aliyunOSS.getBucketName();
+
         boolean isMultipart = ServletFileUpload.isMultipartContent(request);
         if (!isMultipart) {
             throw new UploadGeneralException("未包含文件上传域");
-//            UploadFile uploadFile = new UploadFile();
-//            uploadFile.setSuccess(0);
-//            uploadFile.setMessage("未包含文件上传域");
-//            saveUploadFileList.add(uploadFile);
-//            return saveUploadFileList;
         }
         DiskFileItemFactory dff = new DiskFileItemFactory();//1、创建工厂
         String savePath = getSaveFilePath();
         dff.setRepository(new File(savePath));
 
-        ServletFileUpload sfu = new ServletFileUpload(dff);//2、创建文件上传解析器
+        ServletFileUpload sfu = new ServletFileUpload(dff);
         sfu.setSizeMax(this.maxSize * 1024L);
         sfu.setHeaderEncoding("utf-8");//3、解决文件名的中文乱码
         Iterator<String> iter = request.getFileNames();

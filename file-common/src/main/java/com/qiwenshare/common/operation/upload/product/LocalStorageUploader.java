@@ -1,10 +1,10 @@
-package com.qiwenshare.common.upload.product;
+package com.qiwenshare.common.operation.upload.product;
 
-import com.qiwenshare.common.cbb.NotSameFileExpection;
+import com.qiwenshare.common.exception.NotSameFileExpection;
 import com.qiwenshare.common.domain.UploadFile;
 import com.qiwenshare.common.exception.UploadGeneralException;
 import com.qiwenshare.common.operation.ImageOperation;
-import com.qiwenshare.common.upload.Uploader;
+import com.qiwenshare.common.operation.upload.Uploader;
 import com.qiwenshare.common.util.FileUtil;
 import com.qiwenshare.common.util.PathUtil;
 import org.apache.commons.codec.digest.DigestUtils;

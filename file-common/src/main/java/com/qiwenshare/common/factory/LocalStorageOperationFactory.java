@@ -1,9 +1,11 @@
 package com.qiwenshare.common.factory;
 
-import com.qiwenshare.common.download.Downloader;
-import com.qiwenshare.common.download.product.LocalStorageDownloader;
-import com.qiwenshare.common.upload.product.LocalStorageUploader;
-import com.qiwenshare.common.upload.Uploader;
+import com.qiwenshare.common.operation.delete.Deleter;
+import com.qiwenshare.common.operation.delete.product.LocalStorageDeleter;
+import com.qiwenshare.common.operation.download.Downloader;
+import com.qiwenshare.common.operation.download.product.LocalStorageDownloader;
+import com.qiwenshare.common.operation.upload.product.LocalStorageUploader;
+import com.qiwenshare.common.operation.upload.Uploader;
 import org.springframework.stereotype.Component;
 
 import javax.annotation.Resource;
@@ -12,17 +14,24 @@ import javax.annotation.Resource;
 public class LocalStorageOperationFactory implements FileOperationFactory{
 
     @Resource
-    LocalStorageUploader ChunkUploader;
+    LocalStorageUploader localStorageUploader;
     @Resource
     LocalStorageDownloader localStorageDownloader;
+    @Resource
+    LocalStorageDeleter localStorageDeleter;
     @Override
     public Uploader getUploader() {
-        return ChunkUploader;
+        return localStorageUploader;
     }
 
     @Override
     public Downloader getDownloader() {
         return localStorageDownloader;
+    }
+
+    @Override
+    public Deleter getDeleter() {
+        return localStorageDeleter;
     }
 
 

@@ -1,9 +1,7 @@
-package com.qiwenshare.common.cbb;
+package com.qiwenshare.common.result;
 
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Data;
-
-import java.util.Map;
 
 /**
  * 统一结果返回

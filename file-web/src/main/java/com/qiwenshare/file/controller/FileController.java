@@ -1,12 +1,16 @@
 package com.qiwenshare.file.controller;
 
 import com.alibaba.fastjson.JSON;
+import com.aliyun.oss.OSS;
+import com.aliyun.oss.OSSClientBuilder;
+import com.aliyun.oss.model.CopyObjectResult;
+import com.aliyun.oss.model.ObjectMetadata;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
-import com.qiwenshare.common.cbb.DateUtil;
-import com.qiwenshare.common.cbb.RestResult;
+import com.qiwenshare.common.util.DateUtil;
+import com.qiwenshare.common.result.RestResult;
+import com.qiwenshare.common.domain.AliyunOSS;
 import com.qiwenshare.common.operation.FileOperation;
-import com.qiwenshare.common.oss.AliyunOSSRename;
 import com.qiwenshare.common.util.FileUtil;
 import com.qiwenshare.common.util.PathUtil;
 import com.qiwenshare.file.anno.MyLog;
@@ -168,7 +172,7 @@ public class FileController {
                 String fileUrl = file.getFileUrl();
                 String newFileUrl = fileUrl.replace(userFile.getFileName(), renameFileDto.getFileName());
 
-                AliyunOSSRename.rename(qiwenFileConfig.getAliyun().getOss(),
+                rename(qiwenFileConfig.getAliyun().getOss(),
                         fileUrl.substring(1),
                         newFileUrl.substring(1));
                 LambdaUpdateWrapper<FileBean> lambdaUpdateWrapper = new LambdaUpdateWrapper<>();
@@ -194,6 +198,27 @@ public class FileController {
         }
 
         return RestResult.success();
+    }
+
+    private void rename(AliyunOSS aliyunOSS, String sourceObjectName, String destinationObjectName) {
+        String endpoint = aliyunOSS.getEndpoint();
+        String accessKeyId = aliyunOSS.getAccessKeyId();
+        String accessKeySecret = aliyunOSS.getAccessKeySecret();
+        String bucketName = aliyunOSS.getBucketName();
+        OSS ossClient = new OSSClientBuilder().build(endpoint, accessKeyId, accessKeySecret);
+        CopyObjectResult result = ossClient.copyObject(bucketName, sourceObjectName, bucketName, destinationObjectName);
+
+        ossClient.deleteObject(bucketName, sourceObjectName);
+        ObjectMetadata metadata = new ObjectMetadata();
+//        if ("pdf".equals(FileUtil.getFileType(objectName))) {
+//            metadata.setContentDisposition("attachment");
+//        }
+
+//        ossClient.putObject(bucketName, objectName, inputStream, metadata);
+
+
+        // 关闭OSSClient。
+        ossClient.shutdown();
     }
 
 

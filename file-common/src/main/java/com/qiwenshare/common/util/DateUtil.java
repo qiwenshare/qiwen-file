@@ -1,4 +1,4 @@
-package com.qiwenshare.common.cbb;
+package com.qiwenshare.common.util;
 
 import java.text.DateFormat;
 import java.text.ParseException;

@@ -1,10 +1,8 @@
 package com.qiwenshare.file.api;
 
 import com.baomidou.mybatisplus.extension.service.IService;
-import com.qiwenshare.common.cbb.RestResult;
+import com.qiwenshare.common.result.RestResult;
 import com.qiwenshare.file.domain.UserBean;
-
-import java.util.List;
 
 public interface IUserService extends IService<UserBean> {
 

@@ -1,10 +1,9 @@
-package com.qiwenshare.common.download.product;
+package com.qiwenshare.common.operation.download.product;
 
 import com.github.tobato.fastdfs.proto.storage.DownloadByteArray;
 import com.github.tobato.fastdfs.service.FastFileStorageClient;
 import com.qiwenshare.common.domain.DownloadFile;
-import com.qiwenshare.common.domain.UploadFile;
-import com.qiwenshare.common.download.Downloader;
+import com.qiwenshare.common.operation.download.Downloader;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 

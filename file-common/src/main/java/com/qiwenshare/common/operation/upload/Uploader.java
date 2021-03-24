@@ -1,10 +1,9 @@
-package com.qiwenshare.common.upload;
+package com.qiwenshare.common.operation.upload;
 
 import com.qiwenshare.common.domain.UploadFile;
 import com.qiwenshare.common.util.PathUtil;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.io.FileUtils;
-import org.springframework.web.multipart.support.StandardMultipartHttpServletRequest;
 
 import javax.servlet.http.HttpServletRequest;
 import java.io.File;
@@ -24,14 +23,11 @@ public abstract class Uploader {
     // 文件大小限制，单位KB
     public final int maxSize = 10000000;
 
-//    protected StandardMultipartHttpServletRequest request = null;
-
     public abstract List<UploadFile> upload(HttpServletRequest request, UploadFile uploadFile);
 
     /**
      * 根据字符串创建本地目录 并按照日期建立子目录返回
      *
-     * @param path
      * @return
      */
     protected String getSaveFilePath() {
@@ -73,7 +69,6 @@ public abstract class Uploader {
     }
 
     public synchronized boolean checkUploadStatus(UploadFile param, File confFile) throws IOException {
-        //File confFile = new File(savePath, timeStampName + ".conf");
         RandomAccessFile confAccessFile = new RandomAccessFile(confFile, "rw");
         //设置文件长度
         confAccessFile.setLength(param.getTotalChunks());

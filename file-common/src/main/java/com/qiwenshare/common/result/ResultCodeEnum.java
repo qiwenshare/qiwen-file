@@ -1,4 +1,4 @@
-package com.qiwenshare.common.cbb;
+package com.qiwenshare.common.result;
 
 import lombok.Getter;
 

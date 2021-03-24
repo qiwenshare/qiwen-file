@@ -10,13 +10,15 @@ import javax.servlet.http.HttpServletResponse;
 import cn.hutool.core.bean.BeanUtil;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
-import com.qiwenshare.common.cbb.DateUtil;
+import com.qiwenshare.common.util.DateUtil;
+import com.qiwenshare.common.domain.DeleteFile;
 import com.qiwenshare.common.domain.DownloadFile;
 import com.qiwenshare.common.domain.UploadFile;
 //import com.qiwenshare.common.factory.FileOperationFactory;
-import com.qiwenshare.common.download.Downloader;
+import com.qiwenshare.common.operation.delete.Deleter;
+import com.qiwenshare.common.operation.download.Downloader;
 import com.qiwenshare.common.factory.FileOperationFactory;
-import com.qiwenshare.common.upload.Uploader;
+import com.qiwenshare.common.operation.upload.Uploader;
 
 import com.qiwenshare.file.api.IFiletransferService;
 
@@ -146,6 +148,24 @@ public class FiletransferService implements IFiletransferService {
         uploadFile.setFileUrl(fileBean.getFileUrl());
         uploadFile.setTimeStampName(fileBean.getTimeStampName());
         downloader.download(httpServletResponse, uploadFile);
+    }
+
+    @Override
+    public void deleteFile(FileBean fileBean) {
+        Deleter deleter = null;
+        if (fileBean.getIsOSS() != null && fileBean.getIsOSS() == 1) {
+            deleter = aliyunOSSOperationFactory.getDeleter();
+        } else if (fileBean.getStorageType() == 0) {
+            deleter = localStorageOperationFactory.getDeleter();
+        } else if (fileBean.getStorageType() == 1) {
+            deleter = aliyunOSSOperationFactory.getDeleter();
+        } else if (fileBean.getStorageType() == 2) {
+            deleter = fastDFSOperationFactory.getDeleter();
+        }
+        DeleteFile deleteFile = new DeleteFile();
+        deleteFile.setFileUrl(fileBean.getFileUrl());
+        deleteFile.setTimeStampName(fileBean.getTimeStampName());
+        deleter.delete(deleteFile);
     }
 
     @Override

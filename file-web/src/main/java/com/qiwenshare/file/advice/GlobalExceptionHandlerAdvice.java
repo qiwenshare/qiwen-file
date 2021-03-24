@@ -1,7 +1,7 @@
 package com.qiwenshare.file.advice;
 
-import com.qiwenshare.common.cbb.RestResult;
-import com.qiwenshare.common.cbb.ResultCodeEnum;
+import com.qiwenshare.common.result.RestResult;
+import com.qiwenshare.common.result.ResultCodeEnum;
 import com.qiwenshare.common.exception.UploadGeneralException;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
@@ -9,7 +9,6 @@ import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.ResponseStatus;
-import org.springframework.web.client.HttpClientErrorException;
 
 /**
  * 该注解为统一异常处理的核心

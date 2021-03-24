@@ -12,6 +12,7 @@ public class QiwenFileConfig {
     private boolean shareMode;
 
     private String storageType;
+    private String cacheMode;
 
     private AliyunConfig aliyun = new AliyunConfig();
 

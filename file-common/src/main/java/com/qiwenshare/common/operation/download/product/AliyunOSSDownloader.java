@@ -1,13 +1,12 @@
-package com.qiwenshare.common.download.product;
+package com.qiwenshare.common.operation.download.product;
 
 import com.aliyun.oss.OSS;
+import com.aliyun.oss.OSSClientBuilder;
 import com.aliyun.oss.model.OSSObject;
-import com.github.tobato.fastdfs.service.FastFileStorageClient;
 import com.qiwenshare.common.config.QiwenFileConfig;
+import com.qiwenshare.common.domain.AliyunOSS;
 import com.qiwenshare.common.domain.DownloadFile;
-import com.qiwenshare.common.download.Downloader;
-import com.qiwenshare.common.oss.AliyunOSSDownload;
-import org.springframework.beans.factory.annotation.Autowired;
+import com.qiwenshare.common.operation.download.Downloader;
 import org.springframework.stereotype.Component;
 
 import javax.annotation.Resource;
@@ -23,10 +22,11 @@ public class AliyunOSSDownloader extends Downloader {
     QiwenFileConfig qiwenFileConfig;
     @Override
     public void download(HttpServletResponse httpServletResponse, DownloadFile downloadFile) {
+
         BufferedInputStream bis = null;
         byte[] buffer = new byte[1024];
-        AliyunOSSDownload aliyunOSSDownload= new AliyunOSSDownload();
-        OSS ossClient = aliyunOSSDownload.createOSSClient(qiwenFileConfig.getAliyun().getOss());
+
+        OSS ossClient = createOSSClient(qiwenFileConfig.getAliyun().getOss());
         OSSObject ossObject = ossClient.getObject(qiwenFileConfig.getAliyun().getOss().getBucketName(), downloadFile.getTimeStampName());
         InputStream inputStream = ossObject.getObjectContent();
         try {
@@ -50,5 +50,13 @@ public class AliyunOSSDownloader extends Downloader {
 
         }
         ossClient.shutdown();
+    }
+
+    public OSS createOSSClient(AliyunOSS aliyunOSS) {
+        String endpoint = aliyunOSS.getEndpoint();
+        String accessKeyId = aliyunOSS.getAccessKeyId();
+        String accessKeySecret = aliyunOSS.getAccessKeySecret();
+        OSS ossClient = new OSSClientBuilder().build(endpoint, accessKeyId, accessKeySecret);
+        return ossClient;
     }
 }

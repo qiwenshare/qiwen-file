@@ -1,10 +1,10 @@
-package com.qiwenshare.common.upload.product;
+package com.qiwenshare.common.operation.upload.product;
 
 import com.github.tobato.fastdfs.domain.StorePath;
 import com.github.tobato.fastdfs.service.AppendFileStorageClient;
 import com.qiwenshare.common.domain.UploadFile;
 import com.qiwenshare.common.exception.UploadGeneralException;
-import com.qiwenshare.common.upload.Uploader;
+import com.qiwenshare.common.operation.upload.Uploader;
 import com.qiwenshare.common.util.FileUtil;
 import com.qiwenshare.common.util.PathUtil;
 import lombok.extern.slf4j.Slf4j;
@@ -25,26 +25,10 @@ public class FastDFSUploader extends Uploader {
     @Resource
     AppendFileStorageClient defaultAppendFileStorageClient;
 
-//    UploadFile uploadFile;
-
     private static Map<String, Integer> CURRENT_UPLOAD_CHUNK_NUMBER = new HashMap<>();
     private static Map<String, Long> UPLOADED_SIZE = new HashMap<>();
     private static Map<String, String> STORE_PATH = new HashMap<>();
     private static Map<String, Object> LOCK_MAP = new HashMap<>();
-
-    public FastDFSUploader() {
-
-    }
-
-//    public FastDFSUploader(UploadFile uploadFile) {
-//        this.uploadFile = uploadFile;
-//    }
-//
-//    public FastDFSUploader(UploadFile uploadFile, AppendFileStorageClient defaultAppendFileStorageClient) {
-////        this.uploadFile = uploadFile;
-//        this.defaultAppendFileStorageClient = defaultAppendFileStorageClient;
-//    }
-
 
     @Override
     public List<UploadFile> upload(HttpServletRequest request, UploadFile uploadFile) {

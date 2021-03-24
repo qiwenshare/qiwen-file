@@ -3,7 +3,7 @@ package com.qiwenshare.file.service;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
-import com.qiwenshare.common.cbb.DateUtil;
+import com.qiwenshare.common.util.DateUtil;
 import com.qiwenshare.file.api.IUserFileService;
 import com.qiwenshare.common.config.QiwenFileConfig;
 import com.qiwenshare.file.domain.FileBean;

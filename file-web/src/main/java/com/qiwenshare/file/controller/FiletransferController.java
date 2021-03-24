@@ -1,14 +1,11 @@
 package com.qiwenshare.file.controller;
 
-import com.aliyun.oss.OSS;
-import com.aliyun.oss.model.OSSObject;
 import com.github.tobato.fastdfs.proto.storage.DownloadByteArray;
 import com.github.tobato.fastdfs.service.FastFileStorageClient;
-import com.qiwenshare.common.cbb.DateUtil;
+import com.qiwenshare.common.util.DateUtil;
 import com.qiwenshare.common.operation.FileOperation;
-import com.qiwenshare.common.oss.AliyunOSSDownload;
 import com.qiwenshare.common.util.FileUtil;
-import com.qiwenshare.common.cbb.RestResult;
+import com.qiwenshare.common.result.RestResult;
 import com.qiwenshare.common.util.PathUtil;
 import com.qiwenshare.file.anno.MyLog;
 import com.qiwenshare.file.api.IFileService;
@@ -179,35 +176,7 @@ public class FiletransferController {
         }
     }
 
-    private void aliyunDownload(HttpServletResponse response, FileBean fileBean) {
-        BufferedInputStream bis = null;
-        byte[] buffer = new byte[1024];
-        AliyunOSSDownload aliyunOSSDownload= new AliyunOSSDownload();
-        OSS ossClient = aliyunOSSDownload.createOSSClient(qiwenFileConfig.getAliyun().getOss());
-        OSSObject ossObject = ossClient.getObject(qiwenFileConfig.getAliyun().getOss().getBucketName(), fileBean.getTimeStampName());
-        InputStream inputStream = ossObject.getObjectContent();
-        try {
-            bis = new BufferedInputStream(inputStream);
-            OutputStream os = response.getOutputStream();
-            int i = bis.read(buffer);
-            while (i != -1) {
-                os.write(buffer, 0, i);
-                i = bis.read(buffer);
-            }
-        } catch (IOException e) {
-            e.printStackTrace();
-        } finally {
-            if (bis != null) {
-                try {
-                    bis.close();
-                } catch (IOException e) {
-                    e.printStackTrace();
-                }
-            }
 
-        }
-        ossClient.shutdown();
-    }
 
 
     public void fastFDSDownload(HttpServletResponse response, FileBean fileBean){

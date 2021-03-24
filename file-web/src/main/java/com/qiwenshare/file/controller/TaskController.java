@@ -8,6 +8,7 @@ import com.qiwenshare.file.config.es.FileSearch;
 import com.qiwenshare.file.domain.FileBean;
 import com.qiwenshare.file.domain.UserFile;
 import com.qiwenshare.file.service.FileService;
+import com.qiwenshare.file.service.FiletransferService;
 import com.qiwenshare.file.service.UserFileService;
 import com.qiwenshare.file.service.UserService;
 import com.qiwenshare.file.vo.file.FileListVo;
@@ -30,6 +31,8 @@ public class TaskController {
     FileService fileService;
     @Resource
     UserFileService userFileService;
+    @Resource
+    FiletransferService filetransferService;
     @Autowired
     private IElasticSearchService elasticSearchService;
 
@@ -43,7 +46,7 @@ public class TaskController {
         for (int i = 0; i < fileBeanList.size(); i++) {
             FileBean fileBean = fileBeanList.get(i);
             log.info("删除本地文件：" + JSON.toJSONString(fileBean));
-            fileService.deleteLocalFile(fileBean);
+            filetransferService.deleteFile(fileBean);
             fileService.removeById(fileBean.getFileId());
         }
 

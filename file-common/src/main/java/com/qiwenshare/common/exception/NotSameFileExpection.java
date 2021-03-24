@@ -1,4 +1,4 @@
-package com.qiwenshare.common.cbb;
+package com.qiwenshare.common.exception;
 
 public class NotSameFileExpection extends Exception {
     public NotSameFileExpection() {

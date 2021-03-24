@@ -1,4 +1,4 @@
-package com.qiwenshare.common.cbb;
+package com.qiwenshare.common.util;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
