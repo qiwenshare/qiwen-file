@@ -56,6 +56,10 @@
 |奇文网盘前台|[https://gitee.com/qiwen-cloud/qiwen-file-web](https://gitee.com/qiwen-cloud/qiwen-file-web)|
 |奇文网盘后台|[https://gitee.com/qiwen-cloud/qiwen-file](https://gitee.com/qiwen-cloud/qiwen-file)|
 
+## 网络拓扑图
+
+![输入图片说明](https://images.gitee.com/uploads/images/2021/0324/225520_d55b109e_947714.png "屏幕截图.png")
+
 ## 软件架构
 该项目采用前后端分离的方式进行开发和部署,主要用到以下关键技术
 
