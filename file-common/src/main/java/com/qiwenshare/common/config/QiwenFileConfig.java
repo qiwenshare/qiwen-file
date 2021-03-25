@@ -13,6 +13,7 @@ public class QiwenFileConfig {
 
     private String storageType;
     private String cacheMode;
+    private String localStoragePath;
 
     private AliyunConfig aliyun = new AliyunConfig();
 

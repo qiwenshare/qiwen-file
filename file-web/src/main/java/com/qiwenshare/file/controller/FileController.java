@@ -164,10 +164,6 @@ public class FileController {
         } else {
             FileBean file = fileService.getById(userFile.getFileId());
             if (file.getIsOSS() == 1 || file.getStorageType() == 1) {
-//                LambdaQueryWrapper<UserFile> lambdaQueryWrapper = new LambdaQueryWrapper<>();
-//                lambdaQueryWrapper.eq(UserFile::getUserFileId, renameFileDto.getUserFileId());
-//                UserFile userFile = userFileService.getOne(lambdaQueryWrapper);
-
 
                 String fileUrl = file.getFileUrl();
                 String newFileUrl = fileUrl.replace(userFile.getFileName(), renameFileDto.getFileName());
@@ -297,12 +293,7 @@ public class FileController {
         }
 
         UserBean sessionUserBean = userService.getUserBeanByToken(token);
-//        String uuid = UUID.randomUUID().toString();
 
-//        UserFile userFile = new UserFile();
-//        userFile.setUserFileId(deleteFileDto.getUserFileId());
-////        userFile.setDeleteBatchNum(uuid);
-//        BeanUtil.copyProperties(deleteFileDto, userFile);
         userFileService.deleteUserFile(deleteFileDto.getUserFileId(), sessionUserBean.getUserId());
 
 

@@ -9,17 +9,10 @@ import java.util.List;
 
 public interface IFileService  extends IService<FileBean> {
 
-
-//    void batchInsertFile(List<FileBean> fileBeanList, Long userId);
-    //void updateFile(FileBean fileBean);
-
     void increaseFilePointCount(Long fileId);
 
     void decreaseFilePointCount(Long fileId);
 
-//    List<FileBean> selectFileListByPath(FileBean fileBean);
-
-//    void deleteLocalFile(FileBean fileBean);
 
 
 
