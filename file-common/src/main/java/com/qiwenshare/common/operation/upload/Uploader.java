@@ -1,9 +1,11 @@
 package com.qiwenshare.common.operation.upload;
 
+import com.qiwenshare.common.config.PropertiesUtil;
 import com.qiwenshare.common.domain.UploadFile;
 import com.qiwenshare.common.util.PathUtil;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.io.FileUtils;
+import org.apache.commons.lang3.StringUtils;
 
 import javax.servlet.http.HttpServletRequest;
 import java.io.File;
@@ -14,9 +16,11 @@ import java.security.SecureRandom;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.List;
+import java.util.ResourceBundle;
 
 @Slf4j
 public abstract class Uploader {
+    
 
     public static final String ROOT_PATH = "upload";
     public static final String FILE_SEPARATOR = "/";
@@ -31,10 +35,14 @@ public abstract class Uploader {
      * @return
      */
     protected String getSaveFilePath() {
+        
         String path = ROOT_PATH;
         SimpleDateFormat formater = new SimpleDateFormat("yyyyMMdd");
         path = FILE_SEPARATOR + path + FILE_SEPARATOR + formater.format(new Date());
-        File dir = new File(PathUtil.getStaticPath() + path);
+
+        String staticPath = PathUtil.getStaticPath();
+
+        File dir = new File(staticPath + path);
         //LOG.error(PathUtil.getStaticPath() + path);
         if (!dir.exists()) {
             try {
