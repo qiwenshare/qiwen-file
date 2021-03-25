@@ -146,10 +146,10 @@
 
 如您有问题，请加入 QQ 群咨询
 
-**QQ 交流群**和**微信公众号**请扫描下面二维码
+**QQ交流群** 和 **微信公众号** 请扫描下面二维码
 
 <div style="dispaly: flex;">
-    <img src="https://images.gitee.com/uploads/images/2020/0406/164832_5121dc5e_947714.png" style="width: 200px;margin-right: 80px;"/>
+    <img src="https://images.gitee.com/uploads/images/2020/0406/164832_5121dc5e_947714.png" style="width: 200px;margin-right: 16px;"/>
     <img src="https://images.gitee.com/uploads/images/2020/0406/164833_d99e92ee_947714.png" style="width: 200px;"/>
 </div>
 
