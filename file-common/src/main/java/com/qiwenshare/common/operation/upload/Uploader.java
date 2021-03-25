@@ -39,11 +39,9 @@ public abstract class Uploader {
         String path = ROOT_PATH;
         SimpleDateFormat formater = new SimpleDateFormat("yyyyMMdd");
         path = FILE_SEPARATOR + path + FILE_SEPARATOR + formater.format(new Date());
-        String localStoragePath = PropertiesUtil.getProperty("qiwen-file.local-storage-path");
+
         String staticPath = PathUtil.getStaticPath();
-        if (StringUtils.isNotEmpty(localStoragePath)) {
-            staticPath = localStoragePath;
-        }
+
         File dir = new File(staticPath + path);
         //LOG.error(PathUtil.getStaticPath() + path);
         if (!dir.exists()) {

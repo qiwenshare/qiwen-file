@@ -1,5 +1,7 @@
 package com.qiwenshare.common.util;
 
+import com.qiwenshare.common.config.PropertiesUtil;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.util.ResourceUtils;
 
 import java.io.File;
@@ -47,14 +49,19 @@ public class PathUtil {
      * @return
      */
     public static String getStaticPath() {
-        String projectRootAbsolutePath = getProjectRootPath();
+        String localStoragePath = PropertiesUtil.getProperty("qiwen-file.local-storage-path");
+        if (StringUtils.isNotEmpty(localStoragePath)) {
+            return localStoragePath;
+        }else {
+            String projectRootAbsolutePath = getProjectRootPath();
 
-        int index = projectRootAbsolutePath.indexOf("file:");
-        if (index != -1){
-            projectRootAbsolutePath = projectRootAbsolutePath.substring(0, index);
+            int index = projectRootAbsolutePath.indexOf("file:");
+            if (index != -1) {
+                projectRootAbsolutePath = projectRootAbsolutePath.substring(0, index);
+            }
+
+            return projectRootAbsolutePath + "static" + File.separator;
         }
-
-        return projectRootAbsolutePath + "static" + File.separator;
 
 
     }
