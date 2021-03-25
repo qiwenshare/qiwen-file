@@ -149,9 +149,10 @@
 **QQ交流群** 和 **微信公众号** 请扫描下面二维码
 
 <div style="dispaly: flex;">
-    <img src="https://images.gitee.com/uploads/images/2020/0406/164832_5121dc5e_947714.png" style="width: 200px;margin-right: 16px;"/>
-    <img src="https://images.gitee.com/uploads/images/2020/0406/164833_d99e92ee_947714.png" style="width: 200px;"/>
+    <img src="https://images.gitee.com/uploads/images/2021/0325/133721_7c174ea5_1837873.png"/>
+    <img src="https://images.gitee.com/uploads/images/2021/0325/133740_557ca1d8_1837873.png"/>
 </div>
+
 
 ## 参与贡献
 
