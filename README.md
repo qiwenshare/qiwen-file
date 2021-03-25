@@ -146,7 +146,7 @@
 
 如您有问题，请加入 QQ 群咨询
 
-**QQ 交流群**和**微信公众号**请扫描下面二维码
+**QQ交流群** 和 **微信公众号** 请扫描下面二维码
 
 <div style="dispaly: flex;">
     <img src="https://images.gitee.com/uploads/images/2021/0325/133721_7c174ea5_1837873.png"/>
