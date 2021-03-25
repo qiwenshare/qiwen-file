@@ -1,37 +1,171 @@
-# qiwen-file
+<p align="center">
+	<a href="http://fileos.qiwenshare.com/"><img width="30%" src="https://images.gitee.com/uploads/images/2020/0810/131432_e00bbf82_947714.png" ></a>
+</p>
+<p align="center">
+	<strong>The distributed file system based on Spring Boot + VUE CLI@3 framework is designed to provide a simple and convenient file storage scheme for users and enterprises. It can manage files with a perfect directory structure system.</strong>
+</p>
+<p align="center">
+	<a target="_blank" href="https://baike.baidu.com/item/MIT%E8%AE%B8%E5%8F%AF%E8%AF%81/6671281?fr=aladdin">
+        <img src="https://img.shields.io/:license-MIT-blue.svg" />
+	</a>
+	<a target="_blank" href="https://www.oracle.com/technetwork/java/javase/downloads/index.html">
+		<img src="https://img.shields.io/badge/JDK-8+-green.svg" />
+	</a>
+	<a target="_blank" href="https://gitee.com/mingSoft/MCMS/stargazers">
+		<img src="https://gitee.com/qiwen-cloud/qiwen-file/badge/star.svg?theme=dark" alt='gitee star'/>
+	</a>
+</p>
+<p align="center">
+	<a href="http://pan.qiwenshare.com/" target="_blank">Online presentation environment</a> &nbsp;|
+	<a href="https://www.qiwenshare.com/essay/detail/169"  target="_blank">Installation instructions</a>&nbsp;|
+        <a href="https://www.qiwenshare.com/essay/detail/324"  target="_blank">Update log</a>
+</p>
 
-#### Description
-文件管理系统（仿百度网盘）
-基于springboot + vue 框架开发的Web文件系统，旨在为用户提供一个简单、方便的文件存储方案
+---
 
-#### Software Architecture
-Software architecture description
+## Open source that
 
-#### Installation
+System 100% open source
+The software follows the MIT open source protocol
 
-1.  xxxx
-2.  xxxx
-3.  xxxx
+**You can build on it to improve its functionality and become a contributor to this project**
 
-#### Instructions
+**You can also use this project as a scaffold for other projects**
 
-1.  xxxx
-2.  xxxx
-3.  xxxx
+## Function is introduced
 
-#### Contribution
+### The user action
 
-1.  Fork the repository
-2.  Create Feat_xxx branch
-3.  Commit your code
-4.  Create Pull Request
+1. User login and registration
+
+### File operations
+
+1. Users can add, delete and modify the directory structure
+2. Provide uploading and downloading of files.
+3. Support online decompression of ZIP files and RAR files
+4. Support files and directories to move and copy
+5. Classified view of multiple file formats
+6. Support AliCloud OSS object storage and FastDFS storage
+7. Added sharding uploading, which supports local storage, Ali Cloud OSS and FastDFS
+8. Support high speed second transmission function to improve uploading efficiency
+9. The foreground of uploading files displays the progress, rate, percentage and other information of uploading files in real time
+10. Support file renaming
+11. Display file storage and total capacity in real time
+12. Support ElasticSearch file search
+13. ...
+
+## The source address
+
+| The project name       | The source address                                                                           |
+| ---------------------- | -------------------------------------------------------------------------------------------- |
+| The front project      | [https://gitee.com/qiwen-cloud/qiwen-file-web](https://gitee.com/qiwen-cloud/qiwen-file-web) |
+| The background project | [https://gitee.com/qiwen-cloud/qiwen-file](https://gitee.com/qiwen-cloud/qiwen-file)         |
+
+## Network topology
+
+![网络拓扑图](https://images.gitee.com/uploads/images/2021/0324/225520_d55b109e_947714.png '屏幕截图.png')
+
+## Software architecture
+
+The project was developed and deployed in a front-end separation approach, using the following key technologies
+
+**Front**：Element UI、Vue CLI@3、Node.js、Webpack
+
+**Background **：Spring Boot、MyBatis、JPA、JWT
+
+**Database** : MySQL
+
+**Data Structure**：Recursive algorithms, tree traversal and insertion...
+
+## Directions for use
+
+1、This project is the back-end code
+
+2、Download the front-end code, you can access the address to pull:[qiwen-file-web](https://gitee.com/qiwen-cloud/qiwen-file-web)
+
+## Screenshots of some functions
+
+### 1. The cloud home page
+
+#### 1.1 The page layout
+
+- **Left menu bar area:** display file type, click to view files by category, the bottom shows the occupied storage space.
+- **Top file operation area:** including operation button group for files, switch button group for file viewing mode, and set button for file display column.
+- **Right file display area:** including breadcrumb navigation bar -- identifies the directory currently located; File display area -- the display format will change according to the file viewing mode; Bottom paging component.
+
+![网盘主页](https://images.gitee.com/uploads/images/2021/0325/105935_225d3d46_1837873.png)
+
+#### 1.2 Layout adjustment function
+
+The left menu bar is collapsible, and the table operation column is collapsible. You can control the display and hiding of the columns in the current table.
+
+![折叠功能](https://images.gitee.com/uploads/images/2021/0325/113631_cf57fc44_1837873.gif)
+
+#### 1.3 Batch operation function
+
+![批量操作](https://images.gitee.com/uploads/images/2021/0325/115913_ad3bbe67_1837873.gif)
+
+### 2. Three viewing modes
+
+File viewing supports three presentation modes (list, grid, and timeline)
+
+#### 2.1 List Mode
+
+![列表模式](https://images.gitee.com/uploads/images/2021/0325/120007_1d046ef5_1837873.png)
+
+#### 2.2 Grid Mode
+
+![网格模式](https://images.gitee.com/uploads/images/2021/0325/123609_e4868707_1837873.png)
+
+#### 2.3 Timeline Mode
+
+![时间线模式](https://images.gitee.com/uploads/images/2021/0325/123638_3316ce8f_1837873.png)
+
+### 3. Create a folder
+
+![创建文件夹](https://images.gitee.com/uploads/images/2021/0325/123704_145604f0_1837873.png)
+
+### 5. Move files
+
+![文件移动](https://images.gitee.com/uploads/images/2021/0325/123752_14364633_1837873.png)
+
+### 6. Online file decompression
+
+![文件在线解压缩](https://images.gitee.com/uploads/images/2021/0325/123823_aba673e8_1837873.png)
+
+### 7. File upload
+
+文件采用**分片上传**，集成了[simiple-uplader](https://github.com/simple-uploader/Uploader/blob/develop/README_zh-CN.md#uploader)的文件**秒传**、**断点续传**功能。
+![文件上传](https://images.gitee.com/uploads/images/2020/1127/211713_87fb01b2_947714.png '屏幕截图.png')
+
+### 8. Document Recycle Bin
+
+![文件回收站](https://images.gitee.com/uploads/images/2021/0325/123843_f8fa15bf_1837873.png)
+
+## Contact us
+
+If you have any questions, please join the QQ group consultation
+
+**QQ communication group ** and **WeChat public account** please scan the following QR code
+
+<div style="dispaly: flex;">
+    <img src="https://images.gitee.com/uploads/images/2021/0325/133721_7c174ea5_1837873.png"/>
+    <img src="https://images.gitee.com/uploads/images/2021/0325/133740_557ca1d8_1837873.png"/>
+</div>
 
 
-#### Gitee Feature
+## Participate in the contribution
 
-1.  You can use Readme\_XXX.md to support different languages, such as Readme\_en.md, Readme\_zh.md
-2.  Gitee blog [blog.gitee.com](https://blog.gitee.com)
-3.  Explore open source project [https://gitee.com/explore](https://gitee.com/explore)
-4.  The most valuable open source project [GVP](https://gitee.com/gvp)
-5.  The manual of Gitee [https://gitee.com/help](https://gitee.com/help)
-6.  The most popular members  [https://gitee.com/gitee-stars/](https://gitee.com/gitee-stars/)
+1.  Fork the warehouse
+2.  Create a new branch: Feat_xxx
+3.  Submit code
+4.  Create a new Pull Request
+
+## Gitee Special Effects
+
+1.  Use Readme_XXX.md to support different languages,for example: Readme_en.md,Readme_zh.md
+2.  The official blog of Gitee: [blog.gitee.com](https://blog.gitee.com)
+3.  You can be in [https://gitee.com/explore](https://gitee.com/explore) here to decode the cloud good open source project
+4.  [GVP](https://gitee.com/gvp) The full name is the most valuable open source project of Gitee, and the excellent open source project comprehensively evaluated by Gitee
+5.  The Gitee official user's manual: [https://gitee.com/help](https://gitee.com/help)
+6.  The Gitee cover figure is a column used to show the elegant demeanor of Code Cloud members [https://gitee.com/gitee-stars/](https://gitee.com/gitee-stars/)
