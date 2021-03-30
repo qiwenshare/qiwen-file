@@ -27,7 +27,8 @@ public class AliyunOSSDownloader extends Downloader {
         byte[] buffer = new byte[1024];
 
         OSS ossClient = createOSSClient(qiwenFileConfig.getAliyun().getOss());
-        OSSObject ossObject = ossClient.getObject(qiwenFileConfig.getAliyun().getOss().getBucketName(), downloadFile.getTimeStampName());
+        OSSObject ossObject = ossClient.getObject(qiwenFileConfig.getAliyun().getOss().getBucketName(),
+                downloadFile.getFileUrl().substring(1));
         InputStream inputStream = ossObject.getObjectContent();
         try {
             bis = new BufferedInputStream(inputStream);
