@@ -146,7 +146,7 @@ public class FiletransferService implements IFiletransferService {
         }
         DownloadFile uploadFile = new DownloadFile();
         uploadFile.setFileUrl(fileBean.getFileUrl());
-        uploadFile.setTimeStampName(fileBean.getTimeStampName());
+//        uploadFile.setTimeStampName(fileBean.getTimeStampName());
         downloader.download(httpServletResponse, uploadFile);
     }
 

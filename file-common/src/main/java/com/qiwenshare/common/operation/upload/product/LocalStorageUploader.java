@@ -46,14 +46,14 @@ public class LocalStorageUploader extends Uploader {
         if (!isMultipart) {
             throw new UploadGeneralException("未包含文件上传域");
         }
-        DiskFileItemFactory dff = new DiskFileItemFactory();//1、创建工厂
+        //DiskFileItemFactory dff = new DiskFileItemFactory();//1、创建工厂
         String savePath = getSaveFilePath();
-        dff.setRepository(new File(savePath));
+        //dff.setRepository(new File(savePath));
 
         try {
-            ServletFileUpload sfu = new ServletFileUpload(dff);//2、创建文件上传解析器
-            sfu.setSizeMax(this.maxSize * 1024L);
-            sfu.setHeaderEncoding("utf-8");//3、解决文件名的中文乱码
+            //ServletFileUpload sfu = new ServletFileUpload(dff);//2、创建文件上传解析器
+            //sfu.setSizeMax(this.maxSize * 1024L);
+           // sfu.setHeaderEncoding("utf-8");//3、解决文件名的中文乱码
             Iterator<String> iter = standardMultipartHttpServletRequest.getFileNames();
             while (iter.hasNext()) {
                 saveUploadFileList = doUpload(standardMultipartHttpServletRequest, savePath, iter, uploadFile);
