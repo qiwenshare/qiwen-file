@@ -43,26 +43,39 @@ public class ShareController {
     @PostMapping(value = "/sharefile")
     @MyLog(operation = "分享文件", module = CURRENT_MODULE)
     @ResponseBody
-    public RestResult<ShareFileVO> shareFile(ShareFileDTO shareSecretDTO, @RequestHeader("token") String token) {
+    public RestResult<ShareFileVO> shareFile( @RequestBody ShareFileDTO shareSecretDTO, @RequestHeader("token") String token) {
         ShareFileVO shareSecretVO = new ShareFileVO();
         UserBean sessionUserBean = userService.getUserBeanByToken(token);
-        String extractionCode = RandomUtil.randomNumbers(6);
+
         String uuid = UUID.randomUUID().toString();
         Share share = new Share();
-        BeanUtil.copyProperties(sessionUserBean, share);
+        BeanUtil.copyProperties(shareSecretDTO, share);
         share.setShareTime(DateUtil.getCurrentTime());
         share.setUserId(sessionUserBean.getUserId());
         share.setShareStatus(0);
-        share.setExtractionCode(extractionCode);
-        share.setShareBatchNum(uuid);
+        if (shareSecretDTO.getShareType() == 1) {
+            String extractionCode = RandomUtil.randomNumbers(6);
+            share.setExtractionCode(extractionCode);
+            shareSecretVO.setExtractionCode(share.getExtractionCode());
+        }
 
+        share.setShareBatchNum(uuid);
         shareService.save(share);
 
         List<ShareFile> fileList = JSON.parseArray(shareSecretDTO.getFiles(), ShareFile.class);
         fileList.forEach(p->p.setShareBatchNum(uuid.replace("-", "")));
         shareService.batchInsertShareFile(fileList);
         shareSecretVO.setShareBatchNum(uuid.replace("-", ""));
+
         return RestResult.success().data(shareSecretVO);
+    }
+
+    public static void main(String[] args) {
+        String sss = "[{\"fileId\":null,\"timeStampName\":null,\"fileUrl\":null,\"fileSize\":null,\"isOSS\":null,\"storageType\":null,\"pointCount\":null,\"identifier\":null,\"userFileId\":619,\"userId\":2,\"fileName\":\"2222\",\"filePath\":\"/\",\"extendName\":null,\"isDir\":1,\"uploadTime\":\"2021-03-15 22:16:26\",\"deleteFlag\":0,\"deleteTime\":null,\"deleteBatchNum\":null}]";
+        List<ShareFile> fileList = JSON.parseArray(sss, ShareFile.class);
+        fileList.forEach(p->p.setShareBatchNum("123"));
+        System.out.println(fileList);
+
     }
 
     @Operation(summary = "分享列表", description = "分享列表", tags = {"share"})

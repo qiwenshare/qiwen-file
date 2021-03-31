@@ -488,7 +488,7 @@ public class FileController {
 
     }
 
-    @Operation(summary = "获取文件树", description = "文件移动的时候需要用到该接口，用来展示目录树，展示机制为饱汉模式", tags = {"file"})
+    @Operation(summary = "获取文件树", description = "文件移动的时候需要用到该接口，用来展示目录树", tags = {"file"})
     @RequestMapping(value = "/getfiletree", method = RequestMethod.GET)
     @ResponseBody
     public RestResult<TreeNode> getFileTree(@RequestHeader("token") String token){
