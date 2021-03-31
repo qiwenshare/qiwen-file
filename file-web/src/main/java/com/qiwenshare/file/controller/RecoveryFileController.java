@@ -103,6 +103,7 @@ public class RecoveryFileController {
             filePath = PathUtil.getParentPath(filePath);
             LambdaQueryWrapper<UserFile> lambdaQueryWrapper = new LambdaQueryWrapper<>();
             lambdaQueryWrapper.eq(UserFile::getFilePath, filePath + "/")
+                    .eq(UserFile::getFileName, fileName)
                     .eq(UserFile::getDeleteFlag, 0)
                     .eq(UserFile::getUserId, sessionUserBean.getUserId());
             List<UserFile> userFileList = userFileService.list(lambdaQueryWrapper);
