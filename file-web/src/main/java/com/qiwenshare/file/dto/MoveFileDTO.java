@@ -7,15 +7,9 @@ import lombok.Data;
 @Schema(name = "移动文件DTO",required = true)
 public class MoveFileDTO {
 
-    /**
-     * 文件路径
-     */
     @Schema(description = "文件路径")
     private String filePath;
 
-    /**
-     * 文件名
-     */
     @Schema(description = "文件名")
     private String fileName;
 
