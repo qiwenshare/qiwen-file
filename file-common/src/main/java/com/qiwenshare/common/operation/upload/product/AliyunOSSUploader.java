@@ -11,7 +11,6 @@ import com.qiwenshare.common.operation.upload.Uploader;
 import com.qiwenshare.common.util.FileUtil;
 import com.qiwenshare.common.util.PathUtil;
 import lombok.Data;
-import org.apache.commons.fileupload.disk.DiskFileItemFactory;
 import org.apache.commons.fileupload.servlet.ServletFileUpload;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
@@ -23,7 +22,6 @@ import org.springframework.web.multipart.support.StandardMultipartHttpServletReq
 import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
 import java.io.File;
-import java.io.InputStream;
 import java.util.*;
 @Component
 public class AliyunOSSUploader extends Uploader {
@@ -31,14 +29,11 @@ public class AliyunOSSUploader extends Uploader {
     @Resource
     QiwenFileConfig qiwenFileConfig;
 
-
     // partETags是PartETag的集合。PartETag由分片的ETag和分片号组成。
     public static Map<String, List<PartETag>> partETagsMap = new HashMap<String, List<PartETag>>();
     public static Map<String, UploadFileInfo> uploadPartRequestMap = new HashMap<>();
 
     public static Map<String, OSS> ossMap = new HashMap<>();
-
-    public static Map<String, String> timeStampNameMap = new HashMap<>();
 
     @Override
     public List<UploadFile> upload(HttpServletRequest httpServletRequest, UploadFile uploadFile) {
@@ -51,25 +46,19 @@ public class AliyunOSSUploader extends Uploader {
         if (!isMultipart) {
             throw new UploadGeneralException("未包含文件上传域");
         }
-        DiskFileItemFactory dff = new DiskFileItemFactory();//1、创建工厂
-        String savePath = getSaveFilePath();
-        dff.setRepository(new File(savePath));
 
-        ServletFileUpload sfu = new ServletFileUpload(dff);
-        sfu.setSizeMax(this.maxSize * 1024L);
-        sfu.setHeaderEncoding("utf-8");//3、解决文件名的中文乱码
         Iterator<String> iter = request.getFileNames();
         while (iter.hasNext()) {
 
-            saveUploadFileList = doUpload(request, savePath, iter, uploadFile);
+            saveUploadFileList = doUpload(request, iter, uploadFile);
         }
-
 
         logger.info("结束上传");
         return saveUploadFileList;
     }
 
-    private List<UploadFile> doUpload(StandardMultipartHttpServletRequest standardMultipartHttpServletRequest, String savePath, Iterator<String> iter, UploadFile uploadFile) {
+    private List<UploadFile> doUpload(StandardMultipartHttpServletRequest standardMultipartHttpServletRequest, Iterator<String> iter, UploadFile uploadFile) {
+        String savePath = getSaveFilePath();
         OSS ossClient = getClient(uploadFile);
 
         List<UploadFile> saveUploadFileList = new ArrayList<>();
@@ -79,9 +68,7 @@ public class AliyunOSSUploader extends Uploader {
 
             String timeStampName = getTimeStampName();
             String originalName = multipartfile.getOriginalFilename();
-
             String fileName = getFileName(originalName);
-
             String fileType = FileUtil.getFileExtendName(originalName);
             uploadFile.setFileName(fileName);
             uploadFile.setFileType(fileType);
@@ -111,16 +98,10 @@ public class AliyunOSSUploader extends Uploader {
             uploadPartRequest.setBucketName(uploadFileInfo.getBucketName());
             uploadPartRequest.setKey(uploadFileInfo.getKey());
             uploadPartRequest.setUploadId(uploadFileInfo.getUploadId());
-            InputStream instream = multipartfile.getInputStream();
-            logger.info("流大小" + instream.available());
-            long position = (uploadFile.getChunkNumber() - 1) * uploadFile.getCurrentChunkSize();
-            logger.info("偏移量：" + position);
-//            instream.skip(position);
-            uploadPartRequest.setInputStream(instream);
+            uploadPartRequest.setInputStream(multipartfile.getInputStream());
             uploadPartRequest.setPartSize(uploadFile.getCurrentChunkSize());
             uploadPartRequest.setPartNumber(uploadFile.getChunkNumber());
             logger.info(JSON.toJSONString(uploadPartRequest));
-//            uploadPartRequest.setUseChunkEncoding(true);
 
             UploadPartResult uploadPartResult = ossClient.uploadPart(uploadPartRequest);
             synchronized (AliyunOSSUploader.class) {
@@ -139,7 +120,7 @@ public class AliyunOSSUploader extends Uploader {
                 logger.info("分片上传完成");
                 completeMultipartUpload(uploadFile);
 
-                uploadFile.setUrl(ossFilePath);
+                uploadFile.setUrl("/" + uploadPartRequestMap.get(uploadFile.getIdentifier()).getKey());
                 uploadFile.setSuccess(1);
                 uploadFile.setMessage("上传成功");
             } else {
@@ -218,19 +199,6 @@ public class AliyunOSSUploader extends Uploader {
         AbortMultipartUploadRequest abortMultipartUploadRequest =
                 new AbortMultipartUploadRequest(qiwenFileConfig.getAliyun().getOss().getBucketName(), uploadPartRequestMap.get(uploadFile.getIdentifier()).getKey(), uploadPartRequestMap.get(uploadFile.getIdentifier()).getUploadId());
         getClient(uploadFile).abortMultipartUpload(abortMultipartUploadRequest);
-    }
-
-
-    protected synchronized String getTimeStampName(UploadFile uploadFile){
-        String timeStampName;
-
-        if (StringUtils.isEmpty(timeStampNameMap.get(uploadFile.getIdentifier()))) {
-            timeStampName = super.getTimeStampName();
-            timeStampNameMap.put(uploadFile.getIdentifier(), timeStampName);
-        } else {
-            timeStampName = timeStampNameMap.get(uploadFile.getIdentifier());
-        }
-        return timeStampName;
     }
 
     private synchronized OSS getClient(UploadFile uploadFile) {
