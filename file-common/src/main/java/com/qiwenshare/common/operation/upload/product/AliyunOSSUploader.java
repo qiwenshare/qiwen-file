@@ -11,6 +11,7 @@ import com.qiwenshare.common.operation.upload.Uploader;
 import com.qiwenshare.common.util.FileUtil;
 import com.qiwenshare.common.util.PathUtil;
 import lombok.Data;
+import org.apache.commons.fileupload.disk.DiskFileItemFactory;
 import org.apache.commons.fileupload.servlet.ServletFileUpload;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
@@ -22,12 +23,14 @@ import org.springframework.web.multipart.support.StandardMultipartHttpServletReq
 import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
 import java.io.File;
+import java.io.InputStream;
 import java.util.*;
 @Component
 public class AliyunOSSUploader extends Uploader {
     private static final Logger logger = LoggerFactory.getLogger(AliyunOSSUploader.class);
     @Resource
     QiwenFileConfig qiwenFileConfig;
+
 
     // partETags是PartETag的集合。PartETag由分片的ETag和分片号组成。
     public static Map<String, List<PartETag>> partETagsMap = new HashMap<String, List<PartETag>>();
@@ -52,6 +55,7 @@ public class AliyunOSSUploader extends Uploader {
 
             saveUploadFileList = doUpload(request, iter, uploadFile);
         }
+
 
         logger.info("结束上传");
         return saveUploadFileList;
@@ -123,6 +127,9 @@ public class AliyunOSSUploader extends Uploader {
                 uploadFile.setUrl("/" + uploadPartRequestMap.get(uploadFile.getIdentifier()).getKey());
                 uploadFile.setSuccess(1);
                 uploadFile.setMessage("上传成功");
+                partETagsMap.remove(uploadFile.getIdentifier());
+                uploadPartRequestMap.remove(uploadFile.getIdentifier());
+                ossMap.remove(uploadFile.getIdentifier());
             } else {
                 uploadFile.setSuccess(0);
                 uploadFile.setMessage("未完成");
@@ -159,9 +166,7 @@ public class AliyunOSSUploader extends Uploader {
         CompleteMultipartUploadResult completeMultipartUploadResult = getClient(uploadFile).completeMultipartUpload(completeMultipartUploadRequest);
         logger.info("----:" + JSON.toJSONString(completeMultipartUploadRequest));
         getClient(uploadFile).shutdown();
-        partETagsMap.remove(uploadFile.getIdentifier());
-        uploadPartRequestMap.remove(uploadFile.getIdentifier());
-        ossMap.remove(uploadFile.getIdentifier());
+
 //
     }
 
