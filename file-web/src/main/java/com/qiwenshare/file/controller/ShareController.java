@@ -59,7 +59,7 @@ public class ShareController {
             shareSecretVO.setExtractionCode(share.getExtractionCode());
         }
 
-        share.setShareBatchNum(uuid);
+        share.setShareBatchNum(uuid.replace("-", ""));
         shareService.save(share);
 
         List<ShareFile> fileList = JSON.parseArray(shareSecretDTO.getFiles(), ShareFile.class);
