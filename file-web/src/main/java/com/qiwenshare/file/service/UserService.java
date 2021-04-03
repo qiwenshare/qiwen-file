@@ -36,7 +36,6 @@ public class UserService extends ServiceImpl<UserMapper, UserBean> implements IU
             c = JjwtUtil.parseJWT(token);
         } catch (Exception e) {
             log.error("解码异常");
-            e.printStackTrace();
             return null;
         }
         if (c == null) {
@@ -52,10 +51,16 @@ public class UserService extends ServiceImpl<UserMapper, UserBean> implements IU
         String savePassword = "";
         if (StringUtils.isNotEmpty(tokenUserBean.getPassword())) {
             saveUserBean = findUserInfoByTelephone(tokenUserBean.getTelephone());
+            if (saveUserBean == null) {
+                return null;
+            }
             tokenPassword = tokenUserBean.getPassword();
             savePassword = saveUserBean.getPassword();
         } else if (StringUtils.isNotEmpty(tokenUserBean.getQqPassword())) {
             saveUserBean = selectUserByopenid(tokenUserBean.getOpenId());
+            if (saveUserBean == null) {
+                return null;
+            }
             tokenPassword = tokenUserBean.getQqPassword();
             savePassword = saveUserBean.getQqPassword();
         }

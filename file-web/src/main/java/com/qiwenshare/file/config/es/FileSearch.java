@@ -9,9 +9,8 @@ import org.springframework.data.elasticsearch.annotations.FieldType;
 @Data
 @Document(indexName = "filesearch", shards = 1, replicas = 0)
 public class FileSearch {
-
     @Id
-    private long fileSearchId;
+    private Long userFileId;
     @Field(type = FieldType.Long)
     private Long fileId;
     @Field(type = FieldType.Text, analyzer = "ik_max_word")
@@ -31,8 +30,6 @@ public class FileSearch {
     private Integer pointCount;
     @Field(type = FieldType.Keyword)
     private String identifier;
-    @Field(type = FieldType.Long)
-    private Long userFileId;
     @Field(type = FieldType.Long)
     private Long userId;
     @Field(type = FieldType.Keyword)

@@ -15,6 +15,7 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.shiro.crypto.hash.SimpleHash;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
@@ -74,6 +75,9 @@ public class UserController {
         RestResult<UserLoginVo> restResult = new RestResult<UserLoginVo>();
         UserBean saveUserBean = userService.findUserInfoByTelephone(username);
 
+        if (saveUserBean == null) {
+            return RestResult.fail().message("用户名或手机号不存在！");
+        }
         String jwt = "";
         try {
             jwt = JjwtUtil.createJWT("qiwenshare", "qiwen", JSON.toJSONString(saveUserBean));
@@ -104,25 +108,22 @@ public class UserController {
     @GetMapping("/checkuserlogininfo")
     @ResponseBody
     public RestResult<UserBean> checkUserLoginInfo(@RequestHeader("token") String token) {
-        RestResult<UserBean> restResult = new RestResult<UserBean>();
 
+        if ("undefined".equals(token) || StringUtils.isEmpty(token)) {
+            return RestResult.fail().message("用户暂未登录");
+        }
         UserBean sessionUserBean = userService.getUserBeanByToken(token);
         if (sessionUserBean != null) {
 
-            restResult.setData(sessionUserBean);
-            restResult.setSuccess(true);
             AliyunOSS oss = qiwenFileConfig.getAliyun().getOss();
             String domain = oss.getDomain();
-            restResult.getData().setViewDomain(domain);
-            String bucketName = oss.getBucketName();
-            String endPoint = oss.getEndpoint();
-            restResult.getData().setDownloadDomain(bucketName + "." + endPoint);
+            sessionUserBean.setViewDomain(domain);
+            return RestResult.success().data(sessionUserBean);
+
         } else {
-            restResult.setSuccess(false);
-            restResult.setMessage("用户暂未登录");
+            return RestResult.fail().message("用户暂未登录");
         }
 
-        return restResult;
     }
 
 }
