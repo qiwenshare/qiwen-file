@@ -108,12 +108,12 @@ public class UserFileService  extends ServiceImpl<UserFileMapper, UserFile> impl
 //    }
 
     @Override
-    public void updateFilepathByFilepath(String oldfilePath, String newfilePath, String fileName, String extendName) {
+    public void updateFilepathByFilepath(String oldfilePath, String newfilePath, String fileName, String extendName, long userId) {
         if ("null".equals(extendName)){
             extendName = null;
         }
         //移动根目录
-        userFileMapper.updateFilepathByPathAndName(oldfilePath, newfilePath, fileName, extendName);
+        userFileMapper.updateFilepathByPathAndName(oldfilePath, newfilePath, fileName, extendName, userId);
 
         //移动子目录
         oldfilePath = oldfilePath + fileName + "/";
@@ -125,7 +125,7 @@ public class UserFileService  extends ServiceImpl<UserFileMapper, UserFile> impl
         oldfilePath = oldfilePath.replace("_", "\\_");
 
         if (extendName == null) { //为null说明是目录，则需要移动子目录
-            userFileMapper.updateFilepathByFilepath(oldfilePath, newfilePath);
+            userFileMapper.updateFilepathByFilepath(oldfilePath, newfilePath, userId);
         }
 
     }

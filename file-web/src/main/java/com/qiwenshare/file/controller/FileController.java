@@ -394,12 +394,14 @@ public class FileController {
         if (!operationCheck(token).getSuccess()){
             return operationCheck(token);
         }
+
+        UserBean sessionUserBean = userService.getUserBeanByToken(token);
         String oldfilePath = moveFileDto.getOldFilePath();
         String newfilePath = moveFileDto.getFilePath();
         String fileName = moveFileDto.getFileName();
         String extendName = moveFileDto.getExtendName();
 
-        userFileService.updateFilepathByFilepath(oldfilePath, newfilePath, fileName, extendName);
+        userFileService.updateFilepathByFilepath(oldfilePath, newfilePath, fileName, extendName, sessionUserBean.getUserId());
         return RestResult.success();
 
     }
@@ -413,6 +415,7 @@ public class FileController {
         if (!operationCheck(token).getSuccess()) {
             return operationCheck(token);
         }
+        UserBean sessionUserBean = userService.getUserBeanByToken(token);
 
         String files = batchMoveFileDto.getFiles();
         String newfilePath = batchMoveFileDto.getFilePath();
@@ -420,7 +423,7 @@ public class FileController {
         List<UserFile> fileList = JSON.parseArray(files, UserFile.class);
 
         for (UserFile userFile : fileList) {
-            userFileService.updateFilepathByFilepath(userFile.getFilePath(), newfilePath, userFile.getFileName(), userFile.getExtendName());
+            userFileService.updateFilepathByFilepath(userFile.getFilePath(), newfilePath, userFile.getFileName(), userFile.getExtendName(), sessionUserBean.getUserId());
         }
 
         return RestResult.success().data("批量移动文件成功");
