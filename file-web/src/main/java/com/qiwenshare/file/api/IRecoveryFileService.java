@@ -8,6 +8,7 @@ import com.qiwenshare.file.vo.file.RecoveryFileListVo;
 import java.util.List;
 
 public interface IRecoveryFileService extends IService<RecoveryFile> {
-    public void deleteRecoveryFile(UserFile userFile);
+    void deleteRecoveryFile(UserFile userFile);
+    void restorefile(String deleteBatchNum, String filePath, Long sessionUserId);
     List<RecoveryFileListVo> selectRecoveryFileList();
 }

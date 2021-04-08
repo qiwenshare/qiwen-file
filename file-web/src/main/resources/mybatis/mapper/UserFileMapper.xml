@@ -73,7 +73,7 @@
 
     <update id="updateFilepathByFilepath">
         UPDATE userfile SET filePath=REPLACE(filePath, #{param1}, #{param2})
-        WHERE filePath like N'${param1}%'
+        WHERE filePath like N'${param1}%' and userId = #{param3}
     </update>
 
     <update id="updateFilepathByPathAndName">
@@ -85,12 +85,13 @@
         <if test="param4 == null">
             and extendName is null
         </if>
+        and userId = #{param5}
     </update>
 
     <select id="selectStorageSizeByUserId" resultType="java.lang.Long" parameterType="java.lang.Long">
         SELECT SUM(fileSize) FROM userfile
         LEFT JOIN file ON file.fileId = userfile.fileId
-        WHERE userfile.userId = 2
+        WHERE userfile.userId = #{userId}
     </select>
 
 </mapper>

@@ -7,11 +7,11 @@ import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.qiwenshare.common.util.DateUtil;
 import com.qiwenshare.common.result.RestResult;
 import com.qiwenshare.file.anno.MyLog;
-import com.qiwenshare.file.api.IShareService;
-import com.qiwenshare.file.api.IUserService;
+import com.qiwenshare.file.api.*;
 import com.qiwenshare.file.domain.Share;
 import com.qiwenshare.file.domain.ShareFile;
 import com.qiwenshare.file.domain.UserBean;
+import com.qiwenshare.file.domain.UserFile;
 import com.qiwenshare.file.dto.sharefile.*;
 import com.qiwenshare.file.vo.share.ShareFileListVO;
 import com.qiwenshare.file.vo.share.ShareFileVO;
@@ -23,6 +23,7 @@ import org.springframework.web.bind.annotation.*;
 
 import javax.annotation.Resource;
 import java.text.ParseException;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.UUID;
@@ -38,6 +39,10 @@ public class ShareController {
     IUserService userService;
     @Resource
     IShareService shareService;
+    @Resource
+    IFileService fileService;
+    @Resource
+    IUserFileService userFileService;
 
     @Operation(summary = "分享文件", description = "分享文件统一接口", tags = {"share"})
     @PostMapping(value = "/sharefile")
@@ -47,7 +52,7 @@ public class ShareController {
         ShareFileVO shareSecretVO = new ShareFileVO();
         UserBean sessionUserBean = userService.getUserBeanByToken(token);
 
-        String uuid = UUID.randomUUID().toString();
+        String uuid = UUID.randomUUID().toString().replace("-", "");
         Share share = new Share();
         BeanUtil.copyProperties(shareSecretDTO, share);
         share.setShareTime(DateUtil.getCurrentTime());
@@ -59,15 +64,63 @@ public class ShareController {
             shareSecretVO.setExtractionCode(share.getExtractionCode());
         }
 
-        share.setShareBatchNum(uuid.replace("-", ""));
+        share.setShareBatchNum(uuid);
         shareService.save(share);
 
         List<ShareFile> fileList = JSON.parseArray(shareSecretDTO.getFiles(), ShareFile.class);
-        fileList.forEach(p->p.setShareBatchNum(uuid.replace("-", "")));
-        shareService.batchInsertShareFile(fileList);
-        shareSecretVO.setShareBatchNum(uuid.replace("-", ""));
+        List<ShareFile> saveFileList = new ArrayList<>();
+        for (ShareFile shareFile : fileList) {
+            UserFile userFile = userFileService.getById(shareFile.getUserFileId());
+            if (userFile.getIsDir() == 1) {
+                List<UserFile> userfileList = userFileService.selectFileListLikeRightFilePath(userFile.getFilePath(), sessionUserBean.getUserId());
+                for (UserFile userFile1 : userfileList) {
+                    ShareFile shareFile1 = new ShareFile();
+                    shareFile1.setUserFileId(userFile1.getUserFileId());
+                    shareFile1.setShareBatchNum(uuid);
+                    saveFileList.add(shareFile1);
+                }
+            } else {
+                shareFile.setShareBatchNum(uuid);
+                saveFileList.add(shareFile);
+            }
+
+        }
+        shareService.batchInsertShareFile(saveFileList);
+        shareSecretVO.setShareBatchNum(uuid);
 
         return RestResult.success().data(shareSecretVO);
+    }
+
+    @Operation(summary = "保存分享文件", description = "用来将别人分享的文件保存到自己的网盘中", tags = {"share"})
+    @PostMapping(value = "/sharefile")
+    @MyLog(operation = "保存分享文件", module = CURRENT_MODULE)
+    @ResponseBody
+    public RestResult saveShareFile(@RequestBody SaveShareFileDTO saveShareFileDTO, @RequestHeader("token") String token) {
+        UserBean sessionUserBean = userService.getUserBeanByToken(token);
+        List<ShareFile> fileList = JSON.parseArray(saveShareFileDTO.getFiles(), ShareFile.class);
+
+        List<UserFile> saveUserFileList = new ArrayList<>();
+        for (ShareFile shareFile : fileList) {
+            UserFile userFile = userFileService.getById(shareFile.getUserFileId());
+            if (userFile.getIsDir() == 1) {
+                List<UserFile> userfileList = userFileService.selectFileListLikeRightFilePath(userFile.getFilePath(), sessionUserBean.getUserId());
+                for (UserFile userFile1 : userfileList) {
+                    userFile1.setUserId(sessionUserBean.getUserId());
+                    userFile1.setFilePath(saveShareFileDTO.getFilePath());
+                    saveUserFileList.add(userFile1);
+                    fileService.increaseFilePointCount(userFile1.getFileId());
+                }
+            } else {
+                userFile.setUserFileId(null);
+                userFile.setUserId(sessionUserBean.getUserId());
+                userFile.setFilePath(saveShareFileDTO.getFilePath());
+                saveUserFileList.add(userFile);
+                fileService.increaseFilePointCount(userFile.getFileId());
+            }
+        }
+        userFileService.saveBatch(saveUserFileList);
+
+        return RestResult.success();
     }
 
     public static void main(String[] args) {
@@ -83,11 +136,7 @@ public class ShareController {
     @ResponseBody
     public RestResult<List<ShareFileListVO>> shareFileListBySecret(ShareFileListBySecretDTO shareFileListBySecretDTO) {
         log.info(JSON.toJSONString(shareFileListBySecretDTO));
-
-        Share share = new Share();
-        share.setShareBatchNum(shareFileListBySecretDTO.getShareBatchNum());
-
-        List<ShareFileListVO> list = shareService.selectShareFileListByBatchNum(share);
+        List<ShareFileListVO> list = shareService.selectShareFileList(shareFileListBySecretDTO.getShareBatchNum(), shareFileListBySecretDTO.getFilePath());
         return RestResult.success().data(list);
     }
 
@@ -139,6 +188,5 @@ public class ShareController {
         } else {
             return RestResult.success();
         }
-
     }
 }

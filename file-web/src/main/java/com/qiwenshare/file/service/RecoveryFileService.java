@@ -57,7 +57,8 @@ public class RecoveryFileService  extends ServiceImpl<RecoveryFileMapper, Recove
 
 
     }
-    
+
+    @Override
     public void restorefile(String deleteBatchNum, String filePath, Long sessionUserId) {
         LambdaUpdateWrapper<UserFile> userFileLambdaUpdateWrapper = new LambdaUpdateWrapper<>();
         userFileLambdaUpdateWrapper.set(UserFile::getDeleteFlag, 0)
@@ -71,6 +72,7 @@ public class RecoveryFileService  extends ServiceImpl<RecoveryFileMapper, Recove
             parentFilePath = PathUtil.getParentPath(parentFilePath);
             LambdaQueryWrapper<UserFile> lambdaQueryWrapper = new LambdaQueryWrapper<>();
             lambdaQueryWrapper.eq(UserFile::getFilePath, parentFilePath + "/")
+                    .eq(UserFile::getFileName, fileName)
                     .eq(UserFile::getDeleteFlag, 0)
                     .eq(UserFile::getUserId, sessionUserId);
             List<UserFile> userFileList = userFileMapper.selectList(lambdaQueryWrapper);

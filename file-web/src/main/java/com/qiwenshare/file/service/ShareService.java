@@ -25,7 +25,7 @@ public class ShareService extends ServiceImpl<ShareMapper, Share> implements ISh
     }
 
     @Override
-    public List<ShareFileListVO> selectShareFileListByBatchNum(Share share) {
-        return shareMapper.selectShareFileListByBatchNum(share);
+    public List<ShareFileListVO> selectShareFileList(String shareBatchNum, String filePath) {
+        return shareMapper.selectShareFileList(shareBatchNum, filePath);
     }
 }

@@ -11,6 +11,8 @@ public class ShareFileListBySecretDTO {
     private String shareBatchNum;
     @Schema(description="提取码")
     private String extractionCode;
+    @Schema(description="文件路径")
+    private String filePath;
 
 
 
