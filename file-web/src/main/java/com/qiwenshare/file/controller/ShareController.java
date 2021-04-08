@@ -92,7 +92,7 @@ public class ShareController {
     }
 
     @Operation(summary = "保存分享文件", description = "用来将别人分享的文件保存到自己的网盘中", tags = {"share"})
-    @PostMapping(value = "/sharefile")
+    @PostMapping(value = "/savesharefile")
     @MyLog(operation = "保存分享文件", module = CURRENT_MODULE)
     @ResponseBody
     public RestResult saveShareFile(@RequestBody SaveShareFileDTO saveShareFileDTO, @RequestHeader("token") String token) {
