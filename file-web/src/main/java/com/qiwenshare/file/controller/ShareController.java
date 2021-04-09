@@ -115,7 +115,9 @@ public class ShareController {
                     userFile1.setUserId(sessionUserBean.getUserId());
                     userFile1.setFilePath(saveShareFileDTO.getFilePath());
                     saveUserFileList.add(userFile1);
-                    fileService.increaseFilePointCount(userFile1.getFileId());
+                    if (userFile1.getIsDir() == 0) {
+                        fileService.increaseFilePointCount(userFile1.getFileId());
+                    }
                 }
             } else {
                 userFile.setUserFileId(null);
