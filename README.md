@@ -83,6 +83,9 @@
 
 2、下载前端代码，可以访问该地址进行拉取：[qiwen-file-web](https://gitee.com/qiwen-cloud/qiwen-file-web)
 
+## 部署说明
+
+请移步奇文社区查看 [手把手教你部署奇文网盘](https://www.qiwenshare.com/essay/detail/169)
 ## 部分功能截图
 
 ### 1. 网盘主页
@@ -124,6 +127,12 @@
 ### 3. 创建文件夹
 
 ![创建文件夹](https://images.gitee.com/uploads/images/2021/0325/123704_145604f0_1837873.png)
+
+### 4. 文件图标大小调整
+
+在网格模式和时间线模式下，支持手动调整图标大小：
+
+![图标大小调整](https://images.gitee.com/uploads/images/2021/0409/181840_bb0dcb17_1837873.gif)
 
 ### 5. 文件移动
 

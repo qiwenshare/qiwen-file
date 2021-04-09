@@ -83,6 +83,10 @@ The project was developed and deployed in a front-end separation approach, using
 
 2、Download the front-end code, you can access the address to pull:[qiwen-file-web](https://gitee.com/qiwen-cloud/qiwen-file-web)
 
+## Deployment instructions
+
+Please move to Qiwenshare [手把手教你部署奇文网盘](https://www.qiwenshare.com/essay/detail/169)
+
 ## Screenshots of some functions
 
 ### 1. The cloud home page
@@ -124,6 +128,12 @@ File viewing supports three presentation modes (list, grid, and timeline)
 ### 3. Create a folder
 
 ![创建文件夹](https://images.gitee.com/uploads/images/2021/0325/123704_145604f0_1837873.png)
+
+### 4. File icon resize
+
+Manual resizing of ICONS is supported in grid mode and timeline mode:
+
+![图标大小调整](https://images.gitee.com/uploads/images/2021/0409/181840_bb0dcb17_1837873.gif)
 
 ### 5. Move files
 
