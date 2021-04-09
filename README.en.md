@@ -41,7 +41,7 @@ The software follows the MIT open source protocol
 ### File operations
 
 1. Users can add, delete and modify the directory structure
-2. Provide uploading and downloading of files.
+2. Provide drag and drop to upload and downloading of files.
 3. Support online decompression of ZIP files and RAR files
 4. Support files and directories to move and copy
 5. Classified view of multiple file formats
@@ -89,9 +89,9 @@ The project was developed and deployed in a front-end separation approach, using
 
 #### 1.1 The page layout
 
-- **Left menu bar area:** display file type, click to view files by category, the bottom shows the occupied storage space.
-- **Top file operation area:** including operation button group for files, switch button group for file viewing mode, and set button for file display column.
-- **Right file display area:** including breadcrumb navigation bar -- identifies the directory currently located; File display area -- the display format will change according to the file viewing mode; Bottom paging component.
+- Left menu bar area: display file type, click to view files by category, the bottom shows the occupied storage space.
+- Top file operation area: including operation button group for files, switch button group for file viewing mode, and set button for file display column.
+- Right file display area: including breadcrumb navigation bar -- identifies the directory currently located; File display area -- the display format will change according to the file viewing mode; Bottom paging component.
 
 ![网盘主页](https://images.gitee.com/uploads/images/2021/0325/105935_225d3d46_1837873.png)
 
@@ -133,7 +133,7 @@ File viewing supports three presentation modes (list, grid, and timeline)
 
 ![文件在线解压缩](https://images.gitee.com/uploads/images/2021/0325/123823_aba673e8_1837873.png)
 
-### 7. File upload
+### 7. File upload & Drag and drop to upload
 
 文件采用**分片上传**，集成了[simiple-uplader](https://github.com/simple-uploader/Uploader/blob/develop/README_zh-CN.md#uploader)的文件**秒传**、**断点续传**功能。
 ![文件上传](https://images.gitee.com/uploads/images/2020/1127/211713_87fb01b2_947714.png '屏幕截图.png')
@@ -141,6 +141,7 @@ File viewing supports three presentation modes (list, grid, and timeline)
 ### 8. Document Recycle Bin
 
 ![文件回收站](https://images.gitee.com/uploads/images/2021/0325/123843_f8fa15bf_1837873.png)
+![文件拖拽上传](https://images.gitee.com/uploads/images/2021/0409/121635_6d27831b_1837873.gif)
 
 ## Contact us
 
