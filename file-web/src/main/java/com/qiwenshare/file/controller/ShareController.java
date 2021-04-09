@@ -101,6 +101,8 @@ public class ShareController {
     @MyLog(operation = "保存分享文件", module = CURRENT_MODULE)
     @ResponseBody
     public RestResult saveShareFile(@RequestBody SaveShareFileDTO saveShareFileDTO, @RequestHeader("token") String token) {
+
+        //{"filePath":"/mac/","files":"[{\"userFileId\":555},{\"userFileId\":266}]"}
         UserBean sessionUserBean = userService.getUserBeanByToken(token);
         List<ShareFile> fileList = JSON.parseArray(saveShareFileDTO.getFiles(), ShareFile.class);
 
@@ -108,7 +110,7 @@ public class ShareController {
         for (ShareFile shareFile : fileList) {
             UserFile userFile = userFileService.getById(shareFile.getUserFileId());
             if (userFile.getIsDir() == 1) {
-                List<UserFile> userfileList = userFileService.selectFileListLikeRightFilePath(userFile.getFilePath(), sessionUserBean.getUserId());
+                List<UserFile> userfileList = userFileService.selectFileListLikeRightFilePath(userFile.getFilePath(), userFile.getUserId());
                 for (UserFile userFile1 : userfileList) {
                     userFile1.setUserId(sessionUserBean.getUserId());
                     userFile1.setFilePath(saveShareFileDTO.getFilePath());
