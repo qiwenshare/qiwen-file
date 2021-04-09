@@ -1,14 +1,13 @@
 package com.qiwenshare.common.operation.upload.product;
 
 import com.qiwenshare.common.exception.NotSameFileExpection;
-import com.qiwenshare.common.domain.UploadFile;
+import com.qiwenshare.common.operation.upload.domain.UploadFile;
 import com.qiwenshare.common.exception.UploadGeneralException;
 import com.qiwenshare.common.operation.ImageOperation;
 import com.qiwenshare.common.operation.upload.Uploader;
 import com.qiwenshare.common.util.FileUtil;
 import com.qiwenshare.common.util.PathUtil;
 import org.apache.commons.codec.digest.DigestUtils;
-import org.apache.commons.fileupload.disk.DiskFileItemFactory;
 import org.apache.commons.fileupload.servlet.ServletFileUpload;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
@@ -27,16 +26,6 @@ import java.util.List;
 import java.util.UUID;
 @Component
 public class LocalStorageUploader extends Uploader {
-    private static final Logger logger = LoggerFactory.getLogger(LocalStorageUploader.class);
-//    private UploadFile uploadFile;
-
-    public LocalStorageUploader() {
-
-    }
-//
-//    public ChunkUploader(UploadFile uploadFile) {
-//        this.uploadFile = uploadFile;
-//    }
 
     @Override
     public List<UploadFile> upload(HttpServletRequest httpServletRequest,UploadFile uploadFile) {
@@ -46,17 +35,12 @@ public class LocalStorageUploader extends Uploader {
         if (!isMultipart) {
             throw new UploadGeneralException("未包含文件上传域");
         }
-        //DiskFileItemFactory dff = new DiskFileItemFactory();//1、创建工厂
-        String savePath = getSaveFilePath();
-        //dff.setRepository(new File(savePath));
 
         try {
-            //ServletFileUpload sfu = new ServletFileUpload(dff);//2、创建文件上传解析器
-            //sfu.setSizeMax(this.maxSize * 1024L);
-           // sfu.setHeaderEncoding("utf-8");//3、解决文件名的中文乱码
+
             Iterator<String> iter = standardMultipartHttpServletRequest.getFileNames();
             while (iter.hasNext()) {
-                saveUploadFileList = doUpload(standardMultipartHttpServletRequest, savePath, iter, uploadFile);
+                saveUploadFileList = doUpload(standardMultipartHttpServletRequest, iter, uploadFile);
             }
         } catch (IOException e) {
             throw new UploadGeneralException("未包含文件上传域");
@@ -66,7 +50,8 @@ public class LocalStorageUploader extends Uploader {
         return saveUploadFileList;
     }
 
-    private List<UploadFile> doUpload(StandardMultipartHttpServletRequest standardMultipartHttpServletRequest, String savePath, Iterator<String> iter, UploadFile uploadFile) throws IOException, NotSameFileExpection {
+    private List<UploadFile> doUpload(StandardMultipartHttpServletRequest standardMultipartHttpServletRequest,  Iterator<String> iter, UploadFile uploadFile) throws IOException, NotSameFileExpection {
+        String savePath = getLocalFileSavePath();
         List<UploadFile> saveUploadFileList = new ArrayList<UploadFile>();
         MultipartFile multipartfile = standardMultipartHttpServletRequest.getFile(iter.next());
 
@@ -92,7 +77,7 @@ public class LocalStorageUploader extends Uploader {
         uploadFile.setStorageType(0);
         uploadFile.setUrl(saveFilePath);
 
-        if (StringUtils.isEmpty(uploadFile.getTaskId())) {// == null || "".equals(uploadFile.getTaskId())) {
+        if (StringUtils.isEmpty(uploadFile.getTaskId())) {
             uploadFile.setTaskId(UUID.randomUUID().toString());
         }
 

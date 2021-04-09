@@ -5,17 +5,14 @@ import com.aliyun.oss.OSS;
 import com.aliyun.oss.OSSClientBuilder;
 import com.aliyun.oss.model.*;
 import com.qiwenshare.common.config.QiwenFileConfig;
-import com.qiwenshare.common.domain.UploadFile;
+import com.qiwenshare.common.operation.upload.domain.UploadFile;
 import com.qiwenshare.common.exception.UploadGeneralException;
 import com.qiwenshare.common.operation.upload.Uploader;
 import com.qiwenshare.common.util.FileUtil;
 import com.qiwenshare.common.util.PathUtil;
 import lombok.Data;
-import org.apache.commons.fileupload.disk.DiskFileItemFactory;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.fileupload.servlet.ServletFileUpload;
-import org.apache.commons.lang3.StringUtils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.multipart.support.StandardMultipartHttpServletRequest;
@@ -23,11 +20,10 @@ import org.springframework.web.multipart.support.StandardMultipartHttpServletReq
 import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
 import java.io.File;
-import java.io.InputStream;
 import java.util.*;
+@Slf4j
 @Component
 public class AliyunOSSUploader extends Uploader {
-    private static final Logger logger = LoggerFactory.getLogger(AliyunOSSUploader.class);
     @Resource
     QiwenFileConfig qiwenFileConfig;
 
@@ -40,7 +36,7 @@ public class AliyunOSSUploader extends Uploader {
 
     @Override
     public List<UploadFile> upload(HttpServletRequest httpServletRequest, UploadFile uploadFile) {
-        logger.info("开始上传upload");
+        log.info("开始上传upload");
 
         List<UploadFile> saveUploadFileList = new ArrayList<>();
         StandardMultipartHttpServletRequest request = (StandardMultipartHttpServletRequest) httpServletRequest;
@@ -57,12 +53,12 @@ public class AliyunOSSUploader extends Uploader {
         }
 
 
-        logger.info("结束上传");
+        log.info("结束上传");
         return saveUploadFileList;
     }
 
     private List<UploadFile> doUpload(StandardMultipartHttpServletRequest standardMultipartHttpServletRequest, Iterator<String> iter, UploadFile uploadFile) {
-        String savePath = getSaveFilePath();
+        String savePath = getLocalFileSavePath();
         OSS ossClient = getClient(uploadFile);
 
         List<UploadFile> saveUploadFileList = new ArrayList<>();
@@ -105,11 +101,11 @@ public class AliyunOSSUploader extends Uploader {
             uploadPartRequest.setInputStream(multipartfile.getInputStream());
             uploadPartRequest.setPartSize(uploadFile.getCurrentChunkSize());
             uploadPartRequest.setPartNumber(uploadFile.getChunkNumber());
-            logger.info(JSON.toJSONString(uploadPartRequest));
+            log.info(JSON.toJSONString(uploadPartRequest));
 
             UploadPartResult uploadPartResult = ossClient.uploadPart(uploadPartRequest);
             synchronized (AliyunOSSUploader.class) {
-                logger.info("上传结果：" + JSON.toJSONString(uploadPartResult));
+                log.info("上传结果：" + JSON.toJSONString(uploadPartResult));
                 if (partETagsMap.get(uploadFile.getIdentifier()) == null) {
                     List<PartETag> partETags = new ArrayList<PartETag>();
                     partETags.add(uploadPartResult.getPartETag());
@@ -121,7 +117,7 @@ public class AliyunOSSUploader extends Uploader {
 
             boolean isComplete = checkUploadStatus(uploadFile, confFile);
             if (isComplete) {
-                logger.info("分片上传完成");
+                log.info("分片上传完成");
                 completeMultipartUpload(uploadFile);
 
                 uploadFile.setUrl("/" + uploadPartRequestMap.get(uploadFile.getIdentifier()).getKey());
@@ -136,7 +132,7 @@ public class AliyunOSSUploader extends Uploader {
             }
 
         } catch (Exception e) {
-            logger.error("上传出错：" + e);
+            log.error("上传出错：" + e);
             throw new UploadGeneralException(e);
         }
 
@@ -161,10 +157,10 @@ public class AliyunOSSUploader extends Uploader {
                         uploadFileInfo.getKey(),
                         uploadFileInfo.getUploadId(),
                         partETags);
-        logger.info("----:" + JSON.toJSONString(partETags));
+        log.info("----:" + JSON.toJSONString(partETags));
         // 完成上传。
         CompleteMultipartUploadResult completeMultipartUploadResult = getClient(uploadFile).completeMultipartUpload(completeMultipartUploadRequest);
-        logger.info("----:" + JSON.toJSONString(completeMultipartUploadRequest));
+        log.info("----:" + JSON.toJSONString(completeMultipartUploadRequest));
         getClient(uploadFile).shutdown();
 
 //
@@ -182,7 +178,7 @@ public class AliyunOSSUploader extends Uploader {
         PartListing partListing = getClient(uploadFile).listParts(listPartsRequest);
 
         for (PartSummary part : partListing.getParts()) {
-            logger.info("分片号："+part.getPartNumber() + ", 分片数据大小: "+
+            log.info("分片号："+part.getPartNumber() + ", 分片数据大小: "+
                     part.getSize() + "，分片的ETag:"+part.getETag()
                     + "， 分片最后修改时间："+ part.getLastModified());
             // 获取分片号。

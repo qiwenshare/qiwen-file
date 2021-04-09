@@ -1,6 +1,6 @@
 package com.qiwenshare.common.operation.download.product;
 
-import com.qiwenshare.common.domain.DownloadFile;
+import com.qiwenshare.common.operation.download.domain.DownloadFile;
 import com.qiwenshare.common.operation.FileOperation;
 import com.qiwenshare.common.operation.download.Downloader;
 import com.qiwenshare.common.util.PathUtil;

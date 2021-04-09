@@ -1,6 +1,7 @@
 package com.qiwenshare.file.controller;
 
 import com.qiwenshare.common.config.QiwenFileConfig;
+import com.qiwenshare.common.exception.NotLoginException;
 import com.qiwenshare.common.result.RestResult;
 import com.qiwenshare.common.util.DateUtil;
 import com.qiwenshare.common.util.FileUtil;
@@ -56,10 +57,10 @@ public class FiletransferController {
     public RestResult<UploadFileVo> uploadFileSpeed(UploadFileDTO uploadFileDto, @RequestHeader("token") String token) {
 
         UserBean sessionUserBean = userService.getUserBeanByToken(token);
-        if (sessionUserBean == null){
-
-            return RestResult.fail().message("未登录");
+        if (sessionUserBean == null) {
+            throw new NotLoginException();
         }
+
         RestResult<String> operationCheckResult = fileController.operationCheck(token);
         if (!operationCheckResult.getSuccess()){
             return RestResult.fail().message("没权限，请联系管理员！");
@@ -108,8 +109,8 @@ public class FiletransferController {
     public RestResult<UploadFileVo> uploadFile(HttpServletRequest request, UploadFileDTO uploadFileDto, @RequestHeader("token") String token) {
 
         UserBean sessionUserBean = userService.getUserBeanByToken(token);
-        if (sessionUserBean == null){
-            return RestResult.fail().message("未登录");
+        if (sessionUserBean == null) {
+            throw new NotLoginException();
         }
         RestResult<String> operationCheckResult = fileController.operationCheck(token);
         if (!operationCheckResult.getSuccess()){
@@ -141,6 +142,9 @@ public class FiletransferController {
     public RestResult<StorageBean> getStorage(@RequestHeader("token") String token) {
 
         UserBean sessionUserBean = userService.getUserBeanByToken(token);
+        if (sessionUserBean == null) {
+            throw new NotLoginException();
+        }
         StorageBean storageBean = new StorageBean();
         if (qiwenFileConfig.isShareMode()){
             storageBean.setUserId(2L);

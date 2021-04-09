@@ -4,6 +4,7 @@ import com.github.junrar.Archive;
 import com.github.junrar.rarfile.FileHeader;
 import com.qiwenshare.common.util.FileUtil;
 import com.qiwenshare.common.util.PathUtil;
+import lombok.extern.slf4j.Slf4j;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -17,6 +18,7 @@ import java.util.zip.ZipFile;
 /**
  * 文件操作
  */
+@Slf4j
 public class FileOperation {
     private static Logger logger = LoggerFactory.getLogger(FileOperation.class);
 
@@ -343,15 +345,15 @@ public class FileOperation {
             if (fos != null) {
                 try {
                     fos.close();
-                    fos = null;
                 } catch (Exception e) {
+                    log.error("关闭流失败：" + e.getMessage());
                 }
             }
             if (archive != null) {
                 try {
                     archive.close();
-                    archive = null;
                 } catch (Exception e) {
+                    log.error("关闭流失败：" + e.getMessage());
                 }
             }
         }

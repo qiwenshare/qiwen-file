@@ -3,6 +3,7 @@ package com.qiwenshare.file.controller;
 import com.alibaba.fastjson.JSON;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
+import com.qiwenshare.common.exception.NotLoginException;
 import com.qiwenshare.common.util.DateUtil;
 import com.qiwenshare.common.result.RestResult;
 import com.qiwenshare.common.util.PathUtil;
@@ -43,6 +44,10 @@ public class RecoveryFileController {
     @RequestMapping(value = "/deleterecoveryfile", method = RequestMethod.POST)
     @ResponseBody
     public RestResult<String> deleteRecoveryFile(@RequestBody DeleteRecoveryFileDTO deleteRecoveryFileDTO, @RequestHeader("token") String token) {
+        UserBean sessionUserBean = userService.getUserBeanByToken(token);
+        if (sessionUserBean == null) {
+            throw new NotLoginException();
+        }
 
         RecoveryFile recoveryFile = recoveryFileService.getById(deleteRecoveryFileDTO.getRecoveryFileId());
         UserFile userFile =userFileService.getById(recoveryFile.getUserFileId());
@@ -58,7 +63,10 @@ public class RecoveryFileController {
     @MyLog(operation = "批量删除回收文件", module = CURRENT_MODULE)
     @ResponseBody
     public RestResult<String> batchDeleteRecoveryFile(@RequestBody BatchDeleteRecoveryFileDTO batchDeleteRecoveryFileDTO, @RequestHeader("token") String token) {
-
+        UserBean sessionUserBean = userService.getUserBeanByToken(token);
+        if (sessionUserBean == null) {
+            throw new NotLoginException();
+        }
         List<RecoveryFile> recoveryFileList = JSON.parseArray(batchDeleteRecoveryFileDTO.getRecoveryFileIds(), RecoveryFile.class);
         for (RecoveryFile recoveryFile : recoveryFileList) {
 
@@ -75,6 +83,10 @@ public class RecoveryFileController {
     @RequestMapping(value = "/list", method = RequestMethod.POST)
     @ResponseBody
     public RestResult<List<RecoveryFileListVo>> getRecoveryFileList(@RequestHeader("token") String token) {
+        UserBean sessionUserBean = userService.getUserBeanByToken(token);
+        if (sessionUserBean == null) {
+            throw new NotLoginException();
+        }
         RestResult<List<RecoveryFileListVo>> restResult = new RestResult<List<RecoveryFileListVo>>();
         List<RecoveryFileListVo> recoveryFileList = recoveryFileService.selectRecoveryFileList();
         restResult.setData(recoveryFileList);
@@ -89,6 +101,9 @@ public class RecoveryFileController {
     @ResponseBody
     public RestResult restoreFile(@RequestBody RestoreFileDTO restoreFileDto, @RequestHeader("token") String token) {
         UserBean sessionUserBean = userService.getUserBeanByToken(token);
+        if (sessionUserBean == null) {
+            throw new NotLoginException();
+        }
         recoveryFileService.restorefile(restoreFileDto.getDeleteBatchNum(), restoreFileDto.getFilePath(), sessionUserBean.getUserId());
         return RestResult.success().message("还原成功！");
     }

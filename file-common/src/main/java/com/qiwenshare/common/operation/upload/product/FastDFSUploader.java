@@ -2,7 +2,7 @@ package com.qiwenshare.common.operation.upload.product;
 
 import com.github.tobato.fastdfs.domain.StorePath;
 import com.github.tobato.fastdfs.service.AppendFileStorageClient;
-import com.qiwenshare.common.domain.UploadFile;
+import com.qiwenshare.common.operation.upload.domain.UploadFile;
 import com.qiwenshare.common.exception.UploadGeneralException;
 import com.qiwenshare.common.operation.upload.Uploader;
 import com.qiwenshare.common.util.FileUtil;
@@ -42,7 +42,7 @@ public class FastDFSUploader extends Uploader {
             throw new UploadGeneralException("未包含文件上传域");
         }
         DiskFileItemFactory dff = new DiskFileItemFactory();//1、创建工厂
-        String savePath = getSaveFilePath();
+        String savePath = getLocalFileSavePath();
         dff.setRepository(new File(savePath));
 
         try {

@@ -67,25 +67,6 @@ public class PathUtil {
     }
 
     /**
-     * 依据原始文件名生成新文件名
-     *
-     * @return
-     */
-    public static String getFileName(String fileName) {
-        String getfileName = "";
-        try {
-            SecureRandom number = SecureRandom.getInstance("SHA1PRNG");
-            return getfileName = "" + number.nextInt(10000)
-                    + System.currentTimeMillis() + getFileExt(fileName);
-        } catch (NoSuchAlgorithmException e) {
-            //LOG.error("生成安全随机数失败");
-        }
-        return getfileName = ""
-                + System.currentTimeMillis() + getFileExt(fileName);
-
-    }
-
-    /**
      * 获取文件扩展名
      *
      * @return string

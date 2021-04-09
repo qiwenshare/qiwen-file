@@ -5,7 +5,7 @@ import com.aliyun.oss.OSSClientBuilder;
 import com.aliyun.oss.model.OSSObject;
 import com.qiwenshare.common.config.QiwenFileConfig;
 import com.qiwenshare.common.domain.AliyunOSS;
-import com.qiwenshare.common.domain.DownloadFile;
+import com.qiwenshare.common.operation.download.domain.DownloadFile;
 import com.qiwenshare.common.operation.download.Downloader;
 import org.springframework.stereotype.Component;
 

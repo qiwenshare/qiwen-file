@@ -10,11 +10,11 @@ import javax.servlet.http.HttpServletResponse;
 import cn.hutool.core.bean.BeanUtil;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
+import com.qiwenshare.common.exception.UploadGeneralException;
+import com.qiwenshare.common.operation.upload.domain.UploadFile;
 import com.qiwenshare.common.util.DateUtil;
-import com.qiwenshare.common.domain.DeleteFile;
-import com.qiwenshare.common.domain.DownloadFile;
-import com.qiwenshare.common.domain.UploadFile;
-//import com.qiwenshare.common.factory.FileOperationFactory;
+import com.qiwenshare.common.operation.delete.domain.DeleteFile;
+import com.qiwenshare.common.operation.download.domain.DownloadFile;
 import com.qiwenshare.common.operation.delete.Deleter;
 import com.qiwenshare.common.operation.download.Downloader;
 import com.qiwenshare.common.factory.FileOperationFactory;
@@ -31,9 +31,10 @@ import com.qiwenshare.file.domain.FileBean;
 import com.qiwenshare.file.domain.StorageBean;
 import com.qiwenshare.file.mapper.StorageMapper;
 import com.qiwenshare.file.mapper.UserFileMapper;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
-
+@Slf4j
 @Service
 public class FiletransferService implements IFiletransferService {
 
@@ -65,8 +66,8 @@ public class FiletransferService implements IFiletransferService {
         uploadFile.setIdentifier(UploadFileDto.getIdentifier());
         uploadFile.setTotalSize(UploadFileDto.getTotalSize());
         uploadFile.setCurrentChunkSize(UploadFileDto.getCurrentChunkSize());
+        String storageType = qiwenFileConfig.getStorageType();
         synchronized (FiletransferService.class) {
-            String storageType = qiwenFileConfig.getStorageType();
             if ("0".equals(storageType)) {
                 uploader = localStorageOperationFactory.getUploader();
             } else if ("1".equals(storageType)) {
@@ -74,6 +75,10 @@ public class FiletransferService implements IFiletransferService {
             } else if ("2".equals(storageType)) {
                 uploader = fastDFSOperationFactory.getUploader();
             }
+        }
+        if (uploader == null) {
+            log.error("上传失败，请检查storageType是否配置正确，当前storageType为：" + storageType);
+            throw new UploadGeneralException("上传失败");
         }
 
         List<UploadFile> uploadFileList = uploader.upload(request, uploadFile);
@@ -143,6 +148,10 @@ public class FiletransferService implements IFiletransferService {
             downloader = aliyunOSSOperationFactory.getDownloader();
         } else if (fileBean.getStorageType() == 2) {
             downloader = fastDFSOperationFactory.getDownloader();
+        }
+        if (downloader == null) {
+            log.error("下载失败，文件存储类型不支持下载，storageType:{}, isOSS:{}", fileBean.getStorageType(), fileBean.getIsOSS());
+            throw new UploadGeneralException("下载失败");
         }
         DownloadFile uploadFile = new DownloadFile();
         uploadFile.setFileUrl(fileBean.getFileUrl());

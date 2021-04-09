@@ -1,5 +1,6 @@
 package com.qiwenshare.file.advice;
 
+import com.qiwenshare.common.exception.NotLoginException;
 import com.qiwenshare.common.result.RestResult;
 import com.qiwenshare.common.result.ResultCodeEnum;
 import com.qiwenshare.common.exception.UploadGeneralException;
@@ -57,6 +58,16 @@ public class GlobalExceptionHandlerAdvice {
         log.error("全局异常捕获：" + e);
         return RestResult.setResult(ResultCodeEnum.REQUEST_TIMEOUT);
     }
+
+    @ExceptionHandler(NotLoginException.class)
+    @ResponseBody
+    @ResponseStatus(HttpStatus.UNAUTHORIZED)
+    public RestResult error(NotLoginException e) {
+        e.printStackTrace();
+        log.error("全局异常捕获：" + e);
+        return RestResult.setResult(ResultCodeEnum.NOT_LOGIN_ERROR);
+    }
+
 
     /**-------- 自定义定异常处理方法 --------**/
     @ExceptionHandler(CMSException.class)

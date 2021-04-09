@@ -76,7 +76,6 @@ public class FileUtil {
     public static String getFileExtendName(String fileName) {
         if (fileName.lastIndexOf(".") == -1) {
             return "";
-            //这里暂时用jpg，后续应该去获取真实的文件类型
         }
         return fileName.substring(fileName.lastIndexOf(".") + 1);
     }

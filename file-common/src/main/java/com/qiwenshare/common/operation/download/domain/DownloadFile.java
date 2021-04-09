@@ -1,4 +1,4 @@
-package com.qiwenshare.common.domain;
+package com.qiwenshare.common.operation.download.domain;
 
 import lombok.Data;
 

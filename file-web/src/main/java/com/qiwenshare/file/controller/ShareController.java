@@ -71,18 +71,23 @@ public class ShareController {
         List<ShareFile> saveFileList = new ArrayList<>();
         for (ShareFile shareFile : fileList) {
             UserFile userFile = userFileService.getById(shareFile.getUserFileId());
+            if (userFile.getUserId() != sessionUserBean.getUserId()) {
+                return RestResult.fail().message("您只能分享自己的文件");
+            }
             if (userFile.getIsDir() == 1) {
-                List<UserFile> userfileList = userFileService.selectFileListLikeRightFilePath(userFile.getFilePath(), sessionUserBean.getUserId());
+                List<UserFile> userfileList = userFileService.selectFileListLikeRightFilePath(userFile.getFilePath() + userFile.getFileName() + "/", sessionUserBean.getUserId());
                 for (UserFile userFile1 : userfileList) {
                     ShareFile shareFile1 = new ShareFile();
                     shareFile1.setUserFileId(userFile1.getUserFileId());
                     shareFile1.setShareBatchNum(uuid);
+                    shareFile1.setShareFilePath(userFile1.getFilePath().replaceFirst(userFile.getFilePath(), "/"));
                     saveFileList.add(shareFile1);
                 }
-            } else {
-                shareFile.setShareBatchNum(uuid);
-                saveFileList.add(shareFile);
             }
+            shareFile.setShareFilePath("/");
+            shareFile.setShareBatchNum(uuid);
+            saveFileList.add(shareFile);
+
 
         }
         shareService.batchInsertShareFile(saveFileList);
@@ -123,20 +128,13 @@ public class ShareController {
         return RestResult.success();
     }
 
-    public static void main(String[] args) {
-        String sss = "[{\"fileId\":null,\"timeStampName\":null,\"fileUrl\":null,\"fileSize\":null,\"isOSS\":null,\"storageType\":null,\"pointCount\":null,\"identifier\":null,\"userFileId\":619,\"userId\":2,\"fileName\":\"2222\",\"filePath\":\"/\",\"extendName\":null,\"isDir\":1,\"uploadTime\":\"2021-03-15 22:16:26\",\"deleteFlag\":0,\"deleteTime\":null,\"deleteBatchNum\":null}]";
-        List<ShareFile> fileList = JSON.parseArray(sss, ShareFile.class);
-        fileList.forEach(p->p.setShareBatchNum("123"));
-        System.out.println(fileList);
-
-    }
-
     @Operation(summary = "分享列表", description = "分享列表", tags = {"share"})
     @GetMapping(value = "/sharefileList")
     @ResponseBody
     public RestResult<List<ShareFileListVO>> shareFileListBySecret(ShareFileListBySecretDTO shareFileListBySecretDTO) {
-        log.info(JSON.toJSONString(shareFileListBySecretDTO));
-        List<ShareFileListVO> list = shareService.selectShareFileList(shareFileListBySecretDTO.getShareBatchNum(), shareFileListBySecretDTO.getFilePath());
+        String shareBatchNum = shareFileListBySecretDTO.getShareBatchNum();
+        String shareFilePath = shareFileListBySecretDTO.getShareFilePath();
+        List<ShareFileListVO> list = shareService.selectShareFileList(shareBatchNum, shareFilePath);
         return RestResult.success().data(list);
     }
 
@@ -157,7 +155,6 @@ public class ShareController {
     @GetMapping(value = "/checkextractioncode")
     @ResponseBody
     public RestResult<String> checkExtractionCode(CheckExtractionCodeDTO checkExtractionCodeDTO) {
-//        log.info(JSON.toJSONString(shareFileListBySecretDTO));
         LambdaQueryWrapper<Share> lambdaQueryWrapper = new LambdaQueryWrapper<>();
         lambdaQueryWrapper.eq(Share::getShareBatchNum, checkExtractionCodeDTO.getShareBatchNum())
                 .eq(Share::getExtractionCode, checkExtractionCodeDTO.getExtractionCode());

@@ -1,6 +1,6 @@
 package com.qiwenshare.common.operation.download;
 
-import com.qiwenshare.common.domain.DownloadFile;
+import com.qiwenshare.common.operation.download.domain.DownloadFile;
 
 import javax.servlet.http.HttpServletResponse;
 
