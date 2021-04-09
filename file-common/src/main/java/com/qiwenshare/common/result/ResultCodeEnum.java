@@ -13,6 +13,7 @@ public enum ResultCodeEnum {
     NULL_POINT(false, 20003, "空指针异常"),
     INDEX_OUT_OF_BOUNDS(false, 20004, "下标越界异常"),
     REQUEST_TIMEOUT(false, 20005, "请求超时"),
+    NOT_LOGIN_ERROR(false, 20006, "未登录异常"),
     ;
 
     // 响应是否成功

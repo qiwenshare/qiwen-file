@@ -1,7 +1,7 @@
 package com.qiwenshare.common.operation.delete.product;
 
 import com.qiwenshare.common.operation.delete.Deleter;
-import com.qiwenshare.common.domain.DeleteFile;
+import com.qiwenshare.common.operation.delete.domain.DeleteFile;
 import com.qiwenshare.common.operation.FileOperation;
 import com.qiwenshare.common.util.FileUtil;
 import com.qiwenshare.common.util.PathUtil;

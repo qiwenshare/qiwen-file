@@ -2,7 +2,7 @@ package com.qiwenshare.common.operation.delete.product;
 
 import com.github.tobato.fastdfs.service.FastFileStorageClient;
 import com.qiwenshare.common.operation.delete.Deleter;
-import com.qiwenshare.common.domain.DeleteFile;
+import com.qiwenshare.common.operation.delete.domain.DeleteFile;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 

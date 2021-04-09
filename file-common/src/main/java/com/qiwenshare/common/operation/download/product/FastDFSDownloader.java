@@ -2,7 +2,7 @@ package com.qiwenshare.common.operation.download.product;
 
 import com.github.tobato.fastdfs.proto.storage.DownloadByteArray;
 import com.github.tobato.fastdfs.service.FastFileStorageClient;
-import com.qiwenshare.common.domain.DownloadFile;
+import com.qiwenshare.common.operation.download.domain.DownloadFile;
 import com.qiwenshare.common.operation.download.Downloader;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
@@ -33,8 +33,10 @@ public class FastDFSDownloader extends Downloader {
             e.printStackTrace();
         } finally {
             try {
-                outputStream.flush();
-                outputStream.close();
+                if (outputStream != null) {
+                    outputStream.flush();
+                    outputStream.close();
+                }
             } catch (IOException e) {
                 e.printStackTrace();
             }

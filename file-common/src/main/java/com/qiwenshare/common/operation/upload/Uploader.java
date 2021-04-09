@@ -1,11 +1,9 @@
 package com.qiwenshare.common.operation.upload;
 
-import com.qiwenshare.common.config.PropertiesUtil;
-import com.qiwenshare.common.domain.UploadFile;
+import com.qiwenshare.common.operation.upload.domain.UploadFile;
 import com.qiwenshare.common.util.PathUtil;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.io.FileUtils;
-import org.apache.commons.lang3.StringUtils;
 
 import javax.servlet.http.HttpServletRequest;
 import java.io.File;
@@ -16,7 +14,6 @@ import java.security.SecureRandom;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.List;
-import java.util.ResourceBundle;
 
 @Slf4j
 public abstract class Uploader {
@@ -30,11 +27,11 @@ public abstract class Uploader {
     public abstract List<UploadFile> upload(HttpServletRequest request, UploadFile uploadFile);
 
     /**
-     * 根据字符串创建本地目录 并按照日期建立子目录返回
+     * 获取本地文件保存路径
      *
      * @return
      */
-    protected String getSaveFilePath() {
+    protected String getLocalFileSavePath() {
         
         String path = ROOT_PATH;
         SimpleDateFormat formater = new SimpleDateFormat("yyyyMMdd");

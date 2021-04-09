@@ -31,10 +31,6 @@ public class UserFileService  extends ServiceImpl<UserFileMapper, UserFile> impl
     FileMapper fileMapper;
     @Resource
     RecoveryFileMapper recoveryFileMapper;
-    @Resource
-    FiletransferService filetransferService;
-    @Resource
-    QiwenFileConfig qiwenFileConfig;
 
     public static Executor executor = Executors.newFixedThreadPool(20);
 
@@ -153,13 +149,10 @@ public class UserFileService  extends ServiceImpl<UserFileMapper, UserFile> impl
 
     @Override
     public List<UserFile> selectFileListLikeRightFilePath(String filePath, long userId) {
-        //UserFile userFile = new UserFile();
         filePath = filePath.replace("\\", "\\\\\\\\");
         filePath = filePath.replace("'", "\\'");
         filePath = filePath.replace("%", "\\%");
         filePath = filePath.replace("_", "\\_");
-
-        //userFile.setFilePath(filePath);
 
         LambdaQueryWrapper<UserFile> lambdaQueryWrapper = new LambdaQueryWrapper<>();
 

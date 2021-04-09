@@ -19,8 +19,8 @@ public class ShareFileListVO {
     private Integer isOSS;
     @Schema(description="存储类型")
     private Integer storageType;
-//
-//    private Long userFileId;
+    @Schema(description="用户文件id")
+    private Long userFileId;
 //
 //    private Long userId;
 

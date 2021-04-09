@@ -18,5 +18,6 @@ public class ShareFile {
     private Long shareFileId;
     private String shareBatchNum;
     private Long userFileId;
+    private String shareFilePath;
 
 }

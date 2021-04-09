@@ -7,6 +7,7 @@ import com.aliyun.oss.model.CopyObjectResult;
 import com.aliyun.oss.model.ObjectMetadata;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
+import com.qiwenshare.common.exception.NotLoginException;
 import com.qiwenshare.common.util.DateUtil;
 import com.qiwenshare.common.result.RestResult;
 import com.qiwenshare.common.domain.AliyunOSS;
@@ -82,7 +83,9 @@ public class FileController {
         }
 
         UserBean sessionUserBean = userService.getUserBeanByToken(token);
-
+        if (sessionUserBean == null) {
+            throw new NotLoginException();
+        }
         List<UserFile> userFiles = userFileService.selectUserFileByNameAndPath(createFileDto.getFileName(), createFileDto.getFilePath(), sessionUserBean.getUserId());
         if (userFiles != null && !userFiles.isEmpty()) {
             return RestResult.fail().message("同名文件已存在");
@@ -146,13 +149,16 @@ public class FileController {
             return operationCheck(token);
         }
         UserBean sessionUserBean = userService.getUserBeanByToken(token);
+        if (sessionUserBean == null) {
+            throw new NotLoginException();
+        }
         UserFile userFile = userFileService.getById(renameFileDto.getUserFileId());
 
         List<UserFile> userFiles = userFileService.selectUserFileByNameAndPath(renameFileDto.getFileName(), renameFileDto.getFilePath(), sessionUserBean.getUserId());
         if (userFiles != null && !userFiles.isEmpty()) {
             return RestResult.fail().message("同名文件已存在");
-
         }
+
         if (1 == userFile.getIsDir()) {
             LambdaUpdateWrapper<UserFile> lambdaUpdateWrapper = new LambdaUpdateWrapper<>();
             lambdaUpdateWrapper.set(UserFile::getFileName, renameFileDto.getFileName())
@@ -228,6 +234,9 @@ public class FileController {
             userFile.setUserId(2L);
         }else {
             UserBean sessionUserBean = userService.getUserBeanByToken(token);
+            if (sessionUserBean == null) {
+                throw new NotLoginException();
+            }
             if (userFile == null) {
                 return RestResult.fail();
 
@@ -271,6 +280,9 @@ public class FileController {
             return operationCheck(token);
         }
         UserBean sessionUserBean = userService.getUserBeanByToken(token);
+        if (sessionUserBean == null) {
+            throw new NotLoginException();
+        }
         List<UserFile> userFiles = JSON.parseArray(batchDeleteFileDto.getFiles(), UserFile.class);
         DigestUtils.md5Hex("data");
         for (UserFile userFile : userFiles) {
@@ -293,7 +305,9 @@ public class FileController {
         }
 
         UserBean sessionUserBean = userService.getUserBeanByToken(token);
-
+        if (sessionUserBean == null) {
+            throw new NotLoginException();
+        }
         userFileService.deleteUserFile(deleteFileDto.getUserFileId(), sessionUserBean.getUserId());
 
 
@@ -310,7 +324,10 @@ public class FileController {
         if (!operationCheck(token).getSuccess()){
             return operationCheck(token);
         }
-
+        UserBean sessionUserBean = userService.getUserBeanByToken(token);
+        if (sessionUserBean == null) {
+            throw new NotLoginException();
+        }
         String zipFileUrl = PathUtil.getStaticPath() + unzipFileDto.getFileUrl();
         File file = FileOperation.newFile(zipFileUrl);
         String unzipUrl = file.getParent();
@@ -336,7 +353,7 @@ public class FileController {
         }
 
         List<FileBean> fileBeanList = new ArrayList<>();
-        UserBean sessionUserBean = userService.getUserBeanByToken(token);
+
         log.info("解压缩文件数量：" + fileBeanList);
 
         for (int i = 0; i < fileEntryNameList.size(); i++){
@@ -376,10 +393,7 @@ public class FileController {
                 userFileService.save(userFile);
             });
 
-            //fileBeanList.add(tempFileBean);
         }
-
-//        fileService.batchInsertFile(fileBeanList, sessionUserBean.getUserId());
         return RestResult.success();
 
     }
@@ -396,6 +410,9 @@ public class FileController {
         }
 
         UserBean sessionUserBean = userService.getUserBeanByToken(token);
+        if (sessionUserBean == null) {
+            throw new NotLoginException();
+        }
         String oldfilePath = moveFileDto.getOldFilePath();
         String newfilePath = moveFileDto.getFilePath();
         String fileName = moveFileDto.getFileName();
@@ -416,7 +433,9 @@ public class FileController {
             return operationCheck(token);
         }
         UserBean sessionUserBean = userService.getUserBeanByToken(token);
-
+        if (sessionUserBean == null) {
+            throw new NotLoginException();
+        }
         String files = batchMoveFileDto.getFiles();
         String newfilePath = batchMoveFileDto.getFilePath();
 
@@ -455,6 +474,9 @@ public class FileController {
     public RestResult<List<Map<String, Object>>> selectFileByFileType(int fileType, Long currentPage, Long pageCount, @RequestHeader("token") String token) {
 
         UserBean sessionUserBean = userService.getUserBeanByToken(token);
+        if (sessionUserBean == null) {
+            throw new NotLoginException();
+        }
         long userId = sessionUserBean.getUserId();
         if (qiwenFileConfig.isShareMode()){
             userId = 2;
@@ -494,10 +516,13 @@ public class FileController {
     @Operation(summary = "获取文件树", description = "文件移动的时候需要用到该接口，用来展示目录树", tags = {"file"})
     @RequestMapping(value = "/getfiletree", method = RequestMethod.GET)
     @ResponseBody
-    public RestResult<TreeNode> getFileTree(@RequestHeader("token") String token){
+    public RestResult<TreeNode> getFileTree(@RequestHeader("token") String token) {
         RestResult<TreeNode> result = new RestResult<TreeNode>();
         UserFile userFile = new UserFile();
         UserBean sessionUserBean = userService.getUserBeanByToken(token);
+        if (sessionUserBean == null) {
+            throw new NotLoginException();
+        }
         if (qiwenFileConfig.isShareMode()){
             userFile.setUserId(2L);
         }else{
