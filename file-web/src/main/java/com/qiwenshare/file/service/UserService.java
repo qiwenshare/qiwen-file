@@ -16,6 +16,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.shiro.crypto.hash.SimpleHash;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import javax.annotation.Resource;
 import java.util.List;
@@ -23,6 +24,7 @@ import java.util.regex.Pattern;
 
 @Slf4j
 @Service
+@Transactional(rollbackFor=Exception.class)
 public class UserService extends ServiceImpl<UserMapper, UserBean> implements IUserService {
 
     @Resource

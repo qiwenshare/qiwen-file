@@ -22,5 +22,6 @@ public interface IUserFileService extends IService<UserFile> {
     List<UserFile> selectFileListLikeRightFilePath(String filePath, long userId);
     List<UserFile> selectFilePathTreeByUserId(Long userId);
     void deleteUserFile(Long userFileId, Long sessionUserId);
+    UserFile repeatUserFileDeal(UserFile userFile);
 
 }

@@ -4,36 +4,24 @@
         PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
         "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 
-<mapper namespace="com.qiwenshare.file.mapper.ShareMapper">
+<mapper namespace="com.qiwenshare.file.mapper.ShareFileMapper">
 
-    <select id="selectShareList" resultType="com.qiwenshare.file.vo.share.ShareListVO">
-        SELECT * FROM share a
-        LEFT JOIN sharefile b ON b.shareBatchNum = a.shareBatchNum
-        LEFT JOIN userfile c ON c.userFileId = b.userFileId
-        LEFT JOIN file d ON d.fileId = c.fileId
-        WHERE shareFilePath = #{shareFilePath}
-        <if test="shareBatchNum != null">
-            AND a.shareBatchNum = #{shareBatchNum}
-        </if>
-        AND c.userId = #{userId}
-        order BY shareTime desc
-        limit #{beginCount}, #{pageCount}
+
+    <insert id="batchInsertShareFile" parameterType="java.util.List">
+        INSERT ignore INTO sharefile (shareBatchNum, userFileId, shareFilePath)
+        VALUES
+        <foreach collection="list" item="file" index="index" separator=",">
+        (#{file.shareBatchNum}, #{file.userFileId}, #{file.shareFilePath})
+        </foreach>
+    </insert>
+
+    <select id="selectShareFileList" resultType="com.qiwenshare.file.vo.share.ShareFileListVO">
+        select * from sharefile a
+        left join userfile b on b.userFileId = a.userFileId
+        left join file c on c.fileId = b.fileId
+        where a.shareBatchNum = #{shareBatchNum}
+        and a.shareFilePath = #{shareFilePath}
     </select>
-
-    <select id="selectShareListTotalCount" resultType="java.lang.Integer">
-        SELECT count(*) FROM share a
-        LEFT JOIN sharefile b ON b.shareBatchNum = a.shareBatchNum
-        LEFT JOIN userfile c ON c.userFileId = b.userFileId
-        LEFT JOIN file d ON d.fileId = c.fileId
-        WHERE shareFilePath = #{shareFilePath}
-        <if test="shareBatchNum != null">
-            AND a.shareBatchNum = #{shareBatchNum}
-        </if>
-        AND c.userId = #{userId}
-    </select>
-
-
-
 
 
 <!--    <update id="updateFile" parameterType="java">-->

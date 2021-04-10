@@ -5,11 +5,13 @@ import com.qiwenshare.file.domain.FileBean;
 import com.qiwenshare.file.domain.Share;
 import com.qiwenshare.file.domain.ShareFile;
 import com.qiwenshare.file.vo.share.ShareFileListVO;
+import com.qiwenshare.file.vo.share.ShareListVO;
 import org.apache.ibatis.annotations.Param;
 
 import java.util.List;
 
 public interface ShareMapper  extends BaseMapper<Share> {
-    void batchInsertShareFile(List<ShareFile> shareFiles);
-    List<ShareFileListVO> selectShareFileList(@Param("shareBatchNum") String shareBatchNum, @Param("shareFilePath") String filePath);
+
+    List<ShareListVO> selectShareList(String shareFilePath,String shareBatchNum, Long beginCount, Long pageCount, Long userId);
+    int selectShareListTotalCount(String shareFilePath,String shareBatchNum, Long userId);
 }

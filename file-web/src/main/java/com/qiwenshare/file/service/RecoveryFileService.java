@@ -16,6 +16,7 @@ import com.qiwenshare.file.mapper.UserFileMapper;
 import com.qiwenshare.file.vo.file.RecoveryFileListVo;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import javax.annotation.Resource;
 import java.util.List;
@@ -24,6 +25,7 @@ import java.util.concurrent.Executors;
 
 @Slf4j
 @Service
+@Transactional(rollbackFor=Exception.class)
 public class RecoveryFileService  extends ServiceImpl<RecoveryFileMapper, RecoveryFile> implements IRecoveryFileService {
     @Resource
     UserFileMapper userFileMapper;
