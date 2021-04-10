@@ -20,6 +20,10 @@ public class FileService extends ServiceImpl<FileMapper, FileBean> implements IF
     @Override
     public void increaseFilePointCount(Long fileId) {
         FileBean fileBean = fileMapper.selectById(fileId);
+        if (fileBean == null) {
+            log.error("文件不存在，fileId : {}", fileId );
+            return;
+        }
         fileBean.setPointCount(fileBean.getPointCount()+1);
         fileMapper.updateById(fileBean);
     }
