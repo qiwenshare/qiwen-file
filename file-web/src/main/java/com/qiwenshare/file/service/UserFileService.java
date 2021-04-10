@@ -217,38 +217,42 @@ public class UserFileService  extends ServiceImpl<UserFileMapper, UserFile> impl
     }
 
     @Override
-    public UserFile repeatUserFileDeal(UserFile userFile) {
+    public String getRepeatFileName(UserFile userFile, String savefilePath) {
         String fileName = userFile.getFileName();
-        String filePath = userFile.getFilePath();
         String extendName = userFile.getExtendName();
         Integer deleteFlag = userFile.getDeleteFlag();
         Long userId = userFile.getUserId();
         LambdaQueryWrapper<UserFile> lambdaQueryWrapper = new LambdaQueryWrapper<>();
-        lambdaQueryWrapper.eq(UserFile::getFilePath, filePath)
-                .eq(UserFile::getExtendName, extendName)
+        lambdaQueryWrapper.eq(UserFile::getFilePath, savefilePath)
                 .eq(UserFile::getDeleteFlag, deleteFlag)
                 .eq(UserFile::getUserId, userId)
                 .eq(UserFile::getFileName, fileName);
+        if (userFile.getIsDir() == 0) {
+            lambdaQueryWrapper.eq(UserFile::getExtendName, extendName);
+        }
         List<UserFile> list = userFileMapper.selectList(lambdaQueryWrapper);
         if (list == null) {
-            return userFile;
+            return fileName;
         }
         if (list.isEmpty()) {
-            return userFile;
+            return fileName;
         }
         int i = 0;
 
         while (list != null && !list.isEmpty()) {
             i++;
-            lambdaQueryWrapper.eq(UserFile::getFilePath, filePath)
-                    .eq(UserFile::getExtendName, extendName)
+            LambdaQueryWrapper<UserFile> lambdaQueryWrapper1 = new LambdaQueryWrapper<>();
+            lambdaQueryWrapper1.eq(UserFile::getFilePath, savefilePath)
                     .eq(UserFile::getDeleteFlag, deleteFlag)
                     .eq(UserFile::getUserId, userId)
                     .eq(UserFile::getFileName, fileName + "(" + i + ")");
-            list = userFileMapper.selectList(lambdaQueryWrapper);
+            if (userFile.getIsDir() == 0) {
+                lambdaQueryWrapper1.eq(UserFile::getExtendName, extendName);
+            }
+            list = userFileMapper.selectList(lambdaQueryWrapper1);
         }
-        userFile.setFileName(fileName + "(" + i + ")");
-        return userFile;
+        
+        return fileName + "(" + i + ")";
 
     }
 
