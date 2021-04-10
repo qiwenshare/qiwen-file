@@ -110,17 +110,22 @@ public class ShareController {
         for (ShareFile shareFile : fileList) {
             UserFile userFile = userFileService.getById(shareFile.getUserFileId());
             if (userFile.getIsDir() == 1) {
-                List<UserFile> userfileList = userFileService.selectFileListLikeRightFilePath(userFile.getFilePath(), userFile.getUserId());
+                List<UserFile> userfileList = userFileService.selectFileListLikeRightFilePath(userFile.getFilePath() + userFile.getFileName(), userFile.getUserId());
                 log.info("查询文件列表：" + JSON.toJSONString(userfileList));
                 for (UserFile userFile1 : userfileList) {
+                    userFile.setUserFileId(null);
                     userFile1.setUserId(sessionUserBean.getUserId());
-                    userFile1.setFilePath(saveShareFileDTO.getFilePath());
+                    userFile1.setFilePath(userFile1.getFilePath().replaceFirst(userFile.getFilePath(), saveShareFileDTO.getFilePath()));
                     saveUserFileList.add(userFile1);
                     log.info("当前文件：" + JSON.toJSONString(userFile1));
                     if (userFile1.getIsDir() == 0) {
                         fileService.increaseFilePointCount(userFile1.getFileId());
                     }
                 }
+                userFile.setUserFileId(null);
+                userFile.setUserId(sessionUserBean.getUserId());
+                userFile.setFilePath(saveShareFileDTO.getFilePath());
+                saveUserFileList.add(userFile);
             } else {
                 userFile.setUserFileId(null);
                 userFile.setUserId(sessionUserBean.getUserId());
@@ -129,6 +134,7 @@ public class ShareController {
                 fileService.increaseFilePointCount(userFile.getFileId());
             }
         }
+        log.info("----------" + JSON.toJSONString(saveUserFileList));
         userFileService.saveBatch(saveUserFileList);
 
         return RestResult.success();
@@ -141,6 +147,9 @@ public class ShareController {
         String shareBatchNum = shareFileListBySecretDTO.getShareBatchNum();
         String shareFilePath = shareFileListBySecretDTO.getShareFilePath();
         List<ShareFileListVO> list = shareService.selectShareFileList(shareBatchNum, shareFilePath);
+        for (ShareFileListVO shareFileListVO : list) {
+            shareFileListVO.setShareFilePath(shareFilePath);
+        }
         return RestResult.success().data(list);
     }
 

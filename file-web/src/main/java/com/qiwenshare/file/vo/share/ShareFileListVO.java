@@ -34,6 +34,8 @@ public class ShareFileListVO {
     private Integer isDir;
     @Schema(description="上传时间")
     private String uploadTime;
+    @Schema(description="分享文件路径")
+    private String shareFilePath;
 //
 //    private Long shareId;
 //
