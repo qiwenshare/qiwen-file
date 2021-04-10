@@ -116,6 +116,9 @@ public class ShareController {
         List<UserFile> saveUserFileList = new ArrayList<>();
         for (ShareFile shareFile : fileList) {
             UserFile userFile = userFileService.getById(shareFile.getUserFileId());
+            String fileName = userFile.getFileName();
+            String savefileName = userFileService.getRepeatFileName(userFile, savefilePath);
+
             if (userFile.getIsDir() == 1) {
                 List<UserFile> userfileList = userFileService.selectFileListLikeRightFilePath(userFile.getFilePath() + userFile.getFileName(), userFile.getUserId());
                 log.info("查询文件列表：" + JSON.toJSONString(userfileList));
@@ -123,8 +126,7 @@ public class ShareController {
                 userfileList.forEach(p->{
                     p.setUserFileId(null);
                     p.setUserId(userId);
-                    p.setFilePath(p.getFilePath().replaceFirst(filePath, savefilePath));
-                    p = userFileService.repeatUserFileDeal(p);
+                    p.setFilePath(p.getFilePath().replaceFirst(filePath + fileName, savefilePath + savefileName));
                     saveUserFileList.add(p);
                     log.info("当前文件：" + JSON.toJSONString(p));
                     if (p.getIsDir() == 0) {
@@ -134,12 +136,12 @@ public class ShareController {
             } else {
                 fileService.increaseFilePointCount(userFile.getFileId());
             }
-
             userFile.setUserFileId(null);
             userFile.setUserId(userId);
             userFile.setFilePath(savefilePath);
-            userFile = userFileService.repeatUserFileDeal(userFile);
+            userFile.setFileName(savefileName);
             saveUserFileList.add(userFile);
+
         }
         log.info("----------" + JSON.toJSONString(saveUserFileList));
         userFileService.saveBatch(saveUserFileList);
