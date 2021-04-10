@@ -8,12 +8,14 @@ import com.qiwenshare.file.api.IOperationLogService;
 import com.qiwenshare.file.domain.OperationLogBean;
 import com.qiwenshare.file.mapper.OperationLogMapper;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import javax.annotation.Resource;
 import java.util.List;
 
 
 @Service
+@Transactional(rollbackFor=Exception.class)
 public class OperationLogService  extends ServiceImpl<OperationLogMapper, OperationLogBean> implements IOperationLogService {
 
     @Resource

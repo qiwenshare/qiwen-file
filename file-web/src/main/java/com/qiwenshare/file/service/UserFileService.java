@@ -15,6 +15,7 @@ import com.qiwenshare.file.mapper.UserFileMapper;
 import com.qiwenshare.file.vo.file.FileListVo;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import javax.annotation.Resource;
 import java.util.List;
@@ -24,6 +25,7 @@ import java.util.concurrent.Executors;
 
 @Slf4j
 @Service
+@Transactional(rollbackFor=Exception.class)
 public class UserFileService  extends ServiceImpl<UserFileMapper, UserFile> implements IUserFileService {
     @Resource
     UserFileMapper userFileMapper;
@@ -211,6 +213,42 @@ public class UserFileService  extends ServiceImpl<UserFileMapper, UserFile> impl
         recoveryFile.setDeleteBatchNum(uuid);
         recoveryFileMapper.insert(recoveryFile);
 
+
+    }
+
+    @Override
+    public UserFile repeatUserFileDeal(UserFile userFile) {
+        String fileName = userFile.getFileName();
+        String filePath = userFile.getFilePath();
+        String extendName = userFile.getExtendName();
+        Integer deleteFlag = userFile.getDeleteFlag();
+        Long userId = userFile.getUserId();
+        LambdaQueryWrapper<UserFile> lambdaQueryWrapper = new LambdaQueryWrapper<>();
+        lambdaQueryWrapper.eq(UserFile::getFilePath, filePath)
+                .eq(UserFile::getExtendName, extendName)
+                .eq(UserFile::getDeleteFlag, deleteFlag)
+                .eq(UserFile::getUserId, userId)
+                .eq(UserFile::getFileName, fileName);
+        List<UserFile> list = userFileMapper.selectList(lambdaQueryWrapper);
+        if (list == null) {
+            return userFile;
+        }
+        if (list.isEmpty()) {
+            return userFile;
+        }
+        int i = 0;
+
+        while (list != null && !list.isEmpty()) {
+            i++;
+            lambdaQueryWrapper.eq(UserFile::getFilePath, filePath)
+                    .eq(UserFile::getExtendName, extendName)
+                    .eq(UserFile::getDeleteFlag, deleteFlag)
+                    .eq(UserFile::getUserId, userId)
+                    .eq(UserFile::getFileName, fileName + "(" + i + ")");
+            list = userFileMapper.selectList(lambdaQueryWrapper);
+        }
+        userFile.setFileName(fileName + "(" + i + ")");
+        return userFile;
 
     }
 

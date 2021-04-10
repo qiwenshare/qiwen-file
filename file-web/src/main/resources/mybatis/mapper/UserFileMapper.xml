@@ -28,8 +28,8 @@
         </where>
         ORDER BY  isDir desc
         limit #{beginCount}, #{pageCount}
-
     </select>
+
     <sql id="selectByExtendName" >
         left join file on file.fileId = userfile.fileId
         where extendName in

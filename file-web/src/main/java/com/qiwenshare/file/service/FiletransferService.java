@@ -33,9 +33,11 @@ import com.qiwenshare.file.mapper.StorageMapper;
 import com.qiwenshare.file.mapper.UserFileMapper;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 @Slf4j
 @Service
+@Transactional(rollbackFor=Exception.class)
 public class FiletransferService implements IFiletransferService {
 
     @Resource
