@@ -111,11 +111,15 @@ public class ShareController {
             UserFile userFile = userFileService.getById(shareFile.getUserFileId());
             if (userFile.getIsDir() == 1) {
                 List<UserFile> userfileList = userFileService.selectFileListLikeRightFilePath(userFile.getFilePath(), userFile.getUserId());
+                log.info("查询文件列表：" + JSON.toJSONString(userfileList));
                 for (UserFile userFile1 : userfileList) {
                     userFile1.setUserId(sessionUserBean.getUserId());
                     userFile1.setFilePath(saveShareFileDTO.getFilePath());
                     saveUserFileList.add(userFile1);
-                    fileService.increaseFilePointCount(userFile1.getFileId());
+                    log.info("当前文件：" + JSON.toJSONString(userFile1));
+                    if (userFile1.getIsDir() == 0) {
+                        fileService.increaseFilePointCount(userFile1.getFileId());
+                    }
                 }
             } else {
                 userFile.setUserFileId(null);
