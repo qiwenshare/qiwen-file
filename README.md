@@ -152,6 +152,38 @@
 
 ![文件回收站](https://images.gitee.com/uploads/images/2021/0325/123843_f8fa15bf_1837873.png)
 
+### 9. 文件单个和批量分享
+
+1. 支持单个和批量分享文件给他人：
+
+   ![单个或批量分享文件](https://images.gitee.com/uploads/images/2021/0412/094958_842ead78_1837873.png)
+
+2. 可以选择过期时间和是否需要提取码：
+
+   ![过期时间和是否需要提取码](https://images.gitee.com/uploads/images/2021/0412/095039_b7841dbc_1837873.png)
+
+3. 提供快捷复制链接及提取码给他人：
+
+   ![生成分享链接](https://images.gitee.com/uploads/images/2021/0412/095055_a06df014_1837873.png)
+
+   粘贴分享链接及提取码效果：
+
+   ```
+   分享链接：https://pan.qiwenshare.com/share/27d9b438019e4f68bcec02f579d163b7
+   提取码：356978
+   复制链接到浏览器中并输入提取码即可查看文件
+   ```
+
+4. 他人查看分享内容，并支持保存到网盘功能：
+
+   ![查看他人分享](https://images.gitee.com/uploads/images/2021/0412/095629_ce5b3336_1837873.png)
+
+### 10. 支持查看自己已分享过的文件列表
+
+支持在列表中快捷复制当次的分享链接及提取码，并标注分享时间和过期状态：
+
+![我的分享](https://images.gitee.com/uploads/images/2021/0412/095142_6d543701_1837873.png)
+
 ## 联系我们
 
 如您有问题，请加入 QQ 群咨询
