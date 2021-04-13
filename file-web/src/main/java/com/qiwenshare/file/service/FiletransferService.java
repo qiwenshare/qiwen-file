@@ -136,7 +136,7 @@ public class FiletransferService implements IFiletransferService {
         } catch (UnsupportedEncodingException e) {
             e.printStackTrace();
         }
-        httpServletResponse.setContentType("application/force-download");// 设置强制下载不打开
+
         httpServletResponse.addHeader("Content-Disposition", "attachment;fileName=" + fileName);// 设置文件名
 
 

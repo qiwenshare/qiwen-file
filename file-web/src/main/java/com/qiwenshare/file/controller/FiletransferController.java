@@ -5,6 +5,7 @@ import com.qiwenshare.common.exception.NotLoginException;
 import com.qiwenshare.common.result.RestResult;
 import com.qiwenshare.common.util.DateUtil;
 import com.qiwenshare.common.util.FileUtil;
+import com.qiwenshare.common.util.MimeUtils;
 import com.qiwenshare.file.anno.MyLog;
 import com.qiwenshare.file.api.IFileService;
 import com.qiwenshare.file.api.IFiletransferService;
@@ -17,9 +18,13 @@ import com.qiwenshare.file.domain.UserFile;
 import com.qiwenshare.file.dto.DownloadFileDTO;
 import com.qiwenshare.file.dto.UploadFileDTO;
 import com.qiwenshare.file.vo.file.UploadFileVo;
+import io.swagger.annotations.ApiImplicitParam;
+import io.swagger.annotations.ApiImplicitParams;
+import io.swagger.annotations.ApiOperation;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.util.StringUtils;
 import org.springframework.web.bind.annotation.*;
 
 import javax.annotation.Resource;
@@ -131,10 +136,21 @@ public class FiletransferController {
     @Operation(summary = "下载文件", description = "下载文件接口", tags = {"filetransfer"})
     @MyLog(operation = "下载文件", module = CURRENT_MODULE)
     @RequestMapping(value = "/downloadfile", method = RequestMethod.GET)
-    public void downloadFile(HttpServletResponse response, DownloadFileDTO downloadFileDTO) {
-        filetransferService.downloadFile(response, downloadFileDTO);
+    public void downloadFile(HttpServletResponse httpServletResponse, DownloadFileDTO downloadFileDTO) {
+        httpServletResponse.setContentType("application/force-download");// 设置强制下载不打开
+        filetransferService.downloadFile(httpServletResponse, downloadFileDTO);
     }
 
+    @Operation(summary="预览文件", description="用于文件预览", tags = {"filetransfer"})
+    @GetMapping("/preview")
+    public void preview(HttpServletResponse httpServletResponse,  DownloadFileDTO downloadFileDTO){
+
+        UserFile userFile = userFileService.getById(downloadFileDTO.getUserFileId());
+        String mime= MimeUtils.getMime(userFile.getExtendName());
+        httpServletResponse.setContentType(mime);
+        filetransferService.downloadFile(httpServletResponse, downloadFileDTO);
+
+    }
 
     @Operation(summary = "获取存储信息", description = "获取存储信息", tags = {"filetransfer"})
     @RequestMapping(value = "/getstorage", method = RequestMethod.GET)
