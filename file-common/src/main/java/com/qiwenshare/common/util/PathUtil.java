@@ -1,6 +1,7 @@
 package com.qiwenshare.common.util;
 
 import com.qiwenshare.common.config.PropertiesUtil;
+import com.qiwenshare.common.constant.FileConstant;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.util.ResourceUtils;
 
@@ -66,21 +67,9 @@ public class PathUtil {
 
     }
 
-    /**
-     * 获取文件扩展名
-     *
-     * @return string
-     */
-    private static String getFileExt(String fileName) {
-        if (fileName.lastIndexOf(".") == -1) {
-            return ".png";
-            //这里暂时用jpg，后续应该去获取真实的文件类型
-        }
-        return fileName.substring(fileName.lastIndexOf("."));
-    }
 
     public static String getParentPath(String path) {
-        return path.substring(0, path.lastIndexOf("/"));
+        return path.substring(0, path.lastIndexOf(FileConstant.pathSeparator));
     }
 
     public static void main(String[] args) {

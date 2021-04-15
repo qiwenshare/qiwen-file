@@ -45,4 +45,18 @@ public class LocalStorageDownloader extends Downloader {
             }
         }
     }
+
+    @Override
+    public InputStream getInputStream(DownloadFile downloadFile) {
+        //设置文件路径
+        File file = FileOperation.newFile(PathUtil.getStaticPath() + downloadFile.getFileUrl());
+        InputStream inputStream = null;
+        try {
+            inputStream = new FileInputStream(file);
+        } catch (FileNotFoundException e) {
+            e.printStackTrace();
+        }
+        return inputStream;
+
+    }
 }

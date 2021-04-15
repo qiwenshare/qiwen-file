@@ -53,6 +53,15 @@ public class AliyunOSSDownloader extends Downloader {
         ossClient.shutdown();
     }
 
+    @Override
+    public InputStream getInputStream(DownloadFile downloadFile) {
+        OSS ossClient = createOSSClient(qiwenFileConfig.getAliyun().getOss());
+        OSSObject ossObject = ossClient.getObject(qiwenFileConfig.getAliyun().getOss().getBucketName(),
+                downloadFile.getFileUrl().substring(1));
+        InputStream inputStream = ossObject.getObjectContent();
+        return inputStream;
+    }
+
     public OSS createOSSClient(AliyunOSS aliyunOSS) {
         String endpoint = aliyunOSS.getEndpoint();
         String accessKeyId = aliyunOSS.getAccessKeyId();

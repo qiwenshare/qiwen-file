@@ -256,16 +256,37 @@ public class FileOperation {
                     }
                     targetFile.createNewFile();
                     // 将压缩文件内容写入到这个文件中
-                    InputStream is = zipFile.getInputStream(entry);
-                    FileOutputStream fos = new FileOutputStream(targetFile);
-                    int len;
-                    byte[] buf = new byte[2048];
-                    while ((len = is.read(buf)) != -1) {
-                        fos.write(buf, 0, len);
+                    InputStream is = null;
+                    FileOutputStream fos = null;
+                    try {
+                        is = zipFile.getInputStream(entry);
+                        fos = new FileOutputStream(targetFile);
+                        int len;
+                        byte[] buf = new byte[2048];
+                        while ((len = is.read(buf)) != -1) {
+                            fos.write(buf, 0, len);
+                        }
+                    } catch (Exception e) {
+                        // 关流顺序，先打开的后关闭
+                        if (fos != null) {
+                            try {
+                                fos.close();
+                            } catch (Exception e1) {
+                                log.error("关闭流失败:" + e1);
+                            }
+
+                        }
+                        if (is != null) {
+                            try {
+                                is.close();
+                            } catch (Exception e2) {
+                                log.error("关闭流失败：" + e2);
+                            }
+
+                        }
+
                     }
-                    // 关流顺序，先打开的后关闭
-                    fos.close();
-                    is.close();
+
                 }
             }
         } catch (Exception e) {
@@ -297,7 +318,7 @@ public class FileOperation {
     /**
      * 解压rar
      *
-     * @param sourceFile        需要解压的文件
+     * @param sourceFile  需要解压的文件
      * @param destDirPath 目的路径
      * @throws Exception
      */

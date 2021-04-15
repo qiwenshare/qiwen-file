@@ -1,7 +1,11 @@
 package com.qiwenshare.file.service;
 
-import java.io.UnsupportedEncodingException;
+import java.io.*;
 import java.util.List;
+import java.util.zip.Adler32;
+import java.util.zip.CheckedOutputStream;
+import java.util.zip.ZipEntry;
+import java.util.zip.ZipOutputStream;
 
 import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
@@ -20,6 +24,7 @@ import com.qiwenshare.common.operation.download.Downloader;
 import com.qiwenshare.common.factory.FileOperationFactory;
 import com.qiwenshare.common.operation.upload.Uploader;
 
+import com.qiwenshare.common.util.PathUtil;
 import com.qiwenshare.file.api.IFiletransferService;
 
 import com.qiwenshare.common.config.QiwenFileConfig;
@@ -130,35 +135,101 @@ public class FiletransferService implements IFiletransferService {
     public void downloadFile(HttpServletResponse httpServletResponse, DownloadFileDTO downloadFileDTO) {
         UserFile userFile = userFileMapper.selectById(downloadFileDTO.getUserFileId());
 
-        String fileName = userFile.getFileName() + "." + userFile.getExtendName();
-        try {
-            fileName = new String(fileName.getBytes("utf-8"), "ISO-8859-1");
-        } catch (UnsupportedEncodingException e) {
-            e.printStackTrace();
-        }
-        httpServletResponse.setContentType("application/force-download");// 设置强制下载不打开
-        httpServletResponse.addHeader("Content-Disposition", "attachment;fileName=" + fileName);// 设置文件名
+        if (userFile.getIsDir() == 0) {
 
 
-        FileBean fileBean = fileMapper.selectById(userFile.getFileId());
-        Downloader downloader = null;
-        if (fileBean.getIsOSS() != null && fileBean.getIsOSS() == 1) {
-            downloader = aliyunOSSOperationFactory.getDownloader();
-        } else if (fileBean.getStorageType() == 0) {
-            downloader = localStorageOperationFactory.getDownloader();
-        } else if (fileBean.getStorageType() == 1) {
-            downloader = aliyunOSSOperationFactory.getDownloader();
-        } else if (fileBean.getStorageType() == 2) {
-            downloader = fastDFSOperationFactory.getDownloader();
-        }
-        if (downloader == null) {
-            log.error("下载失败，文件存储类型不支持下载，storageType:{}, isOSS:{}", fileBean.getStorageType(), fileBean.getIsOSS());
-            throw new UploadGeneralException("下载失败");
-        }
-        DownloadFile uploadFile = new DownloadFile();
-        uploadFile.setFileUrl(fileBean.getFileUrl());
+
+            FileBean fileBean = fileMapper.selectById(userFile.getFileId());
+            Downloader downloader = null;
+            if (fileBean.getIsOSS() != null && fileBean.getIsOSS() == 1) {
+                downloader = aliyunOSSOperationFactory.getDownloader();
+            } else if (fileBean.getStorageType() == 0) {
+                downloader = localStorageOperationFactory.getDownloader();
+            } else if (fileBean.getStorageType() == 1) {
+                downloader = aliyunOSSOperationFactory.getDownloader();
+            } else if (fileBean.getStorageType() == 2) {
+                downloader = fastDFSOperationFactory.getDownloader();
+            }
+            if (downloader == null) {
+                log.error("下载失败，文件存储类型不支持下载，storageType:{}, isOSS:{}", fileBean.getStorageType(), fileBean.getIsOSS());
+                throw new UploadGeneralException("下载失败");
+            }
+            DownloadFile uploadFile = new DownloadFile();
+            uploadFile.setFileUrl(fileBean.getFileUrl());
 //        uploadFile.setTimeStampName(fileBean.getTimeStampName());
-        downloader.download(httpServletResponse, uploadFile);
+            downloader.download(httpServletResponse, uploadFile);
+        } else {
+            LambdaQueryWrapper<UserFile> lambdaQueryWrapper = new LambdaQueryWrapper<>();
+            lambdaQueryWrapper.likeRight(UserFile::getFilePath, userFile.getFilePath())
+                    .eq(UserFile::getUserId, userFile.getUserId())
+                    .eq(UserFile::getIsDir, 0)
+                    .eq(UserFile::getDeleteFlag, 0);
+            List<UserFile> userFileList = userFileMapper.selectList(lambdaQueryWrapper);
+
+            String staticPath = PathUtil.getStaticPath();
+            String tempPath = staticPath + "temp" + File.separator;
+            File tempFile = new File(tempPath);
+            if (!tempFile.exists()) {
+                tempFile.mkdirs();
+            }
+
+            FileOutputStream f = null;
+            try {
+                f = new FileOutputStream(tempPath + userFile.getFileName() + ".zip");
+            } catch (FileNotFoundException e) {
+                e.printStackTrace();
+            }
+            CheckedOutputStream csum = new CheckedOutputStream(f, new Adler32());
+            ZipOutputStream zos = new ZipOutputStream(csum);
+            BufferedOutputStream out = new BufferedOutputStream(zos);
+
+            zos.setComment("A test of Java Zipping");
+            for (UserFile userFile1 : userFileList) {
+                FileBean fileBean = fileMapper.selectById(userFile.getFileId());
+                Downloader downloader = null;
+                if (fileBean.getIsOSS() != null && fileBean.getIsOSS() == 1) {
+                    downloader = aliyunOSSOperationFactory.getDownloader();
+                } else if (fileBean.getStorageType() == 0) {
+                    downloader = localStorageOperationFactory.getDownloader();
+                } else if (fileBean.getStorageType() == 1) {
+                    downloader = aliyunOSSOperationFactory.getDownloader();
+                } else if (fileBean.getStorageType() == 2) {
+                    downloader = fastDFSOperationFactory.getDownloader();
+                }
+                if (downloader == null) {
+                    log.error("下载失败，文件存储类型不支持下载，storageType:{}, isOSS:{}", fileBean.getStorageType(), fileBean.getIsOSS());
+                    throw new UploadGeneralException("下载失败");
+                }
+                DownloadFile downloadFile = new DownloadFile();
+                downloadFile.setFileUrl(fileBean.getFileUrl());
+                InputStream inputStream = downloader.getInputStream(downloadFile);
+                BufferedInputStream bis = new BufferedInputStream(inputStream);
+                try {
+                    zos.putNextEntry(new ZipEntry(userFile1.getFilePath()));
+
+                    byte[] buffer = new byte[1024];
+                    int i = bis.read(buffer);
+                    while (i != -1) {
+                        out.write(buffer, 0, i);
+                        i = bis.read(buffer);
+                    }
+                } catch (IOException e) {
+                    e.printStackTrace();
+                } finally {
+
+                    try {
+                        bis.close();
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                    }
+                    try {
+                        out.flush();
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                    }
+                }
+            }
+        }
     }
 
     @Override
