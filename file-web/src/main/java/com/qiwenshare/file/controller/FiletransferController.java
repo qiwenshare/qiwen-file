@@ -17,23 +17,27 @@ import com.qiwenshare.file.domain.UserBean;
 import com.qiwenshare.file.domain.UserFile;
 import com.qiwenshare.file.dto.DownloadFileDTO;
 import com.qiwenshare.file.dto.UploadFileDTO;
+import com.qiwenshare.file.dto.file.PreviewDTO;
 import com.qiwenshare.file.vo.file.UploadFileVo;
 import io.swagger.annotations.ApiImplicitParam;
 import io.swagger.annotations.ApiImplicitParams;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.util.StringUtils;
 import org.springframework.web.bind.annotation.*;
 
 import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import java.io.UnsupportedEncodingException;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+@Slf4j
 @Tag(name = "filetransfer", description = "该接口为文件传输接口，主要用来做文件的上传和下载")
 @RestController
 @RequestMapping("/filetransfer")
@@ -138,17 +142,51 @@ public class FiletransferController {
     @RequestMapping(value = "/downloadfile", method = RequestMethod.GET)
     public void downloadFile(HttpServletResponse httpServletResponse, DownloadFileDTO downloadFileDTO) {
         httpServletResponse.setContentType("application/force-download");// 设置强制下载不打开
+        UserFile userFile = userFileService.getById(downloadFileDTO.getUserFileId());
+        String fileName = userFile.getFileName() + "." + userFile.getExtendName();
+        try {
+            fileName = new String(fileName.getBytes("utf-8"), "ISO-8859-1");
+        } catch (UnsupportedEncodingException e) {
+            e.printStackTrace();
+        }
+
+        httpServletResponse.addHeader("Content-Disposition", "attachment;fileName=" + fileName);// 设置文件名
         filetransferService.downloadFile(httpServletResponse, downloadFileDTO);
     }
 
     @Operation(summary="预览文件", description="用于文件预览", tags = {"filetransfer"})
     @GetMapping("/preview")
-    public void preview(HttpServletResponse httpServletResponse,  DownloadFileDTO downloadFileDTO){
+    public void preview(HttpServletRequest httpServletRequest, HttpServletResponse httpServletResponse,  PreviewDTO previewDTO){
 
-        UserFile userFile = userFileService.getById(downloadFileDTO.getUserFileId());
+        UserFile userFile = userFileService.getById(previewDTO.getUserFileId());
+        FileBean fileBean = fileService.getById(userFile.getFileId());
         String mime= MimeUtils.getMime(userFile.getExtendName());
-        httpServletResponse.setContentType(mime);
-        filetransferService.downloadFile(httpServletResponse, downloadFileDTO);
+//        httpServletResponse.setContentType(mime);
+        httpServletResponse.setHeader("Content-Type", mime);
+        String rangeString = httpServletRequest.getHeader("Range");//如果是video标签发起的请求就不会为null
+        if (StringUtils.isNotEmpty(rangeString)) {
+            long range = Long.valueOf(rangeString.substring(rangeString.indexOf("=") + 1, rangeString.indexOf("-")));
+            httpServletResponse.setContentLength(Math.toIntExact(fileBean.getFileSize()));
+            httpServletResponse.setHeader("Content-Range", String.valueOf(range + (Math.toIntExact(fileBean.getFileSize()) - 1)));
+        }
+        httpServletResponse.setHeader("Accept-Ranges", "bytes");
+
+        String fileName = userFile.getFileName() + "." + userFile.getExtendName();
+        try {
+            fileName = new String(fileName.getBytes("utf-8"), "ISO-8859-1");
+        } catch (UnsupportedEncodingException e) {
+            e.printStackTrace();
+        }
+
+        httpServletResponse.addHeader("Content-Disposition", "fileName=" + fileName);// 设置文件名
+        DownloadFileDTO downloadFileDTO = new DownloadFileDTO();
+        downloadFileDTO.setUserFileId(previewDTO.getUserFileId());
+        try {
+            filetransferService.downloadFile(httpServletResponse, downloadFileDTO);
+        }catch (Exception e){
+            //org.apache.catalina.connector.ClientAbortException: java.io.IOException: 你的主机中的软件中止了一个已建立的连接。
+            log.error("该异常忽略不做处理");
+        }
 
     }
 

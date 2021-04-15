@@ -64,8 +64,8 @@ public class MimeUtils {
 		map.put("hqx","application/mac-binhex40");
 		map.put("hta","application/hta");
 		map.put("htc","text/x-component");
-		map.put("htm","text/html");
-		map.put("html","text/html");
+		map.put("htm","text/plain");
+		map.put("html","text/plain");
 		map.put("htt","text/webviewhtml");
 		map.put("ico","image/x-icon");
 		map.put("ief","image/ief");
@@ -96,6 +96,7 @@ public class MimeUtils {
 		map.put("movie","video/x-sgi-movie");
 		map.put("mp2","video/mpeg");
 		map.put("mp3","audio/mpeg");
+		map.put("mp4","video/mp4");
 		map.put("mpa","video/mpeg");
 		map.put("mpe","video/mpeg");
 		map.put("mpeg","video/mpeg");

@@ -4,12 +4,15 @@ import com.github.tobato.fastdfs.proto.storage.DownloadByteArray;
 import com.github.tobato.fastdfs.service.FastFileStorageClient;
 import com.qiwenshare.common.operation.download.domain.DownloadFile;
 import com.qiwenshare.common.operation.download.Downloader;
+import com.sun.xml.internal.messaging.saaj.util.ByteInputStream;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import javax.servlet.ServletOutputStream;
 import javax.servlet.http.HttpServletResponse;
+import java.io.ByteArrayInputStream;
 import java.io.IOException;
+import java.io.InputStream;
 
 @Component
 public class FastDFSDownloader extends Downloader {
@@ -22,9 +25,6 @@ public class FastDFSDownloader extends Downloader {
         DownloadByteArray downloadByteArray = new DownloadByteArray();
         byte[] bytes = fastFileStorageClient.downloadFile(group, path, downloadByteArray);
 
-//        // 这里只是为了整合fastdfs，所以写死了文件格式。需要在上传的时候保存文件名。下载的时候使用对应的格式
-//        response.setHeader("Content-disposition", "attachment;filename=" + URLEncoder.encode("sb.xlsx", "UTF-8"));
-//        response.setCharacterEncoding("UTF-8");
         ServletOutputStream outputStream = null;
         try {
             outputStream = httpServletResponse.getOutputStream();
@@ -41,5 +41,15 @@ public class FastDFSDownloader extends Downloader {
                 e.printStackTrace();
             }
         }
+    }
+
+    @Override
+    public InputStream getInputStream(DownloadFile downloadFile) {
+        String group = downloadFile.getFileUrl().substring(0, downloadFile.getFileUrl().indexOf("/"));
+        String path = downloadFile.getFileUrl().substring(downloadFile.getFileUrl().indexOf("/") + 1);
+        DownloadByteArray downloadByteArray = new DownloadByteArray();
+        byte[] bytes = fastFileStorageClient.downloadFile(group, path, downloadByteArray);
+        InputStream inputStream = new ByteArrayInputStream(bytes);
+        return inputStream;
     }
 }
