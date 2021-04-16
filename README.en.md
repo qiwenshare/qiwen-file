@@ -41,7 +41,7 @@ The software follows the MIT open source protocol
 ### File operations
 
 1. Users can add, delete and modify the directory structure
-2. Provide drag and drop to upload and downloading of files.
+2. Provide drag and drop to upload and downloading of files, support screenshot paste directly upload pictures
 3. Support online decompression of ZIP files and RAR files
 4. Support files and directories to move and copy
 5. Classified view of multiple file formats
@@ -52,7 +52,9 @@ The software follows the MIT open source protocol
 10. Support file renaming
 11. Display file storage and total capacity in real time
 12. Support ElasticSearch file search
-13. ...
+13. Support to share files with others and view the list of files you have shared
+14. Provide picture online preview, video online preview, audio online preview, PDF, JSON, TXT and other commonly used text file online preview, support Office online preview
+15. ……
 
 ## The source address
 
@@ -143,15 +145,26 @@ Manual resizing of ICONS is supported in grid mode and timeline mode:
 
 ![文件在线解压缩](https://images.gitee.com/uploads/images/2021/0325/123823_aba673e8_1837873.png)
 
-### 7. File upload & Drag and drop to upload
+### 7. There are three ways to upload files
+
+#### 7.1 File fragmentation upload
 
 文件采用**分片上传**，集成了[simiple-uplader](https://github.com/simple-uploader/Uploader/blob/develop/README_zh-CN.md#uploader)的文件**秒传**、**断点续传**功能。
-![文件上传](https://images.gitee.com/uploads/images/2020/1127/211713_87fb01b2_947714.png '屏幕截图.png')
+![文件上传](https://images.gitee.com/uploads/images/2021/0325/144103_08f4902b_1837873.png)
+
+#### 7.2 Drag and drop uploads
+
+![文件拖拽上传](https://images.gitee.com/uploads/images/2021/0416/143326_1353ea6a_1837873.gif)
+
+#### 7.3 Paste and upload the screenshot
+
+After taking the screenshot directly with any screenshot tool, use Ctrl + V to paste the image in the drag and drop area and click Upload to upload the image.
+
+![截图粘贴上传](https://images.gitee.com/uploads/images/2021/0416/143216_c7be7797_1837873.png)
 
 ### 8. Document Recycle Bin
 
 ![文件回收站](https://images.gitee.com/uploads/images/2021/0325/123843_f8fa15bf_1837873.png)
-![文件拖拽上传](https://images.gitee.com/uploads/images/2021/0409/121635_6d27831b_1837873.gif)
 
 ### 9. Files are shared individually and in batches
 
@@ -185,6 +198,16 @@ Support quick copy of the sharing link and extraction code in the list, and mark
 
 ![我的分享](https://images.gitee.com/uploads/images/2021/0412/095142_6d543701_1837873.png)
 
+### 11. Video Preview Online
+
+When the file type is video, click to open the preview window and display the playlist. It supports fast forward, backward, pause, double speed playback, full-screen playback, download video and fold playlist.
+
+![视频在线预览](https://images.gitee.com/uploads/images/2021/0416/143120_c1ab2d82_1837873.png)
+
+### 12. Audio online playback
+
+![音频在线播放](https://images.gitee.com/uploads/images/2021/0416/142347_1a09dd57_1837873.png)
+
 ## Contact us
 
 If you have any questions, please join the QQ group consultation
@@ -196,6 +219,12 @@ If you have any questions, please join the QQ group consultation
     <img src="https://images.gitee.com/uploads/images/2021/0325/133740_557ca1d8_1837873.png"/>
 </div>
 
+## Thanks
+
+The development of this project cannot be achieved without the support of other excellent open source projects. I would like to thank the following open source projects:
+
+- [vue-simple-uploader](https://github.com/simple-uploader/vue-uploader/blob/master/README_zh-CN.md)：A [simple-uploader.js](https://github.com/simple-uploader/Uploader/blob/develop/README_zh-CN.md) based on the development of Vue.js for the sharding upload plug-in
+- [vue-video-player](https://github.com/surmon-china/vue-video-player)：A video player component based on [video.js](https://docs.videojs.com/) development
 
 ## Participate in the contribution
 

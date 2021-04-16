@@ -41,7 +41,7 @@
 ### 文件操作
 
 1. 用户可对目录结构进行增加，删除，修改
-2. 提供文件的拖拽上传，下载，
+2. 提供文件的拖拽上传，下载，支持截图粘贴直接上传图片
 3. 支持对 zip 文件和 rar 文件的在线解压缩
 4. 支持文件和目录的移动和复制
 5. 多文件格式分类查看
@@ -52,7 +52,9 @@
 10. 支持文件重命名
 11. 可实时显示文件存储占用情况及总占用容量
 12. 支持 ElasticSearch 文件搜索
-13. .……
+13. 支持将文件分享给他人，并查看自己已分享过的文件列表
+14. 提供图片在线预览、视频在线预览、音频在线预览、PDF、JSON、TXT 等常用文本文件在线预览，支持 office 在线预览
+15. ……
 
 ## 源码地址
 
@@ -63,13 +65,13 @@
 
 ## 网络拓扑图
 
-![输入图片说明](https://images.gitee.com/uploads/images/2021/0324/225520_d55b109e_947714.png '屏幕截图.png')
+![网络拓扑图](https://images.gitee.com/uploads/images/2021/0324/225520_d55b109e_947714.png '屏幕截图.png')
 
 ## 软件架构
 
 该项目采用前后端分离的方式进行开发和部署,主要用到以下关键技术
 
-**前台**：Element UI、Vue CLI@3、Node.js、Webpack
+**前端**：Element UI、Vue CLI@3、Node.js、Webpack
 
 **后台**：Spring Boot、MyBatis、JPA、JWT
 
@@ -86,6 +88,7 @@
 ## 部署说明
 
 请移步奇文社区查看 [手把手教你部署奇文网盘](https://www.qiwenshare.com/essay/detail/169)
+
 ## 部分功能截图
 
 ### 1. 网盘主页
@@ -142,11 +145,22 @@
 
 ![文件在线解压缩](https://images.gitee.com/uploads/images/2021/0325/123823_aba673e8_1837873.png)
 
-### 7. 文件上传&拖拽上传
+### 7. 文件上传三种方式
+
+#### 7.1 文件分片上传
 
 文件采用**分片上传**，集成了[simiple-uplader](https://github.com/simple-uploader/Uploader/blob/develop/README_zh-CN.md#uploader)的文件**秒传**、**断点续传**功能。
-![文件上传](https://images.gitee.com/uploads/images/2020/1127/211713_87fb01b2_947714.png '屏幕截图.png')
-![文件拖拽上传](https://images.gitee.com/uploads/images/2021/0409/121635_6d27831b_1837873.gif)
+![文件上传](https://images.gitee.com/uploads/images/2021/0325/144103_08f4902b_1837873.png)
+
+#### 7.2 拖拽上传
+
+![文件拖拽上传](https://images.gitee.com/uploads/images/2021/0416/143326_1353ea6a_1837873.gif)
+
+#### 7.3 截图粘贴上传
+
+直接使用任何截图工具截图后，在拖拽区域使用 Ctrl + V 粘贴图片，点击上传图片即可上传。
+
+![截图粘贴上传](https://images.gitee.com/uploads/images/2021/0416/143216_c7be7797_1837873.png)
 
 ### 8. 文件回收站
 
@@ -184,17 +198,33 @@
 
 ![我的分享](https://images.gitee.com/uploads/images/2021/0412/095142_6d543701_1837873.png)
 
+### 11. 视频在线预览
+
+文件类型为视频时，点击即可打开预览窗口，展示播放列表，支持快进、后退、暂停、倍速播放、全屏播放、下载视频和折叠播放列表。
+
+![视频在线预览](https://images.gitee.com/uploads/images/2021/0416/143120_c1ab2d82_1837873.png)
+
+### 12. 音频在线播放
+
+![音频在线播放](https://images.gitee.com/uploads/images/2021/0416/142347_1a09dd57_1837873.png)
+
 ## 联系我们
 
 如您有问题，请加入 QQ 群咨询
 
-**QQ交流群** 和 **微信公众号** 请扫描下面二维码
+**QQ 交流群** 和 **微信公众号** 请扫描下面二维码
 
 <div style="dispaly: flex;">
     <img src="https://images.gitee.com/uploads/images/2021/0325/133721_7c174ea5_1837873.png"/>
     <img src="https://images.gitee.com/uploads/images/2021/0325/133740_557ca1d8_1837873.png"/>
 </div>
 
+## 鸣谢
+
+此项目的开发离不开其他优秀开源项目的支持，在此感谢以下开源项目：
+
+- [vue-simple-uploader](https://github.com/simple-uploader/vue-uploader/blob/master/README_zh-CN.md)：一款基于 [simple-uploader.js](https://github.com/simple-uploader/Uploader/blob/develop/README_zh-CN.md) 开发的适用于 Vue.js 的分片上传插件
+- [vue-video-player](https://github.com/surmon-china/vue-video-player)：一款基于 [video.js](https://docs.videojs.com/) 开发的视频播放组件
 
 ## 参与贡献
 
