@@ -218,6 +218,12 @@ If you have any questions, please join the QQ group consultation
     <img src="https://images.gitee.com/uploads/images/2021/0325/133721_7c174ea5_1837873.png"/>
     <img src="https://images.gitee.com/uploads/images/2021/0325/133740_557ca1d8_1837873.png"/>
 </div>
+# Thanks
+
+The development of this project cannot be achieved without the support of other excellent open source projects. I would like to thank the following open source projects:
+
+- [vue-simple-uploader](https://github.com/simple-uploader/vue-uploader/blob/master/README_zh-CN.md)：A [simple-uploader.js](https://github.com/simple-uploader/Uploader/blob/develop/README_zh-CN.md) based on the development of Vue.js for the sharding upload plug-in
+- [vue-video-player](https://github.com/surmon-china/vue-video-player)：A video player component based on [video.js](https://docs.videojs.com/) development
 
 ## Participate in the contribution
 
