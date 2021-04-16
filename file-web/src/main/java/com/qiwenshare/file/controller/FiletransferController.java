@@ -143,7 +143,13 @@ public class FiletransferController {
     public void downloadFile(HttpServletResponse httpServletResponse, DownloadFileDTO downloadFileDTO) {
         httpServletResponse.setContentType("application/force-download");// 设置强制下载不打开
         UserFile userFile = userFileService.getById(downloadFileDTO.getUserFileId());
-        String fileName = userFile.getFileName() + "." + userFile.getExtendName();
+        String fileName = "";
+        if (userFile.getIsDir() == 1) {
+            fileName = userFile.getFileName() + ".zip";
+        } else {
+            fileName = userFile.getFileName() + "." + userFile.getExtendName();
+
+        }
         try {
             fileName = new String(fileName.getBytes("utf-8"), "ISO-8859-1");
         } catch (UnsupportedEncodingException e) {
