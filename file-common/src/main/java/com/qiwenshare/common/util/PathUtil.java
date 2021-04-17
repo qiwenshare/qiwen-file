@@ -73,7 +73,7 @@ public class PathUtil {
     }
 
     public static void main(String[] args) {
-        String path = "aaa/bbb/ccc";
+        String path = "aaa/bbb/ccc/";
         System.out.println(getParentPath(path));
         String fileName = path.substring(path.lastIndexOf("/"));
         System.out.println(fileName);

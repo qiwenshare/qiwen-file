@@ -29,10 +29,12 @@ public class TreeNode {
      */
     private String state = "closed";
 
+    private String filePath = "/";
+
     /**
      * 属性集合
      */
-    private Map<String, String> attributes = new HashMap<>();
+//    private Map<String, String> attributes = new HashMap<>();
     /**
      * 子节点列表
      */
