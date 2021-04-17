@@ -1,5 +1,9 @@
 package com.qiwenshare.common.util;
 
+import cn.hutool.captcha.generator.RandomGenerator;
+import cn.hutool.core.util.RandomUtil;
+import org.apache.commons.lang3.RandomUtils;
+
 import java.text.DateFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
@@ -109,6 +113,15 @@ public class DateUtil {
             return true;
         }
         return false;
+    }
+
+    public static long getTime() {
+        long time = new Date().getTime();
+        return time;
+    }
+
+    public static void main(String[] args) {
+        System.out.println(RandomUtil.randomInt(6));
     }
 
 }

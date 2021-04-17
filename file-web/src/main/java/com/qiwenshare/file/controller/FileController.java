@@ -15,10 +15,7 @@ import com.qiwenshare.common.operation.FileOperation;
 import com.qiwenshare.common.util.FileUtil;
 import com.qiwenshare.common.util.PathUtil;
 import com.qiwenshare.file.anno.MyLog;
-import com.qiwenshare.file.api.IFileService;
-import com.qiwenshare.file.api.IRecoveryFileService;
-import com.qiwenshare.file.api.IUserFileService;
-import com.qiwenshare.file.api.IUserService;
+import com.qiwenshare.file.api.*;
 import com.qiwenshare.common.config.QiwenFileConfig;
 import com.qiwenshare.file.config.es.FileSearch;
 import com.qiwenshare.file.domain.*;
@@ -59,18 +56,15 @@ public class FileController {
     IUserService userService;
     @Resource
     IUserFileService userFileService;
-    @Resource
-    IRecoveryFileService recoveryFileService;
+
+    @Autowired
+    private ElasticsearchRestTemplate elasticsearchRestTemplate;
 
     @Resource
     QiwenFileConfig qiwenFileConfig;
     public static Executor executor = Executors.newFixedThreadPool(20);
 
     public static final String CURRENT_MODULE = "文件接口";
-
-    @Autowired
-    private ElasticsearchRestTemplate elasticsearchRestTemplate;
-    public static long treeid = 0;
 
 
     @Operation(summary = "创建文件", description = "目录(文件夹)的创建", tags = {"file"})
@@ -518,23 +512,20 @@ public class FileController {
     @ResponseBody
     public RestResult<TreeNode> getFileTree(@RequestHeader("token") String token) {
         RestResult<TreeNode> result = new RestResult<TreeNode>();
-        UserFile userFile = new UserFile();
+
         UserBean sessionUserBean = userService.getUserBeanByToken(token);
         if (sessionUserBean == null) {
             throw new NotLoginException();
         }
-        if (qiwenFileConfig.isShareMode()){
-            userFile.setUserId(2L);
-        }else{
-            userFile.setUserId(sessionUserBean.getUserId());
-        }
 
-        List<UserFile> filePathList = userFileService.selectFilePathTreeByUserId(sessionUserBean.getUserId());
+        List<UserFile> userFileList = userFileService.selectFilePathTreeByUserId(sessionUserBean.getUserId());
         TreeNode resultTreeNode = new TreeNode();
         resultTreeNode.setLabel("/");
-
-        for (int i = 0; i < filePathList.size(); i++){
-            String filePath = filePathList.get(i).getFilePath() + filePathList.get(i).getFileName() + "/";
+        resultTreeNode.setId(0L);
+        long id = 1;
+        for (int i = 0; i < userFileList.size(); i++){
+            UserFile userFile = userFileList.get(i);
+            String filePath = userFile.getFilePath() + userFile.getFileName() + "/";
 
             Queue<String> queue = new LinkedList<>();
 
@@ -548,17 +539,26 @@ public class FileController {
             if (queue.size() == 0){
                 continue;
             }
-            resultTreeNode = insertTreeNode(resultTreeNode,"/", queue);
+
+            resultTreeNode = insertTreeNode(resultTreeNode, id++, "/" , queue);
 
 
         }
+        List<TreeNode> treeNodeList = resultTreeNode.getChildren();
+        Collections.sort(treeNodeList, new Comparator<TreeNode>() {
+            @Override
+            public int compare(TreeNode o1, TreeNode o2) {
+                long i = o1.getId() - o2.getId();
+                return (int) i;
+            }
+        });
         result.setSuccess(true);
         result.setData(resultTreeNode);
         return result;
 
     }
 
-    public TreeNode insertTreeNode(TreeNode treeNode, String filePath, Queue<String> nodeNameQueue){
+    public TreeNode insertTreeNode(TreeNode treeNode, long id,  String filePath, Queue<String> nodeNameQueue){
 
         List<TreeNode> childrenTreeNodes = treeNode.getChildren();
         String currentNodeName = nodeNameQueue.peek();
@@ -566,18 +566,15 @@ public class FileController {
             return treeNode;
         }
 
-        Map<String, String> map = new HashMap<>();
         filePath = filePath + currentNodeName + "/";
-        map.put("filePath", filePath);
 
         if (!isExistPath(childrenTreeNodes, currentNodeName)){  //1、判断有没有该子节点，如果没有则插入
             //插入
             TreeNode resultTreeNode = new TreeNode();
 
-
-            resultTreeNode.setAttributes(map);
+            resultTreeNode.setFilePath(filePath);
             resultTreeNode.setLabel(nodeNameQueue.poll());
-            resultTreeNode.setId(treeid++);
+            resultTreeNode.setId(++id);
 
             childrenTreeNodes.add(resultTreeNode);
 
@@ -590,7 +587,7 @@ public class FileController {
 
                 TreeNode childrenTreeNode = childrenTreeNodes.get(i);
                 if (currentNodeName.equals(childrenTreeNode.getLabel())){
-                    childrenTreeNode = insertTreeNode(childrenTreeNode, filePath, nodeNameQueue);
+                    childrenTreeNode = insertTreeNode(childrenTreeNode, id * 10, filePath, nodeNameQueue);
                     childrenTreeNodes.remove(i);
                     childrenTreeNodes.add(childrenTreeNode);
                     treeNode.setChildren(childrenTreeNodes);

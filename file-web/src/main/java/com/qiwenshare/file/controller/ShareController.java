@@ -9,6 +9,7 @@ import com.qiwenshare.common.util.DateUtil;
 import com.qiwenshare.common.result.RestResult;
 import com.qiwenshare.file.anno.MyLog;
 import com.qiwenshare.file.api.*;
+import com.qiwenshare.file.component.FileDealComp;
 import com.qiwenshare.file.domain.Share;
 import com.qiwenshare.file.domain.ShareFile;
 import com.qiwenshare.file.domain.UserBean;
@@ -45,6 +46,8 @@ public class ShareController {
     IFileService fileService;
     @Resource
     IUserFileService userFileService;
+    @Resource
+    FileDealComp fileDealComp;
 
     @Operation(summary = "分享文件", description = "分享文件统一接口", tags = {"share"})
     @PostMapping(value = "/sharefile")
@@ -117,7 +120,7 @@ public class ShareController {
         for (ShareFile shareFile : fileList) {
             UserFile userFile = userFileService.getById(shareFile.getUserFileId());
             String fileName = userFile.getFileName();
-            String savefileName = userFileService.getRepeatFileName(userFile, savefilePath);
+            String savefileName = fileDealComp.getRepeatFileName(userFile, savefilePath);
 
             if (userFile.getIsDir() == 1) {
                 List<UserFile> userfileList = userFileService.selectFileListLikeRightFilePath(userFile.getFilePath() + userFile.getFileName(), userFile.getUserId());
@@ -158,7 +161,6 @@ public class ShareController {
             throw new NotLoginException();
         }
         List<ShareListVO> shareList = shareService.selectShareList(shareListDTO, sessionUserBean.getUserId());
-        LambdaQueryWrapper<ShareFile> lambdaQueryWrapper = new LambdaQueryWrapper<>();
 
         int total = shareService.selectShareListTotalCount(shareListDTO, sessionUserBean.getUserId());
 

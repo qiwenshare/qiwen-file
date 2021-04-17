@@ -1,5 +1,6 @@
 package com.qiwenshare.file.service;
 
+import cn.hutool.core.util.RandomUtil;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
@@ -178,12 +179,11 @@ public class UserFileService  extends ServiceImpl<UserFileMapper, UserFile> impl
 
     @Override
     public void deleteUserFile(Long userFileId, Long sessionUserId) {
-//        UserFile userFile
         UserFile userFile = userFileMapper.selectById(userFileId);
         String uuid = UUID.randomUUID().toString();
         if (userFile.getIsDir() == 1) {
             LambdaUpdateWrapper<UserFile> userFileLambdaUpdateWrapper = new LambdaUpdateWrapper<UserFile>();
-            userFileLambdaUpdateWrapper.set(UserFile::getDeleteFlag, 1)
+            userFileLambdaUpdateWrapper.set(UserFile::getDeleteFlag, RandomUtil.randomInt(10))
                     .set(UserFile::getDeleteBatchNum, uuid)
                     .set(UserFile::getDeleteTime, DateUtil.getCurrentTime())
                     .eq(UserFile::getUserFileId, userFileId);
@@ -198,7 +198,7 @@ public class UserFileService  extends ServiceImpl<UserFileMapper, UserFile> impl
             FileBean fileBean = fileMapper.selectById(userFileTemp.getFileId());
 
             LambdaUpdateWrapper<UserFile> userFileLambdaUpdateWrapper = new LambdaUpdateWrapper<>();
-            userFileLambdaUpdateWrapper.set(UserFile::getDeleteFlag, 1)
+            userFileLambdaUpdateWrapper.set(UserFile::getDeleteFlag, RandomUtil.randomInt(10))
                     .set(UserFile::getDeleteTime, DateUtil.getCurrentTime())
                     .set(UserFile::getDeleteBatchNum, uuid)
                     .eq(UserFile::getUserFileId, userFileTemp.getUserFileId());
@@ -216,46 +216,6 @@ public class UserFileService  extends ServiceImpl<UserFileMapper, UserFile> impl
 
     }
 
-    @Override
-    public String getRepeatFileName(UserFile userFile, String savefilePath) {
-        String fileName = userFile.getFileName();
-        String extendName = userFile.getExtendName();
-        Integer deleteFlag = userFile.getDeleteFlag();
-        Long userId = userFile.getUserId();
-        LambdaQueryWrapper<UserFile> lambdaQueryWrapper = new LambdaQueryWrapper<>();
-        lambdaQueryWrapper.eq(UserFile::getFilePath, savefilePath)
-                .eq(UserFile::getDeleteFlag, deleteFlag)
-                .eq(UserFile::getUserId, userId)
-                .eq(UserFile::getFileName, fileName);
-        if (userFile.getIsDir() == 0) {
-            lambdaQueryWrapper.eq(UserFile::getExtendName, extendName);
-        }
-        List<UserFile> list = userFileMapper.selectList(lambdaQueryWrapper);
-        if (list == null) {
-            return fileName;
-        }
-        if (list.isEmpty()) {
-            return fileName;
-        }
-        int i = 0;
-
-        while (list != null && !list.isEmpty()) {
-            i++;
-            LambdaQueryWrapper<UserFile> lambdaQueryWrapper1 = new LambdaQueryWrapper<>();
-            lambdaQueryWrapper1.eq(UserFile::getFilePath, savefilePath)
-                    .eq(UserFile::getDeleteFlag, deleteFlag)
-                    .eq(UserFile::getUserId, userId)
-                    .eq(UserFile::getFileName, fileName + "(" + i + ")");
-            if (userFile.getIsDir() == 0) {
-                lambdaQueryWrapper1.eq(UserFile::getExtendName, extendName);
-            }
-            list = userFileMapper.selectList(lambdaQueryWrapper1);
-        }
-        
-        return fileName + "(" + i + ")";
-
-    }
-
     private void updateFileDeleteStateByFilePath(String filePath, String deleteBatchNum, Long userId) {
         new Thread(()->{
             List<UserFile> fileList = selectFileListLikeRightFilePath(filePath, userId);
@@ -266,7 +226,7 @@ public class UserFileService  extends ServiceImpl<UserFileMapper, UserFile> impl
                     public void run() {
                         //标记删除标志
                         LambdaUpdateWrapper<UserFile> userFileLambdaUpdateWrapper1 = new LambdaUpdateWrapper<>();
-                        userFileLambdaUpdateWrapper1.set(UserFile::getDeleteFlag, 1)
+                        userFileLambdaUpdateWrapper1.set(UserFile::getDeleteFlag, RandomUtil.randomInt(10))
                                 .set(UserFile::getDeleteTime, DateUtil.getCurrentTime())
                                 .set(UserFile::getDeleteBatchNum, deleteBatchNum)
                                 .eq(UserFile::getUserFileId, userFileTemp.getUserFileId())
