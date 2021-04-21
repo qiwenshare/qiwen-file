@@ -8,6 +8,7 @@ import com.qiwenshare.common.result.RestResult;
 import com.qiwenshare.common.util.JjwtUtil;
 import com.qiwenshare.common.util.PasswordUtil;
 import com.qiwenshare.file.api.IUserService;
+import com.qiwenshare.file.component.UserDealComp;
 import com.qiwenshare.file.controller.UserController;
 import com.qiwenshare.file.domain.UserBean;
 import com.qiwenshare.file.mapper.UserMapper;
@@ -29,15 +30,20 @@ public class UserService extends ServiceImpl<UserMapper, UserBean> implements IU
 
     @Resource
     UserMapper userMapper;
+    @Resource
+    UserDealComp userDealComp;
 
     @Override
     public UserBean getUserBeanByToken(String token){
         Claims c = null;
+        if (StringUtils.isEmpty(token)) {
+            return null;
+        }
+        token = token.replace("Bearer ", "");
         try {
-            log.debug("token:" + token);
             c = JjwtUtil.parseJWT(token);
         } catch (Exception e) {
-            log.error("解码异常");
+            log.error("解码异常:" + e);
             return null;
         }
         if (c == null) {
@@ -111,13 +117,13 @@ public class UserService extends ServiceImpl<UserMapper, UserBean> implements IU
         if (userBean.getUsername() == null || "".equals(userBean.getUsername())){
             return RestResult.fail().message("用户名不能为空！");
         }
-        if (isUserNameExit(userBean)) {
+        if (userDealComp.isUserNameExit(userBean)) {
             return RestResult.fail().message("用户名已存在！");
         }
-        if (!isPhoneFormatRight(userBean.getTelephone())){
+        if (!userDealComp.isPhoneFormatRight(userBean.getTelephone())){
             return RestResult.fail().message("手机号格式不正确！");
         }
-        if (isPhoneExit(userBean)) {
+        if (userDealComp.isPhoneExit(userBean)) {
             return RestResult.fail().message("手机号已存在！");
         }
 
@@ -131,9 +137,6 @@ public class UserService extends ServiceImpl<UserMapper, UserBean> implements IU
         userBean.setRegisterTime(DateUtil.getCurrentTime());
         int result = userMapper.insertUser(userBean);
         userMapper.insertUserRole(userBean.getUserId(), 2);
-//        UserImageBean userImageBean = new UserImageBean();
-//        userImageBean.setImageUrl("");
-//        userImageBean.setUserId(userBean.getUserId());
         if (result == 1) {
             return RestResult.success();
         } else {
@@ -143,46 +146,6 @@ public class UserService extends ServiceImpl<UserMapper, UserBean> implements IU
 
 
 
-  /**
-     * 检测用户名是否存在
-     *
-     * @param userBean
-     */
-    private Boolean isUserNameExit(UserBean userBean) {
-        LambdaQueryWrapper<UserBean> lambdaQueryWrapper = new LambdaQueryWrapper<>();
-        lambdaQueryWrapper.eq(UserBean::getUsername, userBean.getUsername());
-        List<UserBean> list = userMapper.selectList(lambdaQueryWrapper);
-        if (list != null && !list.isEmpty()) {
-            return true;
-        } else {
-            return false;
-        }
-    }
-
-    /**
-     * 检测手机号是否存在
-     *
-     * @param userBean
-     * @return
-     */
-    private Boolean isPhoneExit(UserBean userBean) {
-
-        LambdaQueryWrapper<UserBean> lambdaQueryWrapper = new LambdaQueryWrapper<>();
-        lambdaQueryWrapper.eq(UserBean::getTelephone, userBean.getTelephone());
-        List<UserBean> list = userMapper.selectList(lambdaQueryWrapper);
-        if (list != null && !list.isEmpty()) {
-            return true;
-        } else {
-            return false;
-        }
-
-    }
-
-    private Boolean isPhoneFormatRight(String phone){
-        String regex = "^1\\d{10}";
-        boolean isRight = Pattern.matches(regex, phone);
-        return isRight;
-    }
 
 
     /**

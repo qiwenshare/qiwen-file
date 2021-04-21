@@ -24,11 +24,7 @@ import javax.annotation.Resource;
 import java.util.HashMap;
 import java.util.Map;
 
-/**
- * 用户控制类
- *
- * @author ma116
- */
+
 @Tag(name = "user", description = "该接口为用户接口，主要做用户登录，注册和校验token")
 @RestController
 @Slf4j
@@ -44,11 +40,7 @@ public class UserController {
 
     public static Map<String, String> verificationCodeMap = new HashMap<>();
 
-    public static final int TEXT = 4;
 
-    /**
-     * 当前模块
-     */
     public static final String CURRENT_MODULE = "用户管理";
 
 
@@ -93,7 +85,7 @@ public class UserController {
 
             UserLoginVo userLoginVo = new UserLoginVo();
             BeanUtil.copyProperties(saveUserBean, userLoginVo);
-            userLoginVo.setToken(jwt);
+            userLoginVo.setToken("Bearer " + jwt);
             restResult.setData(userLoginVo);
             restResult.setSuccess(true);
         } else {
