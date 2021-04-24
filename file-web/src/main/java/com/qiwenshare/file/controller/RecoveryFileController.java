@@ -88,7 +88,7 @@ public class RecoveryFileController {
             throw new NotLoginException();
         }
         RestResult<List<RecoveryFileListVo>> restResult = new RestResult<List<RecoveryFileListVo>>();
-        List<RecoveryFileListVo> recoveryFileList = recoveryFileService.selectRecoveryFileList();
+        List<RecoveryFileListVo> recoveryFileList = recoveryFileService.selectRecoveryFileList(sessionUserBean.getUserId());
         restResult.setData(recoveryFileList);
         restResult.setSuccess(true);
 
