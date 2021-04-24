@@ -12,6 +12,8 @@ import java.io.*;
 import java.nio.charset.Charset;
 import java.util.*;
 
+import java.util.concurrent.Executor;
+import java.util.concurrent.Executors;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipFile;
 
@@ -21,7 +23,7 @@ import java.util.zip.ZipFile;
 @Slf4j
 public class FileOperation {
     private static Logger logger = LoggerFactory.getLogger(FileOperation.class);
-
+    private static Executor executor = Executors.newFixedThreadPool(20);
     /**
      * 创建文件
      *
@@ -301,15 +303,21 @@ public class FileOperation {
             }
         }
         for (String zipPath : fileEntryNameList) {
-            if (FileUtil.isImageFile(FileUtil.getFileExtendName(zipPath))) {
-                File file = new File(destDirPath + zipPath);
-                File minFile = new File(destDirPath + FileUtil.getFileNameNotExtend(zipPath) + "_min." + FileUtil.getFileExtendName(zipPath));
-                try {
-                    ImageOperation.thumbnailsImage(file, minFile, 300);
-                } catch (IOException e) {
-                    e.printStackTrace();
+            executor.execute(new Runnable() {
+                @Override
+                public void run() {
+                    if (FileUtil.isImageFile(FileUtil.getFileExtendName(zipPath))) {
+                        File file = new File(destDirPath + zipPath);
+                        File minFile = new File(destDirPath + FileUtil.getFileNameNotExtend(zipPath) + "_min." + FileUtil.getFileExtendName(zipPath));
+                        try {
+                            ImageOperation.thumbnailsImage(file, minFile, 300);
+                        } catch (IOException e) {
+                            e.printStackTrace();
+                        }
+                    }
                 }
-            }
+            });
+
         }
         List<String> res = new ArrayList<>(set);
         return res;
@@ -377,6 +385,25 @@ public class FileOperation {
                     log.error("关闭流失败：" + e.getMessage());
                 }
             }
+        }
+
+
+        for (String zipPath : set) {
+            executor.execute(new Runnable() {
+                @Override
+                public void run() {
+                    if (FileUtil.isImageFile(FileUtil.getFileExtendName(zipPath))) {
+                        File file = new File(destDirPath + zipPath);
+                        File minFile = new File(destDirPath + FileUtil.getFileNameNotExtend(zipPath) + "_min." + FileUtil.getFileExtendName(zipPath));
+                        try {
+                            ImageOperation.thumbnailsImage(file, minFile, 300);
+                        } catch (IOException e) {
+                            e.printStackTrace();
+                        }
+                    }
+                }
+            });
+
         }
         List<String> res = new ArrayList<>(set);
         return res;

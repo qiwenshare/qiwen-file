@@ -105,12 +105,6 @@ public class FiletransferController {
 
     }
 
-    /**
-     * 上传文件
-     *
-     * @param request
-     * @return
-     */
     @Operation(summary = "上传文件", description = "真正的上传文件接口", tags = {"filetransfer"})
     @RequestMapping(value = "/uploadfile", method = RequestMethod.POST)
     @MyLog(operation = "上传文件", module = CURRENT_MODULE)
@@ -132,11 +126,7 @@ public class FiletransferController {
 
     }
 
-    /**
-     * 下载文件
-     *
-     * @return
-     */
+
     @Operation(summary = "下载文件", description = "下载文件接口", tags = {"filetransfer"})
     @MyLog(operation = "下载文件", module = CURRENT_MODULE)
     @RequestMapping(value = "/downloadfile", method = RequestMethod.GET)
@@ -167,7 +157,6 @@ public class FiletransferController {
         UserFile userFile = userFileService.getById(previewDTO.getUserFileId());
         FileBean fileBean = fileService.getById(userFile.getFileId());
         String mime= MimeUtils.getMime(userFile.getExtendName());
-//        httpServletResponse.setContentType(mime);
         httpServletResponse.setHeader("Content-Type", mime);
         String rangeString = httpServletRequest.getHeader("Range");//如果是video标签发起的请求就不会为null
         if (StringUtils.isNotEmpty(rangeString)) {

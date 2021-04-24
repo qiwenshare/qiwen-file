@@ -17,6 +17,7 @@ import com.qiwenshare.common.util.PathUtil;
 import com.qiwenshare.file.anno.MyLog;
 import com.qiwenshare.file.api.*;
 import com.qiwenshare.common.config.QiwenFileConfig;
+import com.qiwenshare.file.component.FileDealComp;
 import com.qiwenshare.file.config.es.FileSearch;
 import com.qiwenshare.file.domain.*;
 import com.qiwenshare.file.dto.*;
@@ -59,6 +60,8 @@ public class FileController {
 
     @Autowired
     private ElasticsearchRestTemplate elasticsearchRestTemplate;
+    @Resource
+    FileDealComp fileDealComp;
 
     @Resource
     QiwenFileConfig qiwenFileConfig;
@@ -379,6 +382,7 @@ public class FileController {
                     tempFileBean.setTimeStampName(FileUtil.getFileNameNotExtend(currentFile.getName()));
                     tempFileBean.setFileUrl(File.separator + (currentFile.getPath()).replace(PathUtil.getStaticPath(), ""));
                     tempFileBean.setPointCount(1);
+                    tempFileBean.setStorageType(0);
                     fileService.save(tempFileBean);
                 }
 
@@ -540,7 +544,7 @@ public class FileController {
                 continue;
             }
 
-            resultTreeNode = insertTreeNode(resultTreeNode, id++, "/" , queue);
+            resultTreeNode = fileDealComp.insertTreeNode(resultTreeNode, id++, "/" , queue);
 
 
         }
@@ -558,65 +562,6 @@ public class FileController {
 
     }
 
-    public TreeNode insertTreeNode(TreeNode treeNode, long id,  String filePath, Queue<String> nodeNameQueue){
 
-        List<TreeNode> childrenTreeNodes = treeNode.getChildren();
-        String currentNodeName = nodeNameQueue.peek();
-        if (currentNodeName == null){
-            return treeNode;
-        }
-
-        filePath = filePath + currentNodeName + "/";
-
-        if (!isExistPath(childrenTreeNodes, currentNodeName)){  //1、判断有没有该子节点，如果没有则插入
-            //插入
-            TreeNode resultTreeNode = new TreeNode();
-
-            resultTreeNode.setFilePath(filePath);
-            resultTreeNode.setLabel(nodeNameQueue.poll());
-            resultTreeNode.setId(++id);
-
-            childrenTreeNodes.add(resultTreeNode);
-
-        }else{  //2、如果有，则跳过
-            nodeNameQueue.poll();
-        }
-
-        if (nodeNameQueue.size() != 0) {
-            for (int i = 0; i < childrenTreeNodes.size(); i++) {
-
-                TreeNode childrenTreeNode = childrenTreeNodes.get(i);
-                if (currentNodeName.equals(childrenTreeNode.getLabel())){
-                    childrenTreeNode = insertTreeNode(childrenTreeNode, id * 10, filePath, nodeNameQueue);
-                    childrenTreeNodes.remove(i);
-                    childrenTreeNodes.add(childrenTreeNode);
-                    treeNode.setChildren(childrenTreeNodes);
-                }
-
-            }
-        }else{
-            treeNode.setChildren(childrenTreeNodes);
-        }
-
-        return treeNode;
-
-    }
-
-    public boolean isExistPath(List<TreeNode> childrenTreeNodes, String path){
-        boolean isExistPath = false;
-
-        try {
-            for (int i = 0; i < childrenTreeNodes.size(); i++){
-                if (path.equals(childrenTreeNodes.get(i).getLabel())){
-                    isExistPath = true;
-                }
-            }
-        }catch (Exception e){
-            e.printStackTrace();
-        }
-
-
-        return isExistPath;
-    }
 
 }

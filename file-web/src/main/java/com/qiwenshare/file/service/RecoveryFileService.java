@@ -123,7 +123,7 @@ public class RecoveryFileService  extends ServiceImpl<RecoveryFileMapper, Recove
         }).start();
     }
     @Override
-    public List<RecoveryFileListVo> selectRecoveryFileList() {
-        return recoveryFileMapper.selectRecoveryFileList();
+    public List<RecoveryFileListVo> selectRecoveryFileList(Long userId) {
+        return recoveryFileMapper.selectRecoveryFileList(userId);
     }
 }

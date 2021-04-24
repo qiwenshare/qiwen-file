@@ -4,6 +4,7 @@ import cn.hutool.core.util.RandomUtil;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
+import com.qiwenshare.common.constant.FileConstant;
 import com.qiwenshare.common.util.DateUtil;
 import com.qiwenshare.file.api.IUserFileService;
 import com.qiwenshare.common.config.QiwenFileConfig;
@@ -183,7 +184,7 @@ public class UserFileService  extends ServiceImpl<UserFileMapper, UserFile> impl
         String uuid = UUID.randomUUID().toString();
         if (userFile.getIsDir() == 1) {
             LambdaUpdateWrapper<UserFile> userFileLambdaUpdateWrapper = new LambdaUpdateWrapper<UserFile>();
-            userFileLambdaUpdateWrapper.set(UserFile::getDeleteFlag, RandomUtil.randomInt(10))
+            userFileLambdaUpdateWrapper.set(UserFile::getDeleteFlag, RandomUtil.randomInt(FileConstant.deleteFileRandomSize))
                     .set(UserFile::getDeleteBatchNum, uuid)
                     .set(UserFile::getDeleteTime, DateUtil.getCurrentTime())
                     .eq(UserFile::getUserFileId, userFileId);
@@ -193,19 +194,14 @@ public class UserFileService  extends ServiceImpl<UserFileMapper, UserFile> impl
             updateFileDeleteStateByFilePath(filePath, userFile.getDeleteBatchNum(), sessionUserId);
 
         }else{
-
             UserFile userFileTemp = userFileMapper.selectById(userFileId);
-            FileBean fileBean = fileMapper.selectById(userFileTemp.getFileId());
-
             LambdaUpdateWrapper<UserFile> userFileLambdaUpdateWrapper = new LambdaUpdateWrapper<>();
-            userFileLambdaUpdateWrapper.set(UserFile::getDeleteFlag, RandomUtil.randomInt(10))
+            userFileLambdaUpdateWrapper.set(UserFile::getDeleteFlag, RandomUtil.randomInt(FileConstant.deleteFileRandomSize))
                     .set(UserFile::getDeleteTime, DateUtil.getCurrentTime())
                     .set(UserFile::getDeleteBatchNum, uuid)
                     .eq(UserFile::getUserFileId, userFileTemp.getUserFileId());
             userFileMapper.update(null, userFileLambdaUpdateWrapper);
-
         }
-
 
         RecoveryFile recoveryFile = new RecoveryFile();
         recoveryFile.setUserFileId(userFileId);
@@ -226,7 +222,7 @@ public class UserFileService  extends ServiceImpl<UserFileMapper, UserFile> impl
                     public void run() {
                         //标记删除标志
                         LambdaUpdateWrapper<UserFile> userFileLambdaUpdateWrapper1 = new LambdaUpdateWrapper<>();
-                        userFileLambdaUpdateWrapper1.set(UserFile::getDeleteFlag, RandomUtil.randomInt(10))
+                        userFileLambdaUpdateWrapper1.set(UserFile::getDeleteFlag, RandomUtil.randomInt(FileConstant.deleteFileRandomSize))
                                 .set(UserFile::getDeleteTime, DateUtil.getCurrentTime())
                                 .set(UserFile::getDeleteBatchNum, deleteBatchNum)
                                 .eq(UserFile::getUserFileId, userFileTemp.getUserFileId())

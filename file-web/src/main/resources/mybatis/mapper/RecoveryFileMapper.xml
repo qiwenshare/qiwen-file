@@ -9,5 +9,6 @@
     <select id="selectRecoveryFileList" resultType="com.qiwenshare.file.vo.file.RecoveryFileListVo">
         SELECT * FROM recoveryfile a
         LEFT JOIN userfile b ON a.userFileId = b.userFileId
+        WHERE userId = #{userId}
     </select>
 </mapper>

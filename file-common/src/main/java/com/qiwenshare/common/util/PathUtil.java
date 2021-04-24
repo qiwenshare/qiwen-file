@@ -1,5 +1,6 @@
 package com.qiwenshare.common.util;
 
+import cn.hutool.core.util.RandomUtil;
 import com.qiwenshare.common.config.PropertiesUtil;
 import com.qiwenshare.common.constant.FileConstant;
 import org.apache.commons.lang3.StringUtils;
@@ -73,9 +74,10 @@ public class PathUtil {
     }
 
     public static void main(String[] args) {
-        String path = "aaa/bbb/ccc/";
-        System.out.println(getParentPath(path));
-        String fileName = path.substring(path.lastIndexOf("/"));
-        System.out.println(fileName);
+        System.out.println(RandomUtil.randomLong(999999));
+//        String path = "aaa/bbb/ccc/";
+//        System.out.println(getParentPath(path));
+//        String fileName = path.substring(path.lastIndexOf("/"));
+//        System.out.println(fileName);
     }
 }
