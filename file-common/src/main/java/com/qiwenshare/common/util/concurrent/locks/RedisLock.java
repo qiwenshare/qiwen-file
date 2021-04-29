@@ -1,4 +1,4 @@
-package com.qiwenshare.common.util;
+package com.qiwenshare.common.util.concurrent.locks;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -7,19 +7,25 @@ import org.springframework.data.redis.connection.ReturnType;
 import org.springframework.data.redis.core.RedisCallback;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.data.redis.core.types.Expiration;
+import org.springframework.stereotype.Component;
 
+import javax.annotation.Resource;
 import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.locks.Condition;
+import java.util.concurrent.locks.Lock;
 
 /**
  * redis实现分布式锁
  *
  */
-public class RedisLockUtils {
+@Component
+public class RedisLock {
 
-    private static final Logger log = LoggerFactory.getLogger(RedisLockUtils.class);
+    private static final Logger log = LoggerFactory.getLogger(RedisLock.class);
 
     /**
      * 默认轮休获取锁间隔时间， 单位：毫秒
@@ -27,6 +33,9 @@ public class RedisLockUtils {
     private static final int DEFAULT_ACQUIRE_RESOLUTION_MILLIS = 100;
 
     private static final String UNLOCK_LUA;
+
+    @Resource
+    RedisTemplate<String, Object> redisTemplate;
 
     static {
         StringBuilder lua = new StringBuilder();
@@ -39,13 +48,7 @@ public class RedisLockUtils {
         UNLOCK_LUA = lua.toString();
     }
 
-    private RedisTemplate redisTemplate;
-
     private final ThreadLocal<Map<String, LockVO>> lockMap = new ThreadLocal<>();
-
-    public RedisLockUtils(RedisTemplate redisTemplate) {
-        this.redisTemplate = redisTemplate;
-    }
 
     /**
      * 获取锁，没有获取到则一直等待
@@ -62,6 +65,19 @@ public class RedisLockUtils {
     }
 
     /**
+     * 释放锁
+     *
+     * @param key redis key
+     */
+    public void unlock(String key) {
+        try {
+            release(key);
+        } catch (Exception e) {
+            throw new RuntimeException("release lock exception", e);
+        }
+    }
+
+    /**
      * 获取锁，指定时间内没有获取到，返回false。否则 返回true
      *
      * @param key      redis key
@@ -73,19 +89,6 @@ public class RedisLockUtils {
             return acquireLock(key, expire, waitTime);
         } catch (Exception e) {
             throw new RuntimeException("acquire lock exception", e);
-        }
-    }
-
-    /**
-     * 释放锁
-     *
-     * @param key redis key
-     */
-    public void unlock(String key) {
-        try {
-            release(key);
-        } catch (Exception e) {
-            throw new RuntimeException("release lock exception", e);
         }
     }
 
@@ -130,21 +133,7 @@ public class RedisLockUtils {
         return false;
     }
 
-    private boolean acquired(String key) {
-        Map<String, LockVO> map = lockMap.get();
-        if (map == null || map.size() == 0 || !map.containsKey(key)) {
-            return false;
-        }
 
-        LockVO vo = map.get(key);
-        if (vo.beforeExpireTime < System.currentTimeMillis()) {
-            log.debug("lock {} maybe release, because timeout ", key);
-            return false;
-        }
-        int after = ++vo.count;
-        log.debug("acquire lock {} {} ", key, after);
-        return true;
-    }
 
     /**
      * 释放锁
@@ -181,10 +170,18 @@ public class RedisLockUtils {
      * @return if true success else fail
      */
     private boolean tryLock(String key, long expire, String lockId) {
-        RedisCallback<Boolean> callback = (connection) ->
-            connection.set((key).getBytes(StandardCharsets.UTF_8),
-                lockId.getBytes(StandardCharsets.UTF_8), Expiration.seconds(expire), RedisStringCommands.SetOption.SET_IF_ABSENT);
-        return (Boolean) redisTemplate.execute(callback);
+        try{
+            RedisCallback<Boolean> callback = (connection) ->
+                connection.set(
+                        (key).getBytes(StandardCharsets.UTF_8),
+                        lockId.getBytes(StandardCharsets.UTF_8),
+                        Expiration.seconds(expire),
+                        RedisStringCommands.SetOption.SET_IF_ABSENT);
+            return (Boolean) redisTemplate.execute(callback);
+        } catch (Exception e) {
+            log.error("redis lock error.", e);
+        }
+        return false;
     }
 
     private static class LockVO {
@@ -212,6 +209,22 @@ public class RedisLockUtils {
             this.beforeExpireTime = beforeExpireTime;
             this.afterExpireTime = afterExpireTime;
         }
+    }
+
+    private boolean acquired(String key) {
+        Map<String, LockVO> map = lockMap.get();
+        if (map == null || map.size() == 0 || !map.containsKey(key)) {
+            return false;
+        }
+
+        LockVO vo = map.get(key);
+        if (vo.beforeExpireTime < System.currentTimeMillis()) {
+            log.debug("lock {} maybe release, because timeout ", key);
+            return false;
+        }
+        int after = ++vo.count;
+        log.debug("acquire lock {} {} ", key, after);
+        return true;
     }
 
 }

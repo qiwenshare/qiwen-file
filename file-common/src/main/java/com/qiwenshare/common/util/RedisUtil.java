@@ -1,15 +1,18 @@
 package com.qiwenshare.common.util;
 
+import io.netty.util.internal.StringUtil;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.dao.DataAccessException;
 import org.springframework.data.redis.core.RedisOperations;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.data.redis.core.SessionCallback;
+import org.springframework.data.redis.support.atomic.RedisAtomicLong;
 import org.springframework.stereotype.Component;
  
 import javax.annotation.Resource;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.locks.Lock;
 
 @Component
 @Slf4j
@@ -76,4 +79,20 @@ public class RedisUtil {
         // 删除key即可释放锁
         deleteKey(key);
     }
+
+    /**
+     * @Description: 获取自增长值
+     * @param key key
+     * @return
+     */
+    public Long getIncr(String key) {
+        Long count = redisTemplate.opsForValue().increment(key, 1);
+        return count;
+    }
+
+//    public static void main(String[] args) {
+//        Lock
+//    }
+
+
 }

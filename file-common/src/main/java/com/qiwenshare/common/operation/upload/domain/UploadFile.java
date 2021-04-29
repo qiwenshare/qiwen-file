@@ -24,6 +24,4 @@ public class UploadFile {
     private long currentChunkSize;
 
 
-
-
 }

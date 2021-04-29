@@ -104,7 +104,8 @@ public class FileController {
     @GetMapping(value = "/search")
     @MyLog(operation = "文件搜索", module = CURRENT_MODULE)
     @ResponseBody
-    public RestResult<SearchHits<FileSearch>> searchFile(SearchFileDTO searchFileDTO) {
+    public RestResult<SearchHits<FileSearch>> searchFile(SearchFileDTO searchFileDTO, @RequestHeader("token") String token) {
+        UserBean sessionUserBean = userService.getUserBeanByToken(token);
         NativeSearchQueryBuilder queryBuilder = new NativeSearchQueryBuilder();
         HighlightBuilder.Field allHighLight = new HighlightBuilder.Field("*").preTags("<span class='keyword'>")
                 .postTags("</span>");
@@ -131,7 +132,10 @@ public class FileController {
             queryBuilder.withPageable(PageRequest.of(currentPage, pageCount, Sort.by(direction, order)));
         }
 
-        queryBuilder.withQuery(QueryBuilders.matchQuery("fileName", searchFileDTO.getFileName()));
+        queryBuilder.withQuery(QueryBuilders.boolQuery()
+                .must(QueryBuilders.matchQuery("fileName", searchFileDTO.getFileName()))
+                .must(QueryBuilders.termQuery("userId", sessionUserBean.getUserId()))
+                );
         SearchHits<FileSearch> search = elasticsearchRestTemplate.search(queryBuilder.build(), FileSearch.class);
 
         return RestResult.success().data(search);
