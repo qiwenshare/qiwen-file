@@ -22,6 +22,7 @@ import java.io.File;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
+import java.util.concurrent.TimeUnit;
 
 @Component
 @Slf4j
@@ -44,14 +45,11 @@ public class FastDFSUploader extends Uploader {
         if (!isMultipart) {
             throw new UploadGeneralException("未包含文件上传域");
         }
-        DiskFileItemFactory dff = new DiskFileItemFactory();//1、创建工厂
+
         String savePath = getLocalFileSavePath();
-        dff.setRepository(new File(savePath));
 
         try {
-            ServletFileUpload sfu = new ServletFileUpload(dff);//2、创建文件上传解析器
-            sfu.setSizeMax(this.maxSize * 1024L);
-            sfu.setHeaderEncoding("utf-8");//3、解决文件名的中文乱码
+
             Iterator<String> iter = standardMultipartHttpServletRequest.getFileNames();
             while (iter.hasNext()) {
                 saveUploadFileList = doUpload(standardMultipartHttpServletRequest, savePath, iter, uploadFile);
@@ -113,7 +111,7 @@ public class FastDFSUploader extends Uploader {
     }
 
     public void uploadFileChunk(MultipartFile multipartFile, UploadFile uploadFile) {
-        redisLock.lock(uploadFile.getIdentifier(), 120);
+        redisLock.lock(uploadFile.getIdentifier());
         try {
 
             if (redisUtil.getObject(uploadFile.getIdentifier() + "_current_upload_chunk_number") == null) {
@@ -123,7 +121,7 @@ public class FastDFSUploader extends Uploader {
             String currentUploadChunkNumber = redisUtil.getObject(uploadFile.getIdentifier() + "_current_upload_chunk_number");
             if (uploadFile.getChunkNumber() != Integer.parseInt(currentUploadChunkNumber)) {
                 redisLock.unlock(uploadFile.getIdentifier());
-                while (redisLock.tryLock(uploadFile.getIdentifier(), 300, 10)) {
+                while (redisLock.tryLock(uploadFile.getIdentifier(), 300, TimeUnit.SECONDS)) {
                     if (uploadFile.getChunkNumber() == Integer.parseInt(redisUtil.getObject(uploadFile.getIdentifier() + "_current_upload_chunk_number"))) {
                         break;
                     } else {

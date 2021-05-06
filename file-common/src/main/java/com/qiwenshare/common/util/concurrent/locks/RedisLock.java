@@ -16,14 +16,13 @@ import java.util.Map;
 import java.util.UUID;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.locks.Condition;
-import java.util.concurrent.locks.Lock;
 
 /**
  * redis实现分布式锁
  *
  */
 @Component
-public class RedisLock {
+public class RedisLock{
 
     private static final Logger log = LoggerFactory.getLogger(RedisLock.class);
 
@@ -33,6 +32,9 @@ public class RedisLock {
     private static final int DEFAULT_ACQUIRE_RESOLUTION_MILLIS = 100;
 
     private static final String UNLOCK_LUA;
+
+    private static final long LOCK_EXPIRE_TIME = 60 * 15; //获取锁最大15分钟就会过期
+
 
     @Resource
     RedisTemplate<String, Object> redisTemplate;
@@ -54,11 +56,11 @@ public class RedisLock {
      * 获取锁，没有获取到则一直等待
      *
      * @param key    redis key
-     * @param expire 锁过期时间, 单位 秒
      */
-    public void lock(final String key, long expire) {
+    public void lock(final String key) {
+
         try {
-            acquireLock(key, expire, -1);
+            acquireLock(key, LOCK_EXPIRE_TIME, -1);
         } catch (Exception e) {
             throw new RuntimeException("acquire lock exception", e);
         }
@@ -77,16 +79,23 @@ public class RedisLock {
         }
     }
 
+    public boolean tryLock(final String key) {
+        try {
+            return acquireLock(key, LOCK_EXPIRE_TIME, -1);
+        } catch (Exception e) {
+            throw new RuntimeException("acquire lock exception", e);
+        }
+    }
+
     /**
      * 获取锁，指定时间内没有获取到，返回false。否则 返回true
      *
      * @param key      redis key
-     * @param expire   锁过期时间, 单位 秒
      * @param waitTime 获取锁超时时间, -1代表永不超时, 单位 秒
      */
-    public boolean tryLock(final String key, long expire, long waitTime) {
+    public boolean tryLock(String key, long time, TimeUnit unit) {
         try {
-            return acquireLock(key, expire, waitTime);
+            return acquireLock(key, LOCK_EXPIRE_TIME, unit.toSeconds(time));
         } catch (Exception e) {
             throw new RuntimeException("acquire lock exception", e);
         }

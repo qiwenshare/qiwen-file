@@ -1,4 +1,4 @@
-package com.qiwenshare.common.config;
+package com.qiwenshare.common.util;
 
 import org.springframework.core.env.Environment;
  

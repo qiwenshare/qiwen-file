@@ -13,11 +13,23 @@ import javax.annotation.Resource;
 import java.util.List;
 import java.util.Queue;
 
+/**
+ * 文件逻辑处理组件
+ */
 @Component
 public class FileDealComp {
     @Resource
     UserFileMapper userFileMapper;
 
+    /**
+     * 获取重复文件名
+     *
+     * 场景: 文件还原时，在 savefilePath 路径下，保存 测试.txt 文件重名，则会生成 测试(1).txt
+     *
+     * @param userFile
+     * @param savefilePath
+     * @return
+     */
     public String getRepeatFileName(UserFile userFile, String savefilePath) {
         String fileName = userFile.getFileName();
         String extendName = userFile.getExtendName();
@@ -57,6 +69,13 @@ public class FileDealComp {
 
     }
 
+    /**
+     * 还原父文件路径
+     *
+     * 回收站文件还原操作会将文件恢复到原来的路径下,当还原文件的时候，如果父目录已经不存在了，则需要把父母录给还原
+     * @param filePath
+     * @param sessionUserId
+     */
     public void restoreParentFilePath(String filePath, Long sessionUserId) {
         String parentFilePath = PathUtil.getParentPath(filePath);
         while(parentFilePath.contains("/")) {
@@ -84,6 +103,14 @@ public class FileDealComp {
         }
     }
 
+
+    /**
+     * 删除重复的子目录文件
+     *
+     * 当还原目录的时候，如果其子目录在文件系统中已存在，则还原之后进行去重操作
+     * @param filePath
+     * @param sessionUserId
+     */
     public void deleteRepeatSubDirFile(String filePath, Long sessionUserId) {
         LambdaQueryWrapper<UserFile> lambdaQueryWrapper = new LambdaQueryWrapper<>();
 
@@ -108,6 +135,14 @@ public class FileDealComp {
         }
     }
 
+    /**
+     * 组织一个树目录节点，文件移动的时候使用
+     * @param treeNode
+     * @param id
+     * @param filePath
+     * @param nodeNameQueue
+     * @return
+     */
     public TreeNode insertTreeNode(TreeNode treeNode, long id,  String filePath, Queue<String> nodeNameQueue){
 
         List<TreeNode> childrenTreeNodes = treeNode.getChildren();
@@ -152,6 +187,12 @@ public class FileDealComp {
 
     }
 
+    /**
+     * 判断该路径在树节点中是否已经存在
+     * @param childrenTreeNodes
+     * @param path
+     * @return
+     */
     public boolean isExistPath(List<TreeNode> childrenTreeNodes, String path){
         boolean isExistPath = false;
 
