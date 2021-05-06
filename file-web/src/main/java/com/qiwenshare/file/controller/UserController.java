@@ -62,22 +62,19 @@ public class UserController {
     @MyLog(operation = "用户登录", module = CURRENT_MODULE)
     @ResponseBody
     public RestResult<UserLoginVo> userLogin(
-            @Parameter(description = "登录手机号") String username,
+            @Parameter(description = "登录手机号") String telephone,
             @Parameter(description = "登录密码") String password) {
-        RestResult<UserLoginVo> restResult = new RestResult<UserLoginVo>();
-        UserBean saveUserBean = userService.findUserInfoByTelephone(username);
+        UserBean saveUserBean = userService.findUserInfoByTelephone(telephone);
 
         if (saveUserBean == null) {
-            return RestResult.fail().message("用户名或手机号不存在！");
+            return RestResult.fail().message("手机号或密码错误！");
         }
         String jwt = "";
         try {
             jwt = JjwtUtil.createJWT("qiwenshare", "qiwen", JSON.toJSONString(saveUserBean));
         } catch (Exception e) {
             log.info("登录失败：{}", e);
-            restResult.setSuccess(false);
-            restResult.setMessage("登录失败！");
-            return restResult;
+            return RestResult.fail().message("创建token失败！");
         }
 
         String passwordHash = new SimpleHash("MD5", password, saveUserBean.getSalt(), 1024).toHex();
@@ -86,14 +83,11 @@ public class UserController {
             UserLoginVo userLoginVo = new UserLoginVo();
             BeanUtil.copyProperties(saveUserBean, userLoginVo);
             userLoginVo.setToken("Bearer " + jwt);
-            restResult.setData(userLoginVo);
-            restResult.setSuccess(true);
+            return RestResult.success().data(userLoginVo);
         } else {
-            restResult.setSuccess(false);
-            restResult.setMessage("手机号或密码错误！");
+            return RestResult.fail().message("手机号或密码错误！");
         }
 
-        return restResult;
     }
 
     @Operation(summary = "检查用户登录信息", description = "验证token的有效性", tags = {"user"})

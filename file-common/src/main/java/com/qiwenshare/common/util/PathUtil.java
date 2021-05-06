@@ -1,7 +1,6 @@
 package com.qiwenshare.common.util;
 
 import cn.hutool.core.util.RandomUtil;
-import com.qiwenshare.common.config.PropertiesUtil;
 import com.qiwenshare.common.constant.FileConstant;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.util.ResourceUtils;
@@ -10,8 +9,6 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.UnsupportedEncodingException;
 import java.net.URLDecoder;
-import java.security.NoSuchAlgorithmException;
-import java.security.SecureRandom;
 
 public class PathUtil {
     /**

@@ -20,13 +20,15 @@ public class FastDFSDownloader extends Downloader {
     @Override
     public void download(HttpServletResponse httpServletResponse, DownloadFile downloadFile) {
         String group = downloadFile.getFileUrl().substring(0, downloadFile.getFileUrl().indexOf("/"));
+        group = "group1";
         String path = downloadFile.getFileUrl().substring(downloadFile.getFileUrl().indexOf("/") + 1);
         DownloadByteArray downloadByteArray = new DownloadByteArray();
-        byte[] bytes = fastFileStorageClient.downloadFile(group, path, downloadByteArray);
+
 
         ServletOutputStream outputStream = null;
         try {
             outputStream = httpServletResponse.getOutputStream();
+            byte[] bytes = fastFileStorageClient.downloadFile(group, path, downloadByteArray);
             outputStream.write(bytes);
         } catch (IOException e) {
             e.printStackTrace();
@@ -45,6 +47,7 @@ public class FastDFSDownloader extends Downloader {
     @Override
     public InputStream getInputStream(DownloadFile downloadFile) {
         String group = downloadFile.getFileUrl().substring(0, downloadFile.getFileUrl().indexOf("/"));
+        group = "group1";
         String path = downloadFile.getFileUrl().substring(downloadFile.getFileUrl().indexOf("/") + 1);
         DownloadByteArray downloadByteArray = new DownloadByteArray();
         byte[] bytes = fastFileStorageClient.downloadFile(group, path, downloadByteArray);

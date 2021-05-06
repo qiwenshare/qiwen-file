@@ -2,7 +2,8 @@ package com.qiwenshare.common.config;
 
 import javax.annotation.PostConstruct;
 import javax.annotation.Resource;
- 
+
+import com.qiwenshare.common.util.PropertiesUtil;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.env.Environment;
  
