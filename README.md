@@ -1,5 +1,6 @@
 <p align="center">
-	<a href="http://fileos.qiwenshare.com/"><img width="30%" src="https://images.gitee.com/uploads/images/2020/0810/131432_e00bbf82_947714.png" ></a>
+	<a href="http://fileos.qiwenshare.com/"><img width="30%" src="https://images.gitee.com/uploads/images/2021/0509/215302_e75d7046_947714.png" ></a>
+
 </p>
 <p align="center">
 	<strong>基于Spring Boot + VUE CLI@3 框架开发的分布式文件系统，旨在为用户和企业提供一个简单、方便的文件存储方案，能够以完善的目录结构体系，对文件进行管理 。</strong>
