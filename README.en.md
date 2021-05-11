@@ -1,5 +1,5 @@
 <p align="center">
-	<a href="http://fileos.qiwenshare.com/"><img width="30%" src="https://images.gitee.com/uploads/images/2020/0810/131432_e00bbf82_947714.png" ></a>
+	<a href="http://fileos.qiwenshare.com/"><img width="30%" src="https://images.gitee.com/uploads/images/2021/0511/141109_0a709933_947714.png" ></a>
 </p>
 <p align="center">
 	<strong>The distributed file system based on Spring Boot + VUE CLI@3 framework is designed to provide a simple and convenient file storage scheme for users and enterprises. It can manage files with a perfect directory structure system.</strong>
