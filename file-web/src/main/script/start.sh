@@ -34,15 +34,16 @@ STDOUT_FILE=${LOG_PATH}/nohup.out
 
 #if use self jdk,modify
 #JAVA_HOME="/usr/lib/jvm/jdk1.8.0_191"
-if [ "${JAVA_HOME}" != "" ] ; then
-	export JAVA_HOME
-	export PATH=$PATH:JAVA_HOME/bin
-	echo JAVA_HOME:${JAVA_HOME}
-else
-  echo "JAVA_HOME not set!!!"
-  exit 1
+if ! java -version &>/dev/null;then
+  if [ "${JAVA_HOME}" != "" ] ; then
+    export JAVA_HOME
+    export PATH=$PATH:JAVA_HOME/bin
+    echo JAVA_HOME:${JAVA_HOME}
+  else
+    echo "JAVA_HOME not set!!!"
+    exit 1
+  fi
 fi
-
 USER_VMARGS="-D64 -server -Xmx1g -Xms1g -Xmn521m -Xss256k "
 
 GC_OPTS=""
@@ -84,7 +85,7 @@ echo "Using CONF_DIR: $CONF_DIR"
 
 CLASSPATH=".:$CONF_DIR:$LIB_JARS"
 
-EXEC_CMDLINE="${JAVA_HOME}/bin/java -classpath ${CLASSPATH} ${USER_VMARGS} ${GC_OPTS} ${JAVA_JMX_OPTS} ${JAVA_DEBUG} ${JAVA_OPTS} com.qiwenshare.file.FileApplication"
+EXEC_CMDLINE="java -classpath ${CLASSPATH} ${USER_VMARGS} ${GC_OPTS} ${JAVA_JMX_OPTS} ${JAVA_DEBUG} ${JAVA_OPTS} com.qiwenshare.file.FileApplication"
 
 echo "Start app command line: ${EXEC_CMDLINE}" >> $STDOUT_FILE
 echo "Starting $SERVER_NAME ..."
