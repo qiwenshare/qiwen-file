@@ -9,6 +9,7 @@ import com.qiwenshare.file.api.IUserService;
 import com.qiwenshare.file.domain.UserBean;
 import com.qiwenshare.file.dto.user.RegisterDTO;
 import com.qiwenshare.file.vo.user.UserLoginVo;
+import com.qiwenshare.ufo.autoconfiguration.UFOAutoConfiguration;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -94,7 +95,8 @@ public class UserController {
         }
         UserBean sessionUserBean = userService.getUserBeanByToken(token);
         if (sessionUserBean != null) {
-
+            String domain = UFOAutoConfiguration.aliyunConfig.getOss().getDomain();
+            sessionUserBean.setViewDomain(domain);
             return RestResult.success().data(sessionUserBean);
 
         } else {
