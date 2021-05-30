@@ -196,7 +196,7 @@ public class FiletransferController {
         storage.setUserId(sessionUserBean.getUserId());
         storage.setStorageSize(storageSize);
         Long totalStorageSize = storageService.getTotalStorageSize(sessionUserBean.getUserId());
-        storage.setTotalStorageSize(totalStorageSize * 1024);
+        storage.setTotalStorageSize(totalStorageSize);
         return RestResult.success().data(storage);
 
     }
