@@ -7,3 +7,6 @@ delete from user_role where userId = 1 and roleId = 1;
 insert into user_role (userId, roleId) values (1, 1);
 delete from role_permission where roleId = 1 and permissionId = 1;
 insert into role_permission (roleId, permissionId) values (1, 1);
+
+delete from sysparam where sysParamId = 1;
+insert into sysparam (sysParamId, sysParamKey, sysParamValue, sysParamDesc) values (1, 'totalStorageSize', '1024', '总存储大小（单位M）');

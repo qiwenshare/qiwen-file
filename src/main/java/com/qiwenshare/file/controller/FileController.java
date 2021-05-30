@@ -72,14 +72,9 @@ public class FileController {
     @MyLog(operation = "创建文件", module = CURRENT_MODULE)
     @ResponseBody
     public RestResult<String> createFile(@RequestBody CreateFileDTO createFileDto, @RequestHeader("token") String token) {
-        if (!operationCheck(token).getSuccess()){
-            return operationCheck(token);
-        }
 
         UserBean sessionUserBean = userService.getUserBeanByToken(token);
-        if (sessionUserBean == null) {
-            throw new NotLoginException();
-        }
+
         List<UserFile> userFiles = userFileService.selectUserFileByNameAndPath(createFileDto.getFileName(), createFileDto.getFilePath(), sessionUserBean.getUserId());
         if (userFiles != null && !userFiles.isEmpty()) {
             return RestResult.fail().message("同名文件已存在");
@@ -144,9 +139,7 @@ public class FileController {
     @MyLog(operation = "文件重命名", module = CURRENT_MODULE)
     @ResponseBody
     public RestResult<String> renameFile(@RequestBody RenameFileDTO renameFileDto, @RequestHeader("token") String token) {
-        if (!operationCheck(token).getSuccess()){
-            return operationCheck(token);
-        }
+
         UserBean sessionUserBean = userService.getUserBeanByToken(token);
         if (sessionUserBean == null) {
             throw new NotLoginException();
@@ -254,9 +247,6 @@ public class FileController {
     @ResponseBody
     public RestResult<String> deleteImageByIds(@RequestBody BatchDeleteFileDTO batchDeleteFileDto, @RequestHeader("token") String token) {
 
-        if (!operationCheck(token).getSuccess()) {
-            return operationCheck(token);
-        }
         UserBean sessionUserBean = userService.getUserBeanByToken(token);
         if (sessionUserBean == null) {
             throw new NotLoginException();
@@ -279,10 +269,6 @@ public class FileController {
     @ResponseBody
     public RestResult deleteFile(@RequestBody DeleteFileDTO deleteFileDto, @RequestHeader("token") String token) {
 
-        if (!operationCheck(token).getSuccess()){
-            return operationCheck(token);
-        }
-
         UserBean sessionUserBean = userService.getUserBeanByToken(token);
         if (sessionUserBean == null) {
             throw new NotLoginException();
@@ -300,9 +286,6 @@ public class FileController {
     @ResponseBody
     public RestResult<String> unzipFile(@RequestBody UnzipFileDTO unzipFileDto, @RequestHeader("token") String token) {
 
-        if (!operationCheck(token).getSuccess()){
-            return operationCheck(token);
-        }
         UserBean sessionUserBean = userService.getUserBeanByToken(token);
         if (sessionUserBean == null) {
             throw new NotLoginException();
@@ -385,10 +368,6 @@ public class FileController {
     @ResponseBody
     public RestResult<String> moveFile(@RequestBody MoveFileDTO moveFileDto, @RequestHeader("token") String token) {
 
-        if (!operationCheck(token).getSuccess()){
-            return operationCheck(token);
-        }
-
         UserBean sessionUserBean = userService.getUserBeanByToken(token);
         if (sessionUserBean == null) {
             throw new NotLoginException();
@@ -409,9 +388,6 @@ public class FileController {
     @ResponseBody
     public RestResult<String> batchMoveFile(@RequestBody BatchMoveFileDTO batchMoveFileDto, @RequestHeader("token") String token) {
 
-        if (!operationCheck(token).getSuccess()) {
-            return operationCheck(token);
-        }
         UserBean sessionUserBean = userService.getUserBeanByToken(token);
         if (sessionUserBean == null) {
             throw new NotLoginException();
@@ -429,18 +405,7 @@ public class FileController {
 
     }
 
-    public RestResult<String> operationCheck(String token){
-        RestResult<String> result = new RestResult<String>();
-        UserBean sessionUserBean = userService.getUserBeanByToken(token);
-        if (sessionUserBean == null){
-            result.setSuccess(false);
-            result.setMessage("未登录");
-            return result;
-        }
 
-        result.setSuccess(true);
-        return result;
-    }
 
     @Operation(summary = "通过文件类型选择文件", description = "该接口可以实现文件格式分类查看", tags = {"file"})
     @RequestMapping(value = "/selectfilebyfiletype", method = RequestMethod.GET)

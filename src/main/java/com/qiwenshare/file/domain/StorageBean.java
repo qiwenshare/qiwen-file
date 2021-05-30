@@ -28,6 +28,9 @@ public class StorageBean {
     @Column(columnDefinition="bigint(20)")
     private Long storageSize;
 
+    @Column(columnDefinition="bigint(20)")
+    private Long totalStorageSize;
+
     public StorageBean() {
 
     }
