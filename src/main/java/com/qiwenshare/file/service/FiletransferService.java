@@ -88,8 +88,6 @@ public class FiletransferService implements IFiletransferService {
             if (uploadFile.getSuccess() == 1){
                 fileBean.setFileUrl(uploadFile.getUrl());
                 fileBean.setFileSize(uploadFile.getFileSize());
-                //fileBean.setUploadTime(DateUtil.getCurrentTime());
-//                fileBean.setIsOSS(uploadFile.getIsOSS());
                 fileBean.setStorageType(uploadFile.getStorageType());
                 fileBean.setPointCount(1);
                 fileMapper.insert(fileBean);
@@ -104,19 +102,6 @@ public class FiletransferService implements IFiletransferService {
                 userFile.setUploadTime(DateUtil.getCurrentTime());
                 userFileMapper.insert(userFile);
                 fileDealComp.uploadESByUserFileId(userFile.getUserFileId());
-
-                synchronized (FiletransferService.class) {
-
-                    StorageBean storageBean = selectStorageBean(new StorageBean(userId));
-                    if (storageBean == null) {
-                        StorageBean storage = new StorageBean(userId);
-                        storage.setStorageSize(fileBean.getFileSize());
-                        insertStorageBean(storage);
-                    } else {
-                        storageBean.setStorageSize(storageBean.getStorageSize() + uploadFile.getFileSize());
-                        updateStorageBean(storageBean);
-                    }
-                }
 
             }
 

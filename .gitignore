@@ -1,5 +1,5 @@
 /.idea
 /release
 /*.log
-/file-common/target
-/file-office/target
+/target
+/file-web.iml

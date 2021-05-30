@@ -32,12 +32,6 @@ public class UploadFileDTO {
     @Schema(description = "文件名")
     private String filename;
 
-    /**
-     * 文件大小
-     */
-    @Schema(description = "文件大小")
-    private Long fileSize;
-
     @Schema(description = "切片数量")
     private int chunkNumber;
 

@@ -18,6 +18,7 @@ import com.qiwenshare.file.domain.UserFile;
 import com.qiwenshare.file.dto.DownloadFileDTO;
 import com.qiwenshare.file.dto.UploadFileDTO;
 import com.qiwenshare.file.dto.file.PreviewDTO;
+import com.qiwenshare.file.service.StorageService;
 import com.qiwenshare.file.vo.file.UploadFileVo;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -43,9 +44,6 @@ public class FiletransferController {
     IFiletransferService filetransferService;
 
     @Resource
-    FileController fileController;
-
-    @Resource
     IFileService fileService;
     @Resource
     IUserService userService;
@@ -53,6 +51,8 @@ public class FiletransferController {
     IUserFileService userFileService;
     @Resource
     FileDealComp fileDealComp;
+    @Resource
+    StorageService storageService;
     public static final String CURRENT_MODULE = "文件传输接口";
 
     @Operation(summary = "极速上传", description = "校验文件MD5判断文件是否存在，如果存在直接上传成功并返回skipUpload=true，如果不存在返回skipUpload=false需要再次调用该接口的POST方法", tags = {"filetransfer"})
@@ -62,14 +62,12 @@ public class FiletransferController {
     public RestResult<UploadFileVo> uploadFileSpeed(UploadFileDTO uploadFileDto, @RequestHeader("token") String token) {
 
         UserBean sessionUserBean = userService.getUserBeanByToken(token);
-        if (sessionUserBean == null) {
-            throw new NotLoginException();
+
+        boolean isCheckSuccess = storageService.checkStorage(sessionUserBean.getUserId(), uploadFileDto.getTotalSize());
+        if (!isCheckSuccess) {
+            return RestResult.fail().message("存储空间不足");
         }
 
-        RestResult<String> operationCheckResult = fileController.operationCheck(token);
-        if (!operationCheckResult.getSuccess()){
-            return RestResult.fail().message("没权限，请联系管理员！");
-        }
         UploadFileVo uploadFileVo = new UploadFileVo();
         Map<String, Object> param = new HashMap<String, Object>();
         param.put("identifier", uploadFileDto.getIdentifier());
@@ -110,10 +108,6 @@ public class FiletransferController {
         UserBean sessionUserBean = userService.getUserBeanByToken(token);
         if (sessionUserBean == null) {
             throw new NotLoginException();
-        }
-        RestResult<String> operationCheckResult = fileController.operationCheck(token);
-        if (!operationCheckResult.getSuccess()){
-            return RestResult.fail().message("没权限，请联系管理员！");
         }
 
         filetransferService.uploadFile(request, uploadFileDto, sessionUserBean.getUserId());
@@ -201,6 +195,8 @@ public class FiletransferController {
         StorageBean storage = new StorageBean();
         storage.setUserId(sessionUserBean.getUserId());
         storage.setStorageSize(storageSize);
+        Long totalStorageSize = storageService.getTotalStorageSize(sessionUserBean.getUserId());
+        storage.setTotalStorageSize(totalStorageSize * 1024);
         return RestResult.success().data(storage);
 
     }
