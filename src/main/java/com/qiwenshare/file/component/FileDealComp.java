@@ -11,6 +11,7 @@ import com.qiwenshare.file.domain.UserFile;
 import com.qiwenshare.file.mapper.UserFileMapper;
 import com.qiwenshare.file.vo.file.FileListVo;
 import com.qiwenshare.ufo.util.PathUtil;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
@@ -23,6 +24,7 @@ import java.util.concurrent.Executors;
 /**
  * 文件逻辑处理组件
  */
+@Slf4j
 @Component
 public class FileDealComp {
     @Resource
@@ -221,20 +223,27 @@ public class FileDealComp {
 
 
     public void uploadESByUserFileId(Long userFileId) {
-
-        UserFile userFile = new UserFile();
-        userFile.setUserFileId(userFileId);
-        List<FileListVo> userfileResult = userFileMapper.userFileList(userFile, null, null);
-        if (userfileResult != null && userfileResult.size() > 0) {
-            FileSearch fileSearch = new FileSearch();
-            BeanUtil.copyProperties(userfileResult.get(0), fileSearch);
-            elasticSearchService.save(fileSearch);
+        try {
+            UserFile userFile = new UserFile();
+            userFile.setUserFileId(userFileId);
+            List<FileListVo> userfileResult = userFileMapper.userFileList(userFile, null, null);
+            if (userfileResult != null && userfileResult.size() > 0) {
+                FileSearch fileSearch = new FileSearch();
+                BeanUtil.copyProperties(userfileResult.get(0), fileSearch);
+                elasticSearchService.save(fileSearch);
+            }
+        } catch (Exception e) {
+            log.error("ES更新操作失败，请检查配置");
         }
 
     }
 
     public void deleteESByUserFileId(Long userFileId) {
-        elasticSearchService.deleteById(userFileId);
+        try {
+            elasticSearchService.deleteById(userFileId);
+        } catch (Exception e) {
+            log.error("ES删除操作失败，请检查配置");
+        }
 
     }
 }
