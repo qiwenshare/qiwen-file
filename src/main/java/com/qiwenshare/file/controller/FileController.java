@@ -168,7 +168,7 @@ public class FileController {
                 RenameFile renameFile = new RenameFile();
                 renameFile.setSrcName(fileUrl.substring(1));
                 renameFile.setDestName(newFileUrl.substring(1));
-                ufoFactory.getRenamer(2).rename(renameFile);
+                ufoFactory.getRenamer(file.getStorageType()).rename(renameFile);
                 LambdaUpdateWrapper<FileBean> lambdaUpdateWrapper = new LambdaUpdateWrapper<>();
                 lambdaUpdateWrapper
                         .set(FileBean::getFileUrl, newFileUrl)
