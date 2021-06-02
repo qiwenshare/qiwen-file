@@ -33,9 +33,9 @@ public class AuthenticationInterceptor implements HandlerInterceptor {
         if ("undefined".equals(token) || StringUtils.isEmpty(token)) {
             throw new NotLoginException("token不存在");
         }
-        if (!token.startsWith("Bearer ")) {
-            throw new NotLoginException("token格式错误");
-        }
+//        if (!token.startsWith("Bearer ")) {
+//            throw new NotLoginException("token格式错误");
+//        }
         token = token.replace("Bearer ", "");
         UserBean userBean = userService.getUserBeanByToken(token);
         if (userBean == null) {
