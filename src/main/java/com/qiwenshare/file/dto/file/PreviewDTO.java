@@ -7,4 +7,5 @@ import lombok.Data;
 @Schema(name = "预览文件DTO",required = true)
 public class PreviewDTO {
     private Long userFileId;
+    private String token;
 }

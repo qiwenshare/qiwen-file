@@ -145,7 +145,12 @@ public class FiletransferController {
     @GetMapping("/preview")
     public void preview(HttpServletRequest httpServletRequest, HttpServletResponse httpServletResponse,  PreviewDTO previewDTO){
 
+        String token = previewDTO.getToken();
+        UserBean sessionUserBean = userService.getUserBeanByToken(token);
         UserFile userFile = userFileService.getById(previewDTO.getUserFileId());
+        if (userFile.getUserId() != sessionUserBean.getUserId()) {
+            return;
+        }
         FileBean fileBean = fileService.getById(userFile.getFileId());
         String mime= MimeUtils.getMime(userFile.getExtendName());
         httpServletResponse.setHeader("Content-Type", mime);

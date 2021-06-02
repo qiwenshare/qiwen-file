@@ -3,6 +3,7 @@ package com.qiwenshare.file.service;
 import com.alibaba.fastjson.JSON;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
+import com.qiwenshare.common.exception.NotLoginException;
 import com.qiwenshare.common.util.DateUtil;
 import com.qiwenshare.common.result.RestResult;
 import com.qiwenshare.common.util.JjwtUtil;
@@ -39,6 +40,9 @@ public class UserService extends ServiceImpl<UserMapper, UserBean> implements IU
         if (StringUtils.isEmpty(token)) {
             return null;
         }
+//        if (!token.startsWith("Bearer ")) {
+//            throw new NotLoginException("token格式错误");
+//        }
         token = token.replace("Bearer ", "");
         try {
             c = JjwtUtil.parseJWT(token);
