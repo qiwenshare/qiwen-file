@@ -10,6 +10,9 @@ import com.qiwenshare.file.domain.TreeNode;
 import com.qiwenshare.file.domain.UserFile;
 import com.qiwenshare.file.mapper.UserFileMapper;
 import com.qiwenshare.file.vo.file.FileListVo;
+import com.qiwenshare.ufo.factory.UFOFactory;
+import com.qiwenshare.ufo.operation.read.Reader;
+import com.qiwenshare.ufo.operation.read.domain.ReadFile;
 import com.qiwenshare.ufo.util.PathUtil;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -32,6 +35,8 @@ public class FileDealComp {
     @Autowired
     private IElasticSearchService elasticSearchService;
 
+    @Resource
+    UFOFactory ufoFactory;
     /**
      * 获取重复文件名
      *
@@ -230,6 +235,12 @@ public class FileDealComp {
             if (userfileResult != null && userfileResult.size() > 0) {
                 FileSearch fileSearch = new FileSearch();
                 BeanUtil.copyProperties(userfileResult.get(0), fileSearch);
+                Reader reader = ufoFactory.getReader(fileSearch.getStorageType());
+                ReadFile readFile = new ReadFile();
+                readFile.setFileUrl(fileSearch.getFileUrl());
+                String content = reader.read(readFile);
+                //全文搜索
+//                fileSearch.setContent(content);
                 elasticSearchService.save(fileSearch);
             }
         } catch (Exception e) {

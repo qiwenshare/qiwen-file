@@ -2,6 +2,7 @@ package com.qiwenshare.file.controller;
 
 import cn.hutool.core.bean.BeanUtil;
 import com.alibaba.fastjson.JSON;
+import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.qiwenshare.common.result.RestResult;
 import com.qiwenshare.common.util.JjwtUtil;
 import com.qiwenshare.file.anno.MyLog;
@@ -14,6 +15,7 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.codec.digest.Md5Crypt;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.shiro.crypto.hash.SimpleHash;
 import org.springframework.web.bind.annotation.*;
@@ -66,7 +68,12 @@ public class UserController {
         }
         String jwt = "";
         try {
-            jwt = JjwtUtil.createJWT("qiwenshare", "qiwen", JSON.toJSONString(saveUserBean));
+            UserBean sessionUserBean = new UserBean();
+            sessionUserBean.setPassword(saveUserBean.getPassword());
+            sessionUserBean.setQqPassword(saveUserBean.getQqPassword());
+            sessionUserBean.setTelephone(saveUserBean.getTelephone());
+            sessionUserBean.setOpenId(saveUserBean.getOpenId());
+            jwt = JjwtUtil.createJWT("qiwenshare", "qiwen", JSON.toJSONString(sessionUserBean));
         } catch (Exception e) {
             log.info("登录失败：{}", e);
             return RestResult.fail().message("创建token失败！");

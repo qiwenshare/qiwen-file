@@ -41,18 +41,8 @@ public class UserBean {
     @Column(columnDefinition = "varchar(35)")
     private String password;
 
-    /**
-     * qq密码
-     */
     @Column(columnDefinition = "varchar(35)")
     private String qqPassword;
-
-    /**
-     * 重复密码
-     */
-//    @Transient
-//    @TableField(exist = false)
-//    private String passwordAgain;
 
     @Column(columnDefinition = "varchar(15)")
     private String telephone;

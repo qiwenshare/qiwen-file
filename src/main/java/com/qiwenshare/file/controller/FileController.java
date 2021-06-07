@@ -126,7 +126,8 @@ public class FileController {
         }
 
         queryBuilder.withQuery(QueryBuilders.boolQuery()
-                .must(QueryBuilders.matchQuery("fileName", searchFileDTO.getFileName()))
+//                .must(QueryBuilders.matchQuery("fileName", searchFileDTO.getFileName()))
+                .must(QueryBuilders.multiMatchQuery(searchFileDTO.getFileName(),"fileName", "content"))
                 .must(QueryBuilders.termQuery("userId", sessionUserBean.getUserId()))
                 );
         SearchHits<FileSearch> search = elasticsearchRestTemplate.search(queryBuilder.build(), FileSearch.class);
@@ -255,7 +256,6 @@ public class FileController {
         DigestUtils.md5Hex("data");
         for (UserFile userFile : userFiles) {
 
-            //userFile.setDeleteBatchNum(uuid);
             userFileService.deleteUserFile(userFile.getUserFileId(),sessionUserBean.getUserId());
             fileDealComp.deleteESByUserFileId(userFile.getUserFileId());
         }
