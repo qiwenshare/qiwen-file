@@ -194,7 +194,7 @@ public class UserFileService  extends ServiceImpl<UserFileMapper, UserFile> impl
         }else{
             UserFile userFileTemp = userFileMapper.selectById(userFileId);
             LambdaUpdateWrapper<UserFile> userFileLambdaUpdateWrapper = new LambdaUpdateWrapper<>();
-            userFileLambdaUpdateWrapper.set(UserFile::getDeleteFlag, RandomUtil.randomInt(FileConstant.deleteFileRandomSize))
+            userFileLambdaUpdateWrapper.set(UserFile::getDeleteFlag, RandomUtil.randomInt(1, FileConstant.deleteFileRandomSize))
                     .set(UserFile::getDeleteTime, DateUtil.getCurrentTime())
                     .set(UserFile::getDeleteBatchNum, uuid)
                     .eq(UserFile::getUserFileId, userFileTemp.getUserFileId());

@@ -33,10 +33,6 @@ public class FileBean {
     @Column(columnDefinition="bigint(10)")
     private Long fileSize;
 
-//    @Column(columnDefinition="int(1)")
-//    @Deprecated
-//    private Integer isOSS;
-
     @Column(columnDefinition="int(1)")
     private Integer storageType;
 

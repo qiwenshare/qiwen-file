@@ -138,6 +138,7 @@ public class FiletransferController {
         }
 
         httpServletResponse.addHeader("Content-Disposition", "attachment;fileName=" + fileName);// 设置文件名
+
         filetransferService.downloadFile(httpServletResponse, downloadFileDTO);
     }
 

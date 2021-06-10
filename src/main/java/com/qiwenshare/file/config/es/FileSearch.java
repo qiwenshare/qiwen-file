@@ -15,6 +15,8 @@ public class FileSearch {
     private Long fileId;
     @Field(type = FieldType.Text, analyzer = "ik_max_word")
     private String fileName;
+    @Field(type = FieldType.Text, analyzer = "ik_max_word")
+    private String content;
     @Field(type = FieldType.Keyword)
     private String timeStampName;
     @Field(type = FieldType.Keyword)

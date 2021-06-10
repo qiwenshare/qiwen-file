@@ -4,6 +4,7 @@ import cn.hutool.core.bean.BeanUtil;
 import com.alibaba.fastjson.JSON;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.qiwenshare.file.api.IElasticSearchService;
+import com.qiwenshare.file.component.FileDealComp;
 import com.qiwenshare.file.config.es.FileSearch;
 import com.qiwenshare.file.domain.FileBean;
 import com.qiwenshare.file.domain.UserFile;
@@ -12,6 +13,9 @@ import com.qiwenshare.file.service.FiletransferService;
 import com.qiwenshare.file.service.UserFileService;
 import com.qiwenshare.file.service.UserService;
 import com.qiwenshare.file.vo.file.FileListVo;
+import com.qiwenshare.ufo.factory.UFOFactory;
+import com.qiwenshare.ufo.operation.read.Reader;
+import com.qiwenshare.ufo.operation.read.domain.ReadFile;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.catalina.User;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -35,6 +39,8 @@ public class TaskController {
     FiletransferService filetransferService;
     @Autowired
     private IElasticSearchService elasticSearchService;
+    @Resource
+    FileDealComp fileDealComp;
 
     @Scheduled(cron = "0 0/1 * * * ?")
     public void deleteFile() {
@@ -55,22 +61,17 @@ public class TaskController {
     @Scheduled(fixedRate = 1000 * 60 * 60 * 24)
     public void updateElasticSearch() {
 
-        UserFile userFile = new UserFile();
         try {
             elasticSearchService.deleteAll();
         } catch (Exception e) {
             log.error("删除ES失败:" + e);
         }
-        try {
-            List<FileListVo> userfiles = userFileService.userFileList(userFile, 0L, 999999L);
-            for (FileListVo fileListVo : userfiles) {
-                log.info(JSON.toJSONString(fileListVo));
-                FileSearch fileSearch = new FileSearch();
-                BeanUtil.copyProperties(fileListVo, fileSearch);
-                elasticSearchService.save(fileSearch);
-            }
-        } catch (Exception e) {
-            log.error("更新ES失败:" + e);
+
+        List<UserFile> userfileList = userFileService.list();
+        for (UserFile userFile : userfileList) {
+            log.info(JSON.toJSONString(userFile));
+            fileDealComp.uploadESByUserFileId(userFile.getUserFileId());
         }
+
     }
 }

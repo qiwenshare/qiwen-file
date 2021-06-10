@@ -6,12 +6,12 @@
     <parent>
         <groupId>com.qiwenshare</groupId>
         <artifactId>qiwenshare</artifactId>
-        <version>1.0.1</version>
+        <version>1.0.2</version>
     </parent>
 
     <groupId>com.qiwenshare</groupId>
     <artifactId>qiwen-file</artifactId>
-    <version>1.0.1-SNAPSHOT</version>
+    <version>1.0.2-SNAPSHOT</version>
     <name>qiwen-file</name>
     <description>fileos.qiwenshare.com</description>
     <packaging>jar</packaging>
@@ -37,7 +37,6 @@
         <dependency>
             <groupId>com.github.xiaoymin</groupId>
             <artifactId>knife4j-spring-boot-starter</artifactId>
-            <version>3.0.2</version>
         </dependency>
 
 
@@ -177,6 +176,7 @@
                         </goals>
                         <configuration>
                             <target>
+                                <delete dir="${release-path}" />
                                 <copy todir="${release-path}" >
                                     <fileset dir="target/${app-name}/${app-name}">
                                     </fileset>
