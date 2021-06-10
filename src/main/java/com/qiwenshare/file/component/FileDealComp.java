@@ -235,12 +235,16 @@ public class FileDealComp {
             if (userfileResult != null && userfileResult.size() > 0) {
                 FileSearch fileSearch = new FileSearch();
                 BeanUtil.copyProperties(userfileResult.get(0), fileSearch);
-                Reader reader = ufoFactory.getReader(fileSearch.getStorageType());
-                ReadFile readFile = new ReadFile();
-                readFile.setFileUrl(fileSearch.getFileUrl());
-                String content = reader.read(readFile);
-                //全文搜索
-//                fileSearch.setContent(content);
+                if (fileSearch.getIsDir() == 0) {
+
+                    Reader reader = ufoFactory.getReader(fileSearch.getStorageType());
+                    ReadFile readFile = new ReadFile();
+                    readFile.setFileUrl(fileSearch.getFileUrl());
+                    String content = reader.read(readFile);
+                    //全文搜索
+    //                fileSearch.setContent(content);
+
+                }
                 elasticSearchService.save(fileSearch);
             }
         } catch (Exception e) {
