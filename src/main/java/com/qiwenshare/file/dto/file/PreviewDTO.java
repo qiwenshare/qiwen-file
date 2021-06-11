@@ -8,4 +8,5 @@ import lombok.Data;
 public class PreviewDTO {
     private Long userFileId;
     private String token;
+    private String isMin;
 }

@@ -173,6 +173,7 @@ public class FiletransferController {
         httpServletResponse.addHeader("Content-Disposition", "fileName=" + fileName);// 设置文件名
         DownloadFileDTO downloadFileDTO = new DownloadFileDTO();
         downloadFileDTO.setUserFileId(previewDTO.getUserFileId());
+        downloadFileDTO.setIsMin(previewDTO.getIsMin());
         try {
             filetransferService.downloadFile(httpServletResponse, downloadFileDTO);
         }catch (Exception e){
