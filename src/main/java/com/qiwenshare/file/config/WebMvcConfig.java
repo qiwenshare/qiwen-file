@@ -44,9 +44,11 @@ public class WebMvcConfig implements WebMvcConfigurer {
 		list.add("/share/**");
 		registry.addInterceptor(authenticationInterceptor)
 			.addPathPatterns(list)
-			.excludePathPatterns("/filetransfer/downloadfile", "/filetransfer/preview");
-//			//登录、登出
-//			.excludePathPatterns("/user/checkuserlogininfo", "/user/login", "/user/register");
-
+			.excludePathPatterns("/filetransfer/downloadfile",
+					"/filetransfer/preview",
+					"/share/sharefileList",
+					"/share/sharetype",
+					"/share/checkextractioncode",
+					"/share/checkendtime");
 	}
 }
