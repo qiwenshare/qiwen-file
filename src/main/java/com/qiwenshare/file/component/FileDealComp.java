@@ -34,6 +34,7 @@ public class FileDealComp {
     UserFileMapper userFileMapper;
     @Autowired
     private IElasticSearchService elasticSearchService;
+    public static Executor exec = Executors.newFixedThreadPool(10);
 
     @Resource
     UFOFactory ufoFactory;
@@ -228,37 +229,43 @@ public class FileDealComp {
 
 
     public void uploadESByUserFileId(Long userFileId) {
-        try {
-            UserFile userFile = new UserFile();
-            userFile.setUserFileId(userFileId);
-            List<FileListVo> userfileResult = userFileMapper.userFileList(userFile, null, null);
-            if (userfileResult != null && userfileResult.size() > 0) {
-                FileSearch fileSearch = new FileSearch();
-                BeanUtil.copyProperties(userfileResult.get(0), fileSearch);
-                if (fileSearch.getIsDir() == 0) {
-
-                    Reader reader = ufoFactory.getReader(fileSearch.getStorageType());
-                    ReadFile readFile = new ReadFile();
-                    readFile.setFileUrl(fileSearch.getFileUrl());
-                    String content = reader.read(readFile);
-                    //全文搜索
-    //                fileSearch.setContent(content);
-
+        exec.execute(()->{
+            try {
+                UserFile userFile = new UserFile();
+                userFile.setUserFileId(userFileId);
+                List<FileListVo> userfileResult = userFileMapper.userFileList(userFile, null, null);
+                if (userfileResult != null && userfileResult.size() > 0) {
+                    FileSearch fileSearch = new FileSearch();
+                    BeanUtil.copyProperties(userfileResult.get(0), fileSearch);
+//                if (fileSearch.getIsDir() == 0) {
+//
+//                    Reader reader = ufoFactory.getReader(fileSearch.getStorageType());
+//                    ReadFile readFile = new ReadFile();
+//                    readFile.setFileUrl(fileSearch.getFileUrl());
+//                    String content = reader.read(readFile);
+//                    //全文搜索
+//    //                fileSearch.setContent(content);
+//
+//                }
+                    elasticSearchService.save(fileSearch);
                 }
-                elasticSearchService.save(fileSearch);
+            } catch (Exception e) {
+                log.error("ES更新操作失败，请检查配置");
             }
-        } catch (Exception e) {
-            log.error("ES更新操作失败，请检查配置");
-        }
+        });
+
 
     }
 
     public void deleteESByUserFileId(Long userFileId) {
-        try {
-            elasticSearchService.deleteById(userFileId);
-        } catch (Exception e) {
-            log.error("ES删除操作失败，请检查配置");
-        }
+        exec.execute(()->{
+            try {
+                elasticSearchService.deleteById(userFileId);
+            } catch (Exception e) {
+                log.error("ES删除操作失败，请检查配置");
+            }
+        });
+
 
     }
 }
