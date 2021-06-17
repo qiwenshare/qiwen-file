@@ -211,10 +211,15 @@ public class FiletransferService implements IFiletransferService {
                 }
             }
             Downloader downloader = ufoFactory.getDownloader(StorageTypeEnum.LOCAL.getStorageType());
-//            Downloader downloader = localStorageOperationFactory.getDownloader();
             DownloadFile downloadFile = new DownloadFile();
             downloadFile.setFileUrl("temp" + File.separator+userFile.getFileName() + ".zip");
             downloader.download(httpServletResponse, downloadFile);
+            String zipPath = PathUtil.getStaticPath() + "temp" + File.separator+userFile.getFileName() + ".zip";
+            File file = new File(zipPath);
+            if (file.exists()) {
+                file.delete();
+            }
+
         }
     }
 
