@@ -28,7 +28,7 @@ import java.util.Map;
 @Tag(name = "user", description = "该接口为用户接口，主要做用户登录，注册和校验token")
 @RestController
 @Slf4j
-@RequestMapping("/user")
+@RequestMapping({"/user", "/api/user"})
 public class UserController {
 
     @Resource
@@ -102,8 +102,6 @@ public class UserController {
         }
         UserBean sessionUserBean = userService.getUserBeanByToken(token);
         if (sessionUserBean != null) {
-            String domain = UFOAutoConfiguration.aliyunConfig.getOss().getDomain();
-            sessionUserBean.setViewDomain(domain);
             return RestResult.success().data(sessionUserBean);
 
         } else {

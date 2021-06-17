@@ -36,12 +36,11 @@ public class FileDealComp {
     private IElasticSearchService elasticSearchService;
     public static Executor exec = Executors.newFixedThreadPool(10);
 
-    @Resource
-    UFOFactory ufoFactory;
     /**
      * 获取重复文件名
      *
-     * 场景: 文件还原时，在 savefilePath 路径下，保存 测试.txt 文件重名，则会生成 测试(1).txt
+     * 场景1: 文件还原时，在 savefilePath 路径下，保存 测试.txt 文件重名，则会生成 测试(1).txt
+     * 场景2： 上传文件时，在 savefilePath 路径下，保存 测试.txt 文件重名，则会生成 测试(1).txt
      *
      * @param userFile
      * @param savefilePath

@@ -19,6 +19,7 @@ import com.qiwenshare.file.dto.DownloadFileDTO;
 import com.qiwenshare.file.dto.UploadFileDTO;
 import com.qiwenshare.file.dto.file.PreviewDTO;
 import com.qiwenshare.file.service.StorageService;
+import com.qiwenshare.file.vo.file.FileListVo;
 import com.qiwenshare.file.vo.file.UploadFileVo;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -30,6 +31,7 @@ import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.UnsupportedEncodingException;
+import java.sql.SQLIntegrityConstraintViolationException;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -37,7 +39,7 @@ import java.util.Map;
 @Slf4j
 @Tag(name = "filetransfer", description = "该接口为文件传输接口，主要用来做文件的上传和下载")
 @RestController
-@RequestMapping("/filetransfer")
+@RequestMapping({"/filetransfer", "/api/filetransfer"})
 public class FiletransferController {
 
     @Resource
@@ -77,19 +79,28 @@ public class FiletransferController {
                 FileBean file = list.get(0);
 
                 UserFile userFile = new UserFile();
-                userFile.setFileId(file.getFileId());
+
                 userFile.setUserId(sessionUserBean.getUserId());
                 userFile.setFilePath(uploadFileDto.getFilePath());
                 String fileName = uploadFileDto.getFilename();
-                userFile.setFileName(fileName.substring(0, fileName.lastIndexOf(".")));
+                userFile.setFileName(FileUtil.getFileNameNotExtend(fileName));
                 userFile.setExtendName(FileUtil.getFileExtendName(fileName));
                 userFile.setDeleteFlag(0);
-                userFile.setIsDir(0);
-                userFile.setUploadTime(DateUtil.getCurrentTime());
-                userFileService.save(userFile);
-                fileService.increaseFilePointCount(file.getFileId());
+                List<FileListVo> userFileList = userFileService.userFileList(userFile, null, null);
+                if (userFileList.size() <= 0) {
+
+                    userFile.setIsDir(0);
+                    userFile.setUploadTime(DateUtil.getCurrentTime());
+                    userFile.setFileId(file.getFileId());
+                    //"fileName", "filePath", "extendName", "deleteFlag", "userId"
+
+                    userFileService.save(userFile);
+                    fileService.increaseFilePointCount(file.getFileId());
+                    fileDealComp.uploadESByUserFileId(userFile.getUserFileId());
+                }
+
                 uploadFileVo.setSkipUpload(true);
-                fileDealComp.uploadESByUserFileId(userFile.getUserFileId());
+
             } else {
                 uploadFileVo.setSkipUpload(false);
 
@@ -171,11 +182,9 @@ public class FiletransferController {
         }
 
         httpServletResponse.addHeader("Content-Disposition", "fileName=" + fileName);// 设置文件名
-        DownloadFileDTO downloadFileDTO = new DownloadFileDTO();
-        downloadFileDTO.setUserFileId(previewDTO.getUserFileId());
-        downloadFileDTO.setIsMin(previewDTO.getIsMin());
+
         try {
-            filetransferService.downloadFile(httpServletResponse, downloadFileDTO);
+            filetransferService.previewFile(httpServletResponse, previewDTO);
         }catch (Exception e){
             //org.apache.catalina.connector.ClientAbortException: java.io.IOException: 你的主机中的软件中止了一个已建立的连接。
             e.printStackTrace();

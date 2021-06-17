@@ -2,9 +2,12 @@ package com.qiwenshare.file.config;
 
 
 import com.qiwenshare.file.interceptor.AuthenticationInterceptor;
+import joptsimple.util.PathProperties;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.servlet.config.annotation.InterceptorRegistry;
+import org.springframework.web.servlet.config.annotation.PathMatchConfigurer;
 import org.springframework.web.servlet.config.annotation.ResourceHandlerRegistry;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 
@@ -44,11 +47,13 @@ public class WebMvcConfig implements WebMvcConfigurer {
 		list.add("/share/**");
 		registry.addInterceptor(authenticationInterceptor)
 			.addPathPatterns(list)
-			.excludePathPatterns("/filetransfer/downloadfile",
+			.excludePathPatterns("/file",
+					"/filetransfer/downloadfile",
 					"/filetransfer/preview",
 					"/share/sharefileList",
 					"/share/sharetype",
 					"/share/checkextractioncode",
 					"/share/checkendtime");
 	}
+
 }
