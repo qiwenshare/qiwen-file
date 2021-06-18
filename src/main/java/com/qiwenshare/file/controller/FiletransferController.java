@@ -11,13 +11,12 @@ import com.qiwenshare.file.api.IFiletransferService;
 import com.qiwenshare.file.api.IUserFileService;
 import com.qiwenshare.file.api.IUserService;
 import com.qiwenshare.file.component.FileDealComp;
-import com.qiwenshare.file.domain.FileBean;
-import com.qiwenshare.file.domain.StorageBean;
-import com.qiwenshare.file.domain.UserBean;
-import com.qiwenshare.file.domain.UserFile;
+import com.qiwenshare.file.domain.*;
 import com.qiwenshare.file.dto.DownloadFileDTO;
 import com.qiwenshare.file.dto.UploadFileDTO;
 import com.qiwenshare.file.dto.file.PreviewDTO;
+import com.qiwenshare.file.service.ShareFileService;
+import com.qiwenshare.file.service.ShareService;
 import com.qiwenshare.file.service.StorageService;
 import com.qiwenshare.file.vo.file.FileListVo;
 import com.qiwenshare.file.vo.file.UploadFileVo;
@@ -55,6 +54,10 @@ public class FiletransferController {
     FileDealComp fileDealComp;
     @Resource
     StorageService storageService;
+    @Resource
+    ShareService shareService;
+    @Resource
+    ShareFileService shareFileService;
     public static final String CURRENT_MODULE = "文件传输接口";
 
     @Operation(summary = "极速上传", description = "校验文件MD5判断文件是否存在，如果存在直接上传成功并返回skipUpload=true，如果不存在返回skipUpload=false需要再次调用该接口的POST方法", tags = {"filetransfer"})
@@ -156,13 +159,39 @@ public class FiletransferController {
     @Operation(summary="预览文件", description="用于文件预览", tags = {"filetransfer"})
     @GetMapping("/preview")
     public void preview(HttpServletRequest httpServletRequest, HttpServletResponse httpServletResponse,  PreviewDTO previewDTO){
-
-        String token = previewDTO.getToken();
-        UserBean sessionUserBean = userService.getUserBeanByToken(token);
         UserFile userFile = userFileService.getById(previewDTO.getUserFileId());
-        if (userFile.getUserId() != sessionUserBean.getUserId()) {
-            return;
+        String token = previewDTO.getToken();
+        if ("1".equals(previewDTO.getMode())) {
+            UserBean sessionUserBean = userService.getUserBeanByToken(token);
+            if (sessionUserBean == null) {
+                return;
+            }
+            if (userFile.getUserId() != sessionUserBean.getUserId()) {
+                return;
+            }
+        } else if ("2".equals(previewDTO.getMode())) {
+            Map<String, Object> param = new HashMap<>();
+            param.put("shareBatchNum", previewDTO.getShareBatchNum());
+            List<Share> shareList = shareService.listByMap(param);
+            //判断批次号
+            if (shareList.size() <= 0) {
+                return;
+            }
+            Integer shareType = shareList.get(0).getShareType();
+            if (1 == shareType) {
+                //判断提取码
+                String extractionCode = shareList.get(0).getExtractionCode();
+                if (!extractionCode.equals(previewDTO.getExtractionCode())) {
+                    return;
+                }
+            }
+            param.put("userFileId", previewDTO.getUserFileId());
+            List<ShareFile> shareFileList = shareFileService.listByMap(param);
+            if (shareFileList.size() <= 0) {
+                return;
+            }
         }
+
         FileBean fileBean = fileService.getById(userFile.getFileId());
         String mime= MimeUtils.getMime(userFile.getExtendName());
         httpServletResponse.setHeader("Content-Type", mime);

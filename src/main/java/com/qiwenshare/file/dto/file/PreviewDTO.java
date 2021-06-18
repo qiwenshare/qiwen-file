@@ -8,5 +8,11 @@ import lombok.Data;
 public class PreviewDTO {
     private Long userFileId;
     private String token;
+    @Schema(description="预览模式，1-登录，2-分享")
+    private String mode;
+    @Schema(description="批次号")
+    private String shareBatchNum;
+    @Schema(description="提取码")
+    private String extractionCode;
     private String isMin;
 }
