@@ -160,8 +160,10 @@ public class FiletransferController {
     @GetMapping("/preview")
     public void preview(HttpServletRequest httpServletRequest, HttpServletResponse httpServletResponse,  PreviewDTO previewDTO){
         UserFile userFile = userFileService.getById(previewDTO.getUserFileId());
-        String token = previewDTO.getToken();
-        if ("1".equals(previewDTO.getMode())) {
+
+        if ("undefined".equals(previewDTO.getShareBatchNum())  || StringUtils.isEmpty(previewDTO.getShareBatchNum())) {
+
+            String token = previewDTO.getToken();
             UserBean sessionUserBean = userService.getUserBeanByToken(token);
             if (sessionUserBean == null) {
                 return;
@@ -169,7 +171,8 @@ public class FiletransferController {
             if (userFile.getUserId() != sessionUserBean.getUserId()) {
                 return;
             }
-        } else if ("2".equals(previewDTO.getMode())) {
+        } else {
+
             Map<String, Object> param = new HashMap<>();
             param.put("shareBatchNum", previewDTO.getShareBatchNum());
             List<Share> shareList = shareService.listByMap(param);

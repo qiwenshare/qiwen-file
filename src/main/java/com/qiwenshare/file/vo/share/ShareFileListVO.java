@@ -41,8 +41,8 @@ public class ShareFileListVO {
 //
 //    private String shareTime;
 //    private String endTime;
-//    private String extractionCode;
-//    private String shareBatchNum;
+    private String extractionCode;
+    private String shareBatchNum;
 //    private Integer shareType;//0公共，1私密，2好友
 //    private Integer shareStatus;//0正常，1已失效，2已撤销
 }
