@@ -27,6 +27,9 @@
             <if test="userFile.userFileId != null">
                 and a.userFileId = #{userFile.userFileId}
             </if>
+            <if test="userFile.fileName != null">
+                and a.fileName = #{userFile.fileName}
+            </if>
             and a.deleteFlag = 0
         </where>
         ORDER BY  isDir desc

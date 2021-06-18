@@ -17,6 +17,7 @@
 
     <select id="selectShareFileList" resultType="com.qiwenshare.file.vo.share.ShareFileListVO">
         select * from sharefile a
+        LEFT JOIN share ON share.shareBatchNum = a.shareBatchNum
         left join userfile b on b.userFileId = a.userFileId
         left join file c on c.fileId = b.fileId
         where a.shareBatchNum = #{shareBatchNum}

@@ -24,11 +24,14 @@ import com.qiwenshare.file.component.FileDealComp;
 import com.qiwenshare.file.domain.UserFile;
 import com.qiwenshare.file.dto.DownloadFileDTO;
 import com.qiwenshare.file.dto.UploadFileDTO;
+import com.qiwenshare.file.dto.file.PreviewDTO;
 import com.qiwenshare.file.mapper.FileMapper;
 import com.qiwenshare.file.domain.FileBean;
 import com.qiwenshare.file.domain.StorageBean;
 import com.qiwenshare.file.mapper.StorageMapper;
 import com.qiwenshare.file.mapper.UserFileMapper;
+import com.qiwenshare.file.vo.file.FileListVo;
+import com.qiwenshare.ufo.exception.DownloadException;
 import com.qiwenshare.ufo.exception.UploadException;
 import com.qiwenshare.ufo.factory.StorageTypeEnum;
 import com.qiwenshare.ufo.factory.UFOFactory;
@@ -36,6 +39,8 @@ import com.qiwenshare.ufo.operation.delete.Deleter;
 import com.qiwenshare.ufo.operation.delete.domain.DeleteFile;
 import com.qiwenshare.ufo.operation.download.Downloader;
 import com.qiwenshare.ufo.operation.download.domain.DownloadFile;
+import com.qiwenshare.ufo.operation.preview.Previewer;
+import com.qiwenshare.ufo.operation.preview.domain.PreviewFile;
 import com.qiwenshare.ufo.operation.upload.Uploader;
 import com.qiwenshare.ufo.operation.upload.domain.UploadFile;
 import com.qiwenshare.ufo.util.PathUtil;
@@ -62,16 +67,16 @@ public class FiletransferService implements IFiletransferService {
     FileDealComp fileDealComp;
 
     @Override
-    public void uploadFile(HttpServletRequest request, UploadFileDTO UploadFileDto, Long userId) {
+    public void uploadFile(HttpServletRequest request, UploadFileDTO uploadFileDto, Long userId) {
 
 
         UploadFile uploadFile = new UploadFile();
-        uploadFile.setChunkNumber(UploadFileDto.getChunkNumber());
-        uploadFile.setChunkSize(UploadFileDto.getChunkSize());
-        uploadFile.setTotalChunks(UploadFileDto.getTotalChunks());
-        uploadFile.setIdentifier(UploadFileDto.getIdentifier());
-        uploadFile.setTotalSize(UploadFileDto.getTotalSize());
-        uploadFile.setCurrentChunkSize(UploadFileDto.getCurrentChunkSize());
+        uploadFile.setChunkNumber(uploadFileDto.getChunkNumber());
+        uploadFile.setChunkSize(uploadFileDto.getChunkSize());
+        uploadFile.setTotalChunks(uploadFileDto.getTotalChunks());
+        uploadFile.setIdentifier(uploadFileDto.getIdentifier());
+        uploadFile.setTotalSize(uploadFileDto.getTotalSize());
+        uploadFile.setCurrentChunkSize(uploadFileDto.getCurrentChunkSize());
 
         Uploader uploader = ufoFactory.getUploader();
         if (uploader == null) {
@@ -83,7 +88,7 @@ public class FiletransferService implements IFiletransferService {
         for (int i = 0; i < uploadFileList.size(); i++){
             uploadFile = uploadFileList.get(i);
             FileBean fileBean = new FileBean();
-            BeanUtil.copyProperties(UploadFileDto, fileBean);
+            BeanUtil.copyProperties(uploadFileDto, fileBean);
             fileBean.setTimeStampName(uploadFile.getTimeStampName());
             if (uploadFile.getSuccess() == 1){
                 fileBean.setFileUrl(uploadFile.getUrl());
@@ -92,13 +97,19 @@ public class FiletransferService implements IFiletransferService {
                 fileBean.setPointCount(1);
                 fileMapper.insert(fileBean);
                 UserFile userFile = new UserFile();
-                userFile.setFileId(fileBean.getFileId());
-                userFile.setExtendName(uploadFile.getFileType());
-                userFile.setFileName(uploadFile.getFileName());
-                userFile.setFilePath(UploadFileDto.getFilePath());
-                userFile.setDeleteFlag(0);
+                userFile.setFilePath(uploadFileDto.getFilePath());
                 userFile.setUserId(userId);
+                userFile.setFileName(uploadFile.getFileName());
+                userFile.setExtendName(uploadFile.getFileType());
+                userFile.setDeleteFlag(0);
                 userFile.setIsDir(0);
+                List<FileListVo> userFileList = userFileMapper.userFileList(userFile, null, null);
+                if (userFileList.size() > 0) {
+                    String fileName = fileDealComp.getRepeatFileName(userFile, uploadFileDto.getFilePath());
+                    userFile.setFileName(fileName);
+                }
+                userFile.setFileId(fileBean.getFileId());
+
                 userFile.setUploadTime(DateUtil.getCurrentTime());
                 userFileMapper.insert(userFile);
                 fileDealComp.uploadESByUserFileId(userFile.getUserFileId());
@@ -118,14 +129,11 @@ public class FiletransferService implements IFiletransferService {
             Downloader downloader = ufoFactory.getDownloader(fileBean.getStorageType());
             if (downloader == null) {
                 log.error("下载失败，文件存储类型不支持下载，storageType:{}", fileBean.getStorageType());
-                throw new UploadException("下载失败");
+                throw new DownloadException("下载失败");
             }
             DownloadFile downloadFile = new DownloadFile();
-            if ("true".equals(downloadFileDTO.getIsMin())) {
-                downloadFile.setFileUrl(fileBean.getFileUrl().replace("." + userFile.getExtendName(), "_min." + userFile.getExtendName()));
-            } else {
-                downloadFile.setFileUrl(fileBean.getFileUrl());
-            }
+
+            downloadFile.setFileUrl(fileBean.getFileUrl());
             downloadFile.setFileSize(fileBean.getFileSize());
 
             downloader.download(httpServletResponse, downloadFile);
@@ -203,11 +211,36 @@ public class FiletransferService implements IFiletransferService {
                 }
             }
             Downloader downloader = ufoFactory.getDownloader(StorageTypeEnum.LOCAL.getStorageType());
-//            Downloader downloader = localStorageOperationFactory.getDownloader();
             DownloadFile downloadFile = new DownloadFile();
             downloadFile.setFileUrl("temp" + File.separator+userFile.getFileName() + ".zip");
             downloader.download(httpServletResponse, downloadFile);
+            String zipPath = PathUtil.getStaticPath() + "temp" + File.separator+userFile.getFileName() + ".zip";
+            File file = new File(zipPath);
+            if (file.exists()) {
+                file.delete();
+            }
+
         }
+    }
+
+    @Override
+    public void previewFile(HttpServletResponse httpServletResponse, PreviewDTO previewDTO) {
+        UserFile userFile = userFileMapper.selectById(previewDTO.getUserFileId());
+        FileBean fileBean = fileMapper.selectById(userFile.getFileId());
+        Previewer previewer = ufoFactory.getPreviewer(fileBean.getStorageType());
+        if (previewer == null) {
+            log.error("预览失败，文件存储类型不支持预览，storageType:{}", fileBean.getStorageType());
+            throw new UploadException("预览失败");
+        }
+        PreviewFile previewFile = new PreviewFile();
+        previewFile.setFileUrl(fileBean.getFileUrl());
+        previewFile.setFileSize(fileBean.getFileSize());
+        if ("true".equals(previewDTO.getIsMin())) {
+            previewer.imageThumbnailPreview(httpServletResponse, previewFile);
+        } else {
+            previewer.imageOriginalPreview(httpServletResponse, previewFile);
+        }
+
     }
 
     @Override

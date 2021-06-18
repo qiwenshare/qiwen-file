@@ -45,7 +45,7 @@ import static com.qiwenshare.common.util.FileUtil.getFileExtendsByType;
 @Tag(name = "file", description = "该接口为文件接口，主要用来做一些文件的基本操作，如创建目录，删除，移动，复制等。")
 @RestController
 @Slf4j
-@RequestMapping("/file")
+@RequestMapping({"/file", "/api/file"})
 public class FileController {
 
     @Resource
@@ -292,7 +292,8 @@ public class FileController {
         }
         String zipFileUrl = PathUtil.getStaticPath() + unzipFileDto.getFileUrl();
         File file = FileOperation.newFile(zipFileUrl);
-        String unzipUrl = file.getParent();
+        String extendName = FileUtil.getFileExtendName(zipFileUrl);
+        String unzipUrl = zipFileUrl.replace("." + extendName, "");
         String[] arr = unzipFileDto.getFileUrl().split("\\.");
         if (arr.length <= 1) {
             return RestResult.fail().message("文件名格式错误！");
@@ -315,8 +316,6 @@ public class FileController {
         }
 
         List<FileBean> fileBeanList = new ArrayList<>();
-
-        log.info("解压缩文件数量：" + fileBeanList);
 
         for (int i = 0; i < fileEntryNameList.size(); i++){
             String entryName = fileEntryNameList.get(i);
