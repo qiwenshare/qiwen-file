@@ -48,6 +48,17 @@ public class UserFileService  extends ServiceImpl<UserFileMapper, UserFile> impl
     }
 
     @Override
+    public List<UserFile> selectSameUserFile(String fileName, String filePath, String extendName, Long userId) {
+        LambdaQueryWrapper<UserFile> lambdaQueryWrapper = new LambdaQueryWrapper<>();
+        lambdaQueryWrapper.eq(UserFile::getFileName, fileName)
+                .eq(UserFile::getFilePath, filePath)
+                .eq(UserFile::getUserId, userId)
+                .eq(UserFile::getExtendName, extendName)
+                .eq(UserFile::getDeleteFlag, "0");
+        return userFileMapper.selectList(lambdaQueryWrapper);
+    }
+
+    @Override
     public void replaceUserFilePath(String filePath, String oldFilePath, Long userId) {
         userFileMapper.replaceFilePath(filePath, oldFilePath, userId);
     }
