@@ -6,12 +6,12 @@
     <parent>
         <groupId>com.qiwenshare</groupId>
         <artifactId>qiwenshare</artifactId>
-        <version>1.0.3</version>
+        <version>1.0.4</version>
     </parent>
 
     <groupId>com.qiwenshare</groupId>
     <artifactId>qiwen-file</artifactId>
-    <version>1.0.3-SNAPSHOT</version>
+    <version>1.0.4-SNAPSHOT</version>
     <name>qiwen-file</name>
     <description>fileos.qiwenshare.com</description>
     <packaging>jar</packaging>
@@ -108,6 +108,12 @@
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-data-elasticsearch</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>com.inversoft</groupId>
+            <artifactId>prime-jwt</artifactId>
+            <version>1.3.1</version>
         </dependency>
 
     </dependencies>

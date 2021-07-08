@@ -44,16 +44,14 @@ public class WebMvcConfig implements WebMvcConfigurer {
 		list.add("/file/**");
 		list.add("/filetransfer/**");
 		list.add("/recoveryfile/**");
-		list.add("/share/**");
+		list.add("/share/sharefile");
+		list.add("/share/savesharefile");
+		list.add("/share/shareList");
 		registry.addInterceptor(authenticationInterceptor)
 			.addPathPatterns(list)
 			.excludePathPatterns("/file",
 					"/filetransfer/downloadfile",
-					"/filetransfer/preview",
-					"/share/sharefileList",
-					"/share/sharetype",
-					"/share/checkextractioncode",
-					"/share/checkendtime");
+					"/filetransfer/preview");
 	}
 
 }

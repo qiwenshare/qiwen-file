@@ -11,6 +11,7 @@ import java.util.Map;
 
 public interface IUserFileService extends IService<UserFile> {
     List<UserFile> selectUserFileByNameAndPath(String fileName, String filePath, Long userId);
+    List<UserFile> selectSameUserFile(String fileName, String filePath, String extendName, Long userId);
     void replaceUserFilePath(String filePath, String oldFilePath, Long userId);
     List<FileListVo> userFileList(UserFile userFile, Long beginCount, Long pageCount);
     void updateFilepathByFilepath(String oldfilePath, String newfilePath, String fileName, String extendName, long userId);
