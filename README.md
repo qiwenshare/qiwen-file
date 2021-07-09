@@ -20,6 +20,7 @@
 	<a href="http://pan.qiwenshare.com/" target="_blank">在线演示环境</a> &nbsp;|
 	<a href="https://pan.qiwenshare.com/docs/guide/deploying.html#%E9%83%A8%E7%BD%B2%E8%AF%B4%E6%98%8E"  target="_blank">安装指导</a>&nbsp;|
         <a href="https://pan.qiwenshare.com/docs/"  target="_blank">说明文档</a> |
+    	<a href="https://www.qiwenshare.com/essay/detail/1190"  target="_blank">课程链接</a> |
         <a href="https://pan.qiwenshare.com/docs/log/backend.html"  target="_blank">更新日志</a>
 </p>
 
