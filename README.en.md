@@ -17,7 +17,9 @@
 </p>
 <p align="center">
 	<a href="http://pan.qiwenshare.com/" target="_blank">Online presentation environment</a> &nbsp;|
-	<a href="https://www.qiwenshare.com/essay/detail/169"  target="_blank">Installation instructions</a>&nbsp;|
+	<a href="https://pan.qiwenshare.com/docs/guide/deploying.html#%E9%83%A8%E7%BD%B2%E8%AF%B4%E6%98%8E"  target="_blank">Installation instructions</a>&nbsp;|
+        <a href="https://pan.qiwenshare.com/docs/"  target="_blank">Documentation</a>&nbsp;|
+    <a href="https://www.qiwenshare.com/essay/detail/1190"  target="_blank">Course links</a>&nbsp;|
         <a href="https://www.qiwenshare.com/essay/detail/324"  target="_blank">Update log</a>
 </p>
 
