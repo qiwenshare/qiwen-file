@@ -286,19 +286,17 @@ public class OfficeController {
 
                 URL url = new URL(downloadUri);
                 HttpURLConnection connection = (HttpURLConnection) url.openConnection();
-                String md5Str = "";
+//                String md5Str = "";
                 int fileLength = 0;
                 try {
                     InputStream stream = connection.getInputStream();
-                    fileLength = connection.getContentLength();
-                    md5Str = DigestUtils.md5Hex(stream);
 
                     Writer writer1 = ufoFactory.getWriter(fileBean.getStorageType());
                     WriteFile writeFile = new WriteFile();
                     writeFile.setFileUrl(fileBean.getFileUrl());
 
                     log.info("当前修改文件大小为：" + fileLength);
-                    log.info("当前修改文件md5为：" + md5Str);
+//                    log.info("当前修改文件md5为：" + md5Str);
                     writeFile.setFileSize(connection.getContentLength());
                     writer1.write(stream, writeFile);
                 } catch (Exception e) {
@@ -311,10 +309,11 @@ public class OfficeController {
                             .eq(UserFile::getUserFileId, userFileId);
                     userFileService.update(userFileUpdateWrapper);
                     LambdaUpdateWrapper<FileBean> lambdaUpdateWrapper = new LambdaUpdateWrapper<>();
-
+                    fileLength = connection.getContentLength();
                     log.info("当前修改文件大小为2222：" + Long.valueOf(fileLength));
+
                     lambdaUpdateWrapper
-                            .set(FileBean::getIdentifier, md5Str)
+//                            .set(FileBean::getIdentifier, md5Str)
                             .set(FileBean::getFileSize, Long.valueOf(fileLength))
                             .eq(FileBean::getFileId, fileId);
                     fileService.update(lambdaUpdateWrapper);
@@ -323,7 +322,7 @@ public class OfficeController {
                 }
             }
         }
-        
+
         if("3".equals(status)||"7".equals(status)) {//不强制手动保存时为6,"6".equals(status)
             log.debug("====保存失败:");
             writer.write("{\"error\":1}");
