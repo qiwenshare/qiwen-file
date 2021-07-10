@@ -124,7 +124,7 @@ public class OfficeController {
                 }
             }
             FileBean fileBean = new FileBean();
-            fileBean.setFileSize(Long.valueOf(0));
+            fileBean.setFileSize(Long.valueOf(1024 * 3));
             fileBean.setFileUrl(fileUrl);
             fileBean.setStorageType(0);
             fileBean.setPointCount(1);
@@ -261,41 +261,49 @@ public class OfficeController {
         }
         PrintWriter writer = null;
         JSONObject jsonObj=null;
-        try {
-            writer = response.getWriter();
-            Scanner scanner = new Scanner(request.getInputStream()).useDelimiter("\\A");
-            String body = scanner.hasNext() ? scanner.next() : "";
 
-            jsonObj = JSON.parseObject(body);
-            log.debug("===saveeditedfile:" + jsonObj.get("status")) ;
-            String status = jsonObj!=null?jsonObj.get("status").toString():"";
-            if ("2".equals(status)) {//新建报告不强制手动操作时状态为2
-                String type = request.getParameter("type");
-                String downloadUri = (String) jsonObj.get("url");
+        writer = response.getWriter();
+        Scanner scanner = new Scanner(request.getInputStream()).useDelimiter("\\A");
+        String body = scanner.hasNext() ? scanner.next() : "";
 
-                if("edit".equals(type)){//修改报告
-                    log.debug("====文档编辑完成，现在开始保存编辑后的文档，其下载地址为:" + downloadUri);
-                    String fileId = request.getParameter("fileId");
-                    String userFileId = request.getParameter("userFileId");
-                    FileBean fileBean = fileService.getById(fileId);
-                    if (fileBean.getPointCount() > 1) {
-                        //该场景，暂不支持编辑修改
-                        writer.write("{\"error\":1}");
-                        return ;
-                    }
+        jsonObj = JSON.parseObject(body);
+        log.info("===saveeditedfile:" + jsonObj.get("status")); ;
+        String status = jsonObj!=null?jsonObj.get("status").toString():"";
+        if ("2".equals(status)) {//新建报告不强制手动操作时状态为2
+            String type = request.getParameter("type");
+            String downloadUri = (String) jsonObj.get("url");
 
-                    URL url = new URL(downloadUri);
-                    HttpURLConnection connection = (HttpURLConnection) url.openConnection();
+            if("edit".equals(type)){//修改报告
+                log.debug("====文档编辑完成，现在开始保存编辑后的文档，其下载地址为:" + downloadUri);
+                String fileId = request.getParameter("fileId");
+                String userFileId = request.getParameter("userFileId");
+                FileBean fileBean = fileService.getById(fileId);
+                if (fileBean.getPointCount() > 1) {
+                    //该场景，暂不支持编辑修改
+                    writer.write("{\"error\":1}");
+                    return ;
+                }
+
+                URL url = new URL(downloadUri);
+                HttpURLConnection connection = (HttpURLConnection) url.openConnection();
+                String md5Str = "";
+                int fileLength = 0;
+                try {
                     InputStream stream = connection.getInputStream();
+                    fileLength = connection.getContentLength();
+                    md5Str = DigestUtils.md5Hex(stream);
 
                     Writer writer1 = ufoFactory.getWriter(fileBean.getStorageType());
                     WriteFile writeFile = new WriteFile();
                     writeFile.setFileUrl(fileBean.getFileUrl());
-                    int fileLength = connection.getContentLength();
+
                     log.info("当前修改文件大小为：" + fileLength);
+                    log.info("当前修改文件md5为：" + md5Str);
                     writeFile.setFileSize(connection.getContentLength());
                     writer1.write(stream, writeFile);
-
+                } catch (Exception e) {
+                    log.error(e.getMessage());
+                } finally {
                     //更新文件修改信息
                     LambdaUpdateWrapper<UserFile> userFileUpdateWrapper = new LambdaUpdateWrapper<>();
                     userFileUpdateWrapper
@@ -303,7 +311,7 @@ public class OfficeController {
                             .eq(UserFile::getUserFileId, userFileId);
                     userFileService.update(userFileUpdateWrapper);
                     LambdaUpdateWrapper<FileBean> lambdaUpdateWrapper = new LambdaUpdateWrapper<>();
-                    String md5Str = DigestUtils.md5Hex(stream);
+
                     log.info("当前修改文件大小为2222：" + Long.valueOf(fileLength));
                     lambdaUpdateWrapper
                             .set(FileBean::getIdentifier, md5Str)
@@ -313,12 +321,9 @@ public class OfficeController {
 
                     connection.disconnect();
                 }
-
             }
-        }catch (Exception e) {
-            log.error(e.getMessage());
         }
-        String status = jsonObj!=null?jsonObj.get("status").toString():"";
+        
         if("3".equals(status)||"7".equals(status)) {//不强制手动保存时为6,"6".equals(status)
             log.debug("====保存失败:");
             writer.write("{\"error\":1}");
