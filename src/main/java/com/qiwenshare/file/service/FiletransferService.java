@@ -15,6 +15,7 @@ import cn.hutool.core.bean.BeanUtil;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
 
+import com.qiwenshare.common.operation.FileOperation;
 import com.qiwenshare.common.util.DateUtil;
 
 import com.qiwenshare.common.util.FileUtil;
@@ -135,7 +136,7 @@ public class FiletransferService implements IFiletransferService {
 
             downloadFile.setFileUrl(fileBean.getFileUrl());
             downloadFile.setFileSize(fileBean.getFileSize());
-
+            httpServletResponse.setContentLengthLong(fileBean.getFileSize());
             downloader.download(httpServletResponse, downloadFile);
         } else {
             LambdaQueryWrapper<UserFile> lambdaQueryWrapper = new LambdaQueryWrapper<>();
@@ -147,9 +148,9 @@ public class FiletransferService implements IFiletransferService {
 
             String staticPath = PathUtil.getStaticPath();
             String tempPath = staticPath + "temp" + File.separator;
-            File tempFile = new File(tempPath);
-            if (!tempFile.exists()) {
-                tempFile.mkdirs();
+            File tempDirFile = new File(tempPath);
+            if (!tempDirFile.exists()) {
+                tempDirFile.mkdirs();
             }
 
             FileOutputStream f = null;
@@ -213,6 +214,8 @@ public class FiletransferService implements IFiletransferService {
             Downloader downloader = ufoFactory.getDownloader(StorageTypeEnum.LOCAL.getStorageType());
             DownloadFile downloadFile = new DownloadFile();
             downloadFile.setFileUrl("temp" + File.separator+userFile.getFileName() + ".zip");
+            File tempFile = FileOperation.newFile(PathUtil.getStaticPath() + downloadFile.getFileUrl());
+            httpServletResponse.setContentLengthLong(tempFile.length());
             downloader.download(httpServletResponse, downloadFile);
             String zipPath = PathUtil.getStaticPath() + "temp" + File.separator+userFile.getFileName() + ".zip";
             File file = new File(zipPath);
