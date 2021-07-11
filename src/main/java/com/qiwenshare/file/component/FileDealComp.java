@@ -4,22 +4,25 @@ import cn.hutool.core.bean.BeanUtil;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.qiwenshare.common.constant.FileConstant;
 import com.qiwenshare.common.util.DateUtil;
-import com.qiwenshare.file.api.IElasticSearchService;
+import com.qiwenshare.file.api.*;
 import com.qiwenshare.file.config.es.FileSearch;
-import com.qiwenshare.file.domain.TreeNode;
-import com.qiwenshare.file.domain.UserFile;
+import com.qiwenshare.file.domain.*;
 import com.qiwenshare.file.mapper.UserFileMapper;
+import com.qiwenshare.file.service.UserService;
 import com.qiwenshare.file.vo.file.FileListVo;
 import com.qiwenshare.ufo.factory.UFOFactory;
 import com.qiwenshare.ufo.operation.read.Reader;
 import com.qiwenshare.ufo.operation.read.domain.ReadFile;
 import com.qiwenshare.ufo.util.PathUtil;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import javax.annotation.Resource;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Queue;
 import java.util.concurrent.Executor;
 import java.util.concurrent.Executors;
@@ -32,6 +35,14 @@ import java.util.concurrent.Executors;
 public class FileDealComp {
     @Resource
     UserFileMapper userFileMapper;
+    @Resource
+    IUserService userService;
+    @Resource
+    IShareService shareService;
+    @Resource
+    IShareFileService shareFileService;
+    @Resource
+    IUserFileService userFileService;
     @Autowired
     private IElasticSearchService elasticSearchService;
     public static Executor exec = Executors.newFixedThreadPool(10);
@@ -266,5 +277,48 @@ public class FileDealComp {
         });
 
 
+    }
+
+    /**
+     * 根据用户传入的参数，判断是否有下载或者预览权限
+     * @return
+     */
+    public boolean checkAuthDownloadAndPreview(String shareBatchNum,
+                                               String extractionCode,
+                                               String token,
+                                               long userFileId) {
+        UserFile userFile = userFileService.getById(userFileId);
+        if ("undefined".equals(shareBatchNum)  || StringUtils.isEmpty(shareBatchNum)) {
+
+            UserBean sessionUserBean = userService.getUserBeanByToken(token);
+            if (sessionUserBean == null) {
+                return false;
+            }
+            if (userFile.getUserId() != sessionUserBean.getUserId()) {
+                return false;
+            }
+        } else {
+            Map<String, Object> param = new HashMap<>();
+            param.put("shareBatchNum", shareBatchNum);
+            List<Share> shareList = shareService.listByMap(param);
+            //判断批次号
+            if (shareList.size() <= 0) {
+                return false;
+            }
+            Integer shareType = shareList.get(0).getShareType();
+            if (1 == shareType) {
+                //判断提取码
+                if (!shareList.get(0).getExtractionCode().equals(extractionCode)) {
+                    return false;
+                }
+            }
+            param.put("userFileId", userFileId);
+            List<ShareFile> shareFileList = shareFileService.listByMap(param);
+            if (shareFileList.size() <= 0) {
+                return false;
+            }
+
+        }
+        return true;
     }
 }

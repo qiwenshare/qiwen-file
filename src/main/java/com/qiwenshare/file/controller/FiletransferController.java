@@ -136,6 +136,14 @@ public class FiletransferController {
     @MyLog(operation = "下载文件", module = CURRENT_MODULE)
     @RequestMapping(value = "/downloadfile", method = RequestMethod.GET)
     public void downloadFile(HttpServletResponse httpServletResponse, DownloadFileDTO downloadFileDTO) {
+        boolean authResult = fileDealComp.checkAuthDownloadAndPreview(downloadFileDTO.getShareBatchNum(),
+                downloadFileDTO.getExtractionCode(),
+                downloadFileDTO.getToken(),
+                downloadFileDTO.getUserFileId());
+        if (!authResult) {
+            log.error("没有权限下载！！！");
+            return;
+        }
         httpServletResponse.setContentType("application/force-download");// 设置强制下载不打开
         UserFile userFile = userFileService.getById(downloadFileDTO.getUserFileId());
         String fileName = "";
@@ -160,39 +168,13 @@ public class FiletransferController {
     @GetMapping("/preview")
     public void preview(HttpServletRequest httpServletRequest, HttpServletResponse httpServletResponse,  PreviewDTO previewDTO){
         UserFile userFile = userFileService.getById(previewDTO.getUserFileId());
-
-        if ("undefined".equals(previewDTO.getShareBatchNum())  || StringUtils.isEmpty(previewDTO.getShareBatchNum())) {
-
-            String token = previewDTO.getToken();
-            UserBean sessionUserBean = userService.getUserBeanByToken(token);
-            if (sessionUserBean == null) {
-                return;
-            }
-            if (userFile.getUserId() != sessionUserBean.getUserId()) {
-                return;
-            }
-        } else {
-
-            Map<String, Object> param = new HashMap<>();
-            param.put("shareBatchNum", previewDTO.getShareBatchNum());
-            List<Share> shareList = shareService.listByMap(param);
-            //判断批次号
-            if (shareList.size() <= 0) {
-                return;
-            }
-            Integer shareType = shareList.get(0).getShareType();
-            if (1 == shareType) {
-                //判断提取码
-                String extractionCode = shareList.get(0).getExtractionCode();
-                if (!extractionCode.equals(previewDTO.getExtractionCode())) {
-                    return;
-                }
-            }
-            param.put("userFileId", previewDTO.getUserFileId());
-            List<ShareFile> shareFileList = shareFileService.listByMap(param);
-            if (shareFileList.size() <= 0) {
-                return;
-            }
+        boolean authResult = fileDealComp.checkAuthDownloadAndPreview(previewDTO.getShareBatchNum(),
+                previewDTO.getExtractionCode(),
+                previewDTO.getToken(),
+                previewDTO.getUserFileId());
+        if (!authResult) {
+            log.error("没有权限预览！！！");
+            return;
         }
 
         FileBean fileBean = fileService.getById(userFile.getFileId());
