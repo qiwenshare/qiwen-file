@@ -20,6 +20,7 @@ import com.qiwenshare.file.service.ShareService;
 import com.qiwenshare.file.service.StorageService;
 import com.qiwenshare.file.vo.file.FileListVo;
 import com.qiwenshare.file.vo.file.UploadFileVo;
+import com.qiwenshare.ufo.util.PathUtil;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.extern.slf4j.Slf4j;
@@ -84,7 +85,14 @@ public class FiletransferController {
                 UserFile userFile = new UserFile();
 
                 userFile.setUserId(sessionUserBean.getUserId());
-                userFile.setFilePath(uploadFileDto.getFilePath());
+                String relativePath = uploadFileDto.getRelativePath();
+                if (StringUtils.isNotEmpty(relativePath)) {
+                    userFile.setFilePath(uploadFileDto.getFilePath() + PathUtil.getParentPath(relativePath) + "/");
+                    fileDealComp.restoreParentFilePath(uploadFileDto.getFilePath() + PathUtil.getParentPath(relativePath) + "/", sessionUserBean.getUserId());
+                } else {
+                    userFile.setFilePath(uploadFileDto.getFilePath());
+                }
+
                 String fileName = uploadFileDto.getFilename();
                 userFile.setFileName(FileUtil.getFileNameNotExtend(fileName));
                 userFile.setExtendName(FileUtil.getFileExtendName(fileName));

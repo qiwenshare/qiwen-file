@@ -24,6 +24,8 @@ public class UploadFileDTO {
 
     @Schema(description = "切片大小")
     private long chunkSize;
+    @Schema(description = "相对路径")
+    private String relativePath;
 
     @Schema(description = "所有切片")
     private int totalChunks;
