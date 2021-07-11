@@ -12,11 +12,13 @@ import com.qiwenshare.file.api.IFiletransferService;
 import com.qiwenshare.file.api.IUserFileService;
 import com.qiwenshare.file.api.IUserService;
 import com.qiwenshare.file.domain.*;
+import com.qiwenshare.file.dto.DownloadFileDTO;
 import com.qiwenshare.file.dto.file.CreateOfficeFileDTO;
 import com.qiwenshare.file.dto.file.EditOfficeFileDTO;
 import com.qiwenshare.file.dto.file.PreviewOfficeFileDTO;
 import com.qiwenshare.file.helper.ConfigManager;
 import com.qiwenshare.ufo.factory.UFOFactory;
+import com.qiwenshare.ufo.operation.download.domain.DownloadFile;
 import com.qiwenshare.ufo.operation.write.Writer;
 import com.qiwenshare.ufo.operation.write.domain.WriteFile;
 import com.qiwenshare.ufo.util.PathUtil;
@@ -259,22 +261,19 @@ public class OfficeController {
         if (loginUser == null) {
             throw new NotLoginException();
         }
-        PrintWriter writer = null;
-        JSONObject jsonObj=null;
 
-        writer = response.getWriter();
+        PrintWriter writer = response.getWriter();
         Scanner scanner = new Scanner(request.getInputStream()).useDelimiter("\\A");
         String body = scanner.hasNext() ? scanner.next() : "";
 
-        jsonObj = JSON.parseObject(body);
+        JSONObject jsonObj = JSON.parseObject(body);
         log.info("===saveeditedfile:" + jsonObj.get("status")); ;
-        String status = jsonObj!=null?jsonObj.get("status").toString():"";
+        String status = jsonObj != null ? jsonObj.get("status").toString() : "";
         if ("2".equals(status)) {//新建报告不强制手动操作时状态为2
             String type = request.getParameter("type");
             String downloadUri = (String) jsonObj.get("url");
 
             if("edit".equals(type)){//修改报告
-                log.debug("====文档编辑完成，现在开始保存编辑后的文档，其下载地址为:" + downloadUri);
                 String fileId = request.getParameter("fileId");
                 String userFileId = request.getParameter("userFileId");
                 FileBean fileBean = fileService.getById(fileId);
@@ -286,7 +285,7 @@ public class OfficeController {
 
                 URL url = new URL(downloadUri);
                 HttpURLConnection connection = (HttpURLConnection) url.openConnection();
-//                String md5Str = "";
+
                 int fileLength = 0;
                 try {
                     InputStream stream = connection.getInputStream();
@@ -295,8 +294,6 @@ public class OfficeController {
                     WriteFile writeFile = new WriteFile();
                     writeFile.setFileUrl(fileBean.getFileUrl());
 
-                    log.info("当前修改文件大小为：" + fileLength);
-//                    log.info("当前修改文件md5为：" + md5Str);
                     writeFile.setFileSize(connection.getContentLength());
                     writer1.write(stream, writeFile);
                 } catch (Exception e) {
@@ -310,10 +307,14 @@ public class OfficeController {
                     userFileService.update(userFileUpdateWrapper);
                     LambdaUpdateWrapper<FileBean> lambdaUpdateWrapper = new LambdaUpdateWrapper<>();
                     fileLength = connection.getContentLength();
-                    log.info("当前修改文件大小为2222：" + Long.valueOf(fileLength));
+                    log.info("当前修改文件大小为：" + Long.valueOf(fileLength));
 
+                    DownloadFile downloadFile = new DownloadFile();
+                    downloadFile.setFileUrl(fileBean.getFileUrl());
+                    InputStream inputStream = ufoFactory.getDownloader(fileBean.getStorageType()).getInputStream(downloadFile);
+                    String md5Str = DigestUtils.md5Hex(inputStream);
                     lambdaUpdateWrapper
-//                            .set(FileBean::getIdentifier, md5Str)
+                            .set(FileBean::getIdentifier, md5Str)
                             .set(FileBean::getFileSize, Long.valueOf(fileLength))
                             .eq(FileBean::getFileId, fileId);
                     fileService.update(lambdaUpdateWrapper);
