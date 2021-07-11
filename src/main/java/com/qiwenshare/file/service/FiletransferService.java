@@ -15,6 +15,8 @@ import cn.hutool.core.bean.BeanUtil;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
 
+import com.qiwenshare.common.constant.FileConstant;
+import com.qiwenshare.common.operation.FileOperation;
 import com.qiwenshare.common.util.DateUtil;
 
 import com.qiwenshare.common.util.FileUtil;
@@ -45,6 +47,7 @@ import com.qiwenshare.ufo.operation.upload.Uploader;
 import com.qiwenshare.ufo.operation.upload.domain.UploadFile;
 import com.qiwenshare.ufo.util.PathUtil;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -97,7 +100,13 @@ public class FiletransferService implements IFiletransferService {
                 fileBean.setPointCount(1);
                 fileMapper.insert(fileBean);
                 UserFile userFile = new UserFile();
-                userFile.setFilePath(uploadFileDto.getFilePath());
+                String relativePath = uploadFileDto.getRelativePath();
+                if (StringUtils.isNotEmpty(relativePath)) {
+                    userFile.setFilePath(uploadFileDto.getFilePath() + PathUtil.getParentPath(relativePath) + "/");
+                    fileDealComp.restoreParentFilePath(uploadFileDto.getFilePath() + PathUtil.getParentPath(relativePath) + "/", userId);
+                } else {
+                    userFile.setFilePath(uploadFileDto.getFilePath());
+                }
                 userFile.setUserId(userId);
                 userFile.setFileName(uploadFile.getFileName());
                 userFile.setExtendName(uploadFile.getFileType());
@@ -135,7 +144,7 @@ public class FiletransferService implements IFiletransferService {
 
             downloadFile.setFileUrl(fileBean.getFileUrl());
             downloadFile.setFileSize(fileBean.getFileSize());
-
+            httpServletResponse.setContentLengthLong(fileBean.getFileSize());
             downloader.download(httpServletResponse, downloadFile);
         } else {
             LambdaQueryWrapper<UserFile> lambdaQueryWrapper = new LambdaQueryWrapper<>();
@@ -147,9 +156,9 @@ public class FiletransferService implements IFiletransferService {
 
             String staticPath = PathUtil.getStaticPath();
             String tempPath = staticPath + "temp" + File.separator;
-            File tempFile = new File(tempPath);
-            if (!tempFile.exists()) {
-                tempFile.mkdirs();
+            File tempDirFile = new File(tempPath);
+            if (!tempDirFile.exists()) {
+                tempDirFile.mkdirs();
             }
 
             FileOutputStream f = null;
@@ -213,6 +222,8 @@ public class FiletransferService implements IFiletransferService {
             Downloader downloader = ufoFactory.getDownloader(StorageTypeEnum.LOCAL.getStorageType());
             DownloadFile downloadFile = new DownloadFile();
             downloadFile.setFileUrl("temp" + File.separator+userFile.getFileName() + ".zip");
+            File tempFile = FileOperation.newFile(PathUtil.getStaticPath() + downloadFile.getFileUrl());
+            httpServletResponse.setContentLengthLong(tempFile.length());
             downloader.download(httpServletResponse, downloadFile);
             String zipPath = PathUtil.getStaticPath() + "temp" + File.separator+userFile.getFileName() + ".zip";
             File file = new File(zipPath);
