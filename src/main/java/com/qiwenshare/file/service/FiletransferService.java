@@ -101,7 +101,7 @@ public class FiletransferService implements IFiletransferService {
                 fileMapper.insert(fileBean);
                 UserFile userFile = new UserFile();
                 String relativePath = uploadFileDto.getRelativePath();
-                if (StringUtils.isNotEmpty(relativePath)) {
+                if (relativePath.contains("/")) {
                     userFile.setFilePath(uploadFileDto.getFilePath() + PathUtil.getParentPath(relativePath) + "/");
                     fileDealComp.restoreParentFilePath(uploadFileDto.getFilePath() + PathUtil.getParentPath(relativePath) + "/", userId);
                 } else {

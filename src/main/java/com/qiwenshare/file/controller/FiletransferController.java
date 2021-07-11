@@ -86,7 +86,7 @@ public class FiletransferController {
 
                 userFile.setUserId(sessionUserBean.getUserId());
                 String relativePath = uploadFileDto.getRelativePath();
-                if (StringUtils.isNotEmpty(relativePath)) {
+                if (relativePath.contains("/")) {
                     userFile.setFilePath(uploadFileDto.getFilePath() + PathUtil.getParentPath(relativePath) + "/");
                     fileDealComp.restoreParentFilePath(uploadFileDto.getFilePath() + PathUtil.getParentPath(relativePath) + "/", sessionUserBean.getUserId());
                 } else {
