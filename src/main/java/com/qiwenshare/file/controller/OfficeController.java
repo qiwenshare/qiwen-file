@@ -8,11 +8,9 @@ import com.qiwenshare.common.result.RestResult;
 import com.qiwenshare.common.util.DateUtil;
 import com.qiwenshare.file.anno.MyLog;
 import com.qiwenshare.file.api.IFileService;
-import com.qiwenshare.file.api.IFiletransferService;
 import com.qiwenshare.file.api.IUserFileService;
 import com.qiwenshare.file.api.IUserService;
 import com.qiwenshare.file.domain.*;
-import com.qiwenshare.file.dto.DownloadFileDTO;
 import com.qiwenshare.file.dto.file.CreateOfficeFileDTO;
 import com.qiwenshare.file.dto.file.EditOfficeFileDTO;
 import com.qiwenshare.file.dto.file.PreviewOfficeFileDTO;
@@ -187,7 +185,7 @@ public class OfficeController {
 
             FileModel file = new FileModel(userFile.getFileName() + "." + userFile.getExtendName(),
                     previewOfficeFileDTO.getPreviewUrl(),
-                    String.valueOf(new Date().getTime()),
+                    userFile.getUploadTime(),
                     String.valueOf(loginUser.getUserId()),
                     loginUser.getUsername(),
                     "view");
@@ -228,7 +226,7 @@ public class OfficeController {
 
             FileModel file = new FileModel(userFile.getFileName() + "." + userFile.getExtendName(),
                     editOfficeFileDTO.getPreviewUrl(),
-                    String.valueOf(new Date().getTime()),
+                    userFile.getUploadTime(),
                     String.valueOf(loginUser.getUserId()),
                     loginUser.getUsername(),
                     "edit");
