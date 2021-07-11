@@ -104,6 +104,7 @@ public class FiletransferService implements IFiletransferService {
                 if (relativePath.contains("/")) {
                     userFile.setFilePath(uploadFileDto.getFilePath() + PathUtil.getParentPath(relativePath) + "/");
                     fileDealComp.restoreParentFilePath(uploadFileDto.getFilePath() + PathUtil.getParentPath(relativePath) + "/", userId);
+
                 } else {
                     userFile.setFilePath(uploadFileDto.getFilePath());
                 }

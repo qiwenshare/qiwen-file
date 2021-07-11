@@ -26,6 +26,8 @@ import java.util.Map;
 import java.util.Queue;
 import java.util.concurrent.Executor;
 import java.util.concurrent.Executors;
+import java.util.concurrent.locks.Lock;
+import java.util.concurrent.locks.ReentrantLock;
 
 /**
  * 文件逻辑处理组件
@@ -106,6 +108,9 @@ public class FileDealComp {
      * @param sessionUserId
      */
     public void restoreParentFilePath(String filePath, Long sessionUserId) {
+        // 加锁，防止并发情况下有重复创建目录情况
+        Lock lock = new ReentrantLock();
+        lock.lock();
         String parentFilePath = PathUtil.getParentPath(filePath);
         while(parentFilePath.contains("/")) {
             String fileName = parentFilePath.substring(parentFilePath.lastIndexOf("/") + 1);
@@ -130,6 +135,7 @@ public class FileDealComp {
             }
 
         }
+        lock.unlock();
     }
 
 
