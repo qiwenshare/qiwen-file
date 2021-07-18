@@ -308,7 +308,7 @@ public class FileDealComp {
             }
             log.debug("文件所属用户id：" + userFile.getUserId());
             log.debug("登录用户id:" + sessionUserBean.getUserId());
-            if (userFile.getUserId() != sessionUserBean.getUserId()) {
+            if (userFile.getUserId().longValue() != sessionUserBean.getUserId().longValue()) {
                 log.debug("用户id不一致，权限校验失败：");
                 return false;
             }
