@@ -45,7 +45,7 @@ import static com.qiwenshare.common.util.FileUtil.getFileExtendsByType;
 @Tag(name = "file", description = "该接口为文件接口，主要用来做一些文件的基本操作，如创建目录，删除，移动，复制等。")
 @RestController
 @Slf4j
-@RequestMapping({"/file", "/api/file"})
+@RequestMapping("/file")
 public class FileController {
 
     @Resource

@@ -28,7 +28,7 @@ import java.util.List;
 @Tag(name = "recoveryfile", description = "文件删除后会进入回收站，该接口主要是对回收站文件进行管理")
 @RestController
 @Slf4j
-@RequestMapping({"/recoveryfile", "/api/recoveryfile"})
+@RequestMapping("/recoveryfile")
 public class RecoveryFileController {
     @Resource
     IRecoveryFileService recoveryFileService;
