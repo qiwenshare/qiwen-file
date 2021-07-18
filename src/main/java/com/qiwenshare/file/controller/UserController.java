@@ -28,7 +28,7 @@ import java.util.Map;
 @Tag(name = "user", description = "该接口为用户接口，主要做用户登录，注册和校验token")
 @RestController
 @Slf4j
-@RequestMapping({"/user", "/api/user"})
+@RequestMapping("/user")
 public class UserController {
 
     @Resource

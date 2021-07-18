@@ -39,7 +39,7 @@ import java.util.Map;
 @Slf4j
 @Tag(name = "filetransfer", description = "该接口为文件传输接口，主要用来做文件的上传和下载")
 @RestController
-@RequestMapping({"/filetransfer", "/api/filetransfer"})
+@RequestMapping("/filetransfer")
 public class FiletransferController {
 
     @Resource
@@ -180,6 +180,7 @@ public class FiletransferController {
                 previewDTO.getExtractionCode(),
                 previewDTO.getToken(),
                 previewDTO.getUserFileId());
+
         if (!authResult) {
             log.error("没有权限预览！！！");
             return;

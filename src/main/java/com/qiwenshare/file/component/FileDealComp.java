@@ -1,6 +1,7 @@
 package com.qiwenshare.file.component;
 
 import cn.hutool.core.bean.BeanUtil;
+import com.alibaba.fastjson.JSON;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.qiwenshare.common.constant.FileConstant;
 import com.qiwenshare.common.util.DateUtil;
@@ -295,14 +296,20 @@ public class FileDealComp {
                                                String extractionCode,
                                                String token,
                                                long userFileId) {
+        log.info("权限检查开始：shareBatchNum:{}, extractionCode:{}, token:{}, userFileId{}" , shareBatchNum, extractionCode, token, userFileId);
         UserFile userFile = userFileService.getById(userFileId);
+        log.debug(JSON.toJSONString(userFile));
         if ("undefined".equals(shareBatchNum)  || StringUtils.isEmpty(shareBatchNum)) {
 
             UserBean sessionUserBean = userService.getUserBeanByToken(token);
+            log.debug(JSON.toJSONString("当前登录session用户：" + sessionUserBean));
             if (sessionUserBean == null) {
                 return false;
             }
+            log.debug("文件所属用户id：" + userFile.getUserId());
+            log.debug("登录用户id:" + sessionUserBean.getUserId());
             if (userFile.getUserId() != sessionUserBean.getUserId()) {
+                log.debug("用户id不一致，权限校验失败：");
                 return false;
             }
         } else {

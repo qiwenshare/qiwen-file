@@ -72,7 +72,6 @@ public class FiletransferService implements IFiletransferService {
     @Override
     public void uploadFile(HttpServletRequest request, UploadFileDTO uploadFileDto, Long userId) {
 
-
         UploadFile uploadFile = new UploadFile();
         uploadFile.setChunkNumber(uploadFileDto.getChunkNumber());
         uploadFile.setChunkSize(uploadFileDto.getChunkSize());
