@@ -32,7 +32,7 @@ import java.util.*;
 @Tag(name = "share", description = "该接口为文件分享接口")
 @RestController
 @Slf4j
-@RequestMapping("/api/share")
+@RequestMapping("/share")
 public class ShareController {
 
     public static final String CURRENT_MODULE = "文件分享";
