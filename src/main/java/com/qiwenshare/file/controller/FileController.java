@@ -24,6 +24,7 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.codec.digest.DigestUtils;
+import org.eclipse.jetty.util.StringUtil;
 import org.elasticsearch.index.query.QueryBuilders;
 import org.elasticsearch.search.fetch.subphase.highlight.HighlightBuilder;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -375,6 +376,12 @@ public class FileController {
         String newfilePath = moveFileDto.getFilePath();
         String fileName = moveFileDto.getFileName();
         String extendName = moveFileDto.getExtendName();
+        if (StringUtil.isEmpty(extendName)) {
+            String testFilePath = oldfilePath + fileName +  "/";
+            if (newfilePath.startsWith(testFilePath)) {
+                return RestResult.fail().message("原路径与目标路径冲突，不能移动");
+            }
+        }
 
         userFileService.updateFilepathByFilepath(oldfilePath, newfilePath, fileName, extendName, sessionUserBean.getUserId());
         return RestResult.success();
@@ -397,6 +404,14 @@ public class FileController {
         List<UserFile> fileList = JSON.parseArray(files, UserFile.class);
 
         for (UserFile userFile : fileList) {
+           
+            if (StringUtil.isEmpty(userFile.getExtendName())) {
+                String testFilePath = userFile.getFilePath() + userFile.getFileName() +  "/";
+                if (newfilePath.startsWith(testFilePath)) {
+                    return RestResult.fail().message("原路径与目标路径冲突，不能移动");
+                }
+            }
+
             userFileService.updateFilepathByFilepath(userFile.getFilePath(), newfilePath, userFile.getFileName(), userFile.getExtendName(), sessionUserBean.getUserId());
         }
 
