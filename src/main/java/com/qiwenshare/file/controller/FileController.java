@@ -17,10 +17,11 @@ import com.qiwenshare.file.domain.*;
 import com.qiwenshare.file.dto.*;
 import com.qiwenshare.file.dto.file.*;
 import com.qiwenshare.file.vo.file.FileListVo;
-import com.qiwenshare.ufo.factory.UFOFactory;
-import com.qiwenshare.ufo.operation.rename.domain.RenameFile;
-import com.qiwenshare.ufo.util.PathUtil;
+import com.qiwenshare.ufop.factory.UFOPFactory;
+import com.qiwenshare.ufop.operation.rename.domain.RenameFile;
+import com.qiwenshare.ufop.util.PathUtil;
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.codec.digest.DigestUtils;
@@ -56,7 +57,7 @@ public class FileController {
     @Resource
     IUserFileService userFileService;
     @Resource
-    UFOFactory ufoFactory;
+    UFOPFactory ufopFactory;
 
     @Autowired
     private ElasticsearchRestTemplate elasticsearchRestTemplate;
@@ -148,7 +149,7 @@ public class FileController {
         }
         UserFile userFile = userFileService.getById(renameFileDto.getUserFileId());
 
-        List<UserFile> userFiles = userFileService.selectUserFileByNameAndPath(renameFileDto.getFileName(), renameFileDto.getFilePath(), sessionUserBean.getUserId());
+        List<UserFile> userFiles = userFileService.selectUserFileByNameAndPath(renameFileDto.getFileName(), userFile.getFilePath(), sessionUserBean.getUserId());
         if (userFiles != null && !userFiles.isEmpty()) {
             return RestResult.fail().message("同名文件已存在");
         }
@@ -170,7 +171,7 @@ public class FileController {
                 RenameFile renameFile = new RenameFile();
                 renameFile.setSrcName(fileUrl.substring(1));
                 renameFile.setDestName(newFileUrl.substring(1));
-                ufoFactory.getRenamer(file.getStorageType()).rename(renameFile);
+                ufopFactory.getRenamer(file.getStorageType()).rename(renameFile);
                 LambdaUpdateWrapper<FileBean> lambdaUpdateWrapper = new LambdaUpdateWrapper<>();
                 lambdaUpdateWrapper
                         .set(FileBean::getFileUrl, newFileUrl)
@@ -202,7 +203,11 @@ public class FileController {
     @Operation(summary = "获取文件列表", description = "用来做前台列表展示", tags = {"file"})
     @RequestMapping(value = "/getfilelist", method = RequestMethod.GET)
     @ResponseBody
-    public RestResult getFileList(FileListDTO fileListDto, @RequestHeader("token") String token){
+    public RestResult getFileList(
+            @Parameter(description = "文件路径", required = true) String filePath,
+            @Parameter(description = "当前页", required = true) long currentPage,
+            @Parameter(description = "页面数量", required = true) long pageCount,
+            @RequestHeader("token") String token){
 
         UserFile userFile = new UserFile();
 
@@ -218,13 +223,13 @@ public class FileController {
 
 
         List<FileListVo> fileList = null;
-        userFile.setFilePath(PathUtil.urlDecode(fileListDto.getFilePath()));
-        if (fileListDto.getCurrentPage() == null || fileListDto.getPageCount() == null) {
+        userFile.setFilePath(PathUtil.urlDecode(filePath));
+        if (currentPage == 0 || pageCount == 0) {
             fileList = userFileService.userFileList(userFile, 0L, 10L);
         } else {
-            Long beginCount = (fileListDto.getCurrentPage() - 1) * fileListDto.getPageCount();
+            long beginCount = (currentPage - 1) * pageCount;
 
-            fileList = userFileService.userFileList(userFile, beginCount, fileListDto.getPageCount()); //fileService.selectFileListByPath(fileBean);
+            fileList = userFileService.userFileList(userFile, beginCount, pageCount);
 
         }
 
@@ -281,7 +286,7 @@ public class FileController {
 
     }
 
-    @Operation(summary = "解压文件", description = "压缩功能为体验功能，目前持续优化中。", tags = {"file"})
+    @Operation(summary = "解压文件", description = "解压缩功能为体验功能，可以解压zip和rar格式的压缩文件，目前只支持本地存储文件解压，部分高版本rar格式不支持。", tags = {"file"})
     @RequestMapping(value = "/unzipfile", method = RequestMethod.POST)
     @MyLog(operation = "解压文件", module = CURRENT_MODULE)
     @ResponseBody
@@ -424,7 +429,10 @@ public class FileController {
     @Operation(summary = "通过文件类型选择文件", description = "该接口可以实现文件格式分类查看", tags = {"file"})
     @RequestMapping(value = "/selectfilebyfiletype", method = RequestMethod.GET)
     @ResponseBody
-    public RestResult<List<Map<String, Object>>> selectFileByFileType(int fileType, Long currentPage, Long pageCount, @RequestHeader("token") String token) {
+    public RestResult<List<Map<String, Object>>> selectFileByFileType(@Parameter(description = "文件类型", required = true) int fileType,
+                                                                      @Parameter(description = "当前页", required = true) long currentPage,
+                                                                      @Parameter(description = "页面数量", required = true) long pageCount,
+                                                                      @RequestHeader("token") String token) {
 
         UserBean sessionUserBean = userService.getUserBeanByToken(token);
         if (sessionUserBean == null) {
@@ -434,7 +442,7 @@ public class FileController {
 
         List<FileListVo> fileList = new ArrayList<>();
         Long beginCount = 0L;
-        if (pageCount == null || currentPage == null) {
+        if (pageCount == 0 || currentPage == 0) {
             beginCount = 0L;
             pageCount = 10L;
         } else {

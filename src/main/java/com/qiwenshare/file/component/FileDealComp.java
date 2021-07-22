@@ -11,10 +11,10 @@ import com.qiwenshare.file.domain.*;
 import com.qiwenshare.file.mapper.UserFileMapper;
 import com.qiwenshare.file.service.UserService;
 import com.qiwenshare.file.vo.file.FileListVo;
-import com.qiwenshare.ufo.factory.UFOFactory;
-import com.qiwenshare.ufo.operation.read.Reader;
-import com.qiwenshare.ufo.operation.read.domain.ReadFile;
-import com.qiwenshare.ufo.util.PathUtil;
+import com.qiwenshare.ufop.factory.UFOPFactory;
+import com.qiwenshare.ufop.operation.read.Reader;
+import com.qiwenshare.ufop.operation.read.domain.ReadFile;
+import com.qiwenshare.ufop.util.PathUtil;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -258,7 +258,7 @@ public class FileDealComp {
                     BeanUtil.copyProperties(userfileResult.get(0), fileSearch);
 //                if (fileSearch.getIsDir() == 0) {
 //
-//                    Reader reader = ufoFactory.getReader(fileSearch.getStorageType());
+//                    Reader reader = ufopFactory.getReader(fileSearch.getStorageType());
 //                    ReadFile readFile = new ReadFile();
 //                    readFile.setFileUrl(fileSearch.getFileUrl());
 //                    String content = reader.read(readFile);

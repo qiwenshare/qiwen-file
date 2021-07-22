@@ -15,11 +15,11 @@ import com.qiwenshare.file.dto.file.CreateOfficeFileDTO;
 import com.qiwenshare.file.dto.file.EditOfficeFileDTO;
 import com.qiwenshare.file.dto.file.PreviewOfficeFileDTO;
 import com.qiwenshare.file.helper.ConfigManager;
-import com.qiwenshare.ufo.factory.UFOFactory;
-import com.qiwenshare.ufo.operation.download.domain.DownloadFile;
-import com.qiwenshare.ufo.operation.write.Writer;
-import com.qiwenshare.ufo.operation.write.domain.WriteFile;
-import com.qiwenshare.ufo.util.PathUtil;
+import com.qiwenshare.ufop.factory.UFOPFactory;
+import com.qiwenshare.ufop.operation.download.domain.DownloadFile;
+import com.qiwenshare.ufop.operation.write.Writer;
+import com.qiwenshare.ufop.operation.write.domain.WriteFile;
+import com.qiwenshare.ufop.util.PathUtil;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.extern.slf4j.Slf4j;
@@ -50,7 +50,7 @@ public class OfficeController {
     @Resource
     IUserService userService;
     @Resource
-    UFOFactory ufoFactory;
+    UFOPFactory ufopFactory;
 
     @Value("${deployment.host}")
     private String deploymentHost;
@@ -61,9 +61,10 @@ public class OfficeController {
     @Resource
     IUserFileService userFileService;
 
+    @Operation(summary = "创建office文件", description = "创建office文件", tags = {"office"})
     @ResponseBody
     @RequestMapping(value = "/createofficefile", method = RequestMethod.POST)
-    public RestResult<Object> createOfficeFile(HttpServletRequest request, @RequestBody CreateOfficeFileDTO createOfficeFileDTO, @RequestHeader("token") String token) {
+    public RestResult<Object> createOfficeFile(@RequestBody CreateOfficeFileDTO createOfficeFileDTO, @RequestHeader("token") String token) {
         RestResult<Object> result = new RestResult<>();
         try{
 
@@ -168,7 +169,6 @@ public class OfficeController {
     }
 
     @Operation(summary = "预览office文件", description = "预览office文件", tags = {"office"})
-    @MyLog(operation = "查看报告接口", module = CURRENT_MODULE)
     @RequestMapping(value = "/previewofficefile", method = RequestMethod.POST)
     @ResponseBody
     public RestResult<Object> previewOfficeFile(HttpServletRequest request, @RequestBody PreviewOfficeFileDTO previewOfficeFileDTO, @RequestHeader("token") String token) {
@@ -206,7 +206,7 @@ public class OfficeController {
         }
         return result;
     }
-
+    @Operation(summary = "编辑office文件", description = "编辑office文件", tags = {"office"})
     @ResponseBody
     @RequestMapping(value = "/editofficefile", method = RequestMethod.POST)
     public RestResult<Object> editOfficeFile(HttpServletRequest request, @RequestBody EditOfficeFileDTO editOfficeFileDTO, @RequestHeader("token") String token) {
@@ -232,7 +232,7 @@ public class OfficeController {
                     "edit");
             file.changeType(request.getParameter("mode"), "edit");
 
-            String query = "?type=edit&fileId="+userFile.getFileId()+"&token="+token;
+            String query = "?type=edit&userFileId="+userFile.getUserFileId()+"&token="+token;
             file.editorConfig.callbackUrl= baseUrl + "/office/IndexServlet" + query;
 
             JSONObject jsonObject = new JSONObject();
@@ -267,14 +267,14 @@ public class OfficeController {
         JSONObject jsonObj = JSON.parseObject(body);
         log.info("===saveeditedfile:" + jsonObj.get("status")); ;
         String status = jsonObj != null ? jsonObj.get("status").toString() : "";
-        if ("2".equals(status)) {//新建报告不强制手动操作时状态为2
+        if ("2".equals(status) || "6".equals(status)) {
             String type = request.getParameter("type");
             String downloadUri = (String) jsonObj.get("url");
 
             if("edit".equals(type)){//修改报告
-                String fileId = request.getParameter("fileId");
                 String userFileId = request.getParameter("userFileId");
-                FileBean fileBean = fileService.getById(fileId);
+                UserFile userFile = userFileService.getById(userFileId);
+                FileBean fileBean = fileService.getById(userFile.getFileId());
                 if (fileBean.getPointCount() > 1) {
                     //该场景，暂不支持编辑修改
                     writer.write("{\"error\":1}");
@@ -288,7 +288,7 @@ public class OfficeController {
                 try {
                     InputStream stream = connection.getInputStream();
 
-                    Writer writer1 = ufoFactory.getWriter(fileBean.getStorageType());
+                    Writer writer1 = ufopFactory.getWriter(fileBean.getStorageType());
                     WriteFile writeFile = new WriteFile();
                     writeFile.setFileUrl(fileBean.getFileUrl());
 
@@ -297,24 +297,25 @@ public class OfficeController {
                 } catch (Exception e) {
                     log.error(e.getMessage());
                 } finally {
-                    //更新文件修改信息
-                    LambdaUpdateWrapper<UserFile> userFileUpdateWrapper = new LambdaUpdateWrapper<>();
-                    userFileUpdateWrapper
-                            .set(UserFile::getUploadTime, DateUtil.getCurrentTime())
-                            .eq(UserFile::getUserFileId, userFileId);
-                    userFileService.update(userFileUpdateWrapper);
+                    if ("2".equals(status)) {
+                        LambdaUpdateWrapper<UserFile> userFileUpdateWrapper = new LambdaUpdateWrapper<>();
+                        userFileUpdateWrapper
+                                .set(UserFile::getUploadTime, DateUtil.getCurrentTime())
+                                .eq(UserFile::getUserFileId, userFileId);
+                        userFileService.update(userFileUpdateWrapper);
+                    }
                     LambdaUpdateWrapper<FileBean> lambdaUpdateWrapper = new LambdaUpdateWrapper<>();
                     fileLength = connection.getContentLength();
                     log.info("当前修改文件大小为：" + Long.valueOf(fileLength));
 
                     DownloadFile downloadFile = new DownloadFile();
                     downloadFile.setFileUrl(fileBean.getFileUrl());
-                    InputStream inputStream = ufoFactory.getDownloader(fileBean.getStorageType()).getInputStream(downloadFile);
+                    InputStream inputStream = ufopFactory.getDownloader(fileBean.getStorageType()).getInputStream(downloadFile);
                     String md5Str = DigestUtils.md5Hex(inputStream);
                     lambdaUpdateWrapper
                             .set(FileBean::getIdentifier, md5Str)
                             .set(FileBean::getFileSize, Long.valueOf(fileLength))
-                            .eq(FileBean::getFileId, fileId);
+                            .eq(FileBean::getFileId, fileBean.getFileId());
                     fileService.update(lambdaUpdateWrapper);
 
                     connection.disconnect();

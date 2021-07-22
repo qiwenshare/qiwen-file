@@ -20,7 +20,7 @@ import com.qiwenshare.file.service.ShareService;
 import com.qiwenshare.file.service.StorageService;
 import com.qiwenshare.file.vo.file.FileListVo;
 import com.qiwenshare.file.vo.file.UploadFileVo;
-import com.qiwenshare.ufo.util.PathUtil;
+import com.qiwenshare.ufop.util.PathUtil;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.extern.slf4j.Slf4j;
