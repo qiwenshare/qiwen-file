@@ -6,26 +6,9 @@ import lombok.Data;
 @Data
 @Schema(name = "重命名文件DTO",required = true)
 public class RenameFileDTO {
+    @Schema(description = "用户文件id", required = true)
     private Long userFileId;
-    /**
-     * 文件路径
-     */
-    @Schema(description = "文件路径")
-    @Deprecated
-    private String filePath;
 
-    /**
-     * 文件名
-     */
-    @Schema(description = "文件名")
+    @Schema(description = "文件名", required = true)
     private String fileName;
-    @Schema(description = "是否是目录")
-    @Deprecated
-    private Integer isDir;
-    @Schema(description = "旧文件名")
-    @Deprecated
-    private String oldFileName;
-    @Schema(description = "是否是OSS")
-    @Deprecated
-    private Integer isOSS;
 }

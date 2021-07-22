@@ -6,8 +6,8 @@ import lombok.Data;
 @Data
 @Schema(name = "解压缩文件DTO",required = true)
 public class UnzipFileDTO {
-    @Schema(description = "文件url")
+    @Schema(description = "文件url", required = true)
     private String fileUrl;
-    @Schema(description = "文件路径")
+    @Schema(description = "文件路径", required = true)
     private String filePath;
 }
