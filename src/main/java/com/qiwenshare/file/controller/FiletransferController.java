@@ -86,8 +86,7 @@ public class FiletransferController {
             if (relativePath.contains("/")) {
                 userFile.setFilePath(uploadFileDto.getFilePath() + PathUtil.getParentPath(relativePath) + "/");
                 fileDealComp.restoreParentFilePath(uploadFileDto.getFilePath() + PathUtil.getParentPath(relativePath) + "/", sessionUserBean.getUserId());
-                String rootPath = relativePath.split("/")[0];
-                fileDealComp.deleteRepeatSubDirFile(uploadFileDto.getFilePath() + rootPath + "/", sessionUserBean.getUserId());
+                fileDealComp.deleteRepeatSubDirFile(uploadFileDto.getFilePath(), sessionUserBean.getUserId());
             } else {
                 userFile.setFilePath(uploadFileDto.getFilePath());
             }
