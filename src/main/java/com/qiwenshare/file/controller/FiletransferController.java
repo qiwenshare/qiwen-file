@@ -55,10 +55,7 @@ public class FiletransferController {
     FileDealComp fileDealComp;
     @Resource
     StorageService storageService;
-    @Resource
-    ShareService shareService;
-    @Resource
-    ShareFileService shareFileService;
+
     public static final String CURRENT_MODULE = "文件传输接口";
 
     @Operation(summary = "极速上传", description = "校验文件MD5判断文件是否存在，如果存在直接上传成功并返回skipUpload=true，如果不存在返回skipUpload=false需要再次调用该接口的POST方法", tags = {"filetransfer"})
@@ -77,45 +74,45 @@ public class FiletransferController {
         UploadFileVo uploadFileVo = new UploadFileVo();
         Map<String, Object> param = new HashMap<String, Object>();
         param.put("identifier", uploadFileDto.getIdentifier());
-        synchronized (FiletransferController.class) {
-            List<FileBean> list = fileService.listByMap(param);
-            if (list != null && !list.isEmpty()) {
-                FileBean file = list.get(0);
 
-                UserFile userFile = new UserFile();
+        List<FileBean> list = fileService.listByMap(param);
+        if (list != null && !list.isEmpty()) {
+            FileBean file = list.get(0);
 
-                userFile.setUserId(sessionUserBean.getUserId());
-                String relativePath = uploadFileDto.getRelativePath();
-                if (relativePath.contains("/")) {
-                    userFile.setFilePath(uploadFileDto.getFilePath() + PathUtil.getParentPath(relativePath) + "/");
-                    fileDealComp.restoreParentFilePath(uploadFileDto.getFilePath() + PathUtil.getParentPath(relativePath) + "/", sessionUserBean.getUserId());
-                } else {
-                    userFile.setFilePath(uploadFileDto.getFilePath());
-                }
+            UserFile userFile = new UserFile();
 
-                String fileName = uploadFileDto.getFilename();
-                userFile.setFileName(FileUtil.getFileNameNotExtend(fileName));
-                userFile.setExtendName(FileUtil.getFileExtendName(fileName));
-                userFile.setDeleteFlag(0);
-                List<FileListVo> userFileList = userFileService.userFileList(userFile, null, null);
-                if (userFileList.size() <= 0) {
-
-                    userFile.setIsDir(0);
-                    userFile.setUploadTime(DateUtil.getCurrentTime());
-                    userFile.setFileId(file.getFileId());
-                    //"fileName", "filePath", "extendName", "deleteFlag", "userId"
-
-                    userFileService.save(userFile);
-                    fileService.increaseFilePointCount(file.getFileId());
-                    fileDealComp.uploadESByUserFileId(userFile.getUserFileId());
-                }
-
-                uploadFileVo.setSkipUpload(true);
-
+            userFile.setUserId(sessionUserBean.getUserId());
+            String relativePath = uploadFileDto.getRelativePath();
+            if (relativePath.contains("/")) {
+                userFile.setFilePath(uploadFileDto.getFilePath() + PathUtil.getParentPath(relativePath) + "/");
+                fileDealComp.restoreParentFilePath(uploadFileDto.getFilePath() + PathUtil.getParentPath(relativePath) + "/", sessionUserBean.getUserId());
+                fileDealComp.deleteRepeatSubDirFile(uploadFileDto.getFilePath(), sessionUserBean.getUserId());
             } else {
-                uploadFileVo.setSkipUpload(false);
-
+                userFile.setFilePath(uploadFileDto.getFilePath());
             }
+
+            String fileName = uploadFileDto.getFilename();
+            userFile.setFileName(FileUtil.getFileNameNotExtend(fileName));
+            userFile.setExtendName(FileUtil.getFileExtendName(fileName));
+            userFile.setDeleteFlag(0);
+            List<FileListVo> userFileList = userFileService.userFileList(userFile, null, null);
+            if (userFileList.size() <= 0) {
+
+                userFile.setIsDir(0);
+                userFile.setUploadTime(DateUtil.getCurrentTime());
+                userFile.setFileId(file.getFileId());
+                //"fileName", "filePath", "extendName", "deleteFlag", "userId"
+
+                userFileService.save(userFile);
+                fileService.increaseFilePointCount(file.getFileId());
+                fileDealComp.uploadESByUserFileId(userFile.getUserFileId());
+            }
+
+            uploadFileVo.setSkipUpload(true);
+
+        } else {
+            uploadFileVo.setSkipUpload(false);
+
         }
         return RestResult.success().data(uploadFileVo);
 

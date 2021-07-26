@@ -64,7 +64,7 @@ public class TaskController {
         try {
             elasticSearchService.deleteAll();
         } catch (Exception e) {
-            log.error("删除ES失败:" + e);
+            log.debug("删除ES失败:" + e);
         }
 
         List<UserFile> userfileList = userFileService.list();
