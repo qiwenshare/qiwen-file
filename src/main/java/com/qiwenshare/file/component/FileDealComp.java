@@ -148,6 +148,7 @@ public class FileDealComp {
      * @param sessionUserId
      */
     public void deleteRepeatSubDirFile(String filePath, Long sessionUserId) {
+        log.debug("删除子目录："+filePath);
         LambdaQueryWrapper<UserFile> lambdaQueryWrapper = new LambdaQueryWrapper<>();
 
         lambdaQueryWrapper.select(UserFile::getFileName, UserFile::getFilePath)
@@ -269,7 +270,7 @@ public class FileDealComp {
                     elasticSearchService.save(fileSearch);
                 }
             } catch (Exception e) {
-                log.error("ES更新操作失败，请检查配置");
+                log.debug("ES更新操作失败，请检查配置");
             }
         });
 
@@ -281,7 +282,7 @@ public class FileDealComp {
             try {
                 elasticSearchService.deleteById(userFileId);
             } catch (Exception e) {
-                log.error("ES删除操作失败，请检查配置");
+                log.debug("ES删除操作失败，请检查配置");
             }
         });
 
