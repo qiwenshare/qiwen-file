@@ -69,7 +69,6 @@ public class TaskController {
 
         List<UserFile> userfileList = userFileService.list();
         for (UserFile userFile : userfileList) {
-            log.info(JSON.toJSONString(userFile));
             fileDealComp.uploadESByUserFileId(userFile.getUserFileId());
         }
 

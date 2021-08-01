@@ -9,7 +9,6 @@ import com.qiwenshare.file.api.*;
 import com.qiwenshare.file.config.es.FileSearch;
 import com.qiwenshare.file.domain.*;
 import com.qiwenshare.file.mapper.UserFileMapper;
-import com.qiwenshare.file.service.UserService;
 import com.qiwenshare.file.vo.file.FileListVo;
 import com.qiwenshare.ufop.factory.UFOPFactory;
 import com.qiwenshare.ufop.operation.read.Reader;
@@ -297,7 +296,7 @@ public class FileDealComp {
                                                String extractionCode,
                                                String token,
                                                long userFileId) {
-        log.info("权限检查开始：shareBatchNum:{}, extractionCode:{}, token:{}, userFileId{}" , shareBatchNum, extractionCode, token, userFileId);
+        log.debug("权限检查开始：shareBatchNum:{}, extractionCode:{}, token:{}, userFileId{}" , shareBatchNum, extractionCode, token, userFileId);
         UserFile userFile = userFileService.getById(userFileId);
         log.debug(JSON.toJSONString(userFile));
         if ("undefined".equals(shareBatchNum)  || StringUtils.isEmpty(shareBatchNum)) {
@@ -310,7 +309,7 @@ public class FileDealComp {
             log.debug("文件所属用户id：" + userFile.getUserId());
             log.debug("登录用户id:" + sessionUserBean.getUserId());
             if (userFile.getUserId().longValue() != sessionUserBean.getUserId().longValue()) {
-                log.debug("用户id不一致，权限校验失败：");
+                log.info("用户id不一致，权限校验失败");
                 return false;
             }
         } else {
@@ -319,18 +318,21 @@ public class FileDealComp {
             List<Share> shareList = shareService.listByMap(param);
             //判断批次号
             if (shareList.size() <= 0) {
+                log.info("分享批次号不存在，权限校验失败");
                 return false;
             }
             Integer shareType = shareList.get(0).getShareType();
             if (1 == shareType) {
                 //判断提取码
                 if (!shareList.get(0).getExtractionCode().equals(extractionCode)) {
+                    log.info("提取码错误，权限校验失败");
                     return false;
                 }
             }
             param.put("userFileId", userFileId);
             List<ShareFile> shareFileList = shareFileService.listByMap(param);
             if (shareFileList.size() <= 0) {
+                log.info("用户id和分享批次号不匹配，权限校验失败");
                 return false;
             }
 

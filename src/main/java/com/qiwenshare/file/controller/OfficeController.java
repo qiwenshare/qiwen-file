@@ -6,7 +6,6 @@ import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
 import com.qiwenshare.common.exception.NotLoginException;
 import com.qiwenshare.common.result.RestResult;
 import com.qiwenshare.common.util.DateUtil;
-import com.qiwenshare.file.anno.MyLog;
 import com.qiwenshare.file.api.IFileService;
 import com.qiwenshare.file.api.IUserFileService;
 import com.qiwenshare.file.api.IUserService;
@@ -16,6 +15,8 @@ import com.qiwenshare.file.dto.file.EditOfficeFileDTO;
 import com.qiwenshare.file.dto.file.PreviewOfficeFileDTO;
 import com.qiwenshare.file.helper.ConfigManager;
 import com.qiwenshare.ufop.factory.UFOPFactory;
+import com.qiwenshare.ufop.operation.copy.Copier;
+import com.qiwenshare.ufop.operation.copy.domain.CopyFile;
 import com.qiwenshare.ufop.operation.download.domain.DownloadFile;
 import com.qiwenshare.ufop.operation.write.Writer;
 import com.qiwenshare.ufop.operation.write.domain.WriteFile;
@@ -24,9 +25,6 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.codec.digest.DigestUtils;
-import org.apache.poi.xslf.usermodel.XMLSlideShow;
-import org.apache.poi.xssf.usermodel.XSSFWorkbook;
-import org.apache.poi.xwpf.usermodel.XWPFDocument;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.web.bind.annotation.*;
 
@@ -54,6 +52,8 @@ public class OfficeController {
 
     @Value("${deployment.host}")
     private String deploymentHost;
+    @Value("${ufop.storage-type}")
+    private Integer storageType;
 
 
     @Resource
@@ -81,56 +81,27 @@ public class OfficeController {
             }
             String uuid = UUID.randomUUID().toString().replaceAll("-","");
 
-            SimpleDateFormat formater = new SimpleDateFormat("yyyyMMdd");
-
-
-            String fileSavePath = PathUtil.getStaticPath() + "/create/" + formater.format(new Date());
-            File fileSavePathFile = new File(fileSavePath);
-
-            if (!fileSavePathFile.exists()) {
-                fileSavePathFile.mkdirs();
+            String templateFilePath = "";
+            if ("docx".equals(extendName)) {
+                templateFilePath = "template/Word.docx";
+            } else if ("xlsx".equals(extendName)) {
+                templateFilePath = "template/Excel.xlsx";
+            } else if ("pptx".equals(extendName)) {
+                templateFilePath = "template/PowerPoint.pptx";
             }
-            String fileUrl = "/create/" + formater.format(new Date()) + "/" + uuid + "." + extendName;
+            String templateFileUrl = PathUtil.getStaticPath() +  templateFilePath;
+            FileInputStream fileInputStream = new FileInputStream(templateFileUrl);
+            Copier copier = ufopFactory.getCopier();
+            CopyFile copyFile = new CopyFile();
+            copyFile.setExtendName(extendName);
+            String fileUrl = copier.copy(fileInputStream, copyFile);
 
-            File file = new File(fileSavePath + "/" + uuid + "." + extendName);
-            if(!file.exists()){
-                try {
-                    if("docx".equals(extendName)){
-                        //创建word文档
-                        XWPFDocument document= new XWPFDocument();
-                        //Write the Document in file system
-                        FileOutputStream out = new FileOutputStream(file);
-                        document.write(out);
-                        out.close();
-                    }else if("xlsx".equals(extendName)){
-                        //创建excel表格
-                         XSSFWorkbook workbook = new XSSFWorkbook();
-                         //创建工作表
-                         workbook.createSheet("Sheet1");
-                        //Write the Document in file system
-                        FileOutputStream out = new FileOutputStream(file);
-                        workbook.write(out);
-                        out.close();
-                    }else if("pptx".equals(extendName)){
-                        //创建pptx演示文稿
-                        XMLSlideShow pptx = new XMLSlideShow();
-                        //创建工作表
-                        //Write the Document in file system
-                        FileOutputStream out = new FileOutputStream(file);
-                        pptx.write(out);
-                        out.close();
-                    }
-                } catch (IOException e) {
-                    e.printStackTrace();
-                }
-            }
             FileBean fileBean = new FileBean();
-            fileBean.setFileSize(Long.valueOf(1024 * 3));
+            fileBean.setFileSize(0L);
             fileBean.setFileUrl(fileUrl);
-            fileBean.setStorageType(0);
+            fileBean.setStorageType(storageType);
             fileBean.setPointCount(1);
             fileBean.setIdentifier(uuid);
-            fileBean.setTimeStampName(uuid);
             boolean saveFlag = fileService.save(fileBean);
             UserFile userFile = new UserFile();
             if(saveFlag) {
@@ -144,19 +115,6 @@ public class OfficeController {
                 userFile.setFileId(fileBean.getFileId());
                 userFileService.save(userFile);
             }
-            Long newFileSize = file.length();
-            //更新文件修改信息
-            LambdaUpdateWrapper<FileBean> lambdaUpdateWrapper = new LambdaUpdateWrapper<>();
-            FileInputStream fins = new FileInputStream(fileSavePath);
-            String md5Str = DigestUtils.md5Hex(fins);
-            fins.close();
-
-            lambdaUpdateWrapper
-                    .set(FileBean::getIdentifier, md5Str)
-                    .set(FileBean::getTimeStampName, md5Str)
-                    .set(FileBean::getFileSize, newFileSize)
-                    .eq(FileBean::getFileId, fileBean.getFileId());
-            fileService.update(lambdaUpdateWrapper);
 
             result.success();
             result.setMessage("文件创建成功！");
