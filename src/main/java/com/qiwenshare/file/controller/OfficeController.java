@@ -52,6 +52,8 @@ public class OfficeController {
 
     @Value("${deployment.host}")
     private String deploymentHost;
+    @Value("${ufop.storage-type}")
+    private Integer storageType;
 
 
     @Resource
@@ -97,7 +99,7 @@ public class OfficeController {
             FileBean fileBean = new FileBean();
             fileBean.setFileSize(0L);
             fileBean.setFileUrl(fileUrl);
-            fileBean.setStorageType(0);
+            fileBean.setStorageType(storageType);
             fileBean.setPointCount(1);
             fileBean.setIdentifier(uuid);
             boolean saveFlag = fileService.save(fileBean);
