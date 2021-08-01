@@ -2,9 +2,9 @@ package com.qiwenshare.file.controller;
 
 import cn.hutool.core.bean.BeanUtil;
 import com.alibaba.fastjson.JSON;
+import com.qiwenshare.common.anno.MyLog;
 import com.qiwenshare.common.result.RestResult;
 import com.qiwenshare.common.util.JjwtUtil;
-import com.qiwenshare.file.anno.MyLog;
 import com.qiwenshare.file.api.IUserService;
 import com.qiwenshare.file.domain.UserBean;
 import com.qiwenshare.file.dto.user.RegisterDTO;

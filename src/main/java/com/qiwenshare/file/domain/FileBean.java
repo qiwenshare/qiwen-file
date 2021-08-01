@@ -25,9 +25,6 @@ public class FileBean {
     private Long fileId;
 
     @Column(columnDefinition="varchar(500)")
-    private String timeStampName;
-
-    @Column(columnDefinition="varchar(500)")
     private String fileUrl;
 
     @Column(columnDefinition="bigint(10)")

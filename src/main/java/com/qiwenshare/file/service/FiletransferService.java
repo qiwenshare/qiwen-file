@@ -91,7 +91,7 @@ public class FiletransferService implements IFiletransferService {
             uploadFile = uploadFileList.get(i);
             FileBean fileBean = new FileBean();
             BeanUtil.copyProperties(uploadFileDto, fileBean);
-            fileBean.setTimeStampName(uploadFile.getTimeStampName());
+//            fileBean.setTimeStampName(uploadFile.getTimeStampName());
             if (uploadFile.getSuccess() == 1){
                 fileBean.setFileUrl(uploadFile.getUrl());
                 fileBean.setFileSize(uploadFile.getFileSize());
@@ -262,7 +262,7 @@ public class FiletransferService implements IFiletransferService {
         deleter = ufopFactory.getDeleter(fileBean.getStorageType());
         DeleteFile deleteFile = new DeleteFile();
         deleteFile.setFileUrl(fileBean.getFileUrl());
-        deleteFile.setTimeStampName(fileBean.getTimeStampName());
+//        deleteFile.setTimeStampName(fileBean.getTimeStampName());
         deleter.delete(deleteFile);
     }
 

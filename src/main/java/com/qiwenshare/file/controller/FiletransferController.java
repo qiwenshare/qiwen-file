@@ -1,11 +1,11 @@
 package com.qiwenshare.file.controller;
 
+import com.qiwenshare.common.anno.MyLog;
 import com.qiwenshare.common.exception.NotLoginException;
 import com.qiwenshare.common.result.RestResult;
 import com.qiwenshare.common.util.DateUtil;
 import com.qiwenshare.common.util.FileUtil;
 import com.qiwenshare.common.util.MimeUtils;
-import com.qiwenshare.file.anno.MyLog;
 import com.qiwenshare.file.api.IFileService;
 import com.qiwenshare.file.api.IFiletransferService;
 import com.qiwenshare.file.api.IUserFileService;
@@ -15,8 +15,6 @@ import com.qiwenshare.file.domain.*;
 import com.qiwenshare.file.dto.DownloadFileDTO;
 import com.qiwenshare.file.dto.UploadFileDTO;
 import com.qiwenshare.file.dto.file.PreviewDTO;
-import com.qiwenshare.file.service.ShareFileService;
-import com.qiwenshare.file.service.ShareService;
 import com.qiwenshare.file.service.StorageService;
 import com.qiwenshare.file.vo.file.FileListVo;
 import com.qiwenshare.file.vo.file.UploadFileVo;

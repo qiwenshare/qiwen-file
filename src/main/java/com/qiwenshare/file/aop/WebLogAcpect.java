@@ -1,7 +1,7 @@
 package com.qiwenshare.file.aop;
 
+import com.qiwenshare.common.anno.MyLog;
 import com.qiwenshare.common.result.RestResult;
-import com.qiwenshare.file.anno.MyLog;
 import com.qiwenshare.file.api.IOperationLogService;
 import com.qiwenshare.file.api.IUserService;
 import com.qiwenshare.file.domain.UserBean;
@@ -41,12 +41,11 @@ public class WebLogAcpect {
     private String token = "";
     private HttpServletRequest request;
 
-    private Logger logger = LoggerFactory.getLogger(WebLogAcpect.class);
 
     /**
      * 定义切入点，切入点为com.example.aop下的所有函数
      */
-    @Pointcut("@annotation(com.qiwenshare.file.anno.MyLog)")
+    @Pointcut("@annotation(com.qiwenshare.common.anno.MyLog)")
     public void webLog() {
     }
 
