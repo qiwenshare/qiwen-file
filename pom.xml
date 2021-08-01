@@ -180,14 +180,6 @@
                                     <fileset dir="target/${app-name}/${app-name}">
                                     </fileset>
                                 </copy>
-<!--                                <copy file="target/classes/script/startup.bat" tofile="${release-path}/startup.bat"/>-->
-<!--                                <copy file="target/classes/script/startup.sh" tofile="${release-path}/startup.sh"/>-->
-<!--                                <copy file="target/classes/script/stop.sh" tofile="${release-path}/stop.sh"/>-->
-<!--                                <copy todir="${release-path}">-->
-<!--                                    <fileset dir="target/classes">-->
-<!--                                        <include name="**/static/**" />-->
-<!--                                    </fileset>-->
-<!--                                </copy>-->
                             </target>
                         </configuration>
                     </execution>

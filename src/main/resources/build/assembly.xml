@@ -17,6 +17,14 @@
             <directory>src/main/resources</directory>
             <outputDirectory>conf</outputDirectory>
             <fileMode>0644</fileMode>
+            <excludes>
+                <exclude>static/**</exclude>
+            </excludes>
+        </fileSet>
+        <fileSet>
+            <directory>src/main/resources/static</directory>
+            <outputDirectory>static</outputDirectory>
+            <fileMode>0644</fileMode>
         </fileSet>
         <!-- copy本工程的jar -->
         <fileSet>
