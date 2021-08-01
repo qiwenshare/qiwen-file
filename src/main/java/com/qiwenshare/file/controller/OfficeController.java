@@ -87,7 +87,7 @@ public class OfficeController {
             } else if ("pptx".equals(extendName)) {
                 templateFilePath = "template/PowerPoint.pptx";
             }
-            String templateFileUrl = PathUtil.getStaticPath() +  templateFilePath;
+            String templateFileUrl = PathUtil.getProjectRootPath() +  templateFilePath;
             FileInputStream fileInputStream = new FileInputStream(templateFileUrl);
             Copier copier = ufopFactory.getCopier();
             CopyFile copyFile = new CopyFile();
