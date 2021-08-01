@@ -245,7 +245,7 @@ public class FiletransferService implements IFiletransferService {
             throw new UploadException("预览失败");
         }
         PreviewFile previewFile = new PreviewFile();
-        previewFile.setFileUrl(fileBean.getFileUrl());
+        previewFile.setFileUrl("/" + fileBean.getFileUrl());
         previewFile.setFileSize(fileBean.getFileSize());
         if ("true".equals(previewDTO.getIsMin())) {
             previewer.imageThumbnailPreview(httpServletResponse, previewFile);
