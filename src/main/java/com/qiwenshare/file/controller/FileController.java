@@ -161,45 +161,16 @@ public class FileController {
             return RestResult.fail().message("同名文件已存在");
         }
 
+        LambdaUpdateWrapper<UserFile> lambdaUpdateWrapper = new LambdaUpdateWrapper<>();
+        lambdaUpdateWrapper.set(UserFile::getFileName, renameFileDto.getFileName())
+                .set(UserFile::getUploadTime, DateUtil.getCurrentTime())
+                .eq(UserFile::getUserFileId, renameFileDto.getUserFileId());
+        userFileService.update(lambdaUpdateWrapper);
         if (1 == userFile.getIsDir()) {
-            LambdaUpdateWrapper<UserFile> lambdaUpdateWrapper = new LambdaUpdateWrapper<>();
-            lambdaUpdateWrapper.set(UserFile::getFileName, renameFileDto.getFileName())
-                    .set(UserFile::getUploadTime, DateUtil.getCurrentTime())
-                    .eq(UserFile::getUserFileId, renameFileDto.getUserFileId());
-            userFileService.update(lambdaUpdateWrapper);
             userFileService.replaceUserFilePath(userFile.getFilePath() + renameFileDto.getFileName() + "/",
                     userFile.getFilePath() + userFile.getFileName() + "/", sessionUserBean.getUserId());
-        } else {
-            FileBean file = fileService.getById(userFile.getFileId());
-            if (file.getStorageType() == 1) {
-
-                String fileUrl = file.getFileUrl();
-                String newFileUrl = fileUrl.replace(userFile.getFileName(), renameFileDto.getFileName());
-                RenameFile renameFile = new RenameFile();
-                renameFile.setSrcName(fileUrl.substring(1));
-                renameFile.setDestName(newFileUrl.substring(1));
-                ufopFactory.getRenamer(file.getStorageType()).rename(renameFile);
-                LambdaUpdateWrapper<FileBean> lambdaUpdateWrapper = new LambdaUpdateWrapper<>();
-                lambdaUpdateWrapper
-                        .set(FileBean::getFileUrl, newFileUrl)
-                        .eq(FileBean::getFileId, file.getFileId());
-                fileService.update(lambdaUpdateWrapper);
-
-                LambdaUpdateWrapper<UserFile> userFileLambdaUpdateWrapper = new LambdaUpdateWrapper<>();
-                userFileLambdaUpdateWrapper
-                        .set(UserFile::getFileName, renameFileDto.getFileName())
-                        .set(UserFile::getUploadTime, DateUtil.getCurrentTime())
-                        .eq(UserFile::getUserFileId, renameFileDto.getUserFileId());
-                userFileService.update(userFileLambdaUpdateWrapper);
-            } else {
-                LambdaUpdateWrapper<UserFile> lambdaUpdateWrapper = new LambdaUpdateWrapper<>();
-                lambdaUpdateWrapper.set(UserFile::getFileName, renameFileDto.getFileName())
-                        .set(UserFile::getUploadTime, DateUtil.getCurrentTime())
-                        .eq(UserFile::getUserFileId, renameFileDto.getUserFileId());
-                userFileService.update(lambdaUpdateWrapper);
-            }
-
         }
+
         fileDealComp.uploadESByUserFileId(renameFileDto.getUserFileId());
         return RestResult.success();
     }
