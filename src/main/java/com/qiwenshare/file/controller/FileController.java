@@ -161,25 +161,16 @@ public class FileController {
             return RestResult.fail().message("同名文件已存在");
         }
 
+        LambdaUpdateWrapper<UserFile> lambdaUpdateWrapper = new LambdaUpdateWrapper<>();
+        lambdaUpdateWrapper.set(UserFile::getFileName, renameFileDto.getFileName())
+                .set(UserFile::getUploadTime, DateUtil.getCurrentTime())
+                .eq(UserFile::getUserFileId, renameFileDto.getUserFileId());
+        userFileService.update(lambdaUpdateWrapper);
         if (1 == userFile.getIsDir()) {
-            LambdaUpdateWrapper<UserFile> lambdaUpdateWrapper = new LambdaUpdateWrapper<>();
-            lambdaUpdateWrapper.set(UserFile::getFileName, renameFileDto.getFileName())
-                    .set(UserFile::getUploadTime, DateUtil.getCurrentTime())
-                    .eq(UserFile::getUserFileId, renameFileDto.getUserFileId());
-            userFileService.update(lambdaUpdateWrapper);
             userFileService.replaceUserFilePath(userFile.getFilePath() + renameFileDto.getFileName() + "/",
                     userFile.getFilePath() + userFile.getFileName() + "/", sessionUserBean.getUserId());
-        } else {
-            FileBean file = fileService.getById(userFile.getFileId());
-
-            LambdaUpdateWrapper<UserFile> lambdaUpdateWrapper = new LambdaUpdateWrapper<>();
-            lambdaUpdateWrapper.set(UserFile::getFileName, renameFileDto.getFileName())
-                    .set(UserFile::getUploadTime, DateUtil.getCurrentTime())
-                    .eq(UserFile::getUserFileId, renameFileDto.getUserFileId());
-            userFileService.update(lambdaUpdateWrapper);
-
-
         }
+
         fileDealComp.uploadESByUserFileId(renameFileDto.getUserFileId());
         return RestResult.success();
     }
