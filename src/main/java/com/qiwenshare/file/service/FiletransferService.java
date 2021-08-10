@@ -33,9 +33,10 @@ import com.qiwenshare.file.domain.StorageBean;
 import com.qiwenshare.file.mapper.StorageMapper;
 import com.qiwenshare.file.mapper.UserFileMapper;
 import com.qiwenshare.file.vo.file.FileListVo;
+import com.qiwenshare.ufop.constant.StorageTypeEnum;
+import com.qiwenshare.ufop.constant.UploadFileStatusEnum;
 import com.qiwenshare.ufop.exception.DownloadException;
 import com.qiwenshare.ufop.exception.UploadException;
-import com.qiwenshare.ufop.factory.StorageTypeEnum;
 import com.qiwenshare.ufop.factory.UFOPFactory;
 import com.qiwenshare.ufop.operation.delete.Deleter;
 import com.qiwenshare.ufop.operation.delete.domain.DeleteFile;
@@ -45,6 +46,7 @@ import com.qiwenshare.ufop.operation.preview.Previewer;
 import com.qiwenshare.ufop.operation.preview.domain.PreviewFile;
 import com.qiwenshare.ufop.operation.upload.Uploader;
 import com.qiwenshare.ufop.operation.upload.domain.UploadFile;
+import com.qiwenshare.ufop.operation.upload.domain.UploadFileResult;
 import com.qiwenshare.ufop.util.PathUtil;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
@@ -86,16 +88,16 @@ public class FiletransferService implements IFiletransferService {
             throw new UploadException("上传失败");
         }
 
-        List<UploadFile> uploadFileList = uploader.upload(request, uploadFile);
-        for (int i = 0; i < uploadFileList.size(); i++){
-            uploadFile = uploadFileList.get(i);
+        List<UploadFileResult> uploadFileResultList = uploader.upload(request, uploadFile);
+        for (int i = 0; i < uploadFileResultList.size(); i++){
+            UploadFileResult uploadFileResult = uploadFileResultList.get(i);
             FileBean fileBean = new FileBean();
             BeanUtil.copyProperties(uploadFileDto, fileBean);
 //            fileBean.setTimeStampName(uploadFile.getTimeStampName());
-            if (uploadFile.getSuccess() == 1){
-                fileBean.setFileUrl(uploadFile.getUrl());
-                fileBean.setFileSize(uploadFile.getFileSize());
-                fileBean.setStorageType(uploadFile.getStorageType());
+            if (UploadFileStatusEnum.SUCCESS.equals(uploadFileResult.getStatus())){
+                fileBean.setFileUrl(uploadFileResult.getFileUrl());
+                fileBean.setFileSize(uploadFileResult.getFileSize());
+                fileBean.setStorageType(uploadFileResult.getStorageType().getCode());
                 fileBean.setPointCount(1);
                 fileMapper.insert(fileBean);
                 UserFile userFile = new UserFile();
@@ -109,8 +111,8 @@ public class FiletransferService implements IFiletransferService {
                     userFile.setFilePath(uploadFileDto.getFilePath());
                 }
                 userFile.setUserId(userId);
-                userFile.setFileName(uploadFile.getFileName());
-                userFile.setExtendName(uploadFile.getFileType());
+                userFile.setFileName(uploadFileResult.getFileName());
+                userFile.setExtendName(uploadFileResult.getExtendName());
                 userFile.setDeleteFlag(0);
                 userFile.setIsDir(0);
                 List<FileListVo> userFileList = userFileMapper.userFileList(userFile, null, null);
@@ -172,7 +174,6 @@ public class FiletransferService implements IFiletransferService {
             ZipOutputStream zos = new ZipOutputStream(csum);
             BufferedOutputStream out = new BufferedOutputStream(zos);
 
-//            zos.setComment("");
             try {
                 for (UserFile userFile1 : userFileList) {
                     FileBean fileBean = fileMapper.selectById(userFile1.getFileId());
@@ -220,7 +221,7 @@ public class FiletransferService implements IFiletransferService {
                     e.printStackTrace();
                 }
             }
-            Downloader downloader = ufopFactory.getDownloader(StorageTypeEnum.LOCAL.getStorageType());
+            Downloader downloader = ufopFactory.getDownloader(StorageTypeEnum.LOCAL.getCode());
             DownloadFile downloadFile = new DownloadFile();
             downloadFile.setFileUrl("temp" + File.separator+userFile.getFileName() + ".zip");
             File tempFile = FileOperation.newFile(PathUtil.getStaticPath() + downloadFile.getFileUrl());
@@ -245,8 +246,7 @@ public class FiletransferService implements IFiletransferService {
             throw new UploadException("预览失败");
         }
         PreviewFile previewFile = new PreviewFile();
-        String fileUrl = PathUtil.getAliyunObjectNameByFileUrl(fileBean.getFileUrl());
-        previewFile.setFileUrl("/" + fileUrl);
+        previewFile.setFileUrl(fileBean.getFileUrl());
         previewFile.setFileSize(fileBean.getFileSize());
         if ("true".equals(previewDTO.getIsMin())) {
             previewer.imageThumbnailPreview(httpServletResponse, previewFile);
