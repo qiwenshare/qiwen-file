@@ -17,6 +17,16 @@ public interface UserFileMapper extends BaseMapper<UserFile> {
     void updateFilepathByPathAndName(String oldfilePath, String newfilePath, String fileName, String extendName, long userId);
     void updateFilepathByFilepath(String oldfilePath, String newfilePath, long userId);
 
+    void batchInsertByPathAndName(@Param("oldFilePath") String oldFilePath,
+                                  @Param("newFilePath") String newfilePath,
+                                  @Param("fileName") String fileName,
+                                  @Param("extendName") String extendName,
+                                  @Param("userId") long userId);
+
+    void batchInsertByFilepath(@Param("oldFilePath") String oldFilePath,
+                               @Param("newFilePath") String newfilePath,
+                               @Param("userId") long userId);
+
     List<FileListVo> selectFileByExtendName(List<String> fileNameList, Long beginCount, Long pageCount, long userId);
     Long selectCountByExtendName(List<String> fileNameList, Long beginCount, Long pageCount, long userId);
     List<FileListVo> selectFileNotInExtendNames(List<String> fileNameList, Long beginCount, Long pageCount, long userId);

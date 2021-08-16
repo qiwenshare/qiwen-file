@@ -43,8 +43,23 @@ public class UserFileService  extends ServiceImpl<UserFileMapper, UserFile> impl
         lambdaQueryWrapper.eq(UserFile::getFileName, fileName)
                 .eq(UserFile::getFilePath, filePath)
                 .eq(UserFile::getUserId, userId)
-                .eq(UserFile::getDeleteFlag, "0");
+                .eq(UserFile::getDeleteFlag, 0);
         return userFileMapper.selectList(lambdaQueryWrapper);
+    }
+
+    @Override
+    public boolean isDirExist(String fileName, String filePath, long userId){
+        LambdaQueryWrapper<UserFile> lambdaQueryWrapper = new LambdaQueryWrapper<>();
+        lambdaQueryWrapper.eq(UserFile::getFileName, fileName)
+                .eq(UserFile::getFilePath, filePath)
+                .eq(UserFile::getUserId, userId)
+                .eq(UserFile::getDeleteFlag, 0)
+                .eq(UserFile::getIsDir, 1);
+        List<UserFile> list = userFileMapper.selectList(lambdaQueryWrapper);
+        if (list != null && !list.isEmpty()) {
+            return true;
+        }
+        return false;
     }
 
     @Override
@@ -68,54 +83,6 @@ public class UserFileService  extends ServiceImpl<UserFileMapper, UserFile> impl
         return userFileMapper.userFileList(userFile, beginCount, pageCount);
     }
 
-//    public void renameUserFile(Long userFileId, String newFileName, Long userId) {
-//        UserFile userFile = userFileMapper.selectById(userFileId);
-//        if (1 == userFile.getIsDir()) {
-//            LambdaUpdateWrapper<UserFile> lambdaUpdateWrapper = new LambdaUpdateWrapper<>();
-//            lambdaUpdateWrapper.set(UserFile::getFileName, newFileName)
-//                    .set(UserFile::getUploadTime, DateUtil.getCurrentTime())
-//                    .eq(UserFile::getUserFileId, userFile.getUserFileId());
-//            userFileMapper.update(null, lambdaUpdateWrapper);
-//            replaceUserFilePath(userFile.getFilePath() + newFileName + "/",
-//                    userFile.getFilePath() + userFile.getFileName() + "/", userId);
-//        } else {
-//            FileBean fileBean = fileMapper.selectById(userFile.getFileId());
-//            if (fileBean.getIsOSS() == 1) {
-////                LambdaQueryWrapper<UserFile> lambdaQueryWrapper = new LambdaQueryWrapper<>();
-////                lambdaQueryWrapper.eq(UserFile::getUserFileId, renameFileDto.getUserFileId());
-////                UserFile userFile = userFileService.getOne(lambdaQueryWrapper);
-////
-////                FileBean file = fileService.getById(userFile.getFileId());
-//                String fileUrl = fileBean.getFileUrl();
-//                String newFileUrl = fileUrl.replace(userFile.getFileName(), newFileName);
-//
-//                AliyunOSSRename.rename(qiwenFileConfig.getAliyun().getOss(),
-//                        fileUrl.substring(1),
-//                        newFileUrl.substring(1));
-//                LambdaUpdateWrapper<FileBean> lambdaUpdateWrapper = new LambdaUpdateWrapper<>();
-//                lambdaUpdateWrapper
-//                        .set(FileBean::getFileUrl, newFileUrl)
-//                        .eq(FileBean::getFileId, fileBean.getFileId());
-//                fileMapper.update(null, lambdaUpdateWrapper);
-//
-//                LambdaUpdateWrapper<UserFile> userFileLambdaUpdateWrapper = new LambdaUpdateWrapper<>();
-//                userFileLambdaUpdateWrapper
-//                        .set(UserFile::getFileName, newFileName)
-//                        .set(UserFile::getUploadTime, DateUtil.getCurrentTime())
-//                        .eq(UserFile::getUserFileId, userFileId);
-//                userFileMapper.update(null, userFileLambdaUpdateWrapper);
-//            } else {
-//                LambdaUpdateWrapper<UserFile> lambdaUpdateWrapper = new LambdaUpdateWrapper<>();
-//                lambdaUpdateWrapper.set(UserFile::getFileName, newFileName)
-//                        .set(UserFile::getUploadTime, DateUtil.getCurrentTime())
-//                        .eq(UserFile::getUserFileId, userFileId);
-//                userFileMapper.update(null, lambdaUpdateWrapper);
-//            }
-//
-//
-//        }
-//    }
-
     @Override
     public void updateFilepathByFilepath(String oldfilePath, String newfilePath, String fileName, String extendName, long userId) {
         if ("null".equals(extendName)){
@@ -135,6 +102,34 @@ public class UserFileService  extends ServiceImpl<UserFileMapper, UserFile> impl
 
         if (extendName == null) { //为null说明是目录，则需要移动子目录
             userFileMapper.updateFilepathByFilepath(oldfilePath, newfilePath, userId);
+        }
+
+    }
+
+    @Override
+    public void userFileCopy(String oldfilePath, String newfilePath, String fileName, String extendName, long userId) {
+
+
+
+        if ("null".equals(extendName)){
+            extendName = null;
+        }
+
+        userFileMapper.batchInsertByPathAndName(oldfilePath, newfilePath, fileName, extendName, userId);
+        //移动根目录
+//        userFileMapper.updateFilepathByPathAndName(oldfilePath, newfilePath, fileName, extendName, userId);
+
+        //移动子目录
+        oldfilePath = oldfilePath + fileName + "/";
+        newfilePath = newfilePath + fileName + "/";
+
+        oldfilePath = oldfilePath.replace("\\", "\\\\\\\\");
+        oldfilePath = oldfilePath.replace("'", "\\'");
+        oldfilePath = oldfilePath.replace("%", "\\%");
+        oldfilePath = oldfilePath.replace("_", "\\_");
+
+        if (extendName == null) { //为null说明是目录，则需要移动子目录
+            userFileMapper.batchInsertByFilepath(oldfilePath, newfilePath, userId);
         }
 
     }
