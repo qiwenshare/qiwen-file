@@ -1,4 +1,4 @@
-package com.qiwenshare.file.dto;
+package com.qiwenshare.file.dto.file;
 
 import com.baomidou.mybatisplus.annotation.IdType;
 import com.baomidou.mybatisplus.annotation.TableField;

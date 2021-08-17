@@ -6,15 +6,11 @@ import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
 import com.qiwenshare.common.util.DateUtil;
 import com.qiwenshare.file.api.IFiletransferService;
 import com.qiwenshare.file.component.FileDealComp;
-import com.qiwenshare.file.domain.FileBean;
-import com.qiwenshare.file.domain.StorageBean;
-import com.qiwenshare.file.domain.UserFile;
-import com.qiwenshare.file.dto.DownloadFileDTO;
-import com.qiwenshare.file.dto.UploadFileDTO;
+import com.qiwenshare.file.domain.*;
+import com.qiwenshare.file.dto.file.DownloadFileDTO;
+import com.qiwenshare.file.dto.file.UploadFileDTO;
 import com.qiwenshare.file.dto.file.PreviewDTO;
-import com.qiwenshare.file.mapper.FileMapper;
-import com.qiwenshare.file.mapper.StorageMapper;
-import com.qiwenshare.file.mapper.UserFileMapper;
+import com.qiwenshare.file.mapper.*;
 import com.qiwenshare.file.vo.file.FileListVo;
 import com.qiwenshare.ufop.constant.StorageTypeEnum;
 import com.qiwenshare.ufop.constant.UploadFileStatusEnum;
@@ -62,6 +58,10 @@ public class FiletransferService implements IFiletransferService {
     UFOPFactory ufopFactory;
     @Resource
     FileDealComp fileDealComp;
+    @Resource
+    UploadTaskDetailMapper UploadTaskDetailMapper;
+    @Resource
+    UploadTaskMapper uploadTaskMapper;
 
     @Override
     public void uploadFile(HttpServletRequest request, UploadFileDTO uploadFileDto, Long userId) {
@@ -85,7 +85,8 @@ public class FiletransferService implements IFiletransferService {
             UploadFileResult uploadFileResult = uploadFileResultList.get(i);
             FileBean fileBean = new FileBean();
             BeanUtil.copyProperties(uploadFileDto, fileBean);
-//            fileBean.setTimeStampName(uploadFile.getTimeStampName());
+            String relativePath = uploadFileDto.getRelativePath();
+
             if (UploadFileStatusEnum.SUCCESS.equals(uploadFileResult.getStatus())){
                 fileBean.setFileUrl(uploadFileResult.getFileUrl());
                 fileBean.setFileSize(uploadFileResult.getFileSize());
@@ -93,7 +94,7 @@ public class FiletransferService implements IFiletransferService {
                 fileBean.setPointCount(1);
                 fileMapper.insert(fileBean);
                 UserFile userFile = new UserFile();
-                String relativePath = uploadFileDto.getRelativePath();
+
                 if (relativePath.contains("/")) {
                     userFile.setFilePath(uploadFileDto.getFilePath() + UFOPUtils.getParentPath(relativePath) + "/");
                     fileDealComp.restoreParentFilePath(uploadFileDto.getFilePath() + UFOPUtils.getParentPath(relativePath) + "/", userId);
@@ -118,9 +119,45 @@ public class FiletransferService implements IFiletransferService {
                 userFileMapper.insert(userFile);
                 fileDealComp.uploadESByUserFileId(userFile.getUserFileId());
 
-            }
 
+                LambdaQueryWrapper<UploadTaskDetail> lambdaQueryWrapper = new LambdaQueryWrapper<>();
+                lambdaQueryWrapper.eq(UploadTaskDetail::getIdentifier, uploadFileDto.getIdentifier());
+                UploadTaskDetailMapper.delete(lambdaQueryWrapper);
+
+                LambdaUpdateWrapper<UploadTask> lambdaUpdateWrapper = new LambdaUpdateWrapper<>();
+                lambdaUpdateWrapper.set(UploadTask::getUploadStatus, UploadFileStatusEnum.SUCCESS.getCode())
+                        .eq(UploadTask::getIdentifier, uploadFileDto.getIdentifier());
+                uploadTaskMapper.update(null, lambdaUpdateWrapper);
+
+            } else if (UploadFileStatusEnum.UNCOMPLATE.equals(uploadFileResult.getStatus())) {
+                UploadTaskDetail UploadTaskDetail = new UploadTaskDetail();
+                UploadTaskDetail.setFilePath(uploadFileDto.getFilePath());
+                if (relativePath.contains("/")) {
+                    UploadTaskDetail.setFilePath(uploadFileDto.getFilePath() + UFOPUtils.getParentPath(relativePath) + "/");
+                } else {
+                    UploadTaskDetail.setFilePath(uploadFileDto.getFilePath());
+                }
+                UploadTaskDetail.setFilename(uploadFileDto.getFilename());
+                UploadTaskDetail.setChunkNumber(uploadFileDto.getChunkNumber());
+                UploadTaskDetail.setChunkSize((int)uploadFileDto.getChunkSize());
+                UploadTaskDetail.setRelativePath(uploadFileDto.getRelativePath());
+                UploadTaskDetail.setTotalChunks(uploadFileDto.getTotalChunks());
+                UploadTaskDetail.setTotalSize((int)uploadFileDto.getTotalSize());
+                UploadTaskDetail.setIdentifier(uploadFileDto.getIdentifier());
+                UploadTaskDetailMapper.insert(UploadTaskDetail);
+
+            } else if (UploadFileStatusEnum.FAIL.equals(uploadFileResult.getStatus())) {
+                LambdaQueryWrapper<UploadTaskDetail> lambdaQueryWrapper = new LambdaQueryWrapper<>();
+                lambdaQueryWrapper.eq(UploadTaskDetail::getIdentifier, uploadFileDto.getIdentifier());
+                UploadTaskDetailMapper.delete(lambdaQueryWrapper);
+
+                LambdaUpdateWrapper<UploadTask> lambdaUpdateWrapper = new LambdaUpdateWrapper<>();
+                lambdaUpdateWrapper.set(UploadTask::getUploadStatus, UploadFileStatusEnum.FAIL.getCode())
+                        .eq(UploadTask::getIdentifier, uploadFileDto.getIdentifier());
+                uploadTaskMapper.update(null, lambdaUpdateWrapper);
+            }
         }
+
     }
 
     @Override

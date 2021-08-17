@@ -16,12 +16,11 @@ import com.qiwenshare.file.config.es.FileSearch;
 import com.qiwenshare.file.domain.TreeNode;
 import com.qiwenshare.file.domain.UserBean;
 import com.qiwenshare.file.domain.UserFile;
-import com.qiwenshare.file.dto.BatchMoveFileDTO;
-import com.qiwenshare.file.dto.CopyFileDTO;
-import com.qiwenshare.file.dto.MoveFileDTO;
+import com.qiwenshare.file.dto.file.BatchMoveFileDTO;
+import com.qiwenshare.file.dto.file.CopyFileDTO;
+import com.qiwenshare.file.dto.file.MoveFileDTO;
 import com.qiwenshare.file.dto.file.*;
 import com.qiwenshare.file.vo.file.FileListVo;
-import com.qiwenshare.ufop.factory.UFOPFactory;
 import com.qiwenshare.ufop.util.UFOPUtils;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
@@ -32,7 +31,6 @@ import org.eclipse.jetty.util.StringUtil;
 import org.elasticsearch.index.query.QueryBuilders;
 import org.elasticsearch.search.fetch.subphase.highlight.HighlightBuilder;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.elasticsearch.core.ElasticsearchRestTemplate;
@@ -42,8 +40,6 @@ import org.springframework.web.bind.annotation.*;
 
 import javax.annotation.Resource;
 import java.util.*;
-import java.util.concurrent.Executor;
-import java.util.concurrent.Executors;
 
 @Tag(name = "file", description = "该接口为文件接口，主要用来做一些文件的基本操作，如创建目录，删除，移动，复制等。")
 @RestController
@@ -51,23 +47,17 @@ import java.util.concurrent.Executors;
 @RequestMapping("/file")
 public class FileController {
 
-    @Value("${ufop.storage-type}")
-    private Integer storageType;
     @Resource
     IFileService fileService;
     @Resource
     IUserService userService;
     @Resource
     IUserFileService userFileService;
-    @Resource
-    UFOPFactory ufopFactory;
 
     @Autowired
     private ElasticsearchRestTemplate elasticsearchRestTemplate;
     @Resource
     FileDealComp fileDealComp;
-
-    public static Executor executor = Executors.newFixedThreadPool(20);
 
     public static final String CURRENT_MODULE = "文件接口";
 
@@ -291,11 +281,13 @@ public class FileController {
         if (sessionUserBean == null) {
             throw new NotLoginException();
         }
-        String oldfilePath = copyFileDTO.getOldFilePath();
+        long userFileId = copyFileDTO.getUserFileId();
+        UserFile userFile = userFileService.getById(userFileId);
+        String oldfilePath = userFile.getFilePath();
         String newfilePath = copyFileDTO.getFilePath();
-        String fileName = copyFileDTO.getFileName();
-        String extendName = copyFileDTO.getExtendName();
-        if (StringUtil.isEmpty(extendName)) {
+        String fileName = userFile.getFileName();
+        String extendName = userFile.getExtendName();
+        if (userFile.getIsDir() == 1) {
             String testFilePath = oldfilePath + fileName +  "/";
             if (newfilePath.startsWith(testFilePath)) {
                 return RestResult.fail().message("原路径与目标路径冲突，不能移动");

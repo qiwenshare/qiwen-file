@@ -1,11 +1,8 @@
 package com.qiwenshare.file.controller;
 
 import com.alibaba.fastjson.JSON;
-import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
-import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
 import com.qiwenshare.common.anno.MyLog;
 import com.qiwenshare.common.exception.NotLoginException;
-import com.qiwenshare.common.util.DateUtil;
 import com.qiwenshare.common.result.RestResult;
 import com.qiwenshare.file.api.IRecoveryFileService;
 import com.qiwenshare.file.api.IUserFileService;
@@ -13,8 +10,8 @@ import com.qiwenshare.file.api.IUserService;
 import com.qiwenshare.file.domain.RecoveryFile;
 import com.qiwenshare.file.domain.UserBean;
 import com.qiwenshare.file.domain.UserFile;
-import com.qiwenshare.file.dto.BatchDeleteRecoveryFileDTO;
-import com.qiwenshare.file.dto.DeleteRecoveryFileDTO;
+import com.qiwenshare.file.dto.file.DeleteRecoveryFileDTO;
+import com.qiwenshare.file.dto.recoveryfile.BatchDeleteRecoveryFileDTO;
 import com.qiwenshare.file.dto.recoveryfile.RestoreFileDTO;
 import com.qiwenshare.file.vo.file.RecoveryFileListVo;
 import io.swagger.v3.oas.annotations.Operation;

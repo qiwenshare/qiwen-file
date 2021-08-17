@@ -1,4 +1,4 @@
-package com.qiwenshare.file.dto;
+package com.qiwenshare.file.dto.file;
 
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Data;
