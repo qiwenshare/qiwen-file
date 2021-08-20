@@ -2,8 +2,8 @@ package com.qiwenshare.file.api;
 
 import com.qiwenshare.file.domain.FileBean;
 import com.qiwenshare.file.domain.StorageBean;
-import com.qiwenshare.file.dto.DownloadFileDTO;
-import com.qiwenshare.file.dto.UploadFileDTO;
+import com.qiwenshare.file.dto.file.DownloadFileDTO;
+import com.qiwenshare.file.dto.file.UploadFileDTO;
 import com.qiwenshare.file.dto.file.PreviewDTO;
 
 import javax.servlet.http.HttpServletRequest;

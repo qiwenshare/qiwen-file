@@ -71,10 +71,10 @@ public class GlobalExceptionHandlerAdvice {
 
 
     /**-------- 自定义定异常处理方法 --------**/
-    @ExceptionHandler(CMSException.class)
+    @ExceptionHandler(QiwenException.class)
     @ResponseBody
     @ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
-    public RestResult error(CMSException e) {
+    public RestResult error(QiwenException e) {
         e.printStackTrace();
         log.error("全局异常捕获：" + e);
         return RestResult.fail().message(e.getMessage()).code(e.getCode());

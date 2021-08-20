@@ -7,21 +7,21 @@ import lombok.Data;
  * 自定义全局异常类
  */
 @Data
-public class CMSException extends RuntimeException {
+public class QiwenException extends RuntimeException {
     private Integer code;
 
-    public CMSException(Integer code, String message) {
+    public QiwenException(Integer code, String message) {
         super(message);
         this.code = code;
     }
 
-    public CMSException(ResultCodeEnum resultCodeEnum) {
+    public QiwenException(ResultCodeEnum resultCodeEnum) {
         super(resultCodeEnum.getMessage());
         this.code = resultCodeEnum.getCode();
     }
 
     @Override
     public String toString() {
-        return "CMSException{" + "code=" + code + ", message=" + this.getMessage() + '}';
+        return "QiwenException{" + "code=" + code + ", message=" + this.getMessage() + '}';
     }
 }

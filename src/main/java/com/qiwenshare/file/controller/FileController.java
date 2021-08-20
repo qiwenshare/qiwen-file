@@ -1,39 +1,36 @@
 package com.qiwenshare.file.controller;
 
 import com.alibaba.fastjson.JSON;
-
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
 import com.qiwenshare.common.anno.MyLog;
 import com.qiwenshare.common.exception.NotLoginException;
-import com.qiwenshare.common.util.DateUtil;
 import com.qiwenshare.common.result.RestResult;
-import com.qiwenshare.common.operation.FileOperation;
-import com.qiwenshare.common.util.FileUtil;
-import com.qiwenshare.file.api.*;
+import com.qiwenshare.common.util.DateUtil;
+import com.qiwenshare.file.advice.QiwenException;
+import com.qiwenshare.file.api.IFileService;
+import com.qiwenshare.file.api.IUserFileService;
+import com.qiwenshare.file.api.IUserService;
 import com.qiwenshare.file.component.FileDealComp;
 import com.qiwenshare.file.config.es.FileSearch;
-import com.qiwenshare.file.domain.*;
-import com.qiwenshare.file.dto.*;
+import com.qiwenshare.file.domain.TreeNode;
+import com.qiwenshare.file.domain.UserBean;
+import com.qiwenshare.file.domain.UserFile;
+import com.qiwenshare.file.dto.file.BatchMoveFileDTO;
+import com.qiwenshare.file.dto.file.CopyFileDTO;
+import com.qiwenshare.file.dto.file.MoveFileDTO;
 import com.qiwenshare.file.dto.file.*;
 import com.qiwenshare.file.vo.file.FileListVo;
-import com.qiwenshare.ufop.factory.UFOPFactory;
-import com.qiwenshare.ufop.operation.copy.domain.CopyFile;
-import com.qiwenshare.ufop.operation.download.Downloader;
-import com.qiwenshare.ufop.operation.download.domain.DownloadFile;
-import com.qiwenshare.ufop.operation.rename.domain.RenameFile;
-import com.qiwenshare.ufop.util.PathUtil;
+import com.qiwenshare.ufop.util.UFOPUtils;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.codec.digest.DigestUtils;
-import org.apache.commons.io.FileUtils;
 import org.eclipse.jetty.util.StringUtil;
 import org.elasticsearch.index.query.QueryBuilders;
 import org.elasticsearch.search.fetch.subphase.highlight.HighlightBuilder;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.elasticsearch.core.ElasticsearchRestTemplate;
@@ -42,12 +39,7 @@ import org.springframework.data.elasticsearch.core.query.NativeSearchQueryBuilde
 import org.springframework.web.bind.annotation.*;
 
 import javax.annotation.Resource;
-import java.io.*;
 import java.util.*;
-import java.util.concurrent.Executor;
-import java.util.concurrent.Executors;
-
-import static com.qiwenshare.common.util.FileUtil.getFileExtendsByType;
 
 @Tag(name = "file", description = "该接口为文件接口，主要用来做一些文件的基本操作，如创建目录，删除，移动，复制等。")
 @RestController
@@ -55,23 +47,17 @@ import static com.qiwenshare.common.util.FileUtil.getFileExtendsByType;
 @RequestMapping("/file")
 public class FileController {
 
-    @Value("${ufop.storage-type}")
-    private Integer storageType;
     @Resource
     IFileService fileService;
     @Resource
     IUserService userService;
     @Resource
     IUserFileService userFileService;
-    @Resource
-    UFOPFactory ufopFactory;
 
     @Autowired
     private ElasticsearchRestTemplate elasticsearchRestTemplate;
     @Resource
     FileDealComp fileDealComp;
-
-    public static Executor executor = Executors.newFixedThreadPool(20);
 
     public static final String CURRENT_MODULE = "文件接口";
 
@@ -84,8 +70,9 @@ public class FileController {
 
         UserBean sessionUserBean = userService.getUserBeanByToken(token);
 
-        List<UserFile> userFiles = userFileService.selectUserFileByNameAndPath(createFileDto.getFileName(), createFileDto.getFilePath(), sessionUserBean.getUserId());
-        if (userFiles != null && !userFiles.isEmpty()) {
+        boolean isDirExist = userFileService.isDirExist(createFileDto.getFileName(), createFileDto.getFilePath(), sessionUserBean.getUserId());
+
+        if (isDirExist) {
             return RestResult.fail().message("同名文件已存在");
         }
 
@@ -201,7 +188,7 @@ public class FileController {
 
 
         List<FileListVo> fileList = null;
-        userFile.setFilePath(PathUtil.urlDecode(filePath));
+        userFile.setFilePath(UFOPUtils.urlDecode(filePath));
         if (currentPage == 0 || pageCount == 0) {
             fileList = userFileService.userFileList(userFile, 0L, 10L);
         } else {
@@ -274,116 +261,43 @@ public class FileController {
         if (sessionUserBean == null) {
             throw new NotLoginException();
         }
-        UserFile userFile = userFileService.getById(unzipFileDto.getUserFileId());
-        FileBean fileBean = fileService.getById(userFile.getFileId());
-        File destFile = new File(PathUtil.getStaticPath() + "temp" + File.separator + fileBean.getFileUrl());
-
-
-        Downloader downloader = ufopFactory.getDownloader(fileBean.getStorageType());
-        DownloadFile downloadFile = new DownloadFile();
-        downloadFile.setFileUrl(fileBean.getFileUrl());
-        downloadFile.setFileSize(fileBean.getFileSize());
-        InputStream inputStream = downloader.getInputStream(downloadFile);
         try {
-            FileUtils.copyInputStreamToFile(inputStream, destFile);
-        } catch (IOException e) {
-            e.printStackTrace();
+            fileService.unzipFile(unzipFileDto.getUserFileId(), unzipFileDto.getUnzipMode(), unzipFileDto.getFilePath());
+        } catch (QiwenException e) {
+            return RestResult.fail().message(e.getMessage());
         }
 
-
-        String extendName = userFile.getExtendName();
-
-        String unzipUrl = (PathUtil.getStaticPath() + "temp" + File.separator + fileBean.getFileUrl()).replace("." + extendName, "");
-
-        List<String> fileEntryNameList = new ArrayList<>();
-        if ("zip".equals(extendName)) {
-            fileEntryNameList = FileOperation.unzip(destFile, unzipUrl);
-        } else if ("rar".equals(extendName)) {
-            try {
-                fileEntryNameList = FileOperation.unrar(destFile, unzipUrl);
-            } catch (Exception e) {
-                e.printStackTrace();
-                log.error("rar解压失败" + e);
-                return RestResult.fail().message("rar解压失败！");
-
-
-            }
-        } else {
-            return RestResult.fail().message("不支持的文件格式！");
-        }
-        if (destFile.exists()) {
-            destFile.delete();
-        }
-        for (int i = 0; i < fileEntryNameList.size(); i++){
-            String entryName = fileEntryNameList.get(i);
-            log.info("文件名："+ entryName);
-            executor.execute(() -> {
-                String totalFileUrl = unzipUrl + entryName;
-                File currentFile = FileOperation.newFile(totalFileUrl);
-
-                FileBean tempFileBean = new FileBean();
-                UserFile saveUserFile = new UserFile();
-
-                saveUserFile.setUploadTime(DateUtil.getCurrentTime());
-                saveUserFile.setUserId(sessionUserBean.getUserId());
-                saveUserFile.setFilePath(FileUtil.pathSplitFormat(userFile.getFilePath() + entryName.replace(currentFile.getName(), "")).replace("\\", "/"));
-
-                if (currentFile.isDirectory()){
-                    saveUserFile.setIsDir(1);
-                    saveUserFile.setFileName(currentFile.getName());
-                }else{
-                    String saveFileUrl = "";
-                    FileInputStream fileInputStream = null;
-                    try {
-                        fileInputStream = new FileInputStream(currentFile);
-                        CopyFile createFile = new CopyFile();
-                        createFile.setExtendName(FileUtil.getFileExtendName(totalFileUrl));
-                        saveFileUrl = ufopFactory.getCopier().copy(fileInputStream, createFile);
-                    } catch (FileNotFoundException e) {
-                        e.printStackTrace();
-                    } finally {
-                        if (fileInputStream != null) {
-                            try {
-                                log.info("关闭流");
-                                fileInputStream.close();
-
-                                System.gc();
-                                try {
-                                    Thread.sleep(100);
-                                } catch (InterruptedException e) {
-                                    e.printStackTrace();
-                                }
-
-                            } catch (IOException e) {
-                                e.printStackTrace();
-                            }
-                        }
-                    }
-
-                    saveUserFile.setIsDir(0);
-                    saveUserFile.setExtendName(FileUtil.getFileExtendName(totalFileUrl));
-                    saveUserFile.setFileName(FileUtil.getFileNameNotExtend(currentFile.getName()));
-                    tempFileBean.setFileSize(currentFile.length());
-                    tempFileBean.setFileUrl(saveFileUrl);
-                    tempFileBean.setPointCount(1);
-                    tempFileBean.setStorageType(storageType);
-                    boolean saveResult = fileService.save(tempFileBean);
-                    if (saveResult) {
-                        boolean result = currentFile.delete();
-                        log.info("删除{}结果：{}",saveFileUrl, result);
-                    }
-                }
-
-                saveUserFile.setFileId(tempFileBean.getFileId());
-                saveUserFile.setDeleteFlag(0);
-                userFileService.save(saveUserFile);
-            });
-
-        }
         return RestResult.success();
 
     }
 
+    @Operation(summary = "文件复制", description = "可以复制文件或者目录", tags = {"file"})
+    @RequestMapping(value = "/copyfile", method = RequestMethod.POST)
+    @MyLog(operation = "文件复制", module = CURRENT_MODULE)
+    @ResponseBody
+    public RestResult<String> copyFile(@RequestBody CopyFileDTO copyFileDTO, @RequestHeader("token") String token) {
+
+        UserBean sessionUserBean = userService.getUserBeanByToken(token);
+        if (sessionUserBean == null) {
+            throw new NotLoginException();
+        }
+        long userFileId = copyFileDTO.getUserFileId();
+        UserFile userFile = userFileService.getById(userFileId);
+        String oldfilePath = userFile.getFilePath();
+        String newfilePath = copyFileDTO.getFilePath();
+        String fileName = userFile.getFileName();
+        String extendName = userFile.getExtendName();
+        if (userFile.getIsDir() == 1) {
+            String testFilePath = oldfilePath + fileName +  "/";
+            if (newfilePath.startsWith(testFilePath)) {
+                return RestResult.fail().message("原路径与目标路径冲突，不能移动");
+            }
+        }
+
+        userFileService.updateFilepathByFilepath(oldfilePath, newfilePath, fileName, extendName, sessionUserBean.getUserId());
+        return RestResult.success();
+
+    }
 
     @Operation(summary = "文件移动", description = "可以移动文件或者目录", tags = {"file"})
     @RequestMapping(value = "/movefile", method = RequestMethod.POST)
@@ -468,19 +382,19 @@ public class FileController {
         }
 
         Long total = 0L;
-        if (fileType == FileUtil.OTHER_TYPE) {
+        if (fileType == UFOPUtils.OTHER_TYPE) {
 
             List<String> arrList = new ArrayList<>();
-            arrList.addAll(Arrays.asList(FileUtil.DOC_FILE));
-            arrList.addAll(Arrays.asList(FileUtil.IMG_FILE));
-            arrList.addAll(Arrays.asList(FileUtil.VIDEO_FILE));
-            arrList.addAll(Arrays.asList(FileUtil.MUSIC_FILE));
+            arrList.addAll(Arrays.asList(UFOPUtils.DOC_FILE));
+            arrList.addAll(Arrays.asList(UFOPUtils.IMG_FILE));
+            arrList.addAll(Arrays.asList(UFOPUtils.VIDEO_FILE));
+            arrList.addAll(Arrays.asList(UFOPUtils.MUSIC_FILE));
 
             fileList = userFileService.selectFileNotInExtendNames(arrList,beginCount, pageCount, userId);
             total = userFileService.selectCountNotInExtendNames(arrList,beginCount, pageCount, userId);
         } else {
-            fileList = userFileService.selectFileByExtendName(getFileExtendsByType(fileType), beginCount, pageCount,userId);
-            total = userFileService.selectCountByExtendName(getFileExtendsByType(fileType), beginCount, pageCount,userId);
+            fileList = userFileService.selectFileByExtendName(UFOPUtils.getFileExtendsByType(fileType), beginCount, pageCount,userId);
+            total = userFileService.selectCountByExtendName(UFOPUtils.getFileExtendsByType(fileType), beginCount, pageCount,userId);
         }
 
         Map<String, Object> map = new HashMap<>();

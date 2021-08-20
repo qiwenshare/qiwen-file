@@ -13,7 +13,7 @@ import com.qiwenshare.file.vo.file.FileListVo;
 import com.qiwenshare.ufop.factory.UFOPFactory;
 import com.qiwenshare.ufop.operation.read.Reader;
 import com.qiwenshare.ufop.operation.read.domain.ReadFile;
-import com.qiwenshare.ufop.util.PathUtil;
+import com.qiwenshare.ufop.util.UFOPUtils;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -45,6 +45,7 @@ public class FileDealComp {
     IShareFileService shareFileService;
     @Resource
     IUserFileService userFileService;
+
     @Autowired
     private IElasticSearchService elasticSearchService;
     public static Executor exec = Executors.newFixedThreadPool(10);
@@ -64,11 +65,13 @@ public class FileDealComp {
         String extendName = userFile.getExtendName();
         Integer deleteFlag = userFile.getDeleteFlag();
         Long userId = userFile.getUserId();
+        int isDir = userFile.getIsDir();
         LambdaQueryWrapper<UserFile> lambdaQueryWrapper = new LambdaQueryWrapper<>();
         lambdaQueryWrapper.eq(UserFile::getFilePath, savefilePath)
                 .eq(UserFile::getDeleteFlag, deleteFlag)
                 .eq(UserFile::getUserId, userId)
-                .eq(UserFile::getFileName, fileName);
+                .eq(UserFile::getFileName, fileName)
+                .eq(UserFile::getIsDir, isDir);
         if (userFile.getIsDir() == 0) {
             lambdaQueryWrapper.eq(UserFile::getExtendName, extendName);
         }
@@ -87,7 +90,8 @@ public class FileDealComp {
             lambdaQueryWrapper1.eq(UserFile::getFilePath, savefilePath)
                     .eq(UserFile::getDeleteFlag, deleteFlag)
                     .eq(UserFile::getUserId, userId)
-                    .eq(UserFile::getFileName, fileName + "(" + i + ")");
+                    .eq(UserFile::getFileName, fileName + "(" + i + ")")
+                    .eq(UserFile::getIsDir, isDir);
             if (userFile.getIsDir() == 0) {
                 lambdaQueryWrapper1.eq(UserFile::getExtendName, extendName);
             }
@@ -111,10 +115,10 @@ public class FileDealComp {
         // 加锁，防止并发情况下有重复创建目录情况
         Lock lock = new ReentrantLock();
         lock.lock();
-        String parentFilePath = PathUtil.getParentPath(filePath);
+        String parentFilePath = UFOPUtils.getParentPath(filePath);
         while(parentFilePath.contains("/")) {
             String fileName = parentFilePath.substring(parentFilePath.lastIndexOf("/") + 1);
-            parentFilePath = PathUtil.getParentPath(parentFilePath);
+            parentFilePath = UFOPUtils.getParentPath(parentFilePath);
 
             LambdaQueryWrapper<UserFile> lambdaQueryWrapper = new LambdaQueryWrapper<>();
             lambdaQueryWrapper.eq(UserFile::getFilePath, parentFilePath + FileConstant.pathSeparator)

@@ -1,24 +1,22 @@
 package com.qiwenshare.file.controller;
 
+import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.qiwenshare.common.anno.MyLog;
 import com.qiwenshare.common.exception.NotLoginException;
 import com.qiwenshare.common.result.RestResult;
 import com.qiwenshare.common.util.DateUtil;
-import com.qiwenshare.common.util.FileUtil;
 import com.qiwenshare.common.util.MimeUtils;
-import com.qiwenshare.file.api.IFileService;
-import com.qiwenshare.file.api.IFiletransferService;
-import com.qiwenshare.file.api.IUserFileService;
-import com.qiwenshare.file.api.IUserService;
+import com.qiwenshare.file.api.*;
 import com.qiwenshare.file.component.FileDealComp;
 import com.qiwenshare.file.domain.*;
-import com.qiwenshare.file.dto.DownloadFileDTO;
-import com.qiwenshare.file.dto.UploadFileDTO;
+import com.qiwenshare.file.dto.file.DownloadFileDTO;
+import com.qiwenshare.file.dto.file.UploadFileDTO;
 import com.qiwenshare.file.dto.file.PreviewDTO;
 import com.qiwenshare.file.service.StorageService;
 import com.qiwenshare.file.vo.file.FileListVo;
 import com.qiwenshare.file.vo.file.UploadFileVo;
-import com.qiwenshare.ufop.util.PathUtil;
+import com.qiwenshare.ufop.constant.UploadFileStatusEnum;
+import com.qiwenshare.ufop.util.UFOPUtils;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.extern.slf4j.Slf4j;
@@ -29,7 +27,6 @@ import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.UnsupportedEncodingException;
-import java.sql.SQLIntegrityConstraintViolationException;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -53,6 +50,11 @@ public class FiletransferController {
     FileDealComp fileDealComp;
     @Resource
     StorageService storageService;
+    @Resource
+    IUploadTaskService uploadTaskService;
+
+    @Resource
+    IUploadTaskDetailService uploadTaskDetailService;
 
     public static final String CURRENT_MODULE = "文件传输接口";
 
@@ -82,16 +84,16 @@ public class FiletransferController {
             userFile.setUserId(sessionUserBean.getUserId());
             String relativePath = uploadFileDto.getRelativePath();
             if (relativePath.contains("/")) {
-                userFile.setFilePath(uploadFileDto.getFilePath() + PathUtil.getParentPath(relativePath) + "/");
-                fileDealComp.restoreParentFilePath(uploadFileDto.getFilePath() + PathUtil.getParentPath(relativePath) + "/", sessionUserBean.getUserId());
+                userFile.setFilePath(uploadFileDto.getFilePath() + UFOPUtils.getParentPath(relativePath) + "/");
+                fileDealComp.restoreParentFilePath(uploadFileDto.getFilePath() + UFOPUtils.getParentPath(relativePath) + "/", sessionUserBean.getUserId());
                 fileDealComp.deleteRepeatSubDirFile(uploadFileDto.getFilePath(), sessionUserBean.getUserId());
             } else {
                 userFile.setFilePath(uploadFileDto.getFilePath());
             }
 
             String fileName = uploadFileDto.getFilename();
-            userFile.setFileName(FileUtil.getFileNameNotExtend(fileName));
-            userFile.setExtendName(FileUtil.getFileExtendName(fileName));
+            userFile.setFileName(UFOPUtils.getFileNameNotExtend(fileName));
+            userFile.setExtendName(UFOPUtils.getFileExtendName(fileName));
             userFile.setDeleteFlag(0);
             List<FileListVo> userFileList = userFileService.userFileList(userFile, null, null);
             if (userFileList.size() <= 0) {
@@ -110,6 +112,33 @@ public class FiletransferController {
 
         } else {
             uploadFileVo.setSkipUpload(false);
+
+            List<Integer> uploaded = uploadTaskDetailService.getUploadedChunkNumList(uploadFileDto.getIdentifier());
+            if (uploaded != null && !uploaded.isEmpty()) {
+                uploadFileVo.setUploaded(uploaded);
+            } else {
+
+                LambdaQueryWrapper<UploadTask> lambdaQueryWrapper = new LambdaQueryWrapper<>();
+                lambdaQueryWrapper.eq(UploadTask::getIdentifier, uploadFileDto.getIdentifier());
+                List<UploadTask> rslist = uploadTaskService.list(lambdaQueryWrapper);
+                if (rslist == null || rslist.isEmpty()) {
+                    UploadTask uploadTask = new UploadTask();
+                    uploadTask.setIdentifier(uploadFileDto.getIdentifier());
+                    uploadTask.setUploadTime(DateUtil.getCurrentTime());
+                    uploadTask.setUploadStatus(UploadFileStatusEnum.UNCOMPLATE.getCode());
+                    uploadTask.setFileName(uploadFileDto.getFilename());
+                    String relativePath = uploadFileDto.getRelativePath();
+                    if (relativePath.contains("/")) {
+                        uploadTask.setFilePath(uploadFileDto.getFilePath() + UFOPUtils.getParentPath(relativePath) + "/");
+                    } else {
+                        uploadTask.setFilePath(uploadFileDto.getFilePath());
+                    }
+                    uploadTask.setExtendName(uploadTask.getExtendName());
+                    uploadTask.setUserId(sessionUserBean.getUserId());
+
+                    uploadTaskService.save(uploadTask);
+                }
+            }
 
         }
         return RestResult.success().data(uploadFileVo);

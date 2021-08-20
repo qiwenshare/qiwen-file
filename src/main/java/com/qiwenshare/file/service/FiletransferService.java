@@ -1,37 +1,16 @@
 package com.qiwenshare.file.service;
 
-import java.io.*;
-import java.util.List;
-import java.util.zip.Adler32;
-import java.util.zip.CheckedOutputStream;
-import java.util.zip.ZipEntry;
-import java.util.zip.ZipOutputStream;
-
-import javax.annotation.Resource;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
-
 import cn.hutool.core.bean.BeanUtil;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
-
-import com.qiwenshare.common.constant.FileConstant;
-import com.qiwenshare.common.operation.FileOperation;
 import com.qiwenshare.common.util.DateUtil;
-
-import com.qiwenshare.common.util.FileUtil;
 import com.qiwenshare.file.api.IFiletransferService;
-
 import com.qiwenshare.file.component.FileDealComp;
-import com.qiwenshare.file.domain.UserFile;
-import com.qiwenshare.file.dto.DownloadFileDTO;
-import com.qiwenshare.file.dto.UploadFileDTO;
+import com.qiwenshare.file.domain.*;
+import com.qiwenshare.file.dto.file.DownloadFileDTO;
+import com.qiwenshare.file.dto.file.UploadFileDTO;
 import com.qiwenshare.file.dto.file.PreviewDTO;
-import com.qiwenshare.file.mapper.FileMapper;
-import com.qiwenshare.file.domain.FileBean;
-import com.qiwenshare.file.domain.StorageBean;
-import com.qiwenshare.file.mapper.StorageMapper;
-import com.qiwenshare.file.mapper.UserFileMapper;
+import com.qiwenshare.file.mapper.*;
 import com.qiwenshare.file.vo.file.FileListVo;
 import com.qiwenshare.ufop.constant.StorageTypeEnum;
 import com.qiwenshare.ufop.constant.UploadFileStatusEnum;
@@ -47,11 +26,20 @@ import com.qiwenshare.ufop.operation.preview.domain.PreviewFile;
 import com.qiwenshare.ufop.operation.upload.Uploader;
 import com.qiwenshare.ufop.operation.upload.domain.UploadFile;
 import com.qiwenshare.ufop.operation.upload.domain.UploadFileResult;
-import com.qiwenshare.ufop.util.PathUtil;
+import com.qiwenshare.ufop.util.UFOPUtils;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+
+import javax.annotation.Resource;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+import java.io.*;
+import java.util.List;
+import java.util.zip.Adler32;
+import java.util.zip.CheckedOutputStream;
+import java.util.zip.ZipEntry;
+import java.util.zip.ZipOutputStream;
 
 @Slf4j
 @Service
@@ -70,6 +58,10 @@ public class FiletransferService implements IFiletransferService {
     UFOPFactory ufopFactory;
     @Resource
     FileDealComp fileDealComp;
+    @Resource
+    UploadTaskDetailMapper UploadTaskDetailMapper;
+    @Resource
+    UploadTaskMapper uploadTaskMapper;
 
     @Override
     public void uploadFile(HttpServletRequest request, UploadFileDTO uploadFileDto, Long userId) {
@@ -93,7 +85,8 @@ public class FiletransferService implements IFiletransferService {
             UploadFileResult uploadFileResult = uploadFileResultList.get(i);
             FileBean fileBean = new FileBean();
             BeanUtil.copyProperties(uploadFileDto, fileBean);
-//            fileBean.setTimeStampName(uploadFile.getTimeStampName());
+            String relativePath = uploadFileDto.getRelativePath();
+
             if (UploadFileStatusEnum.SUCCESS.equals(uploadFileResult.getStatus())){
                 fileBean.setFileUrl(uploadFileResult.getFileUrl());
                 fileBean.setFileSize(uploadFileResult.getFileSize());
@@ -101,10 +94,10 @@ public class FiletransferService implements IFiletransferService {
                 fileBean.setPointCount(1);
                 fileMapper.insert(fileBean);
                 UserFile userFile = new UserFile();
-                String relativePath = uploadFileDto.getRelativePath();
+
                 if (relativePath.contains("/")) {
-                    userFile.setFilePath(uploadFileDto.getFilePath() + PathUtil.getParentPath(relativePath) + "/");
-                    fileDealComp.restoreParentFilePath(uploadFileDto.getFilePath() + PathUtil.getParentPath(relativePath) + "/", userId);
+                    userFile.setFilePath(uploadFileDto.getFilePath() + UFOPUtils.getParentPath(relativePath) + "/");
+                    fileDealComp.restoreParentFilePath(uploadFileDto.getFilePath() + UFOPUtils.getParentPath(relativePath) + "/", userId);
                     fileDealComp.deleteRepeatSubDirFile(uploadFileDto.getFilePath(), userId);
 
                 } else {
@@ -126,9 +119,45 @@ public class FiletransferService implements IFiletransferService {
                 userFileMapper.insert(userFile);
                 fileDealComp.uploadESByUserFileId(userFile.getUserFileId());
 
-            }
 
+                LambdaQueryWrapper<UploadTaskDetail> lambdaQueryWrapper = new LambdaQueryWrapper<>();
+                lambdaQueryWrapper.eq(UploadTaskDetail::getIdentifier, uploadFileDto.getIdentifier());
+                UploadTaskDetailMapper.delete(lambdaQueryWrapper);
+
+                LambdaUpdateWrapper<UploadTask> lambdaUpdateWrapper = new LambdaUpdateWrapper<>();
+                lambdaUpdateWrapper.set(UploadTask::getUploadStatus, UploadFileStatusEnum.SUCCESS.getCode())
+                        .eq(UploadTask::getIdentifier, uploadFileDto.getIdentifier());
+                uploadTaskMapper.update(null, lambdaUpdateWrapper);
+
+            } else if (UploadFileStatusEnum.UNCOMPLATE.equals(uploadFileResult.getStatus())) {
+                UploadTaskDetail UploadTaskDetail = new UploadTaskDetail();
+                UploadTaskDetail.setFilePath(uploadFileDto.getFilePath());
+                if (relativePath.contains("/")) {
+                    UploadTaskDetail.setFilePath(uploadFileDto.getFilePath() + UFOPUtils.getParentPath(relativePath) + "/");
+                } else {
+                    UploadTaskDetail.setFilePath(uploadFileDto.getFilePath());
+                }
+                UploadTaskDetail.setFilename(uploadFileDto.getFilename());
+                UploadTaskDetail.setChunkNumber(uploadFileDto.getChunkNumber());
+                UploadTaskDetail.setChunkSize((int)uploadFileDto.getChunkSize());
+                UploadTaskDetail.setRelativePath(uploadFileDto.getRelativePath());
+                UploadTaskDetail.setTotalChunks(uploadFileDto.getTotalChunks());
+                UploadTaskDetail.setTotalSize((int)uploadFileDto.getTotalSize());
+                UploadTaskDetail.setIdentifier(uploadFileDto.getIdentifier());
+                UploadTaskDetailMapper.insert(UploadTaskDetail);
+
+            } else if (UploadFileStatusEnum.FAIL.equals(uploadFileResult.getStatus())) {
+                LambdaQueryWrapper<UploadTaskDetail> lambdaQueryWrapper = new LambdaQueryWrapper<>();
+                lambdaQueryWrapper.eq(UploadTaskDetail::getIdentifier, uploadFileDto.getIdentifier());
+                UploadTaskDetailMapper.delete(lambdaQueryWrapper);
+
+                LambdaUpdateWrapper<UploadTask> lambdaUpdateWrapper = new LambdaUpdateWrapper<>();
+                lambdaUpdateWrapper.set(UploadTask::getUploadStatus, UploadFileStatusEnum.FAIL.getCode())
+                        .eq(UploadTask::getIdentifier, uploadFileDto.getIdentifier());
+                uploadTaskMapper.update(null, lambdaUpdateWrapper);
+            }
         }
+
     }
 
     @Override
@@ -157,7 +186,7 @@ public class FiletransferService implements IFiletransferService {
                     .eq(UserFile::getDeleteFlag, 0);
             List<UserFile> userFileList = userFileMapper.selectList(lambdaQueryWrapper);
 
-            String staticPath = PathUtil.getStaticPath();
+            String staticPath = UFOPUtils.getStaticPath();
             String tempPath = staticPath + "temp" + File.separator;
             File tempDirFile = new File(tempPath);
             if (!tempDirFile.exists()) {
@@ -224,10 +253,10 @@ public class FiletransferService implements IFiletransferService {
             Downloader downloader = ufopFactory.getDownloader(StorageTypeEnum.LOCAL.getCode());
             DownloadFile downloadFile = new DownloadFile();
             downloadFile.setFileUrl("temp" + File.separator+userFile.getFileName() + ".zip");
-            File tempFile = FileOperation.newFile(PathUtil.getStaticPath() + downloadFile.getFileUrl());
+            File tempFile = new File(UFOPUtils.getStaticPath() + downloadFile.getFileUrl());
             httpServletResponse.setContentLengthLong(tempFile.length());
             downloader.download(httpServletResponse, downloadFile);
-            String zipPath = PathUtil.getStaticPath() + "temp" + File.separator+userFile.getFileName() + ".zip";
+            String zipPath = UFOPUtils.getStaticPath() + "temp" + File.separator+userFile.getFileName() + ".zip";
             File file = new File(zipPath);
             if (file.exists()) {
                 file.delete();

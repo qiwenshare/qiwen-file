@@ -20,7 +20,7 @@ import com.qiwenshare.ufop.operation.copy.domain.CopyFile;
 import com.qiwenshare.ufop.operation.download.domain.DownloadFile;
 import com.qiwenshare.ufop.operation.write.Writer;
 import com.qiwenshare.ufop.operation.write.domain.WriteFile;
-import com.qiwenshare.ufop.util.PathUtil;
+import com.qiwenshare.ufop.util.UFOPUtils;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.extern.slf4j.Slf4j;
@@ -89,7 +89,7 @@ public class OfficeController {
             } else if ("pptx".equals(extendName)) {
                 templateFilePath = "template/PowerPoint.pptx";
             }
-            String templateFileUrl = PathUtil.getStaticPath() +  templateFilePath;
+            String templateFileUrl = UFOPUtils.getStaticPath() +  templateFilePath;
             FileInputStream fileInputStream = new FileInputStream(templateFileUrl);
             Copier copier = ufopFactory.getCopier();
             CopyFile copyFile = new CopyFile();

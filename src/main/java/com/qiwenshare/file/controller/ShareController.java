@@ -218,6 +218,9 @@ public class ShareController {
         LambdaQueryWrapper<Share> lambdaQueryWrapper = new LambdaQueryWrapper<>();
         lambdaQueryWrapper.eq(Share::getShareBatchNum, checkEndTimeDTO.getShareBatchNum());
         Share share = shareService.getOne(lambdaQueryWrapper);
+        if (share == null) {
+            return RestResult.fail().message("文件不存在！");
+        }
         String endTime = share.getEndTime();
         Date endTimeDate = null;
         try {
