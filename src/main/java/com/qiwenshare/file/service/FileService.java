@@ -10,6 +10,7 @@ import com.qiwenshare.file.domain.FileBean;
 import com.qiwenshare.file.domain.UserFile;
 import com.qiwenshare.file.mapper.FileMapper;
 import com.qiwenshare.file.mapper.UserFileMapper;
+import com.qiwenshare.file.util.QiwenFileUtil;
 import com.qiwenshare.ufop.factory.UFOPFactory;
 import com.qiwenshare.ufop.operation.copy.domain.CopyFile;
 import com.qiwenshare.ufop.operation.download.Downloader;
@@ -110,6 +111,11 @@ public class FileService extends ServiceImpl<FileMapper, FileBean> implements IF
         if (destFile.exists()) {
             destFile.delete();
         }
+
+        if (!fileEntryNameList.isEmpty()) {
+            UserFile qiwenDir = QiwenFileUtil.getQiwenDir(userFile.getUserId(), userFile.getFilePath(), userFile.getFileName());
+            userFileMapper.insert(qiwenDir);
+        }
         for (int i = 0; i < fileEntryNameList.size(); i++){
             String entryName = fileEntryNameList.get(i);
             log.info("文件名："+ entryName);
@@ -196,10 +202,12 @@ public class FileService extends ServiceImpl<FileMapper, FileBean> implements IF
                 saveUserFile.setDeleteFlag(0);
 
                 if (unzipMode == 1) {
-                     String destFilePath = "/" + userFile.getFilePath() + saveUserFile.getFilePath();
-                     saveUserFile.setFilePath(destFilePath);
+//                     String destFilePath = "/" + userFile.getFilePath() + saveUserFile.getFilePath();
+//                     saveUserFile.setFilePath(destFilePath);
+
+                    saveUserFile.setFilePath(UFOPUtils.pathSplitFormat(userFile.getFilePath() + userFile.getFileName() + "/" + entryName.replace(currentFile.getName(), "")).replace("\\", "/"));
                 } else if(unzipMode == 2) {
-                    saveUserFile.setFilePath(filePath);
+                    saveUserFile.setFilePath(UFOPUtils.pathSplitFormat(filePath + entryName.replace(currentFile.getName(), "")).replace("\\", "/"));
                 }
 
                 String fileName = fileDealComp.getRepeatFileName(saveUserFile, saveUserFile.getFilePath());

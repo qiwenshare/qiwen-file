@@ -124,6 +124,7 @@ public class FileDealComp {
             lambdaQueryWrapper.eq(UserFile::getFilePath, parentFilePath + FileConstant.pathSeparator)
                     .eq(UserFile::getFileName, fileName)
                     .eq(UserFile::getDeleteFlag, 0)
+                    .eq(UserFile::getIsDir, 1)
                     .eq(UserFile::getUserId, sessionUserId);
             List<UserFile> userFileList = userFileMapper.selectList(lambdaQueryWrapper);
             if (userFileList.size() == 0) {
