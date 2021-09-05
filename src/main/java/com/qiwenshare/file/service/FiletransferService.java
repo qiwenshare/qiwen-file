@@ -76,7 +76,7 @@ public class FiletransferService implements IFiletransferService {
 
         Uploader uploader = ufopFactory.getUploader();
         if (uploader == null) {
-            log.error("上传失败，请检查storageType是否配置正确，当前storageType为：");
+            log.error("上传失败，请检查storageType是否配置正确");
             throw new UploadException("上传失败");
         }
 

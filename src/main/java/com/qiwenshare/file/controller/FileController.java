@@ -20,6 +20,7 @@ import com.qiwenshare.file.dto.file.BatchMoveFileDTO;
 import com.qiwenshare.file.dto.file.CopyFileDTO;
 import com.qiwenshare.file.dto.file.MoveFileDTO;
 import com.qiwenshare.file.dto.file.*;
+import com.qiwenshare.file.util.SessionUtil;
 import com.qiwenshare.file.vo.file.FileListVo;
 import com.qiwenshare.ufop.util.UFOPUtils;
 import io.swagger.v3.oas.annotations.Operation;
@@ -66,9 +67,9 @@ public class FileController {
     @RequestMapping(value = "/createfile", method = RequestMethod.POST)
     @MyLog(operation = "创建文件", module = CURRENT_MODULE)
     @ResponseBody
-    public RestResult<String> createFile(@RequestBody CreateFileDTO createFileDto, @RequestHeader("token") String token) {
+    public RestResult<String> createFile(@RequestBody CreateFileDTO createFileDto) {
 
-        UserBean sessionUserBean = userService.getUserBeanByToken(token);
+        UserBean sessionUserBean = (UserBean) SessionUtil.getSession();
 
         boolean isDirExist = userFileService.isDirExist(createFileDto.getFileName(), createFileDto.getFilePath(), sessionUserBean.getUserId());
 
@@ -93,8 +94,8 @@ public class FileController {
     @GetMapping(value = "/search")
     @MyLog(operation = "文件搜索", module = CURRENT_MODULE)
     @ResponseBody
-    public RestResult<SearchHits<FileSearch>> searchFile(SearchFileDTO searchFileDTO, @RequestHeader("token") String token) {
-        UserBean sessionUserBean = userService.getUserBeanByToken(token);
+    public RestResult<SearchHits<FileSearch>> searchFile(SearchFileDTO searchFileDTO) {
+        UserBean sessionUserBean = (UserBean) SessionUtil.getSession();
         NativeSearchQueryBuilder queryBuilder = new NativeSearchQueryBuilder();
         HighlightBuilder.Field allHighLight = new HighlightBuilder.Field("*").preTags("<span class='keyword'>")
                 .postTags("</span>");
@@ -135,9 +136,9 @@ public class FileController {
     @RequestMapping(value = "/renamefile", method = RequestMethod.POST)
     @MyLog(operation = "文件重命名", module = CURRENT_MODULE)
     @ResponseBody
-    public RestResult<String> renameFile(@RequestBody RenameFileDTO renameFileDto, @RequestHeader("token") String token) {
+    public RestResult<String> renameFile(@RequestBody RenameFileDTO renameFileDto) {
 
-        UserBean sessionUserBean = userService.getUserBeanByToken(token);
+        UserBean sessionUserBean = (UserBean) SessionUtil.getSession();
         if (sessionUserBean == null) {
             throw new NotLoginException();
         }
@@ -171,12 +172,10 @@ public class FileController {
     public RestResult getFileList(
             @Parameter(description = "文件路径", required = true) String filePath,
             @Parameter(description = "当前页", required = true) long currentPage,
-            @Parameter(description = "页面数量", required = true) long pageCount,
-            @RequestHeader("token") String token){
+            @Parameter(description = "页面数量", required = true) long pageCount){
 
         UserFile userFile = new UserFile();
-
-        UserBean sessionUserBean = userService.getUserBeanByToken(token);
+        UserBean sessionUserBean = (UserBean) SessionUtil.getSession();
         if (sessionUserBean == null) {
             throw new NotLoginException();
         }
@@ -217,9 +216,9 @@ public class FileController {
     @RequestMapping(value = "/batchdeletefile", method = RequestMethod.POST)
     @MyLog(operation = "批量删除文件", module = CURRENT_MODULE)
     @ResponseBody
-    public RestResult<String> deleteImageByIds(@RequestBody BatchDeleteFileDTO batchDeleteFileDto, @RequestHeader("token") String token) {
+    public RestResult<String> deleteImageByIds(@RequestBody BatchDeleteFileDTO batchDeleteFileDto) {
 
-        UserBean sessionUserBean = userService.getUserBeanByToken(token);
+        UserBean sessionUserBean = (UserBean) SessionUtil.getSession();
         if (sessionUserBean == null) {
             throw new NotLoginException();
         }
@@ -238,9 +237,9 @@ public class FileController {
     @RequestMapping(value = "/deletefile", method = RequestMethod.POST)
     @MyLog(operation = "删除文件", module = CURRENT_MODULE)
     @ResponseBody
-    public RestResult deleteFile(@RequestBody DeleteFileDTO deleteFileDto, @RequestHeader("token") String token) {
+    public RestResult deleteFile(@RequestBody DeleteFileDTO deleteFileDto) {
 
-        UserBean sessionUserBean = userService.getUserBeanByToken(token);
+        UserBean sessionUserBean = (UserBean) SessionUtil.getSession();
         if (sessionUserBean == null) {
             throw new NotLoginException();
         }
@@ -255,9 +254,9 @@ public class FileController {
     @RequestMapping(value = "/unzipfile", method = RequestMethod.POST)
     @MyLog(operation = "解压文件", module = CURRENT_MODULE)
     @ResponseBody
-    public RestResult<String> unzipFile(@RequestBody UnzipFileDTO unzipFileDto, @RequestHeader("token") String token) {
+    public RestResult<String> unzipFile(@RequestBody UnzipFileDTO unzipFileDto) {
 
-        UserBean sessionUserBean = userService.getUserBeanByToken(token);
+        UserBean sessionUserBean = (UserBean) SessionUtil.getSession();
         if (sessionUserBean == null) {
             throw new NotLoginException();
         }
@@ -275,9 +274,9 @@ public class FileController {
     @RequestMapping(value = "/copyfile", method = RequestMethod.POST)
     @MyLog(operation = "文件复制", module = CURRENT_MODULE)
     @ResponseBody
-    public RestResult<String> copyFile(@RequestBody CopyFileDTO copyFileDTO, @RequestHeader("token") String token) {
+    public RestResult<String> copyFile(@RequestBody CopyFileDTO copyFileDTO) {
 
-        UserBean sessionUserBean = userService.getUserBeanByToken(token);
+        UserBean sessionUserBean = (UserBean) SessionUtil.getSession();
         if (sessionUserBean == null) {
             throw new NotLoginException();
         }
@@ -303,9 +302,9 @@ public class FileController {
     @RequestMapping(value = "/movefile", method = RequestMethod.POST)
     @MyLog(operation = "文件移动", module = CURRENT_MODULE)
     @ResponseBody
-    public RestResult<String> moveFile(@RequestBody MoveFileDTO moveFileDto, @RequestHeader("token") String token) {
+    public RestResult<String> moveFile(@RequestBody MoveFileDTO moveFileDto) {
 
-        UserBean sessionUserBean = userService.getUserBeanByToken(token);
+        UserBean sessionUserBean = (UserBean) SessionUtil.getSession();
         if (sessionUserBean == null) {
             throw new NotLoginException();
         }
@@ -329,9 +328,9 @@ public class FileController {
     @RequestMapping(value = "/batchmovefile", method = RequestMethod.POST)
     @MyLog(operation = "批量移动文件", module = CURRENT_MODULE)
     @ResponseBody
-    public RestResult<String> batchMoveFile(@RequestBody BatchMoveFileDTO batchMoveFileDto, @RequestHeader("token") String token) {
+    public RestResult<String> batchMoveFile(@RequestBody BatchMoveFileDTO batchMoveFileDto) {
 
-        UserBean sessionUserBean = userService.getUserBeanByToken(token);
+        UserBean sessionUserBean = (UserBean) SessionUtil.getSession();
         if (sessionUserBean == null) {
             throw new NotLoginException();
         }
@@ -363,10 +362,9 @@ public class FileController {
     @ResponseBody
     public RestResult<List<Map<String, Object>>> selectFileByFileType(@Parameter(description = "文件类型", required = true) int fileType,
                                                                       @Parameter(description = "当前页", required = true) long currentPage,
-                                                                      @Parameter(description = "页面数量", required = true) long pageCount,
-                                                                      @RequestHeader("token") String token) {
+                                                                      @Parameter(description = "页面数量", required = true) long pageCount) {
 
-        UserBean sessionUserBean = userService.getUserBeanByToken(token);
+        UserBean sessionUserBean = (UserBean) SessionUtil.getSession();
         if (sessionUserBean == null) {
             throw new NotLoginException();
         }
@@ -407,10 +405,10 @@ public class FileController {
     @Operation(summary = "获取文件树", description = "文件移动的时候需要用到该接口，用来展示目录树", tags = {"file"})
     @RequestMapping(value = "/getfiletree", method = RequestMethod.GET)
     @ResponseBody
-    public RestResult<TreeNode> getFileTree(@RequestHeader("token") String token) {
+    public RestResult<TreeNode> getFileTree() {
         RestResult<TreeNode> result = new RestResult<TreeNode>();
 
-        UserBean sessionUserBean = userService.getUserBeanByToken(token);
+        UserBean sessionUserBean = (UserBean) SessionUtil.getSession();
         if (sessionUserBean == null) {
             throw new NotLoginException();
         }

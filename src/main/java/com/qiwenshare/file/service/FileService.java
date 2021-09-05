@@ -92,7 +92,7 @@ public class FileService extends ServiceImpl<FileMapper, FileBean> implements IF
 
         String extendName = userFile.getExtendName();
 
-        String unzipUrl = UFOPUtils.getTempPath(fileBean.getFileUrl()).getAbsolutePath().replace("." + extendName, "");
+        String unzipUrl = UFOPUtils.getTempFile(fileBean.getFileUrl()).getAbsolutePath().replace("." + extendName, "");
 
         List<String> fileEntryNameList = new ArrayList<>();
         if ("zip".equals(extendName)) {
