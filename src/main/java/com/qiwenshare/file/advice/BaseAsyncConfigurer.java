@@ -53,7 +53,7 @@ public class BaseAsyncConfigurer implements AsyncConfigurer {
     /**
      * 异步方法执行的过程中抛出的异常捕获
      *
-     * @return AsyncUncaughtExceptionHandler 
+     * @return AsyncUncaughtExceptionHandler
      */
     @Override
     public AsyncUncaughtExceptionHandler getAsyncUncaughtExceptionHandler() {
