@@ -40,6 +40,7 @@ import org.springframework.data.elasticsearch.core.query.NativeSearchQueryBuilde
 import org.springframework.web.bind.annotation.*;
 
 import javax.annotation.Resource;
+import javax.validation.Valid;
 import java.util.*;
 
 @Tag(name = "file", description = "该接口为文件接口，主要用来做一些文件的基本操作，如创建目录，删除，移动，复制等。")
@@ -67,7 +68,7 @@ public class FileController {
     @RequestMapping(value = "/createfile", method = RequestMethod.POST)
     @MyLog(operation = "创建文件", module = CURRENT_MODULE)
     @ResponseBody
-    public RestResult<String> createFile(@RequestBody CreateFileDTO createFileDto) {
+    public RestResult<String> createFile(@Valid @RequestBody CreateFileDTO createFileDto) {
 
         UserBean sessionUserBean = (UserBean) SessionUtil.getSession();
 

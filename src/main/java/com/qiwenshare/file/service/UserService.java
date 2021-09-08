@@ -110,17 +110,7 @@ public class UserService extends ServiceImpl<UserMapper, UserBean> implements IU
 //            return restResult;
 //        }
         UserController.verificationCodeMap.remove(telephone);
-        if (userBean.getTelephone() == null || "".equals(userBean.getTelephone())){
-            return RestResult.fail().message("用户名不能为空！");
-        }
-        if (userBean.getPassword() == null || "".equals(userBean.getPassword())){
-            return RestResult.fail().message("密码不能为空！");
 
-        }
-
-        if (userBean.getUsername() == null || "".equals(userBean.getUsername())){
-            return RestResult.fail().message("用户名不能为空！");
-        }
         if (userDealComp.isUserNameExit(userBean)) {
             return RestResult.fail().message("用户名已存在！");
         }

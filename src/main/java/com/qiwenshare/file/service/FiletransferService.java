@@ -208,7 +208,7 @@ public class FiletransferService implements IFiletransferService {
                     FileBean fileBean = fileMapper.selectById(userFile1.getFileId());
                     Downloader downloader = ufopFactory.getDownloader(fileBean.getStorageType());
                     if (downloader == null) {
-                        log.error("下载失败，文件存储类型不支持下载，storageType:{}, isOSS:{}", fileBean.getStorageType());
+                        log.error("下载失败，文件存储类型不支持下载，storageType:{}", fileBean.getStorageType());
                         throw new UploadException("下载失败");
                     }
                     DownloadFile downloadFile = new DownloadFile();
