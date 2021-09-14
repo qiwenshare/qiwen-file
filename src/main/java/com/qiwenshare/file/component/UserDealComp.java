@@ -1,6 +1,7 @@
 package com.qiwenshare.file.component;
 
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
+import com.qiwenshare.common.constant.RegexConstant;
 import com.qiwenshare.file.domain.UserBean;
 import com.qiwenshare.file.mapper.UserMapper;
 import org.springframework.stereotype.Component;
@@ -51,8 +52,7 @@ public class UserDealComp {
     }
 
     public Boolean isPhoneFormatRight(String phone){
-        String regex = "^1\\d{10}";
-        boolean isRight = Pattern.matches(regex, phone);
+        boolean isRight = Pattern.matches(RegexConstant.PASSWORD_REGEX, phone);
         return isRight;
     }
 }

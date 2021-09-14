@@ -92,7 +92,7 @@ public class FileService extends ServiceImpl<FileMapper, FileBean> implements IF
 
         String extendName = userFile.getExtendName();
 
-        String unzipUrl = UFOPUtils.getTempPath(fileBean.getFileUrl()).getAbsolutePath().replace("." + extendName, "");
+        String unzipUrl = UFOPUtils.getTempFile(fileBean.getFileUrl()).getAbsolutePath().replace("." + extendName, "");
 
         List<String> fileEntryNameList = new ArrayList<>();
         if ("zip".equals(extendName)) {
@@ -112,7 +112,7 @@ public class FileService extends ServiceImpl<FileMapper, FileBean> implements IF
             destFile.delete();
         }
 
-        if (!fileEntryNameList.isEmpty()) {
+        if (!fileEntryNameList.isEmpty() && unzipMode == 1) {
             UserFile qiwenDir = QiwenFileUtil.getQiwenDir(userFile.getUserId(), userFile.getFilePath(), userFile.getFileName());
             userFileMapper.insert(qiwenDir);
         }

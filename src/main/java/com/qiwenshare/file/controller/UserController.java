@@ -18,6 +18,7 @@ import org.apache.shiro.crypto.hash.SimpleHash;
 import org.springframework.web.bind.annotation.*;
 
 import javax.annotation.Resource;
+import javax.validation.Valid;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -42,7 +43,7 @@ public class UserController {
     @PostMapping(value = "/register")
     @MyLog(operation = "用户注册", module = CURRENT_MODULE)
     @ResponseBody
-    public RestResult<String> addUser(@RequestBody RegisterDTO registerDTO) {
+    public RestResult<String> addUser(@Valid @RequestBody RegisterDTO registerDTO) {
         RestResult<String> restResult = null;
         UserBean userBean = new UserBean();
         BeanUtil.copyProperties(registerDTO, userBean);

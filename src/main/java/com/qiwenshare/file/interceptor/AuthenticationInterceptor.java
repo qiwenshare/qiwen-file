@@ -3,6 +3,7 @@ package com.qiwenshare.file.interceptor;
 import com.qiwenshare.common.exception.NotLoginException;
 import com.qiwenshare.file.api.IUserService;
 import com.qiwenshare.file.domain.UserBean;
+import com.qiwenshare.file.util.SessionUtil;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -38,6 +39,7 @@ public class AuthenticationInterceptor implements HandlerInterceptor {
 //        }
         token = token.replace("Bearer ", "");
         UserBean userBean = userService.getUserBeanByToken(token);
+        SessionUtil.setSession(userBean);
         if (userBean == null) {
             throw new NotLoginException();
         }

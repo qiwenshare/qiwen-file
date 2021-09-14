@@ -7,6 +7,7 @@ import com.qiwenshare.common.result.ResultCodeEnum;
 import com.qiwenshare.ufop.exception.UploadException;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
+import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.ResponseBody;
@@ -67,6 +68,17 @@ public class GlobalExceptionHandlerAdvice {
         e.printStackTrace();
         log.error("全局异常捕获：" + e);
         return RestResult.setResult(ResultCodeEnum.NOT_LOGIN_ERROR);
+    }
+
+    /**
+     * 方法参数校验
+     */
+    @ExceptionHandler(MethodArgumentNotValidException.class)
+    @ResponseBody
+    @ResponseStatus(HttpStatus.BAD_REQUEST)
+    public RestResult handleMethodArgumentNotValidException(MethodArgumentNotValidException e) {
+        log.error(e.getMessage(), e);
+        return RestResult.setResult(ResultCodeEnum.PARAM_ERROR).message(e.getBindingResult().getFieldError().getDefaultMessage());
     }
 
 

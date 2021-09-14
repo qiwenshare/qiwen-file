@@ -52,8 +52,12 @@ public class TaskController {
         for (int i = 0; i < fileBeanList.size(); i++) {
             FileBean fileBean = fileBeanList.get(i);
             log.info("删除本地文件：" + JSON.toJSONString(fileBean));
-            filetransferService.deleteFile(fileBean);
-            fileService.removeById(fileBean.getFileId());
+            try {
+                filetransferService.deleteFile(fileBean);
+                fileService.removeById(fileBean.getFileId());
+            } catch (Exception e) {
+                log.error("删除本地文件失败：" + JSON.toJSONString(fileBean));
+            }
         }
 
     }

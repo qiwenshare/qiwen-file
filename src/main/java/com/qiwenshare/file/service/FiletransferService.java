@@ -76,7 +76,7 @@ public class FiletransferService implements IFiletransferService {
 
         Uploader uploader = ufopFactory.getUploader();
         if (uploader == null) {
-            log.error("上传失败，请检查storageType是否配置正确，当前storageType为：");
+            log.error("上传失败，请检查storageType是否配置正确");
             throw new UploadException("上传失败");
         }
 
@@ -208,7 +208,7 @@ public class FiletransferService implements IFiletransferService {
                     FileBean fileBean = fileMapper.selectById(userFile1.getFileId());
                     Downloader downloader = ufopFactory.getDownloader(fileBean.getStorageType());
                     if (downloader == null) {
-                        log.error("下载失败，文件存储类型不支持下载，storageType:{}, isOSS:{}", fileBean.getStorageType());
+                        log.error("下载失败，文件存储类型不支持下载，storageType:{}", fileBean.getStorageType());
                         throw new UploadException("下载失败");
                     }
                     DownloadFile downloadFile = new DownloadFile();
