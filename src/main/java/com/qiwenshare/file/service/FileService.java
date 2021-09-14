@@ -112,7 +112,7 @@ public class FileService extends ServiceImpl<FileMapper, FileBean> implements IF
             destFile.delete();
         }
 
-        if (!fileEntryNameList.isEmpty()) {
+        if (!fileEntryNameList.isEmpty() && unzipMode == 1) {
             UserFile qiwenDir = QiwenFileUtil.getQiwenDir(userFile.getUserId(), userFile.getFilePath(), userFile.getFileName());
             userFileMapper.insert(qiwenDir);
         }
