@@ -250,18 +250,29 @@ public class FiletransferService implements IFiletransferService {
                     e.printStackTrace();
                 }
             }
-            Downloader downloader = ufopFactory.getDownloader(StorageTypeEnum.LOCAL.getCode());
-            DownloadFile downloadFile = new DownloadFile();
-            downloadFile.setFileUrl("temp" + File.separator+userFile.getFileName() + ".zip");
-            File tempFile = new File(UFOPUtils.getStaticPath() + downloadFile.getFileUrl());
-            httpServletResponse.setContentLengthLong(tempFile.length());
-            downloader.download(httpServletResponse, downloadFile);
-            String zipPath = UFOPUtils.getStaticPath() + "temp" + File.separator+userFile.getFileName() + ".zip";
-            File file = new File(zipPath);
-            if (file.exists()) {
-                file.delete();
-            }
+            String zipPath = "";
+            try {
+                Downloader downloader = ufopFactory.getDownloader(StorageTypeEnum.LOCAL.getCode());
+                DownloadFile downloadFile = new DownloadFile();
+                downloadFile.setFileUrl("temp" + File.separator + userFile.getFileName() + ".zip");
+                File tempFile = new File(UFOPUtils.getStaticPath() + downloadFile.getFileUrl());
+                httpServletResponse.setContentLengthLong(tempFile.length());
+                downloader.download(httpServletResponse, downloadFile);
+                zipPath = UFOPUtils.getStaticPath() + "temp" + File.separator + userFile.getFileName() + ".zip";
+            } catch (Exception e) {
+                //org.apache.catalina.connector.ClientAbortException: java.io.IOException: Connection reset by peer
+                if (e.getMessage().contains("ClientAbortException")) {
+                    //该异常忽略不做处理
+                } else {
+                    log.error("下传zip文件出现异常：{}", e.getMessage());
+                }
 
+            } finally {
+                File file = new File(zipPath);
+                if (file.exists()) {
+                    file.delete();
+                }
+            }
         }
     }
 
@@ -277,11 +288,21 @@ public class FiletransferService implements IFiletransferService {
         PreviewFile previewFile = new PreviewFile();
         previewFile.setFileUrl(fileBean.getFileUrl());
         previewFile.setFileSize(fileBean.getFileSize());
-        if ("true".equals(previewDTO.getIsMin())) {
-            previewer.imageThumbnailPreview(httpServletResponse, previewFile);
+        try {
+            if ("true".equals(previewDTO.getIsMin())) {
+                previewer.imageThumbnailPreview(httpServletResponse, previewFile);
+            } else {
+                previewer.imageOriginalPreview(httpServletResponse, previewFile);
+            }
+        } catch (Exception e){
+            //org.apache.catalina.connector.ClientAbortException: java.io.IOException: 你的主机中的软件中止了一个已建立的连接。
+            if (e.getMessage().contains("ClientAbortException")) {
+            //该异常忽略不做处理
         } else {
-            previewer.imageOriginalPreview(httpServletResponse, previewFile);
+            log.error("预览文件出现异常：{}", e.getMessage());
         }
+
+    }
 
     }
 
@@ -292,7 +313,6 @@ public class FiletransferService implements IFiletransferService {
         deleter = ufopFactory.getDeleter(fileBean.getStorageType());
         DeleteFile deleteFile = new DeleteFile();
         deleteFile.setFileUrl(fileBean.getFileUrl());
-//        deleteFile.setTimeStampName(fileBean.getTimeStampName());
         deleter.delete(deleteFile);
     }
 

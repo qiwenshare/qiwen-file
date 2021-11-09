@@ -3,6 +3,7 @@ package com.qiwenshare.file.controller;
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
 import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
+import com.baomidou.mybatisplus.core.toolkit.ClassUtils;
 import com.qiwenshare.common.exception.NotLoginException;
 import com.qiwenshare.common.result.RestResult;
 import com.qiwenshare.common.util.DateUtil;
@@ -89,8 +90,8 @@ public class OfficeController {
             } else if ("pptx".equals(extendName)) {
                 templateFilePath = "template/PowerPoint.pptx";
             }
-            String templateFileUrl = UFOPUtils.getStaticPath() +  templateFilePath;
-            FileInputStream fileInputStream = new FileInputStream(templateFileUrl);
+            String url2 = ClassUtils.getDefaultClassLoader().getResource("static/" + templateFilePath).getPath();
+            FileInputStream fileInputStream = new FileInputStream(url2);
             Copier copier = ufopFactory.getCopier();
             CopyFile copyFile = new CopyFile();
             copyFile.setExtendName(extendName);
