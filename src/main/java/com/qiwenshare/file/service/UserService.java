@@ -47,7 +47,7 @@ public class UserService extends ServiceImpl<UserMapper, UserBean> implements IU
         try {
             c = JjwtUtil.parseJWT(token);
         } catch (Exception e) {
-            log.error("解码异常:" + e);
+            log.info("解码异常:" + e);
             return null;
         }
         if (c == null) {

@@ -230,13 +230,8 @@ public class FiletransferController {
 
         httpServletResponse.addHeader("Content-Disposition", "fileName=" + fileName);// 设置文件名
 
-        try {
-            filetransferService.previewFile(httpServletResponse, previewDTO);
-        }catch (Exception e){
-            //org.apache.catalina.connector.ClientAbortException: java.io.IOException: 你的主机中的软件中止了一个已建立的连接。
-            e.printStackTrace();
-            log.error("该异常忽略不做处理：" + e);
-        }
+        filetransferService.previewFile(httpServletResponse, previewDTO);
+
 
     }
 

@@ -6,7 +6,7 @@ import lombok.Data;
 @Data
 @Schema(name = "下载文件DTO",required = true)
 public class DownloadFileDTO {
-    private Long userFileId;
+    private long userFileId;
     private String token;
     @Schema(description="批次号")
     private String shareBatchNum;
