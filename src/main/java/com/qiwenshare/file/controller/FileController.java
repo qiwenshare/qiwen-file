@@ -29,13 +29,14 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.codec.digest.DigestUtils;
 import org.eclipse.jetty.util.StringUtil;
-import org.elasticsearch.index.query.QueryBuilders;
+import org.elasticsearch.index.query.*;
 import org.elasticsearch.search.fetch.subphase.highlight.HighlightBuilder;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.elasticsearch.core.ElasticsearchRestTemplate;
 import org.springframework.data.elasticsearch.core.SearchHits;
+import org.springframework.data.elasticsearch.core.query.NativeSearchQuery;
 import org.springframework.data.elasticsearch.core.query.NativeSearchQueryBuilder;
 import org.springframework.web.bind.annotation.*;
 
@@ -122,13 +123,25 @@ public class FileController {
         } else {
             queryBuilder.withPageable(PageRequest.of(currentPage, pageCount, Sort.by(direction, order)));
         }
+        DisMaxQueryBuilder disMaxQueryBuilder = QueryBuilders.disMaxQuery();
 
-        queryBuilder.withQuery(QueryBuilders.boolQuery()
-//                .must(QueryBuilders.matchQuery("fileName", searchFileDTO.getFileName()))
-                .must(QueryBuilders.multiMatchQuery(searchFileDTO.getFileName(),"fileName", "content"))
-                .must(QueryBuilders.termQuery("userId", sessionUserBean.getUserId()))
-                );
-        SearchHits<FileSearch> search = elasticsearchRestTemplate.search(queryBuilder.build(), FileSearch.class);
+        QueryBuilder q1 = QueryBuilders.boolQuery()
+                .must(QueryBuilders.multiMatchQuery(searchFileDTO.getFileName(), "fileName", "content"))
+                .must(QueryBuilders.termQuery("userId", sessionUserBean.getUserId())).boost(1f);  //分词
+
+        QueryBuilder q2 = QueryBuilders.wildcardQuery("fileName", "*" + searchFileDTO.getFileName() + "*").boost(2f); //模糊匹配
+
+        disMaxQueryBuilder.add(q1);
+        disMaxQueryBuilder.add(q2);
+        NativeSearchQuery searchQuery = new NativeSearchQueryBuilder()
+                .withQuery(disMaxQueryBuilder).build();
+//
+//        queryBuilder.withQuery(QueryBuilders.boolQuery()
+////                .must(QueryBuilders.matchQuery("fileName", searchFileDTO.getFileName()))
+//                .must(QueryBuilders.multiMatchQuery(searchFileDTO.getFileName(),"fileName", "content"))
+//                .must(QueryBuilders.termQuery("userId", sessionUserBean.getUserId()))
+//                ).withQuery(QueryBuilders.wildcardQuery("fileName", "*" + searchFileDTO.getFileName() + "*"));
+        SearchHits<FileSearch> search = elasticsearchRestTemplate.search(searchQuery, FileSearch.class);
 
         return RestResult.success().data(search);
     }
