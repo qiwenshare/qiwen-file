@@ -253,14 +253,14 @@ public class FileDealComp {
 
 
     public void uploadESByUserFileId(Long userFileId) {
-        exec.execute(()->{
-            try {
-                UserFile userFile = new UserFile();
-                userFile.setUserFileId(userFileId);
-                List<FileListVo> userfileResult = userFileMapper.userFileList(userFile, null, null);
-                if (userfileResult != null && userfileResult.size() > 0) {
-                    FileSearch fileSearch = new FileSearch();
-                    BeanUtil.copyProperties(userfileResult.get(0), fileSearch);
+
+        try {
+            UserFile userFile = new UserFile();
+            userFile.setUserFileId(userFileId);
+            List<FileListVo> userfileResult = userFileMapper.userFileList(userFile, null, null);
+            if (userfileResult != null && userfileResult.size() > 0) {
+                FileSearch fileSearch = new FileSearch();
+                BeanUtil.copyProperties(userfileResult.get(0), fileSearch);
 //                if (fileSearch.getIsDir() == 0) {
 //
 //                    Reader reader = ufopFactory.getReader(fileSearch.getStorageType());
@@ -271,13 +271,11 @@ public class FileDealComp {
 //    //                fileSearch.setContent(content);
 //
 //                }
-                    elasticSearchService.save(fileSearch);
-                }
-            } catch (Exception e) {
-                log.debug("ES更新操作失败，请检查配置");
+                elasticSearchService.save(fileSearch);
             }
-        });
-
+        } catch (Exception e) {
+            log.debug("ES更新操作失败，请检查配置");
+        }
 
     }
 
