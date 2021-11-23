@@ -217,7 +217,7 @@
 
 **QQ 交流群** 和 **微信公众号** 请扫描下面二维码
 
-![联系我们 二维码](https://images.gitee.com/uploads/images/2021/1120/183641_ae76c638_1837873.png "二维码.png")
+![联系我们](https://images.gitee.com/uploads/images/2021/1122/202504_144252f7_1837873.png "屏幕截图.png")
 
 ## 鸣谢
 
