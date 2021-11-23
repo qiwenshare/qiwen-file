@@ -134,7 +134,7 @@ public class FileController {
         disMaxQueryBuilder.add(q1);
         disMaxQueryBuilder.add(q2);
         NativeSearchQuery searchQuery = new NativeSearchQueryBuilder()
-                .withQuery(disMaxQueryBuilder).build();
+                .withQuery(disMaxQueryBuilder).withHighlightFields(allHighLight).build();
 //
 //        queryBuilder.withQuery(QueryBuilders.boolQuery()
 ////                .must(QueryBuilders.matchQuery("fileName", searchFileDTO.getFileName()))
