@@ -129,7 +129,9 @@ public class FileController {
                 .must(QueryBuilders.multiMatchQuery(searchFileDTO.getFileName(), "fileName", "content"))
                 .must(QueryBuilders.termQuery("userId", sessionUserBean.getUserId())).boost(1f);  //分词
 
-        QueryBuilder q2 = QueryBuilders.wildcardQuery("fileName", "*" + searchFileDTO.getFileName() + "*").boost(2f); //模糊匹配
+        QueryBuilder q2 = QueryBuilders.boolQuery()
+                .must(QueryBuilders.wildcardQuery("fileName", "*" + searchFileDTO.getFileName() + "*"))
+                .must(QueryBuilders.termQuery("userId", sessionUserBean.getUserId())).boost(2f); //模糊匹配
 
         disMaxQueryBuilder.add(q1);
         disMaxQueryBuilder.add(q2);
