@@ -11,10 +11,14 @@ public interface FileMapper extends BaseMapper<FileBean> {
 
 
     void batchInsertFile(List<FileBean> fileBeanList);
-//    void updateFile(FileBean fileBean);
 
+    void incPointCountByPathAndName(@Param("oldFilePath") String oldFilePath,
+                                    @Param("fileName") String fileName,
+                                    @Param("extendName") String extendName,
+                                    @Param("userId") long userId);
 
-
+    void incPointCountByByFilepath(@Param("oldFilePath") String oldFilePath,
+                                   @Param("userId") long userId);
 
 
 
