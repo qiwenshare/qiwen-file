@@ -116,8 +116,7 @@ public class UserFileService  extends ServiceImpl<UserFileMapper, UserFile> impl
         }
 
         userFileMapper.batchInsertByPathAndName(oldfilePath, newfilePath, fileName, extendName, userId);
-        //移动根目录
-//        userFileMapper.updateFilepathByPathAndName(oldfilePath, newfilePath, fileName, extendName, userId);
+        fileMapper.incPointCountByPathAndName(newfilePath, fileName, extendName, userId);
 
         //移动子目录
         oldfilePath = oldfilePath + fileName + "/";
@@ -130,6 +129,7 @@ public class UserFileService  extends ServiceImpl<UserFileMapper, UserFile> impl
 
         if (extendName == null) { //为null说明是目录，则需要移动子目录
             userFileMapper.batchInsertByFilepath(oldfilePath, newfilePath, userId);
+            fileMapper.incPointCountByByFilepath(oldfilePath, userId);
         }
 
     }

@@ -305,11 +305,11 @@ public class FileController {
         if (userFile.getIsDir() == 1) {
             String testFilePath = oldfilePath + fileName +  "/";
             if (newfilePath.startsWith(testFilePath)) {
-                return RestResult.fail().message("原路径与目标路径冲突，不能移动");
+                return RestResult.fail().message("原路径与目标路径冲突，不能复制");
             }
         }
 
-        userFileService.updateFilepathByFilepath(oldfilePath, newfilePath, fileName, extendName, sessionUserBean.getUserId());
+        userFileService.userFileCopy(oldfilePath, newfilePath, fileName, extendName, sessionUserBean.getUserId());
         return RestResult.success();
 
     }

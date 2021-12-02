@@ -39,4 +39,16 @@ public class FileBean {
     @Column(columnDefinition="varchar(32)")
     private String identifier;
 
+    @Column(columnDefinition="varchar(25)")
+    private String createTime;
+
+    @Column(columnDefinition="bigint(20)")
+    private Long createUserId;
+
+    @Column(columnDefinition="varchar(25)")
+    private String modifyTime;
+
+    @Column(columnDefinition="bigint(20)")
+    private Long modifyUserId;
+
 }
