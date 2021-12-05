@@ -103,6 +103,8 @@ public class OfficeController {
             fileBean.setStorageType(storageType);
             fileBean.setPointCount(1);
             fileBean.setIdentifier(uuid);
+            fileBean.setCreateTime(DateUtil.getCurrentTime());
+            fileBean.setCreateUserId(loginUser.getUserId());
             boolean saveFlag = fileService.save(fileBean);
             UserFile userFile = new UserFile();
             if(saveFlag) {

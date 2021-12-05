@@ -6,7 +6,7 @@
 
 <mapper namespace="com.qiwenshare.file.mapper.UploadTaskDetailMapper">
     <select id="selectUploadedChunkNumList" parameterType="java.lang.String" resultType="java.lang.Integer">
-        select chunkNumber from UploadTaskDetail
+        select chunkNumber from uploadtaskdetail
         where identifier = #{identifier}
         order by chunkNumber asc
     </select>
