@@ -276,6 +276,8 @@ public class OfficeController {
                     lambdaUpdateWrapper
                             .set(FileBean::getIdentifier, md5Str)
                             .set(FileBean::getFileSize, Long.valueOf(fileLength))
+                            .set(FileBean::getModifyTime, DateUtil.getCurrentTime())
+                            .set(FileBean::getModifyUserId, loginUser.getUserId())
                             .eq(FileBean::getFileId, fileBean.getFileId());
                     fileService.update(lambdaUpdateWrapper);
 

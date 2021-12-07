@@ -1,6 +1,7 @@
 package com.qiwenshare.file.controller;
 
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
+import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.qiwenshare.common.anno.MyLog;
 import com.qiwenshare.common.exception.NotLoginException;
 import com.qiwenshare.common.result.RestResult;
@@ -12,10 +13,14 @@ import com.qiwenshare.file.domain.*;
 import com.qiwenshare.file.dto.file.DownloadFileDTO;
 import com.qiwenshare.file.dto.file.UploadFileDTO;
 import com.qiwenshare.file.dto.file.PreviewDTO;
+import com.qiwenshare.file.mapper.ImageMapper;
 import com.qiwenshare.file.service.StorageService;
 import com.qiwenshare.file.vo.file.FileListVo;
 import com.qiwenshare.file.vo.file.UploadFileVo;
 import com.qiwenshare.ufop.constant.UploadFileStatusEnum;
+import com.qiwenshare.ufop.factory.UFOPFactory;
+import com.qiwenshare.ufop.operation.download.Downloader;
+import com.qiwenshare.ufop.operation.download.domain.DownloadFile;
 import com.qiwenshare.ufop.util.UFOPUtils;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -24,8 +29,12 @@ import org.apache.commons.lang3.StringUtils;
 import org.springframework.web.bind.annotation.*;
 
 import javax.annotation.Resource;
+import javax.imageio.ImageIO;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import java.awt.image.BufferedImage;
+import java.io.IOException;
+import java.io.InputStream;
 import java.io.UnsupportedEncodingException;
 import java.util.HashMap;
 import java.util.List;
@@ -52,6 +61,10 @@ public class FiletransferController {
     StorageService storageService;
     @Resource
     IUploadTaskService uploadTaskService;
+    @Resource
+    ImageMapper imageMapper;
+    @Resource
+    UFOPFactory ufopFactory;
 
     @Resource
     IUploadTaskDetailService uploadTaskDetailService;
@@ -211,6 +224,32 @@ public class FiletransferController {
         }
 
         FileBean fileBean = fileService.getById(userFile.getFileId());
+        /********************************** 图片预览适配 **************************************/
+        LambdaQueryWrapper<Image> imageLambdaQueryWrapper = new LambdaQueryWrapper<>();
+        imageLambdaQueryWrapper.eq(Image::getFileId, fileBean.getFileId());
+        Image result = imageMapper.selectOne(imageLambdaQueryWrapper);
+        if (result == null) {
+            if (UFOPUtils.isImageFile(userFile.getExtendName())) {
+                Downloader downloader = ufopFactory.getDownloader(fileBean.getStorageType());
+                DownloadFile downloadFile = new DownloadFile();
+                downloadFile.setFileUrl(fileBean.getFileUrl());
+                InputStream is = downloader.getInputStream(downloadFile);
+                BufferedImage src = null;
+                try {
+                    src = ImageIO.read(is);
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+                Image image = new Image();
+                image.setImageWidth(src.getWidth());
+                image.setImageHeight(src.getHeight());
+                image.setFileId(fileBean.getFileId());
+                imageMapper.insert(image);
+            }
+        }
+
+        /***************************************************************************/
+
         String mime= MimeUtils.getMime(userFile.getExtendName());
         httpServletResponse.setHeader("Content-Type", mime);
         String rangeString = httpServletRequest.getHeader("Range");//如果是video标签发起的请求就不会为null

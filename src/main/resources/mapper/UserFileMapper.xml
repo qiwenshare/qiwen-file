@@ -14,6 +14,7 @@
     <select id="userFileList" resultType="com.qiwenshare.file.vo.file.FileListVo">
         select * from userfile a
         left join file on file.fileId = a.fileId
+        left join image on a.fileId = image.fileId
         <where>
             <if test="userFile.userId != null">
                 and a.userId = #{userFile.userId}
@@ -58,6 +59,7 @@
     </sql>
     <select id="selectFileByExtendName" parameterType="com.qiwenshare.file.domain.UserFile" resultType="com.qiwenshare.file.vo.file.FileListVo">
         select * from userfile
+        left join image on userfile.fileId = image.fileId
         <include refid="selectByExtendName"></include>
         limit #{beginCount}, #{pageCount}
     </select>

@@ -41,4 +41,7 @@ public class FileListVo {
     private String deleteTime;
 
     private String deleteBatchNum;
+
+    private Integer imageWidth;
+    private Integer imageHeight;
 }

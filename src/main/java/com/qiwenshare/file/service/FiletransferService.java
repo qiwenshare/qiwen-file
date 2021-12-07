@@ -32,8 +32,10 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import javax.annotation.Resource;
+import javax.imageio.ImageIO;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import java.awt.image.BufferedImage;
 import java.io.*;
 import java.util.List;
 import java.util.zip.Adler32;
@@ -62,6 +64,8 @@ public class FiletransferService implements IFiletransferService {
     UploadTaskDetailMapper UploadTaskDetailMapper;
     @Resource
     UploadTaskMapper uploadTaskMapper;
+    @Resource
+    ImageMapper imageMapper;
 
     @Override
     public void uploadFile(HttpServletRequest request, UploadFileDTO uploadFileDto, Long userId) {
@@ -130,6 +134,23 @@ public class FiletransferService implements IFiletransferService {
                 lambdaUpdateWrapper.set(UploadTask::getUploadStatus, UploadFileStatusEnum.SUCCESS.getCode())
                         .eq(UploadTask::getIdentifier, uploadFileDto.getIdentifier());
                 uploadTaskMapper.update(null, lambdaUpdateWrapper);
+                if (UFOPUtils.isImageFile(uploadFileResult.getExtendName())) {
+                    Downloader downloader = ufopFactory.getDownloader(uploadFileResult.getStorageType().getCode());
+                    DownloadFile downloadFile = new DownloadFile();
+                    downloadFile.setFileUrl(uploadFileResult.getFileUrl());
+                    InputStream is = downloader.getInputStream(downloadFile);
+                    BufferedImage src = null;
+                    try {
+                        src = ImageIO.read(is);
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                    }
+                    Image image = new Image();
+                    image.setImageWidth(src.getWidth());
+                    image.setImageHeight(src.getHeight());
+                    image.setFileId(fileBean.getFileId());
+                    imageMapper.insert(image);
+                }
 
             } else if (UploadFileStatusEnum.UNCOMPLATE.equals(uploadFileResult.getStatus())) {
                 UploadTaskDetail UploadTaskDetail = new UploadTaskDetail();
