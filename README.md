@@ -81,7 +81,7 @@
 
 ## 网络拓扑图
 
-![网络拓扑图](https://images.gitee.com/uploads/images/2021/0324/225520_d55b109e_947714.png '屏幕截图.png')
+![网络拓扑图](https://pan.qiwenshare.com/docs/img/guide/web-expand.png)
 
 ## 软件架构
 
