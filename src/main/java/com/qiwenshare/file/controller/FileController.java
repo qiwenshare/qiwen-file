@@ -6,6 +6,7 @@ import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
 import com.qiwenshare.common.anno.MyLog;
 import com.qiwenshare.common.exception.NotLoginException;
 import com.qiwenshare.common.result.RestResult;
+import com.qiwenshare.common.result.ResultCodeEnum;
 import com.qiwenshare.common.util.DateUtil;
 import com.qiwenshare.file.advice.QiwenException;
 import com.qiwenshare.file.api.IFileService;
@@ -13,6 +14,7 @@ import com.qiwenshare.file.api.IUserFileService;
 import com.qiwenshare.file.api.IUserService;
 import com.qiwenshare.file.component.FileDealComp;
 import com.qiwenshare.file.config.es.FileSearch;
+import com.qiwenshare.file.domain.FileBean;
 import com.qiwenshare.file.domain.TreeNode;
 import com.qiwenshare.file.domain.UserBean;
 import com.qiwenshare.file.domain.UserFile;
@@ -22,6 +24,10 @@ import com.qiwenshare.file.dto.file.MoveFileDTO;
 import com.qiwenshare.file.dto.file.*;
 import com.qiwenshare.file.util.SessionUtil;
 import com.qiwenshare.file.vo.file.FileListVo;
+import com.qiwenshare.ufop.factory.UFOPFactory;
+import com.qiwenshare.ufop.operation.download.domain.DownloadFile;
+import com.qiwenshare.ufop.operation.write.Writer;
+import com.qiwenshare.ufop.operation.write.domain.WriteFile;
 import com.qiwenshare.ufop.util.UFOPUtils;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
@@ -42,6 +48,9 @@ import org.springframework.web.bind.annotation.*;
 
 import javax.annotation.Resource;
 import javax.validation.Valid;
+import java.io.ByteArrayInputStream;
+import java.io.IOException;
+import java.io.InputStream;
 import java.util.*;
 
 @Tag(name = "file", description = "该接口为文件接口，主要用来做一些文件的基本操作，如创建目录，删除，移动，复制等。")
@@ -61,6 +70,8 @@ public class FileController {
     private ElasticsearchRestTemplate elasticsearchRestTemplate;
     @Resource
     FileDealComp fileDealComp;
+    @Resource
+    UFOPFactory ufopFactory;
 
     public static final String CURRENT_MODULE = "文件接口";
 
@@ -467,6 +478,48 @@ public class FileController {
         result.setData(resultTreeNode);
         return result;
 
+    }
+
+    @Operation(summary = "修改文件", description = "支持普通文本类文件的修改", tags = {"file"})
+    @RequestMapping(value = "/update", method = RequestMethod.POST)
+    @ResponseBody
+    public RestResult<String> updateFile(@RequestBody UpdateFileDTO updateFileDTO) {
+        UserBean sessionUserBean = (UserBean) SessionUtil.getSession();
+        UserFile userFile = userFileService.getById(updateFileDTO.getUserFileId());
+        FileBean fileBean = fileService.getById(userFile.getFileId());
+        if (fileBean.getPointCount() > 1) {
+            return RestResult.fail().message("暂不支持修改");
+        }
+        String content = updateFileDTO.getFileContent();
+        ByteArrayInputStream byteArrayInputStream = new ByteArrayInputStream(content.getBytes());
+        try {
+
+            Writer writer1 = ufopFactory.getWriter(fileBean.getStorageType());
+            WriteFile writeFile = new WriteFile();
+            writeFile.setFileUrl(fileBean.getFileUrl());
+            int fileSize = byteArrayInputStream.available();
+            writeFile.setFileSize(fileSize);
+            writer1.write(byteArrayInputStream, writeFile);
+            DownloadFile downloadFile = new DownloadFile();
+            downloadFile.setFileUrl(fileBean.getFileUrl());
+            InputStream inputStream = ufopFactory.getDownloader(fileBean.getStorageType()).getInputStream(downloadFile);
+            String md5Str = DigestUtils.md5Hex(inputStream);
+            fileBean.setIdentifier(md5Str);
+            fileBean.setModifyTime(DateUtil.getCurrentTime());
+            fileBean.setModifyUserId(sessionUserBean.getUserId());
+            fileBean.setFileSize((long) fileSize);
+            fileService.updateById(fileBean);
+        } catch (Exception e) {
+            throw new QiwenException(999999, "修改文件异常");
+//            log.error(e.getMessage());
+        } finally {
+            try {
+                byteArrayInputStream.close();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
+        return RestResult.success().message("修改文件成功");
     }
 
 
