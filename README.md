@@ -1,6 +1,5 @@
 <p align="center">
 	<a href="http://fileos.qiwenshare.com/"><img width="30%" src="https://images.gitee.com/uploads/images/2021/0511/141109_0a709933_947714.png" ></a>
-
 </p>
 <p align="center">
 	<strong>基于Spring Boot + VUE CLI@3 框架开发的分布式文件系统，旨在为用户和企业提供一个简单、方便的文件存储方案，能够以完善的目录结构体系，对文件进行管理 。</strong>
@@ -44,33 +43,35 @@
 
 ### 基本文件操作
 
-| 操作   | 文件 | 文件夹 | 单个 | 批量 | 备注                                                         |
-| :----- | :--: | :----: | :--: | :--: | ------------------------------------------------------------ |
-| 创建   |  √   |   √    |  √   |  ⚪   | 创建 Word、Excel、PowerPoint 在线文件                        |
-| 删除   |  √   |   √    |  √   |  √   |                                                              |
-| 上传   |  √   |   √    |  √   |  √   | **拖拽**上传、**粘贴截图**上传                               |
-| 重命名 |  √   |   √    |  √   |  ⚪   |                                                              |
-| 移动   |  √   |   √    |  √   |  √   |                                                              |
-| 复制   |  √   |   ⚪    |  √   |  ⚪   |                                                              |
-| 解压缩 |  √   |   ⚪    |  √   |  ⚪   | **ZIP、RAR**                                                 |
-| 预览   |  √   |   ⚪    |  √   |  ⚪   | 支持图片、视频、音频在线预览<br />支持PDF、JSON、TXT、HTML 等常用文本文件<br />支持 Office 文件在线预览 |
-| 分享   |  √   |   √    |  √   |  √   | 支持有效期、提取码                                           |
-| 搜索   |  √   |   √    |  ⚪   |  ⚪   | 支持 ElasticSearch 文件名称模糊搜索                          |
+| 操作   | 文件 | 文件夹 | 单个 | 批量 | 备注                                                                                                     |
+| :----- | :--: | :----: | :--: | :--: | -------------------------------------------------------------------------------------------------------- |
+| 创建   |  √   |   √    |  √   |  ⚪  | 创建 Word、Excel、PowerPoint 在线文件                                                                    |
+| 删除   |  √   |   √    |  √   |  √   |                                                                                                          |
+| 上传   |  √   |   √    |  √   |  √   | **拖拽**上传、**粘贴截图**上传                                                                           |
+| 重命名 |  √   |   √    |  √   |  ⚪  |                                                                                                          |
+| 移动   |  √   |   √    |  √   |  √   |                                                                                                          |
+| 复制   |  √   |   ⚪   |  √   |  ⚪  |                                                                                                          |
+| 解压缩 |  √   |   ⚪   |  √   |  ⚪  | **ZIP、RAR**                                                                                             |
+| 预览   |  √   |   ⚪   |  √   |  ⚪  | 支持图片、视频、音频在线预览<br />支持 PDF、JSON、TXT、HTML 等常用文本文件<br />支持 Office 文件在线预览 |
+| 分享   |  √   |   √    |  √   |  √   | 支持有效期、提取码                                                                                       |
+| 搜索   |  √   |   √    |  ⚪  |  ⚪  | 支持 ElasticSearch 文件名称模糊搜索                                                                      |
 
 ### 特色功能
 
-| 功能         | 描述                                                         |
-| ------------ | ------------------------------------------------------------ |
-| 在线编辑功能 | Word、Excel、PowerPoint 文档的在线创建、**在线编辑**、协同编辑功能<br />集成 [OnlyOffice](https://api.onlyoffice.com/)，安装方式参考 [安装 ONLYOFFICE](https://www.qiwenshare.com/essay/detail/1208) |
-| 文件分类查看 | 图片、视频、音乐、文档、其他，分类查看更快捷                 |
-| 多种查看模式 | 支持网格模式、列表模式、时间线模式<br />网格模式下图标支持手动控制显示大小 |
-| 回收站       | 删除文件自动移入回收站，支持在回收站中彻底删除、还原文件     |
-| 多种存储方式 | 基于奇文社区自研框架 [UFOP](https://gitee.com/qiwen-cloud/ufop-spring-boot-starter)，实现文件多样化存储。<br/>支持**本地**磁盘、**阿里云 OSS** 对象存储、**FastDFS** 存储、**MinIO** 存储、<br />**七牛云 KODO** 对象存储，点击查看配置方式[存储方式配置](https://pan.qiwenshare.com/docs/config/#%E5%AD%98%E5%82%A8%E6%96%B9%E5%BC%8F%E9%85%8D%E7%BD%AE) |
-| 支持分片上传 | 基于奇文社区自研框架 [UFOP](https://gitee.com/qiwen-cloud/ufop-spring-boot-starter), 实现文件分片上传。<br />集成优秀开源项目 [vue-simple-uploader](https://github.com/simple-uploader/vue-uploader/blob/master/README_zh-CN.md) |
-| 支持极速秒传 | 计算文件 MD5，实现极速秒传效果，提高上传效率                 |
-| 支持断点续传 | 同一个文件，当上传过程中网络中断，可以从断点处继续上传       |
-| 实时进度显示 | 页面实时显示上传文件进度、速度、结果等信息                   |
-| 存储容量显示 | 可实时显示文件存储占用情况及总存储容量                       |
+| 功能              | 描述                                                                                                                                                                                                                                                                                                                                                      |
+| ----------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| office 在线编辑   | Word、Excel、PowerPoint 文档的在线创建、**在线编辑**、协同编辑功能<br />集成 [OnlyOffice](https://api.onlyoffice.com/)，安装方式参考 [安装 ONLYOFFICE](https://www.qiwenshare.com/essay/detail/1208)                                                                                                                                                      |
+| markdown 在线编辑 | 支持 **markdown** 文件在线预览、编辑、保存功能<br />集成 [mavon-editor](https://www.npmjs.com/package/mavon-editor) ，已内置到前端工程中                                                                                                                                                                                                                  |
+| 代码在线编辑      | 支持 **C、C++、C#、Java、JavaScript、HTML、CSS、Less、Sass、Stylus** <br />等常用代码类文件的在线预览、编辑、保存<br />集成 [vue-codemirror](https://github.com/surmon-china/vue-codemirror)，已内置到前端工程中，<br />可参考 [codemirror](https://codemirror.net/index.html) 官网说明添加更多语言                                                       |
+| 文件分类查看      | 图片、视频、音乐、文档、其他，分类查看更快捷                                                                                                                                                                                                                                                                                                              |
+| 多种查看模式      | 支持网格模式、列表模式、时间线模式<br />网格模式下图标支持手动控制显示大小                                                                                                                                                                                                                                                                                |
+| 回收站            | 删除文件自动移入回收站，支持在回收站中彻底删除、还原文件                                                                                                                                                                                                                                                                                                  |
+| 多种存储方式      | 基于奇文社区自研框架 [UFOP](https://gitee.com/qiwen-cloud/ufop-spring-boot-starter)，实现文件多样化存储。<br/>支持**本地**磁盘、**阿里云 OSS** 对象存储、**FastDFS** 存储、**MinIO** 存储、<br />**七牛云 KODO** 对象存储，点击查看配置方式[存储方式配置](https://pan.qiwenshare.com/docs/config/#%E5%AD%98%E5%82%A8%E6%96%B9%E5%BC%8F%E9%85%8D%E7%BD%AE) |
+| 支持分片上传      | 基于奇文社区自研框架 [UFOP](https://gitee.com/qiwen-cloud/ufop-spring-boot-starter), 实现文件分片上传。<br />集成优秀开源项目 [vue-simple-uploader](https://github.com/simple-uploader/vue-uploader/blob/master/README_zh-CN.md)                                                                                                                          |
+| 支持极速秒传      | 计算文件 MD5，实现极速秒传效果，提高上传效率                                                                                                                                                                                                                                                                                                              |
+| 支持断点续传      | 同一个文件，当上传过程中网络中断，可以从断点处继续上传                                                                                                                                                                                                                                                                                                    |
+| 实时进度显示      | 页面实时显示上传文件进度、速度、结果等信息                                                                                                                                                                                                                                                                                                                |
+| 存储容量显示      | 可实时显示文件存储占用情况及总存储容量                                                                                                                                                                                                                                                                                                                    |
 
 ## 源码地址
 
@@ -266,7 +267,21 @@
 例如：word 文件在线编辑：
 <img src="https://pan.qiwenshare.com/docs/img/guide/function/edit.png" alt="文件在线编辑">
 
-#### 8.2 视频在线预览
+#### 8.2 markdown 在线预览 & 编辑
+
+支持 **markdown** 文件在线预览、编辑、保存功能，集成 [mavon-editor](https://www.npmjs.com/package/mavon-editor) ，已内置到前端工程中
+
+<img src="https://pan.qiwenshare.com/docs/img/guide/function/markdown.png" alt="mavon-editor 代码编辑器">
+
+#### 8.3 代码类文件在线预览 & 编辑
+
+支持 **C、C++、C#、Java、JavaScript、HTML、CSS、Less、Sass、Stylus ……** 等常用代码类文件的在线预览、编辑、保存
+
+集成 [vue-codemirror](https://github.com/surmon-china/vue-codemirror)，已内置到前端工程中，可参考 [codemirror](https://codemirror.net/index.html) 官网说明添加更多语言
+
+<img src="https://pan.qiwenshare.com/docs/img/guide/function/codemirror.png" alt="codemirror 代码编辑器">
+
+#### 8.4 视频在线预览
 
 文件类型为视频时，点击即可打开预览窗口，展示播放列表，支持快进、后退、暂停、倍速播放、全屏播放、下载视频和折叠播放列表。
 
@@ -274,11 +289,15 @@
 
 <img src="https://pan.qiwenshare.com/docs/img/guide/function/video.png" alt="视频在线预览">
 
-#### 8.3 音频在线播放
+#### 8.5 音频在线播放
 
 MP3 格式的文件支持在线播放。
 
 <img src="https://pan.qiwenshare.com/docs/img/guide/function/audio.png" alt="音频在线播放">
+
+### 9. 移动端支持
+
+除过在线编辑之外，其他的功能均支持在移动端操作 [指南-功能展示-移动端支持](https://pan.qiwenshare.com/docs/guide/function.html#%E7%A7%BB%E5%8A%A8%E7%AB%AF%E6%94%AF%E6%8C%81)
 
 ## 联系我们
 
@@ -291,7 +310,6 @@ MP3 格式的文件支持在线播放。
 项目的发展离不开你的支持，如果觉得这个项目帮助到了你，请点击评论区上方的捐赠，请作者喝杯咖啡吧！
 
 <img src="https://pan.qiwenshare.com/docs/img/guide/contact/agree.png" alt="捐赠">
-
 
 ## 鸣谢
 
