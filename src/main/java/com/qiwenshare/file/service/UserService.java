@@ -12,6 +12,8 @@ import com.qiwenshare.file.api.IUserService;
 import com.qiwenshare.file.component.UserDealComp;
 import com.qiwenshare.file.controller.UserController;
 import com.qiwenshare.file.domain.UserBean;
+import com.qiwenshare.file.domain.UserLoginInfo;
+import com.qiwenshare.file.mapper.UserLoginInfoMapper;
 import com.qiwenshare.file.mapper.UserMapper;
 import io.jsonwebtoken.Claims;
 import lombok.extern.slf4j.Slf4j;
@@ -33,6 +35,8 @@ public class UserService extends ServiceImpl<UserMapper, UserBean> implements IU
     UserMapper userMapper;
     @Resource
     UserDealComp userDealComp;
+    @Resource
+    UserLoginInfoMapper userLoginInfoMapper;
 
     @Override
     public UserBean getUserBeanByToken(String token){
@@ -80,6 +84,7 @@ public class UserService extends ServiceImpl<UserMapper, UserBean> implements IU
             return null;
         }
         if (tokenPassword.equals(savePassword)) {
+
 
             return saveUserBean;
         } else {

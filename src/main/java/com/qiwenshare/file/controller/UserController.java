@@ -2,11 +2,16 @@ package com.qiwenshare.file.controller;
 
 import cn.hutool.core.bean.BeanUtil;
 import com.alibaba.fastjson.JSON;
+import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
+import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
 import com.qiwenshare.common.anno.MyLog;
 import com.qiwenshare.common.result.RestResult;
+import com.qiwenshare.common.util.DateUtil;
 import com.qiwenshare.common.util.JjwtUtil;
+import com.qiwenshare.file.api.IUserLoginInfoService;
 import com.qiwenshare.file.api.IUserService;
 import com.qiwenshare.file.domain.UserBean;
+import com.qiwenshare.file.domain.UserLoginInfo;
 import com.qiwenshare.file.dto.user.RegisterDTO;
 import com.qiwenshare.file.vo.user.UserLoginVo;
 import io.swagger.v3.oas.annotations.Operation;
@@ -31,6 +36,8 @@ public class UserController {
 
     @Resource
     IUserService userService;
+    @Resource
+    IUserLoginInfoService userLoginInfoService;
 
 
 
@@ -100,6 +107,13 @@ public class UserController {
         }
         UserBean sessionUserBean = userService.getUserBeanByToken(token);
         if (sessionUserBean != null) {
+            LambdaQueryWrapper<UserLoginInfo> lambdaQueryWrapper = new LambdaQueryWrapper<>();
+            lambdaQueryWrapper.likeRight(UserLoginInfo::getUserloginDate, DateUtil.getCurrentTime().substring(0, 10));
+            userLoginInfoService.remove(lambdaQueryWrapper);
+            UserLoginInfo userLoginInfo = new UserLoginInfo();
+            userLoginInfo.setUserId(sessionUserBean.getUserId());
+            userLoginInfo.setUserloginDate(DateUtil.getCurrentTime());
+            userLoginInfoService.save(userLoginInfo);
             return RestResult.success().data(sessionUserBean);
 
         } else {

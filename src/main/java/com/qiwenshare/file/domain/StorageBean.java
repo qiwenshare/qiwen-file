@@ -31,6 +31,11 @@ public class StorageBean {
     @Column(columnDefinition="bigint(20)")
     private Long totalStorageSize;
 
+    @Column(columnDefinition="varchar(25) comment '修改时间'")
+    private String modifyTime;
+    @Column(columnDefinition="bigint(20) comment '修改用户id'")
+    private Long modifyUserId;
+
     public StorageBean() {
 
     }

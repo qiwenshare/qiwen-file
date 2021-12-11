@@ -1,6 +1,7 @@
 package com.qiwenshare.file.domain;
 
 import com.baomidou.mybatisplus.annotation.IdType;
+import com.baomidou.mybatisplus.annotation.TableField;
 import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableName;
 import lombok.Data;
@@ -27,7 +28,7 @@ public class Role {
     /**
      * 角色名
      */
-    private String role; // 角色标识程序中判断使用,如"admin",这个是唯一的:
+    private String roleName; // 角色标识程序中判断使用,如"admin",这个是唯一的:
 
     /**
      * 角色描述
@@ -37,21 +38,24 @@ public class Role {
     /**
      * 是否可用
      */
-    private Boolean available = Boolean.FALSE; // 是否可用,如果不可用将不会添加给用户
+    private Integer available; // 是否可用,如果不可用将不会添加给用户
+
+    private String createTime;
+
+    private Long createUserId;
+
+    private String modifyTime;
+
+    private Long modifyUserId;
 
     /**
      * 权限列表
      */
     @ManyToMany(fetch = FetchType.EAGER)//立即从数据库中进行加载数据
     @JoinTable(name = "role_permission",
-            joinColumns = {@JoinColumn(name = "roleId")},
-            inverseJoinColumns = {@JoinColumn(name = "permissionId")})
+            joinColumns = {@JoinColumn(name = "roleid")},
+            inverseJoinColumns = {@JoinColumn(name = "permissionid")})
+    @TableField(exist = false)
     private List<Permission> permissions;
-
-//    @ManyToMany
-//    @JoinTable(name = "role_permission",
-//            joinColumns = {@JoinColumn(name="roleId")},
-//            inverseJoinColumns = {@JoinColumn(name="permissionId")})
-//    private List<UserBean> userList;// 一个角色对应多个用户
 
 }

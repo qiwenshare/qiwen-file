@@ -227,8 +227,8 @@ public class FiletransferController {
         /********************************** 图片预览适配 **************************************/
         LambdaQueryWrapper<Image> imageLambdaQueryWrapper = new LambdaQueryWrapper<>();
         imageLambdaQueryWrapper.eq(Image::getFileId, fileBean.getFileId());
-        Image result = imageMapper.selectOne(imageLambdaQueryWrapper);
-        if (result == null) {
+        List<Image> result = imageMapper.selectList(imageLambdaQueryWrapper);
+        if (result == null || result.isEmpty()) {
             if (UFOPUtils.isImageFile(userFile.getExtendName())) {
                 Downloader downloader = ufopFactory.getDownloader(fileBean.getStorageType());
                 DownloadFile downloadFile = new DownloadFile();
