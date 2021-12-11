@@ -53,6 +53,8 @@ public class OfficeController {
 
     @Value("${deployment.host}")
     private String deploymentHost;
+    @Value("${server.port}")
+    private String port;
     @Value("${ufop.storage-type}")
     private Integer storageType;
 
@@ -142,7 +144,7 @@ public class OfficeController {
             }
             UserFile userFile = userFileService.getById(previewOfficeFileDTO.getUserFileId());
 
-            String baseUrl = request.getScheme()+"://"+ deploymentHost + request.getContextPath();
+            String baseUrl = request.getScheme()+"://"+ deploymentHost + ":" + port + request.getContextPath();
 
             FileModel file = new FileModel(userFile.getFileName() + "." + userFile.getExtendName(),
                     previewOfficeFileDTO.getPreviewUrl(),
@@ -181,7 +183,7 @@ public class OfficeController {
             }
             UserFile userFile = userFileService.getById(editOfficeFileDTO.getUserFileId());
 
-            String baseUrl = request.getScheme()+"://"+ deploymentHost + request.getContextPath();
+            String baseUrl = request.getScheme()+"://"+ deploymentHost + ":" + port + request.getContextPath();
 
             log.info("回调地址baseUrl：" + baseUrl);
 

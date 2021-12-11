@@ -23,29 +23,7 @@ public class Permission {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @TableId(type = IdType.AUTO)
-    private Long permissionId;//主键.
-    /**
-     * 权限名称
-     */
-    @Column
-    private String name;//名称.
-
-    /**
-     * 资源类型
-     */
-    @Column
-    private String resourceType;//资源类型，[menu|button]
-
-    /**
-     * 资源路径
-     */
-    @Column
-    private String url;//资源路径.
-    /**
-     * 权限字符串,menu例子：role:*，button例子：role:create,role:update,role:delete,role:view
-     */
-    @Column
-    private String permission;
+    private Long permissionId;//主键
 
     /**
      * 父编号
@@ -54,22 +32,34 @@ public class Permission {
     private Long parentId;
 
     /**
-     * 父编号列表
+     * 权限名称
      */
     @Column
-    private String parentIds;
+    private String permissionName;//名称.
 
     /**
-     * 是否生效
+     * 资源类型
      */
     @Column
-    private Boolean available = Boolean.FALSE;
+    private Integer resourceType;//资源类型
 
     /**
-     * 角色列表
+     * 权限字符串
      */
-    @Transient
-    @TableField(exist = false)
-    private List<Role> roles;
+    @Column
+    private String permissionCode;
+
+    @Column
+    private Integer orderNum;
+
+
+    private String createTime;
+
+    private Long createUserId;
+
+    private String modifyTime;
+
+    private Long modifyUserId;
+
 
 }

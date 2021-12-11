@@ -31,6 +31,9 @@ public class FileBean {
     private Long fileSize;
 
     @Column(columnDefinition="int(1)")
+    private Integer fileStatus;
+
+    @Column(columnDefinition="int(1)")
     private Integer storageType;
 
     @Column(columnDefinition="int(11)")

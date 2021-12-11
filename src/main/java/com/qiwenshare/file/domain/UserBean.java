@@ -85,6 +85,14 @@ public class UserBean {
     @Column(columnDefinition = "varchar(30)")
     private String registerTime;
 
+    private String lastLoginTime;
+
+    private Integer available;
+
+    private String modifyTime;
+
+    private Long modifyUserId;
+
     /**
      * 验证码
      */
@@ -104,6 +112,6 @@ public class UserBean {
             joinColumns = {@JoinColumn(name = "userId")},
             inverseJoinColumns = {@JoinColumn(name = "roleid")})
     @TableField(exist = false)
-    private List<Role> roleList;// 一个用户具有多个角色
+    private List<Role> roles;
 
 }
