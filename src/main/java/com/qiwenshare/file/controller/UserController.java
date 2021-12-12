@@ -108,6 +108,7 @@ public class UserController {
         UserBean sessionUserBean = userService.getUserBeanByToken(token);
         if (sessionUserBean != null) {
             LambdaQueryWrapper<UserLoginInfo> lambdaQueryWrapper = new LambdaQueryWrapper<>();
+            lambdaQueryWrapper.eq(UserLoginInfo::getUserId, sessionUserBean.getUserId());
             lambdaQueryWrapper.likeRight(UserLoginInfo::getUserloginDate, DateUtil.getCurrentTime().substring(0, 10));
             userLoginInfoService.remove(lambdaQueryWrapper);
             UserLoginInfo userLoginInfo = new UserLoginInfo();
