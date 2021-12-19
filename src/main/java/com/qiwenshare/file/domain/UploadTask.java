@@ -38,5 +38,5 @@ public class UploadTask {
     private String uploadTime;
 
     @Column(columnDefinition="int(1)")
-    private int uploadStatus;
+    private Integer uploadStatus;
 }

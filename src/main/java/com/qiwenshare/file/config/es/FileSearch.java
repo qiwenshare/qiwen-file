@@ -7,15 +7,15 @@ import org.springframework.data.elasticsearch.annotations.Field;
 import org.springframework.data.elasticsearch.annotations.FieldType;
 
 @Data
-@Document(indexName = "filesearch", shards = 1, replicas = 0)
+@Document(indexName = "filesearch")
 public class FileSearch {
     @Id
     private Long userFileId;
     @Field(type = FieldType.Long)
     private Long fileId;
-    @Field(type = FieldType.Text, analyzer = "ik_max_word")
+    @Field(type = FieldType.Text)
     private String fileName;
-    @Field(type = FieldType.Text, analyzer = "ik_max_word")
+    @Field(type = FieldType.Text)
     private String content;
     @Field(type = FieldType.Keyword)
     private String timeStampName;

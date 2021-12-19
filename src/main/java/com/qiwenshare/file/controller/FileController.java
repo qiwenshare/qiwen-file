@@ -228,7 +228,7 @@ public class FileController {
         userFileLambdaQueryWrapper.eq(UserFile::getUserId, userFile.getUserId())
                 .eq(UserFile::getFilePath, userFile.getFilePath())
                 .eq(UserFile::getDeleteFlag, 0);
-        int total = userFileService.count(userFileLambdaQueryWrapper);
+        long total = userFileService.count(userFileLambdaQueryWrapper);
 
         Map<String, Object> map = new HashMap<>();
         map.put("total", total);
@@ -487,7 +487,8 @@ public class FileController {
         UserBean sessionUserBean = (UserBean) SessionUtil.getSession();
         UserFile userFile = userFileService.getById(updateFileDTO.getUserFileId());
         FileBean fileBean = fileService.getById(userFile.getFileId());
-        if (fileBean.getPointCount() > 1) {
+        Long pointCount = fileService.getFilePointCount(userFile.getFileId());
+        if (pointCount > 1) {
             return RestResult.fail().message("暂不支持修改");
         }
         String content = updateFileDTO.getFileContent();

@@ -117,7 +117,7 @@ public class FiletransferController {
                 //"fileName", "filePath", "extendName", "deleteFlag", "userId"
 
                 userFileService.save(userFile);
-                fileService.increaseFilePointCount(file.getFileId());
+//                fileService.increaseFilePointCount(file.getFileId());
                 fileDealComp.uploadESByUserFileId(userFile.getUserFileId());
             }
 

@@ -4,7 +4,7 @@ import com.qiwenshare.common.exception.NotLoginException;
 import com.qiwenshare.common.result.RestResult;
 import com.qiwenshare.common.result.ResultCodeEnum;
 
-import com.qiwenshare.ufop.exception.UploadException;
+import com.qiwenshare.ufop.exception.operation.UploadException;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.MethodArgumentNotValidException;

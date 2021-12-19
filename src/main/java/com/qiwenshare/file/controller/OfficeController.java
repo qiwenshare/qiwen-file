@@ -103,7 +103,7 @@ public class OfficeController {
             fileBean.setFileSize(0L);
             fileBean.setFileUrl(fileUrl);
             fileBean.setStorageType(storageType);
-            fileBean.setPointCount(1);
+//            fileBean.setPointCount(1);
             fileBean.setIdentifier(uuid);
             fileBean.setCreateTime(DateUtil.getCurrentTime());
             fileBean.setCreateUserId(loginUser.getUserId());
@@ -238,7 +238,8 @@ public class OfficeController {
                 String userFileId = request.getParameter("userFileId");
                 UserFile userFile = userFileService.getById(userFileId);
                 FileBean fileBean = fileService.getById(userFile.getFileId());
-                if (fileBean.getPointCount() > 1) {
+                Long pointCount = fileService.getFilePointCount(userFile.getFileId());
+                if (pointCount > 1) {
                     //该场景，暂不支持编辑修改
                     writer.write("{\"error\":1}");
                     return ;

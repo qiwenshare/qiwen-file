@@ -1,5 +1,6 @@
 package com.qiwenshare.file.service;
 
+import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.qiwenshare.common.operation.FileOperation;
 import com.qiwenshare.common.util.DateUtil;
@@ -52,22 +53,30 @@ public class FileService extends ServiceImpl<FileMapper, FileBean> implements IF
     @Resource
     FileDealComp fileDealComp;
 
-    @Override
-    public void increaseFilePointCount(Long fileId) {
-        FileBean fileBean = fileMapper.selectById(fileId);
-        if (fileBean == null) {
-            log.error("文件不存在，fileId : {}", fileId );
-            return;
-        }
-        fileBean.setPointCount(fileBean.getPointCount()+1);
-        fileMapper.updateById(fileBean);
-    }
+//    @Override
+//    public void increaseFilePointCount(Long fileId) {
+//        FileBean fileBean = fileMapper.selectById(fileId);
+//        if (fileBean == null) {
+//            log.error("文件不存在，fileId : {}", fileId );
+//            return;
+//        }
+//        fileBean.setPointCount(fileBean.getPointCount()+1);
+//        fileMapper.updateById(fileBean);
+//    }
+//
+//    @Override
+//    public void decreaseFilePointCount(Long fileId) {
+//        FileBean fileBean = fileMapper.selectById(fileId);
+//        fileBean.setPointCount(fileBean.getPointCount()-1);
+//        fileMapper.updateById(fileBean);
+//    }
 
     @Override
-    public void decreaseFilePointCount(Long fileId) {
-        FileBean fileBean = fileMapper.selectById(fileId);
-        fileBean.setPointCount(fileBean.getPointCount()-1);
-        fileMapper.updateById(fileBean);
+    public Long getFilePointCount(Long fileId) {
+        LambdaQueryWrapper<UserFile> lambdaQueryWrapper = new LambdaQueryWrapper<>();
+        lambdaQueryWrapper.eq(UserFile::getFileId, fileId);
+        long count = userFileMapper.selectCount(lambdaQueryWrapper);
+        return count;
     }
 
     @Override
@@ -145,7 +154,7 @@ public class FileService extends ServiceImpl<FileMapper, FileBean> implements IF
 
                         List<FileBean> list = fileMapper.selectByMap(param);
                         if (list != null && !list.isEmpty()) { //文件已存在
-                            increaseFilePointCount(list.get(0).getFileId());
+//                            increaseFilePointCount(list.get(0).getFileId());
                             saveUserFile.setFileId(list.get(0).getFileId());
                         } else { //文件不存在
                             fileInputStream1 = new FileInputStream(currentFile);
@@ -154,7 +163,7 @@ public class FileService extends ServiceImpl<FileMapper, FileBean> implements IF
                             String saveFileUrl = ufopFactory.getCopier().copy(fileInputStream1, createFile);
                             tempFileBean.setFileSize(currentFile.length());
                             tempFileBean.setFileUrl(saveFileUrl);
-                            tempFileBean.setPointCount(1);
+//                            tempFileBean.setPointCount(1);
                             tempFileBean.setStorageType(storageType);
                             tempFileBean.setIdentifier(md5Str);
                             fileMapper.insert(tempFileBean);

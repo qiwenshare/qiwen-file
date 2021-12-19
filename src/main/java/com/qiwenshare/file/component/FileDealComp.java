@@ -46,8 +46,9 @@ public class FileDealComp {
     @Resource
     IUserFileService userFileService;
 
-    @Autowired
+    @Resource
     private IElasticSearchService elasticSearchService;
+
     public static Executor exec = Executors.newFixedThreadPool(10);
 
     /**

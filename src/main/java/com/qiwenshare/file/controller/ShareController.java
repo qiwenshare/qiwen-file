@@ -133,11 +133,11 @@ public class ShareController {
                     saveUserFileList.add(p);
                     log.info("当前文件：" + JSON.toJSONString(p));
                     if (p.getIsDir() == 0) {
-                        fileService.increaseFilePointCount(p.getFileId());
+//                        fileService.increaseFilePointCount(p.getFileId());
                     }
                 });
             } else {
-                fileService.increaseFilePointCount(userFile.getFileId());
+//                fileService.increaseFilePointCount(userFile.getFileId());
             }
             userFile.setUserFileId(null);
             userFile.setUserId(userId);

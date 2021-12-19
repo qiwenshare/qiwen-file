@@ -42,20 +42,7 @@ public class RecoveryFileService  extends ServiceImpl<RecoveryFileMapper, Recove
             return ;
 
         }
-        if (userFile.getIsDir() == 1) {
-            updateFilePointCountByBatchNum(userFile.getDeleteBatchNum());
 
-        }else{
-
-            UserFile userFileTemp = userFileMapper.selectById(userFile.getUserFileId());
-            FileBean fileBean = fileMapper.selectById(userFileTemp.getFileId());
-
-            LambdaUpdateWrapper<FileBean> fileBeanLambdaUpdateWrapper = new LambdaUpdateWrapper<>();
-            fileBeanLambdaUpdateWrapper.set(FileBean::getPointCount, fileBean.getPointCount() -1)
-                    .eq(FileBean::getFileId, fileBean.getFileId());
-
-            fileMapper.update(null, fileBeanLambdaUpdateWrapper);
-        }
         LambdaQueryWrapper<UserFile> userFileLambdaQueryWrapper = new LambdaQueryWrapper<>();
         userFileLambdaQueryWrapper.eq(UserFile::getDeleteBatchNum, userFile.getDeleteBatchNum());
         userFileMapper.delete(userFileLambdaQueryWrapper);
@@ -90,34 +77,34 @@ public class RecoveryFileService  extends ServiceImpl<RecoveryFileMapper, Recove
 
 
 
-    private void updateFilePointCountByBatchNum(String deleteBatchNum) {
-        LambdaQueryWrapper<UserFile> lambdaQueryWrapper = new LambdaQueryWrapper<>();
-        lambdaQueryWrapper.eq(UserFile::getDeleteBatchNum, deleteBatchNum);
-        List<UserFile> fileList = userFileMapper.selectList(lambdaQueryWrapper);
-
-        new Thread(()->{
-            for (int i = 0; i < fileList.size(); i++){
-                UserFile userFileTemp = fileList.get(i);
-                executor.execute(new Runnable() {
-                    @Override
-                    public void run() {
-                        if (userFileTemp.getIsDir() != 1){
-                            FileBean fileBean = fileMapper.selectById(userFileTemp.getFileId());
-                            if (fileBean.getPointCount() != null) {
-
-                                LambdaUpdateWrapper<FileBean> fileBeanLambdaUpdateWrapper = new LambdaUpdateWrapper<>();
-                                fileBeanLambdaUpdateWrapper.set(FileBean::getPointCount, fileBean.getPointCount() -1)
-                                        .eq(FileBean::getFileId, fileBean.getFileId());
-                                fileMapper.update(null, fileBeanLambdaUpdateWrapper);
-
-                            }
-                        }
-                    }
-                });
-
-            }
-        }).start();
-    }
+//    private void updateFilePointCountByBatchNum(String deleteBatchNum) {
+//        LambdaQueryWrapper<UserFile> lambdaQueryWrapper = new LambdaQueryWrapper<>();
+//        lambdaQueryWrapper.eq(UserFile::getDeleteBatchNum, deleteBatchNum);
+//        List<UserFile> fileList = userFileMapper.selectList(lambdaQueryWrapper);
+//
+//        new Thread(()->{
+//            for (int i = 0; i < fileList.size(); i++){
+//                UserFile userFileTemp = fileList.get(i);
+//                executor.execute(new Runnable() {
+//                    @Override
+//                    public void run() {
+//                        if (userFileTemp.getIsDir() != 1){
+//                            FileBean fileBean = fileMapper.selectById(userFileTemp.getFileId());
+//                            if (fileBean.getPointCount() != null) {
+//
+//                                LambdaUpdateWrapper<FileBean> fileBeanLambdaUpdateWrapper = new LambdaUpdateWrapper<>();
+//                                fileBeanLambdaUpdateWrapper.set(FileBean::getPointCount, fileBean.getPointCount() -1)
+//                                        .eq(FileBean::getFileId, fileBean.getFileId());
+//                                fileMapper.update(null, fileBeanLambdaUpdateWrapper);
+//
+//                            }
+//                        }
+//                    }
+//                });
+//
+//            }
+//        }).start();
+//    }
     @Override
     public List<RecoveryFileListVo> selectRecoveryFileList(Long userId) {
         return recoveryFileMapper.selectRecoveryFileList(userId);

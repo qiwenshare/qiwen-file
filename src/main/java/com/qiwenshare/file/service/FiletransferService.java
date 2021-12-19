@@ -8,14 +8,14 @@ import com.qiwenshare.file.api.IFiletransferService;
 import com.qiwenshare.file.component.FileDealComp;
 import com.qiwenshare.file.domain.*;
 import com.qiwenshare.file.dto.file.DownloadFileDTO;
-import com.qiwenshare.file.dto.file.UploadFileDTO;
 import com.qiwenshare.file.dto.file.PreviewDTO;
+import com.qiwenshare.file.dto.file.UploadFileDTO;
 import com.qiwenshare.file.mapper.*;
 import com.qiwenshare.file.vo.file.FileListVo;
 import com.qiwenshare.ufop.constant.StorageTypeEnum;
 import com.qiwenshare.ufop.constant.UploadFileStatusEnum;
-import com.qiwenshare.ufop.exception.DownloadException;
-import com.qiwenshare.ufop.exception.UploadException;
+import com.qiwenshare.ufop.exception.operation.DownloadException;
+import com.qiwenshare.ufop.exception.operation.UploadException;
 import com.qiwenshare.ufop.factory.UFOPFactory;
 import com.qiwenshare.ufop.operation.delete.Deleter;
 import com.qiwenshare.ufop.operation.delete.domain.DeleteFile;
@@ -32,7 +32,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import javax.annotation.Resource;
-import javax.imageio.ImageIO;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.awt.image.BufferedImage;
@@ -95,7 +94,7 @@ public class FiletransferService implements IFiletransferService {
                 fileBean.setFileUrl(uploadFileResult.getFileUrl());
                 fileBean.setFileSize(uploadFileResult.getFileSize());
                 fileBean.setStorageType(uploadFileResult.getStorageType().getCode());
-                fileBean.setPointCount(1);
+//                fileBean.setPointCount(1);
                 fileBean.setFileStatus(1);
                 fileBean.setCreateTime(DateUtil.getCurrentTime());
                 fileBean.setCreateUserId(userId);
@@ -136,16 +135,7 @@ public class FiletransferService implements IFiletransferService {
                         .eq(UploadTask::getIdentifier, uploadFileDto.getIdentifier());
                 uploadTaskMapper.update(null, lambdaUpdateWrapper);
                 if (UFOPUtils.isImageFile(uploadFileResult.getExtendName())) {
-                    Downloader downloader = ufopFactory.getDownloader(uploadFileResult.getStorageType().getCode());
-                    DownloadFile downloadFile = new DownloadFile();
-                    downloadFile.setFileUrl(uploadFileResult.getFileUrl());
-                    InputStream is = downloader.getInputStream(downloadFile);
-                    BufferedImage src = null;
-                    try {
-                        src = ImageIO.read(is);
-                    } catch (IOException e) {
-                        e.printStackTrace();
-                    }
+                    BufferedImage src = uploadFileResult.getBufferedImage();
                     Image image = new Image();
                     image.setImageWidth(src.getWidth());
                     image.setImageHeight(src.getHeight());

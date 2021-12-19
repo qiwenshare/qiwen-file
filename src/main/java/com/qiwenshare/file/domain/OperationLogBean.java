@@ -28,7 +28,7 @@ public class OperationLogBean {
     /**
      * 用户id
      */
-    private long userId;
+    private Long userId;
 
     /**
      * 操作
