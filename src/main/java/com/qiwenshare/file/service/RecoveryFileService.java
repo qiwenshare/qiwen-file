@@ -37,14 +37,11 @@ public class RecoveryFileService  extends ServiceImpl<RecoveryFileMapper, Recove
     public static Executor executor = Executors.newFixedThreadPool(20);
 
     @Override
-    public void deleteRecoveryFile(UserFile userFile) {
-        if (userFile == null) {
-            return ;
+    public void deleteUserFileByDeleteBatchNum(String deleteBatchNum) {
 
-        }
 
         LambdaQueryWrapper<UserFile> userFileLambdaQueryWrapper = new LambdaQueryWrapper<>();
-        userFileLambdaQueryWrapper.eq(UserFile::getDeleteBatchNum, userFile.getDeleteBatchNum());
+        userFileLambdaQueryWrapper.eq(UserFile::getDeleteBatchNum, deleteBatchNum);
         userFileMapper.delete(userFileLambdaQueryWrapper);
 
 

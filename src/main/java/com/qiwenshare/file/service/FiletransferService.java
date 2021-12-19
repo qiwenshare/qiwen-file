@@ -94,7 +94,6 @@ public class FiletransferService implements IFiletransferService {
                 fileBean.setFileUrl(uploadFileResult.getFileUrl());
                 fileBean.setFileSize(uploadFileResult.getFileSize());
                 fileBean.setStorageType(uploadFileResult.getStorageType().getCode());
-//                fileBean.setPointCount(1);
                 fileBean.setFileStatus(1);
                 fileBean.setCreateTime(DateUtil.getCurrentTime());
                 fileBean.setCreateUserId(userId);
