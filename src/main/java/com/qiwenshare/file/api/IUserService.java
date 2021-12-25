@@ -2,11 +2,15 @@ package com.qiwenshare.file.api;
 
 import com.baomidou.mybatisplus.extension.service.IService;
 import com.qiwenshare.common.result.RestResult;
+import com.qiwenshare.file.domain.Role;
 import com.qiwenshare.file.domain.UserBean;
+
+import java.util.List;
 
 public interface IUserService extends IService<UserBean> {
 
-    UserBean getUserBeanByToken(String token);
+
+    Long getUserIdByToken(String token);
 
     UserBean selectUserByopenid(String openid);
 
@@ -21,6 +25,10 @@ public interface IUserService extends IService<UserBean> {
 
 
     UserBean findUserInfoByTelephone(String telephone);
+    List<Role> selectRoleListByUserId(long userId);
+    String getSaltByTelephone(String telephone);
+    UserBean selectUserByTelephoneAndPassword(String username, String password);
+
 
 
 

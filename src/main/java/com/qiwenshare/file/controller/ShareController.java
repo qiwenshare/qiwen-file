@@ -5,16 +5,16 @@ import cn.hutool.core.util.RandomUtil;
 import com.alibaba.fastjson.JSON;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.qiwenshare.common.anno.MyLog;
-import com.qiwenshare.common.exception.NotLoginException;
-import com.qiwenshare.common.util.DateUtil;
 import com.qiwenshare.common.result.RestResult;
+import com.qiwenshare.common.util.DateUtil;
 import com.qiwenshare.file.api.*;
 import com.qiwenshare.file.component.FileDealComp;
+import com.qiwenshare.file.config.security.user.JwtUser;
 import com.qiwenshare.file.domain.Share;
 import com.qiwenshare.file.domain.ShareFile;
-import com.qiwenshare.file.domain.UserBean;
 import com.qiwenshare.file.domain.UserFile;
 import com.qiwenshare.file.dto.sharefile.*;
+import com.qiwenshare.file.util.SessionUtil;
 import com.qiwenshare.file.vo.share.ShareFileListVO;
 import com.qiwenshare.file.vo.share.ShareFileVO;
 import com.qiwenshare.file.vo.share.ShareListVO;
@@ -53,12 +53,9 @@ public class ShareController {
     @PostMapping(value = "/sharefile")
     @MyLog(operation = "分享文件", module = CURRENT_MODULE)
     @ResponseBody
-    public RestResult<ShareFileVO> shareFile( @RequestBody ShareFileDTO shareSecretDTO, @RequestHeader("token") String token) {
+    public RestResult<ShareFileVO> shareFile( @RequestBody ShareFileDTO shareSecretDTO) {
         ShareFileVO shareSecretVO = new ShareFileVO();
-        UserBean sessionUserBean = userService.getUserBeanByToken(token);
-        if (sessionUserBean == null) {
-            throw new NotLoginException();
-        }
+        JwtUser sessionUserBean = SessionUtil.getSession();
 
         String uuid = UUID.randomUUID().toString().replace("-", "");
         Share share = new Share();
@@ -109,9 +106,9 @@ public class ShareController {
     @MyLog(operation = "保存分享文件", module = CURRENT_MODULE)
     @Transactional(rollbackFor=Exception.class)
     @ResponseBody
-    public RestResult saveShareFile(@RequestBody SaveShareFileDTO saveShareFileDTO, @RequestHeader("token") String token) {
+    public RestResult saveShareFile(@RequestBody SaveShareFileDTO saveShareFileDTO) {
 
-        UserBean sessionUserBean = userService.getUserBeanByToken(token);
+        JwtUser sessionUserBean = SessionUtil.getSession();
         List<ShareFile> fileList = JSON.parseArray(saveShareFileDTO.getFiles(), ShareFile.class);
         String savefilePath = saveShareFileDTO.getFilePath();
         Long userId = sessionUserBean.getUserId();
@@ -155,11 +152,8 @@ public class ShareController {
     @Operation(summary = "查看已分享列表", description = "查看已分享列表", tags = {"share"})
     @GetMapping(value = "/shareList")
     @ResponseBody
-    public RestResult shareList(ShareListDTO shareListDTO, @RequestHeader("token") String token) {
-        UserBean sessionUserBean = userService.getUserBeanByToken(token);
-        if (sessionUserBean == null) {
-            throw new NotLoginException();
-        }
+    public RestResult shareList(ShareListDTO shareListDTO) {
+        JwtUser sessionUserBean = SessionUtil.getSession();
         List<ShareListVO> shareList = shareService.selectShareList(shareListDTO, sessionUserBean.getUserId());
 
         int total = shareService.selectShareListTotalCount(shareListDTO, sessionUserBean.getUserId());

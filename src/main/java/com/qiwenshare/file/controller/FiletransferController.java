@@ -1,20 +1,20 @@
 package com.qiwenshare.file.controller;
 
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
-import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.qiwenshare.common.anno.MyLog;
-import com.qiwenshare.common.exception.NotLoginException;
 import com.qiwenshare.common.result.RestResult;
 import com.qiwenshare.common.util.DateUtil;
 import com.qiwenshare.common.util.MimeUtils;
 import com.qiwenshare.file.api.*;
 import com.qiwenshare.file.component.FileDealComp;
+import com.qiwenshare.file.config.security.user.JwtUser;
 import com.qiwenshare.file.domain.*;
 import com.qiwenshare.file.dto.file.DownloadFileDTO;
-import com.qiwenshare.file.dto.file.UploadFileDTO;
 import com.qiwenshare.file.dto.file.PreviewDTO;
+import com.qiwenshare.file.dto.file.UploadFileDTO;
 import com.qiwenshare.file.mapper.ImageMapper;
 import com.qiwenshare.file.service.StorageService;
+import com.qiwenshare.file.util.SessionUtil;
 import com.qiwenshare.file.vo.file.FileListVo;
 import com.qiwenshare.file.vo.file.UploadFileVo;
 import com.qiwenshare.ufop.constant.UploadFileStatusEnum;
@@ -75,9 +75,9 @@ public class FiletransferController {
     @RequestMapping(value = "/uploadfile", method = RequestMethod.GET)
     @MyLog(operation = "极速上传", module = CURRENT_MODULE)
     @ResponseBody
-    public RestResult<UploadFileVo> uploadFileSpeed(UploadFileDTO uploadFileDto, @RequestHeader("token") String token) {
+    public RestResult<UploadFileVo> uploadFileSpeed(UploadFileDTO uploadFileDto) {
 
-        UserBean sessionUserBean = userService.getUserBeanByToken(token);
+        JwtUser sessionUserBean = SessionUtil.getSession();
 
         boolean isCheckSuccess = storageService.checkStorage(sessionUserBean.getUserId(), uploadFileDto.getTotalSize());
         if (!isCheckSuccess) {
@@ -162,12 +162,9 @@ public class FiletransferController {
     @RequestMapping(value = "/uploadfile", method = RequestMethod.POST)
     @MyLog(operation = "上传文件", module = CURRENT_MODULE)
     @ResponseBody
-    public RestResult<UploadFileVo> uploadFile(HttpServletRequest request, UploadFileDTO uploadFileDto, @RequestHeader("token") String token) {
+    public RestResult<UploadFileVo> uploadFile(HttpServletRequest request, UploadFileDTO uploadFileDto) {
 
-        UserBean sessionUserBean = userService.getUserBeanByToken(token);
-        if (sessionUserBean == null) {
-            throw new NotLoginException();
-        }
+        JwtUser sessionUserBean = SessionUtil.getSession();
 
         filetransferService.uploadFile(request, uploadFileDto, sessionUserBean.getUserId());
 
@@ -277,12 +274,9 @@ public class FiletransferController {
     @Operation(summary = "获取存储信息", description = "获取存储信息", tags = {"filetransfer"})
     @RequestMapping(value = "/getstorage", method = RequestMethod.GET)
     @ResponseBody
-    public RestResult<StorageBean> getStorage(@RequestHeader("token") String token) {
+    public RestResult<StorageBean> getStorage() {
 
-        UserBean sessionUserBean = userService.getUserBeanByToken(token);
-        if (sessionUserBean == null) {
-            throw new NotLoginException();
-        }
+        JwtUser sessionUserBean = SessionUtil.getSession();
         StorageBean storageBean = new StorageBean();
 
         storageBean.setUserId(sessionUserBean.getUserId());

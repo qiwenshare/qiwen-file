@@ -10,18 +10,22 @@ import com.qiwenshare.common.util.DateUtil;
 import com.qiwenshare.file.api.IFileService;
 import com.qiwenshare.file.api.IUserFileService;
 import com.qiwenshare.file.api.IUserService;
-import com.qiwenshare.file.domain.*;
+import com.qiwenshare.file.config.security.user.JwtUser;
+import com.qiwenshare.file.domain.FileBean;
+import com.qiwenshare.file.domain.FileModel;
+import com.qiwenshare.file.domain.UserBean;
+import com.qiwenshare.file.domain.UserFile;
 import com.qiwenshare.file.dto.file.CreateOfficeFileDTO;
 import com.qiwenshare.file.dto.file.EditOfficeFileDTO;
 import com.qiwenshare.file.dto.file.PreviewOfficeFileDTO;
 import com.qiwenshare.file.helper.ConfigManager;
+import com.qiwenshare.file.util.SessionUtil;
 import com.qiwenshare.ufop.factory.UFOPFactory;
 import com.qiwenshare.ufop.operation.copy.Copier;
 import com.qiwenshare.ufop.operation.copy.domain.CopyFile;
 import com.qiwenshare.ufop.operation.download.domain.DownloadFile;
 import com.qiwenshare.ufop.operation.write.Writer;
 import com.qiwenshare.ufop.operation.write.domain.WriteFile;
-import com.qiwenshare.ufop.util.UFOPUtils;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.extern.slf4j.Slf4j;
@@ -32,10 +36,12 @@ import org.springframework.web.bind.annotation.*;
 import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-import java.io.*;
-import java.net.*;
-import java.text.SimpleDateFormat;
-import java.util.Date;
+import java.io.FileInputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.PrintWriter;
+import java.net.HttpURLConnection;
+import java.net.URL;
 import java.util.List;
 import java.util.Scanner;
 import java.util.UUID;
@@ -67,14 +73,11 @@ public class OfficeController {
     @Operation(summary = "创建office文件", description = "创建office文件", tags = {"office"})
     @ResponseBody
     @RequestMapping(value = "/createofficefile", method = RequestMethod.POST)
-    public RestResult<Object> createOfficeFile(@RequestBody CreateOfficeFileDTO createOfficeFileDTO, @RequestHeader("token") String token) {
+    public RestResult<Object> createOfficeFile(@RequestBody CreateOfficeFileDTO createOfficeFileDTO) {
         RestResult<Object> result = new RestResult<>();
         try{
 
-            UserBean loginUser = userService.getUserBeanByToken(token);
-            if (loginUser == null) {
-                throw new NotLoginException();
-            }
+            JwtUser loginUser = SessionUtil.getSession();
             String fileName = createOfficeFileDTO.getFileName();
             String filePath = createOfficeFileDTO.getFilePath();
             String extendName = createOfficeFileDTO.getExtendName();
@@ -138,10 +141,7 @@ public class OfficeController {
         RestResult<Object> result = new RestResult<>();
         try {
 
-            UserBean loginUser = userService.getUserBeanByToken(token);
-            if (loginUser == null) {
-                throw new NotLoginException();
-            }
+            JwtUser loginUser = SessionUtil.getSession();
             UserFile userFile = userFileService.getById(previewOfficeFileDTO.getUserFileId());
 
             String baseUrl = request.getScheme()+"://"+ deploymentHost + ":" + port + request.getContextPath();
@@ -177,10 +177,7 @@ public class OfficeController {
         log.info("editOfficeFile");
         try {
 
-            UserBean loginUser = userService.getUserBeanByToken(token);
-            if (loginUser == null) {
-                throw new NotLoginException();
-            }
+            JwtUser loginUser = SessionUtil.getSession();
             UserFile userFile = userFileService.getById(editOfficeFileDTO.getUserFileId());
 
             String baseUrl = request.getScheme()+"://"+ deploymentHost + ":" + port + request.getContextPath();
@@ -218,8 +215,8 @@ public class OfficeController {
     @ResponseBody
     public void IndexServlet(HttpServletResponse response, HttpServletRequest request) throws IOException {
         String token = request.getParameter("token");
-        UserBean loginUser = userService.getUserBeanByToken(token);
-        if (loginUser == null) {
+        Long userId = userService.getUserIdByToken(token);
+        if (userId == null) {
             throw new NotLoginException();
         }
 
@@ -280,7 +277,7 @@ public class OfficeController {
                             .set(FileBean::getIdentifier, md5Str)
                             .set(FileBean::getFileSize, Long.valueOf(fileLength))
                             .set(FileBean::getModifyTime, DateUtil.getCurrentTime())
-                            .set(FileBean::getModifyUserId, loginUser.getUserId())
+                            .set(FileBean::getModifyUserId, userId)
                             .eq(FileBean::getFileId, fileBean.getFileId());
                     fileService.update(lambdaUpdateWrapper);
 

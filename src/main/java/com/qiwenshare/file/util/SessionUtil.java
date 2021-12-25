@@ -1,20 +1,35 @@
 package com.qiwenshare.file.util;
 
-import java.util.HashMap;
-import java.util.Map;
+import com.qiwenshare.file.config.security.user.JwtUser;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
+
+import java.security.Principal;
 
 public class SessionUtil {
-    private static ThreadLocal<Map<String, Object>> resource = new InheritableThreadLocal<>();
-    public static void setSession(Object o) {
-        Map<String, Object> map = new HashMap<>();
-        map.put("session", o);
-        resource.set(map);
+
+    public static JwtUser getSession() {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        Object principal = authentication.getPrincipal();
+        if (principal instanceof String) {
+            String userName = (String) principal;
+            if ("anonymousUser".equals(userName)) {
+                JwtUser userBean = new JwtUser();
+                userBean.setUsername(userName);
+                userBean.setUserId(0L);
+                return userBean;
+            }
+        }
+        JwtUser userBean = (JwtUser) authentication.getPrincipal();
+        return userBean;
     }
-    public static Object getSession(){
-        Map<String, Object> map = resource.get();
-        if (map == null) {
+
+    public static JwtUser getSession(Principal principal) {
+        if (principal == null) {
             return null;
         }
-        return map.get("session");
+        JwtUser userBean = (JwtUser) ((UsernamePasswordAuthenticationToken) principal).getPrincipal();
+        return userBean;
     }
 }

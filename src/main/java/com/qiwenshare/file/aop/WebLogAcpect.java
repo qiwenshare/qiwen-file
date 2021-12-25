@@ -82,14 +82,14 @@ public class WebLogAcpect {
         if (ret instanceof RestResult) {
             boolean isSuccess = ((RestResult) ret).getSuccess();
             String errorMessage = ((RestResult) ret).getMessage();
-            UserBean sessionUserBean = userService.getUserBeanByToken(token);
+            Long userId = userService.getUserIdByToken(token);
             if (isSuccess) {
 
                 operationLogService.insertOperationLog(
-                        OperationLogUtil.getOperationLogObj(request,sessionUserBean, "成功", module, operation, "操作成功"));
+                        OperationLogUtil.getOperationLogObj(request, userId, "成功", module, operation, "操作成功"));
             } else {
                 operationLogService.insertOperationLog(
-                        OperationLogUtil.getOperationLogObj(request,sessionUserBean, "失败", module, operation, errorMessage));
+                        OperationLogUtil.getOperationLogObj(request, userId, "失败", module, operation, errorMessage));
             }
         }
 

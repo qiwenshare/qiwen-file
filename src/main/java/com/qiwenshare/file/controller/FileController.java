@@ -5,7 +5,6 @@ import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.qiwenshare.common.anno.MyLog;
-import com.qiwenshare.common.exception.NotLoginException;
 import com.qiwenshare.common.result.RestResult;
 import com.qiwenshare.common.util.DateUtil;
 import com.qiwenshare.file.advice.QiwenException;
@@ -14,9 +13,9 @@ import com.qiwenshare.file.api.IUserFileService;
 import com.qiwenshare.file.api.IUserService;
 import com.qiwenshare.file.component.FileDealComp;
 import com.qiwenshare.file.config.es.FileSearch;
+import com.qiwenshare.file.config.security.user.JwtUser;
 import com.qiwenshare.file.domain.FileBean;
 import com.qiwenshare.file.domain.TreeNode;
-import com.qiwenshare.file.domain.UserBean;
 import com.qiwenshare.file.domain.UserFile;
 import com.qiwenshare.file.dto.file.*;
 import com.qiwenshare.file.util.SessionUtil;
@@ -81,7 +80,7 @@ public class FileController {
     @ResponseBody
     public RestResult<String> createFile(@Valid @RequestBody CreateFileDTO createFileDto) {
 
-        UserBean sessionUserBean = (UserBean) SessionUtil.getSession();
+        JwtUser sessionUserBean = SessionUtil.getSession();
 
         boolean isDirExist = userFileService.isDirExist(createFileDto.getFileName(), createFileDto.getFilePath(), sessionUserBean.getUserId());
 
@@ -107,7 +106,7 @@ public class FileController {
     @MyLog(operation = "文件搜索", module = CURRENT_MODULE)
     @ResponseBody
     public RestResult<SearchHits<FileSearch>> searchFile(SearchFileDTO searchFileDTO) {
-        UserBean sessionUserBean = (UserBean) SessionUtil.getSession();
+        JwtUser sessionUserBean =  SessionUtil.getSession();
         NativeSearchQueryBuilder queryBuilder = new NativeSearchQueryBuilder();
         HighlightBuilder.Field allHighLight = new HighlightBuilder.Field("*").preTags("<span class='keyword'>")
                 .postTags("</span>");
@@ -165,10 +164,7 @@ public class FileController {
     @ResponseBody
     public RestResult<String> renameFile(@RequestBody RenameFileDTO renameFileDto) {
 
-        UserBean sessionUserBean = (UserBean) SessionUtil.getSession();
-        if (sessionUserBean == null) {
-            throw new NotLoginException();
-        }
+        JwtUser sessionUserBean =  SessionUtil.getSession();
         UserFile userFile = userFileService.getById(renameFileDto.getUserFileId());
 
         List<UserFile> userFiles = userFileService.selectUserFileByNameAndPath(renameFileDto.getFileName(), userFile.getFilePath(), sessionUserBean.getUserId());
@@ -202,10 +198,7 @@ public class FileController {
             @Parameter(description = "页面数量", required = true) long pageCount){
 
         UserFile userFile = new UserFile();
-        UserBean sessionUserBean = (UserBean) SessionUtil.getSession();
-        if (sessionUserBean == null) {
-            throw new NotLoginException();
-        }
+        JwtUser sessionUserBean =  SessionUtil.getSession();
         if (userFile == null) {
             return RestResult.fail();
 
@@ -245,10 +238,7 @@ public class FileController {
     @ResponseBody
     public RestResult<String> deleteImageByIds(@RequestBody BatchDeleteFileDTO batchDeleteFileDto) {
 
-        UserBean sessionUserBean = (UserBean) SessionUtil.getSession();
-        if (sessionUserBean == null) {
-            throw new NotLoginException();
-        }
+        JwtUser sessionUserBean =  SessionUtil.getSession();
         List<UserFile> userFiles = JSON.parseArray(batchDeleteFileDto.getFiles(), UserFile.class);
         DigestUtils.md5Hex("data");
         for (UserFile userFile : userFiles) {
@@ -266,10 +256,7 @@ public class FileController {
     @ResponseBody
     public RestResult deleteFile(@RequestBody DeleteFileDTO deleteFileDto) {
 
-        UserBean sessionUserBean = (UserBean) SessionUtil.getSession();
-        if (sessionUserBean == null) {
-            throw new NotLoginException();
-        }
+        JwtUser sessionUserBean =  SessionUtil.getSession();
         userFileService.deleteUserFile(deleteFileDto.getUserFileId(), sessionUserBean.getUserId());
         fileDealComp.deleteESByUserFileId(deleteFileDto.getUserFileId());
 
@@ -283,10 +270,8 @@ public class FileController {
     @ResponseBody
     public RestResult<String> unzipFile(@RequestBody UnzipFileDTO unzipFileDto) {
 
-        UserBean sessionUserBean = (UserBean) SessionUtil.getSession();
-        if (sessionUserBean == null) {
-            throw new NotLoginException();
-        }
+        JwtUser sessionUserBean =  SessionUtil.getSession();
+
         try {
             fileService.unzipFile(unzipFileDto.getUserFileId(), unzipFileDto.getUnzipMode(), unzipFileDto.getFilePath());
         } catch (QiwenException e) {
@@ -303,10 +288,8 @@ public class FileController {
     @ResponseBody
     public RestResult<String> copyFile(@RequestBody CopyFileDTO copyFileDTO) {
 
-        UserBean sessionUserBean = (UserBean) SessionUtil.getSession();
-        if (sessionUserBean == null) {
-            throw new NotLoginException();
-        }
+        JwtUser sessionUserBean =  SessionUtil.getSession();
+
         long userFileId = copyFileDTO.getUserFileId();
         UserFile userFile = userFileService.getById(userFileId);
         String oldfilePath = userFile.getFilePath();
@@ -331,10 +314,8 @@ public class FileController {
     @ResponseBody
     public RestResult<String> moveFile(@RequestBody MoveFileDTO moveFileDto) {
 
-        UserBean sessionUserBean = (UserBean) SessionUtil.getSession();
-        if (sessionUserBean == null) {
-            throw new NotLoginException();
-        }
+        JwtUser sessionUserBean =  SessionUtil.getSession();
+
         String oldfilePath = moveFileDto.getOldFilePath();
         String newfilePath = moveFileDto.getFilePath();
         String fileName = moveFileDto.getFileName();
@@ -357,10 +338,8 @@ public class FileController {
     @ResponseBody
     public RestResult<String> batchMoveFile(@RequestBody BatchMoveFileDTO batchMoveFileDto) {
 
-        UserBean sessionUserBean = (UserBean) SessionUtil.getSession();
-        if (sessionUserBean == null) {
-            throw new NotLoginException();
-        }
+        JwtUser sessionUserBean =  SessionUtil.getSession();
+
         String files = batchMoveFileDto.getFiles();
         String newfilePath = batchMoveFileDto.getFilePath();
 
@@ -391,10 +370,8 @@ public class FileController {
                                                                       @Parameter(description = "当前页", required = true) @RequestParam(defaultValue = "1") long currentPage,
                                                                       @Parameter(description = "页面数量", required = true) @RequestParam(defaultValue = "10") long pageCount) {
 
-        UserBean sessionUserBean = (UserBean) SessionUtil.getSession();
-        if (sessionUserBean == null) {
-            throw new NotLoginException();
-        }
+        JwtUser sessionUserBean =  SessionUtil.getSession();
+
         long userId = sessionUserBean.getUserId();
 
         IPage<FileListVo> result = userFileService.getFileByFileType(fileType, currentPage, pageCount, userId);
@@ -411,10 +388,7 @@ public class FileController {
     public RestResult<TreeNode> getFileTree() {
         RestResult<TreeNode> result = new RestResult<TreeNode>();
 
-        UserBean sessionUserBean = (UserBean) SessionUtil.getSession();
-        if (sessionUserBean == null) {
-            throw new NotLoginException();
-        }
+        JwtUser sessionUserBean =  SessionUtil.getSession();
 
         List<UserFile> userFileList = userFileService.selectFilePathTreeByUserId(sessionUserBean.getUserId());
         TreeNode resultTreeNode = new TreeNode();
@@ -460,7 +434,7 @@ public class FileController {
     @RequestMapping(value = "/update", method = RequestMethod.POST)
     @ResponseBody
     public RestResult<String> updateFile(@RequestBody UpdateFileDTO updateFileDTO) {
-        UserBean sessionUserBean = (UserBean) SessionUtil.getSession();
+        JwtUser sessionUserBean =  SessionUtil.getSession();
         UserFile userFile = userFileService.getById(updateFileDTO.getUserFileId());
         FileBean fileBean = fileService.getById(userFile.getFileId());
         Long pointCount = fileService.getFilePointCount(userFile.getFileId());

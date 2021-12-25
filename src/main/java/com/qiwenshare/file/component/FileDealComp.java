@@ -307,14 +307,14 @@ public class FileDealComp {
         log.debug(JSON.toJSONString(userFile));
         if ("undefined".equals(shareBatchNum)  || StringUtils.isEmpty(shareBatchNum)) {
 
-            UserBean sessionUserBean = userService.getUserBeanByToken(token);
-            log.debug(JSON.toJSONString("当前登录session用户：" + sessionUserBean));
-            if (sessionUserBean == null) {
+            Long userId = userService.getUserIdByToken(token);
+            log.debug(JSON.toJSONString("当前登录session用户id：" + userId));
+            if (userId == null) {
                 return false;
             }
             log.debug("文件所属用户id：" + userFile.getUserId());
-            log.debug("登录用户id:" + sessionUserBean.getUserId());
-            if (userFile.getUserId().longValue() != sessionUserBean.getUserId().longValue()) {
+            log.debug("登录用户id:" + userId);
+            if (userFile.getUserId().longValue() != userId) {
                 log.info("用户id不一致，权限校验失败");
                 return false;
             }

@@ -3,16 +3,17 @@ package com.qiwenshare.file.controller;
 import cn.hutool.core.bean.BeanUtil;
 import com.alibaba.fastjson.JSON;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
-import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
 import com.qiwenshare.common.anno.MyLog;
 import com.qiwenshare.common.result.RestResult;
 import com.qiwenshare.common.util.DateUtil;
 import com.qiwenshare.common.util.JjwtUtil;
 import com.qiwenshare.file.api.IUserLoginInfoService;
 import com.qiwenshare.file.api.IUserService;
+import com.qiwenshare.file.config.security.user.JwtUser;
 import com.qiwenshare.file.domain.UserBean;
 import com.qiwenshare.file.domain.UserLoginInfo;
 import com.qiwenshare.file.dto.user.RegisterDTO;
+import com.qiwenshare.file.util.SessionUtil;
 import com.qiwenshare.file.vo.user.UserLoginVo;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
@@ -39,8 +40,6 @@ public class UserController {
     @Resource
     IUserLoginInfoService userLoginInfoService;
 
-
-
     public static Map<String, String> verificationCodeMap = new HashMap<>();
 
 
@@ -65,48 +64,46 @@ public class UserController {
     @ResponseBody
     public RestResult<UserLoginVo> userLogin(
             @Parameter(description = "登录手机号") String telephone,
-            @Parameter(description = "登录密码") String password) {
-        UserBean saveUserBean = userService.findUserInfoByTelephone(telephone);
+            @Parameter(description = "登录密码") String password){
+        RestResult<UserLoginVo> restResult = new RestResult<UserLoginVo>();
+        String salt = userService.getSaltByTelephone(telephone);
+        String hashPassword = new SimpleHash("MD5", password, salt, 1024).toHex();
 
-        if (saveUserBean == null) {
+        UserBean result = userService.selectUserByTelephoneAndPassword(telephone, hashPassword);
+        if (result == null) {
             return RestResult.fail().message("手机号或密码错误！");
         }
-        String jwt = "";
+
+        Map<String, Object> param = new HashMap<>();
+        param.put("userId", result.getUserId());
+        String token = "";
         try {
-            UserBean sessionUserBean = new UserBean();
-            sessionUserBean.setPassword(saveUserBean.getPassword());
-            sessionUserBean.setQqPassword(saveUserBean.getQqPassword());
-            sessionUserBean.setTelephone(saveUserBean.getTelephone());
-            sessionUserBean.setOpenId(saveUserBean.getOpenId());
-            jwt = JjwtUtil.createJWT("qiwenshare", "qiwen", JSON.toJSONString(sessionUserBean));
+            token = JjwtUtil.createJWT("qiwenshare", "qiwen", JSON.toJSONString(param));
         } catch (Exception e) {
             log.info("登录失败：{}", e);
             return RestResult.fail().message("创建token失败！");
         }
-
-        String passwordHash = new SimpleHash("MD5", password, saveUserBean.getSalt(), 1024).toHex();
-        if (passwordHash.equals(saveUserBean.getPassword())) {
-
-            UserLoginVo userLoginVo = new UserLoginVo();
-            BeanUtil.copyProperties(saveUserBean, userLoginVo);
-            userLoginVo.setToken("Bearer " + jwt);
-            return RestResult.success().data(userLoginVo);
-        } else {
-            return RestResult.fail().message("手机号或密码错误！");
+        UserBean sessionUserBean = userService.findUserInfoByTelephone(telephone);
+        if (sessionUserBean.getAvailable() == 0) {
+            return RestResult.fail().message("用户已被禁用");
         }
+        UserLoginVo userLoginVo = new UserLoginVo();
+        BeanUtil.copyProperties(sessionUserBean, userLoginVo);
+        userLoginVo.setToken("Bearer " + token);
+        restResult.setData(userLoginVo);
+        restResult.setSuccess(true);
+        return restResult;
 
     }
+
 
     @Operation(summary = "检查用户登录信息", description = "验证token的有效性", tags = {"user"})
     @GetMapping("/checkuserlogininfo")
     @ResponseBody
-    public RestResult<UserBean> checkUserLoginInfo(@RequestHeader("token") String token) {
+    public RestResult<UserLoginVo> checkUserLoginInfo() {
+        JwtUser sessionUserBean = SessionUtil.getSession();
 
-        if ("undefined".equals(token) || StringUtils.isEmpty(token)) {
-            return RestResult.fail().message("用户暂未登录");
-        }
-        UserBean sessionUserBean = userService.getUserBeanByToken(token);
-        if (sessionUserBean != null) {
+        if (sessionUserBean != null && !"anonymousUser".equals(sessionUserBean.getUsername())) {
             LambdaQueryWrapper<UserLoginInfo> lambdaQueryWrapper = new LambdaQueryWrapper<>();
             lambdaQueryWrapper.eq(UserLoginInfo::getUserId, sessionUserBean.getUserId());
             lambdaQueryWrapper.likeRight(UserLoginInfo::getUserloginDate, DateUtil.getCurrentTime().substring(0, 10));

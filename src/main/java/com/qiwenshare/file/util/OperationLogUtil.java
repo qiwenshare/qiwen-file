@@ -19,14 +19,10 @@ public class OperationLogUtil {
      * @param detail    详细信息
      * @return 操作日志参数
      */
-    public static OperationLogBean getOperationLogObj(HttpServletRequest request, UserBean sessionUserBean, String isSuccess, String source, String operation, String detail) {
+    public static OperationLogBean getOperationLogObj(HttpServletRequest request, Long userId, String isSuccess, String source, String operation, String detail) {
 
 //        UserBean sessionUserBean = (UserBean) SecurityUtils.getSubject().getPrincipal();
         //用户需要登录才能进行的操作，需要记录操作日志
-        long userId = 1;
-        if (sessionUserBean != null) {
-            userId = sessionUserBean.getUserId();
-        }
         OperationLogBean operationLogBean = new OperationLogBean();
         operationLogBean.setUserId(userId);
         operationLogBean.setTime(DateUtil.getCurrentTime());
