@@ -3,6 +3,8 @@ package com.qiwenshare.file.service;
 import cn.hutool.core.util.RandomUtil;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
+import com.baomidou.mybatisplus.core.metadata.IPage;
+import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.qiwenshare.common.constant.FileConstant;
 import com.qiwenshare.common.util.DateUtil;
@@ -10,6 +12,7 @@ import com.qiwenshare.file.api.IUserFileService;
 import com.qiwenshare.file.domain.RecoveryFile;
 import com.qiwenshare.file.domain.UserFile;
 import com.qiwenshare.file.mapper.FileMapper;
+import com.qiwenshare.file.mapper.FileTypeMapper;
 import com.qiwenshare.file.mapper.RecoveryFileMapper;
 import com.qiwenshare.file.mapper.UserFileMapper;
 import com.qiwenshare.file.vo.file.FileListVo;
@@ -18,6 +21,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import javax.annotation.Resource;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 import java.util.concurrent.Executor;
@@ -33,6 +37,8 @@ public class UserFileService  extends ServiceImpl<UserFileMapper, UserFile> impl
     FileMapper fileMapper;
     @Resource
     RecoveryFileMapper recoveryFileMapper;
+    @Resource
+    FileTypeMapper fileTypeMapper;
 
     public static Executor executor = Executors.newFixedThreadPool(20);
 
@@ -116,7 +122,7 @@ public class UserFileService  extends ServiceImpl<UserFileMapper, UserFile> impl
         }
 
         userFileMapper.batchInsertByPathAndName(oldfilePath, newfilePath, fileName, extendName, userId);
-        fileMapper.incPointCountByPathAndName(newfilePath, fileName, extendName, userId);
+
 
         //移动子目录
         oldfilePath = oldfilePath + fileName + "/";
@@ -129,15 +135,21 @@ public class UserFileService  extends ServiceImpl<UserFileMapper, UserFile> impl
 
         if (extendName == null) { //为null说明是目录，则需要移动子目录
             userFileMapper.batchInsertByFilepath(oldfilePath, newfilePath, userId);
-            fileMapper.incPointCountByByFilepath(oldfilePath, userId);
+
         }
 
     }
 
 
     @Override
-    public List<FileListVo> selectFileByExtendName(List<String> fileNameList, Long beginCount, Long pageCount, long userId) {
-        return userFileMapper.selectFileByExtendName(fileNameList, beginCount, pageCount, userId);
+    public IPage<FileListVo> getFileByFileType(Integer fileTypeId, Long currentPage, Long pageCount, long userId) {
+        Page<FileListVo> page = new Page<>(currentPage, pageCount);
+
+        List<String> extendNameList = fileTypeMapper.selectExtendNameByFileType(fileTypeId);
+        if (extendNameList != null && extendNameList.isEmpty()) {
+            return page;
+        }
+        return userFileMapper.selectFileByExtendName(page, extendNameList, userId);
     }
 
     @Override

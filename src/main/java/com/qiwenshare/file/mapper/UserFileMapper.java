@@ -1,6 +1,8 @@
 package com.qiwenshare.file.mapper;
 
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
+import com.baomidou.mybatisplus.core.metadata.IPage;
+import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.qiwenshare.file.domain.FileBean;
 import com.qiwenshare.file.domain.UserBean;
 import com.qiwenshare.file.domain.UserFile;
@@ -27,7 +29,7 @@ public interface UserFileMapper extends BaseMapper<UserFile> {
                                @Param("newFilePath") String newfilePath,
                                @Param("userId") long userId);
 
-    List<FileListVo> selectFileByExtendName(List<String> fileNameList, Long beginCount, Long pageCount, long userId);
+    IPage<FileListVo> selectFileByExtendName(Page<?> page, List<String> fileNameList, long userId);
     Long selectCountByExtendName(List<String> fileNameList, Long beginCount, Long pageCount, long userId);
     List<FileListVo> selectFileNotInExtendNames(List<String> fileNameList, Long beginCount, Long pageCount, long userId);
     Long selectCountNotInExtendNames(List<String> fileNameList, Long beginCount, Long pageCount, long userId);

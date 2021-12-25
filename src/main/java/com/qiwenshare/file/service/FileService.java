@@ -53,23 +53,6 @@ public class FileService extends ServiceImpl<FileMapper, FileBean> implements IF
     @Resource
     FileDealComp fileDealComp;
 
-//    @Override
-//    public void increaseFilePointCount(Long fileId) {
-//        FileBean fileBean = fileMapper.selectById(fileId);
-//        if (fileBean == null) {
-//            log.error("文件不存在，fileId : {}", fileId );
-//            return;
-//        }
-//        fileBean.setPointCount(fileBean.getPointCount()+1);
-//        fileMapper.updateById(fileBean);
-//    }
-//
-//    @Override
-//    public void decreaseFilePointCount(Long fileId) {
-//        FileBean fileBean = fileMapper.selectById(fileId);
-//        fileBean.setPointCount(fileBean.getPointCount()-1);
-//        fileMapper.updateById(fileBean);
-//    }
 
     @Override
     public Long getFilePointCount(Long fileId) {
@@ -154,7 +137,6 @@ public class FileService extends ServiceImpl<FileMapper, FileBean> implements IF
 
                         List<FileBean> list = fileMapper.selectByMap(param);
                         if (list != null && !list.isEmpty()) { //文件已存在
-//                            increaseFilePointCount(list.get(0).getFileId());
                             saveUserFile.setFileId(list.get(0).getFileId());
                         } else { //文件不存在
                             fileInputStream1 = new FileInputStream(currentFile);
@@ -163,7 +145,6 @@ public class FileService extends ServiceImpl<FileMapper, FileBean> implements IF
                             String saveFileUrl = ufopFactory.getCopier().copy(fileInputStream1, createFile);
                             tempFileBean.setFileSize(currentFile.length());
                             tempFileBean.setFileUrl(saveFileUrl);
-//                            tempFileBean.setPointCount(1);
                             tempFileBean.setStorageType(storageType);
                             tempFileBean.setIdentifier(md5Str);
                             fileMapper.insert(tempFileBean);
@@ -211,9 +192,6 @@ public class FileService extends ServiceImpl<FileMapper, FileBean> implements IF
                 saveUserFile.setDeleteFlag(0);
 
                 if (unzipMode == 1) {
-//                     String destFilePath = "/" + userFile.getFilePath() + saveUserFile.getFilePath();
-//                     saveUserFile.setFilePath(destFilePath);
-
                     saveUserFile.setFilePath(UFOPUtils.pathSplitFormat(userFile.getFilePath() + userFile.getFileName() + "/" + entryName.replace(currentFile.getName(), "")).replace("\\", "/"));
                 } else if(unzipMode == 2) {
                     saveUserFile.setFilePath(UFOPUtils.pathSplitFormat(filePath + entryName.replace(currentFile.getName(), "")).replace("\\", "/"));

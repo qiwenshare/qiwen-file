@@ -17,40 +17,5 @@
         </foreach>
     </insert>
     
-    <update id="incPointCountByPathAndName">
-        update file
-        set pointCount = pointCount + 1
-        where fileId in (
-            select fileId from userfile
-            <where>
-                <if test="userId != 0">
-                    and userId = #{userId}
-                </if>
-                <if test="fileName != null">
-                    and fileName = #{fileName}
-                </if>
-                <if test="oldFilePath != null">
-                    and filePath = #{oldFilePath}
-                </if>
-                <if test="extendName != null">
-                    and extendName = #{extendName}
-                </if>
-                and isDir = 0
-            </where>
-        )
-    </update>
-    
-    <update id="incPointCountByByFilepath">
-        update file
-        set pointCount = pointCount + 1
-        where fileId in (
-            select fileId from userfile
-            where
-                filePath like N'${oldFilePath}%'
-                and userId = #{userId}
-                and isDir = 0
-
-        )
-    </update>
 
 </mapper>

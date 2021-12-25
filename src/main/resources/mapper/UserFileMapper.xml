@@ -60,8 +60,13 @@
     <select id="selectFileByExtendName" parameterType="com.qiwenshare.file.domain.UserFile" resultType="com.qiwenshare.file.vo.file.FileListVo">
         select * from userfile
         left join image on userfile.fileId = image.fileId
-        <include refid="selectByExtendName"></include>
-        limit #{beginCount}, #{pageCount}
+        left join file on file.fileId = userfile.fileId
+        where extendName in
+        <foreach collection="fileNameList" open="(" close=")" separator="," item="fileName" >
+            #{fileName}
+        </foreach>
+        and userId = #{userId}
+        and deleteFlag = 0
     </select>
 
     <select id="selectCountByExtendName" parameterType="com.qiwenshare.file.domain.UserFile" resultType="java.lang.Long">

@@ -45,6 +45,8 @@ public class FileDealComp {
     IShareFileService shareFileService;
     @Resource
     IUserFileService userFileService;
+    @Resource
+    UFOPFactory ufopFactory;
 
     @Resource
     private IElasticSearchService elasticSearchService;
@@ -269,7 +271,7 @@ public class FileDealComp {
 //                    readFile.setFileUrl(fileSearch.getFileUrl());
 //                    String content = reader.read(readFile);
 //                    //全文搜索
-//    //                fileSearch.setContent(content);
+//                    fileSearch.setContent(content);
 //
 //                }
                 elasticSearchService.save(fileSearch);

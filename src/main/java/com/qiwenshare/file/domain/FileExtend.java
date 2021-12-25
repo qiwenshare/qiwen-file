@@ -11,17 +11,19 @@ import javax.persistence.*;
  * @author MAC
  * @version 1.0
  * @description: TODO
- * @date 2021/12/23 22:11
+ * @date 2021/12/20 20:16
  */
 @Data
-@Table(name = "filetype")
+@Table(name = "fileextend")
 @Entity
-@TableName("filetype")
-public class FileType {
+@TableName("fileextend")
+public class FileExtend {
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
     @TableId(type = IdType.AUTO)
-    private Integer fileTypeId;
-    private String fileTypeName;
-    private Integer orderNum;
+    private String fileExtendName;
+
+    private String fileExtendDesc;
+
+    private String fileExtendImgUrl;
 }

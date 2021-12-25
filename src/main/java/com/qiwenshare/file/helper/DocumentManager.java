@@ -21,7 +21,7 @@ package com.qiwenshare.file.helper;
 
 
 import com.alibaba.fastjson.JSONObject;
-import com.qiwenshare.file.domain.FileType;
+import com.qiwenshare.file.constant.FileType;
 import org.primeframework.jwt.Signer;
 import org.primeframework.jwt.Verifier;
 import org.primeframework.jwt.domain.JWT;

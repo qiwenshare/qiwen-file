@@ -1,5 +1,6 @@
 package com.qiwenshare.file.api;
 
+import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.service.IService;
 import com.qiwenshare.file.domain.FileBean;
 import com.qiwenshare.file.domain.UserBean;
@@ -18,7 +19,7 @@ public interface IUserFileService extends IService<UserFile> {
     void updateFilepathByFilepath(String oldfilePath, String newfilePath, String fileName, String extendName, long userId);
     void userFileCopy(String oldfilePath, String newfilePath, String fileName, String extendName, long userId);
 
-    List<FileListVo> selectFileByExtendName(List<String> fileNameList, Long beginCount, Long pageCount, long userId);
+    IPage<FileListVo> getFileByFileType(Integer fileTypeId, Long currentPage, Long pageCount, long userId);
     Long selectCountByExtendName(List<String> fileNameList, Long beginCount, Long pageCount, long userId);
     List<FileListVo> selectFileNotInExtendNames(List<String> fileNameList, Long beginCount, Long pageCount, long userId);
     Long selectCountNotInExtendNames(List<String> fileNameList, Long beginCount, Long pageCount, long userId);

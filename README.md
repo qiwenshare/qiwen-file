@@ -74,11 +74,18 @@
 | 存储容量显示      | 可实时显示文件存储占用情况及总存储容量                                                                                                                                                                                                                                                                                                                    |
 
 ## 源码地址
-
+### 前后台项目代码
 | 项目名称     | 源码地址                                                                                     |
 | ------------ | -------------------------------------------------------------------------------------------- |
 | 奇文网盘前端 | [https://gitee.com/qiwen-cloud/qiwen-file-web](https://gitee.com/qiwen-cloud/qiwen-file-web) |
 | 奇文网盘后台 | [https://gitee.com/qiwen-cloud/qiwen-file](https://gitee.com/qiwen-cloud/qiwen-file)         |
+
+### 后台项目依赖
+| 项目名称     | 源码地址                                                                                     |
+| ------------ | -------------------------------------------------------------------------------------------- |
+| 奇文社区统一依赖管理（父pom） | [https://gitee.com/qiwen-cloud/qiwenshare](https://gitee.com/qiwen-cloud/qiwenshare)         |
+| 奇文社区公共模块 | [https://gitee.com/qiwen-cloud/qiwen-common](https://gitee.com/qiwen-cloud/qiwen-common)         |
+| 统一文件操作平台（UFOP） | [https://gitee.com/qiwen-cloud/ufop-spring-boot-starter](https://gitee.com/qiwen-cloud/ufop-spring-boot-starter)         |
 
 ## 网络拓扑图
 

@@ -3,10 +3,10 @@ package com.qiwenshare.file.controller;
 import com.alibaba.fastjson.JSON;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
+import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.qiwenshare.common.anno.MyLog;
 import com.qiwenshare.common.exception.NotLoginException;
 import com.qiwenshare.common.result.RestResult;
-import com.qiwenshare.common.result.ResultCodeEnum;
 import com.qiwenshare.common.util.DateUtil;
 import com.qiwenshare.file.advice.QiwenException;
 import com.qiwenshare.file.api.IFileService;
@@ -18,9 +18,6 @@ import com.qiwenshare.file.domain.FileBean;
 import com.qiwenshare.file.domain.TreeNode;
 import com.qiwenshare.file.domain.UserBean;
 import com.qiwenshare.file.domain.UserFile;
-import com.qiwenshare.file.dto.file.BatchMoveFileDTO;
-import com.qiwenshare.file.dto.file.CopyFileDTO;
-import com.qiwenshare.file.dto.file.MoveFileDTO;
 import com.qiwenshare.file.dto.file.*;
 import com.qiwenshare.file.util.SessionUtil;
 import com.qiwenshare.file.vo.file.FileListVo;
@@ -35,7 +32,9 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.codec.digest.DigestUtils;
 import org.eclipse.jetty.util.StringUtil;
-import org.elasticsearch.index.query.*;
+import org.elasticsearch.index.query.DisMaxQueryBuilder;
+import org.elasticsearch.index.query.QueryBuilder;
+import org.elasticsearch.index.query.QueryBuilders;
 import org.elasticsearch.search.fetch.subphase.highlight.HighlightBuilder;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.PageRequest;
@@ -142,6 +141,7 @@ public class FileController {
 
         QueryBuilder q2 = QueryBuilders.boolQuery()
                 .must(QueryBuilders.wildcardQuery("fileName", "*" + searchFileDTO.getFileName() + "*"))
+                .must(QueryBuilders.wildcardQuery("content", "*" + searchFileDTO.getFileName() + "*"))
                 .must(QueryBuilders.termQuery("userId", sessionUserBean.getUserId())).boost(2f); //模糊匹配
 
         disMaxQueryBuilder.add(q1);
@@ -388,8 +388,8 @@ public class FileController {
     @RequestMapping(value = "/selectfilebyfiletype", method = RequestMethod.GET)
     @ResponseBody
     public RestResult<List<Map<String, Object>>> selectFileByFileType(@Parameter(description = "文件类型", required = true) int fileType,
-                                                                      @Parameter(description = "当前页", required = true) long currentPage,
-                                                                      @Parameter(description = "页面数量", required = true) long pageCount) {
+                                                                      @Parameter(description = "当前页", required = true) @RequestParam(defaultValue = "1") long currentPage,
+                                                                      @Parameter(description = "页面数量", required = true) @RequestParam(defaultValue = "10") long pageCount) {
 
         UserBean sessionUserBean = (UserBean) SessionUtil.getSession();
         if (sessionUserBean == null) {
@@ -397,34 +397,10 @@ public class FileController {
         }
         long userId = sessionUserBean.getUserId();
 
-        List<FileListVo> fileList = new ArrayList<>();
-        Long beginCount = 0L;
-        if (pageCount == 0 || currentPage == 0) {
-            beginCount = 0L;
-            pageCount = 10L;
-        } else {
-            beginCount = (currentPage - 1) * pageCount;
-        }
-
-        Long total = 0L;
-        if (fileType == UFOPUtils.OTHER_TYPE) {
-
-            List<String> arrList = new ArrayList<>();
-            arrList.addAll(Arrays.asList(UFOPUtils.DOC_FILE));
-            arrList.addAll(Arrays.asList(UFOPUtils.IMG_FILE));
-            arrList.addAll(Arrays.asList(UFOPUtils.VIDEO_FILE));
-            arrList.addAll(Arrays.asList(UFOPUtils.MUSIC_FILE));
-
-            fileList = userFileService.selectFileNotInExtendNames(arrList,beginCount, pageCount, userId);
-            total = userFileService.selectCountNotInExtendNames(arrList,beginCount, pageCount, userId);
-        } else {
-            fileList = userFileService.selectFileByExtendName(UFOPUtils.getFileExtendsByType(fileType), beginCount, pageCount,userId);
-            total = userFileService.selectCountByExtendName(UFOPUtils.getFileExtendsByType(fileType), beginCount, pageCount,userId);
-        }
-
+        IPage<FileListVo> result = userFileService.getFileByFileType(fileType, currentPage, pageCount, userId);
         Map<String, Object> map = new HashMap<>();
-        map.put("list",fileList);
-        map.put("total", total);
+        map.put("list", result.getRecords());
+        map.put("total", result.getTotal());
         return RestResult.success().data(map);
 
     }
@@ -512,7 +488,6 @@ public class FileController {
             fileService.updateById(fileBean);
         } catch (Exception e) {
             throw new QiwenException(999999, "修改文件异常");
-//            log.error(e.getMessage());
         } finally {
             try {
                 byteArrayInputStream.close();
