@@ -30,6 +30,7 @@ public class OperationLogUtil {
         operationLogBean.setResult(isSuccess);
         operationLogBean.setOperation(operation);
         operationLogBean.setDetail(detail);
+        operationLogBean.setPlatform(3);
 
         return operationLogBean;
     }
