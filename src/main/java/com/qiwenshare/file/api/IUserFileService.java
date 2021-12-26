@@ -15,14 +15,12 @@ public interface IUserFileService extends IService<UserFile> {
     boolean isDirExist(String fileName, String filePath, long userId);
     List<UserFile> selectSameUserFile(String fileName, String filePath, String extendName, Long userId);
     void replaceUserFilePath(String filePath, String oldFilePath, Long userId);
-    List<FileListVo> userFileList(UserFile userFile, Long beginCount, Long pageCount);
+    IPage<FileListVo> userFileList(String filePath, Long beginCount, Long pageCount);
     void updateFilepathByFilepath(String oldfilePath, String newfilePath, String fileName, String extendName, long userId);
     void userFileCopy(String oldfilePath, String newfilePath, String fileName, String extendName, long userId);
 
     IPage<FileListVo> getFileByFileType(Integer fileTypeId, Long currentPage, Long pageCount, long userId);
-    Long selectCountByExtendName(List<String> fileNameList, Long beginCount, Long pageCount, long userId);
-    List<FileListVo> selectFileNotInExtendNames(List<String> fileNameList, Long beginCount, Long pageCount, long userId);
-    Long selectCountNotInExtendNames(List<String> fileNameList, Long beginCount, Long pageCount, long userId);
+
     List<UserFile> selectFileListLikeRightFilePath(String filePath, long userId);
     List<UserFile> selectFilePathTreeByUserId(Long userId);
     void deleteUserFile(Long userFileId, Long sessionUserId);

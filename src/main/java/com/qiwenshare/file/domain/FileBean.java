@@ -3,6 +3,7 @@ package com.qiwenshare.file.domain;
 import com.baomidou.mybatisplus.annotation.IdType;
 import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableName;
+import com.qiwenshare.common.util.DateUtil;
 import lombok.Data;
 
 import javax.persistence.*;
@@ -50,5 +51,20 @@ public class FileBean {
 
     @Column(columnDefinition="bigint(20)")
     private Long modifyUserId;
+
+    public FileBean(){
+
+    }
+
+    public FileBean(String fileUrl, Long fileSize, Integer storageType, String identifier, Long userId) {
+        this.fileUrl = fileUrl;
+        this.fileSize = fileSize;
+        this.fileStatus = 1;
+        this.storageType = storageType;
+        this.identifier = identifier;
+        this.createTime = DateUtil.getCurrentTime();
+        this.createUserId = userId;
+
+    }
 
 }

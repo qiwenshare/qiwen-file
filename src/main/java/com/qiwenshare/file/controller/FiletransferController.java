@@ -41,7 +41,7 @@ import java.util.List;
 import java.util.Map;
 
 @Slf4j
-@Tag(name = "filetransfer", description = "该接口为文件传输接口，主要用来做文件的上传和下载")
+@Tag(name = "filetransfer", description = "该接口为文件传输接口，主要用来做文件的上传、下载和预览")
 @RestController
 @RequestMapping("/filetransfer")
 public class FiletransferController {
@@ -83,77 +83,7 @@ public class FiletransferController {
         if (!isCheckSuccess) {
             return RestResult.fail().message("存储空间不足");
         }
-
-        UploadFileVo uploadFileVo = new UploadFileVo();
-        Map<String, Object> param = new HashMap<String, Object>();
-        param.put("identifier", uploadFileDto.getIdentifier());
-
-        List<FileBean> list = fileService.listByMap(param);
-        if (list != null && !list.isEmpty()) {
-            FileBean file = list.get(0);
-
-            UserFile userFile = new UserFile();
-
-            userFile.setUserId(sessionUserBean.getUserId());
-            String relativePath = uploadFileDto.getRelativePath();
-            if (relativePath.contains("/")) {
-                userFile.setFilePath(uploadFileDto.getFilePath() + UFOPUtils.getParentPath(relativePath) + "/");
-                fileDealComp.restoreParentFilePath(uploadFileDto.getFilePath() + UFOPUtils.getParentPath(relativePath) + "/", sessionUserBean.getUserId());
-                fileDealComp.deleteRepeatSubDirFile(uploadFileDto.getFilePath(), sessionUserBean.getUserId());
-            } else {
-                userFile.setFilePath(uploadFileDto.getFilePath());
-            }
-
-            String fileName = uploadFileDto.getFilename();
-            userFile.setFileName(UFOPUtils.getFileNameNotExtend(fileName));
-            userFile.setExtendName(UFOPUtils.getFileExtendName(fileName));
-            userFile.setDeleteFlag(0);
-            List<FileListVo> userFileList = userFileService.userFileList(userFile, null, null);
-            if (userFileList.size() <= 0) {
-
-                userFile.setIsDir(0);
-                userFile.setUploadTime(DateUtil.getCurrentTime());
-                userFile.setFileId(file.getFileId());
-                //"fileName", "filePath", "extendName", "deleteFlag", "userId"
-
-                userFileService.save(userFile);
-//                fileService.increaseFilePointCount(file.getFileId());
-                fileDealComp.uploadESByUserFileId(userFile.getUserFileId());
-            }
-
-            uploadFileVo.setSkipUpload(true);
-
-        } else {
-            uploadFileVo.setSkipUpload(false);
-
-            List<Integer> uploaded = uploadTaskDetailService.getUploadedChunkNumList(uploadFileDto.getIdentifier());
-            if (uploaded != null && !uploaded.isEmpty()) {
-                uploadFileVo.setUploaded(uploaded);
-            } else {
-
-                LambdaQueryWrapper<UploadTask> lambdaQueryWrapper = new LambdaQueryWrapper<>();
-                lambdaQueryWrapper.eq(UploadTask::getIdentifier, uploadFileDto.getIdentifier());
-                List<UploadTask> rslist = uploadTaskService.list(lambdaQueryWrapper);
-                if (rslist == null || rslist.isEmpty()) {
-                    UploadTask uploadTask = new UploadTask();
-                    uploadTask.setIdentifier(uploadFileDto.getIdentifier());
-                    uploadTask.setUploadTime(DateUtil.getCurrentTime());
-                    uploadTask.setUploadStatus(UploadFileStatusEnum.UNCOMPLATE.getCode());
-                    uploadTask.setFileName(uploadFileDto.getFilename());
-                    String relativePath = uploadFileDto.getRelativePath();
-                    if (relativePath.contains("/")) {
-                        uploadTask.setFilePath(uploadFileDto.getFilePath() + UFOPUtils.getParentPath(relativePath) + "/");
-                    } else {
-                        uploadTask.setFilePath(uploadFileDto.getFilePath());
-                    }
-                    uploadTask.setExtendName(uploadTask.getExtendName());
-                    uploadTask.setUserId(sessionUserBean.getUserId());
-
-                    uploadTaskService.save(uploadTask);
-                }
-            }
-
-        }
+        UploadFileVo uploadFileVo = filetransferService.uploadFileSpeed(uploadFileDto);
         return RestResult.success().data(uploadFileVo);
 
     }

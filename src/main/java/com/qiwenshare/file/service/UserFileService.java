@@ -9,13 +9,16 @@ import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.qiwenshare.common.constant.FileConstant;
 import com.qiwenshare.common.util.DateUtil;
 import com.qiwenshare.file.api.IUserFileService;
+import com.qiwenshare.file.config.security.user.JwtUser;
 import com.qiwenshare.file.domain.RecoveryFile;
 import com.qiwenshare.file.domain.UserFile;
 import com.qiwenshare.file.mapper.FileMapper;
 import com.qiwenshare.file.mapper.FileTypeMapper;
 import com.qiwenshare.file.mapper.RecoveryFileMapper;
 import com.qiwenshare.file.mapper.UserFileMapper;
+import com.qiwenshare.file.util.SessionUtil;
 import com.qiwenshare.file.vo.file.FileListVo;
+import com.qiwenshare.ufop.util.UFOPUtils;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -85,8 +88,15 @@ public class UserFileService  extends ServiceImpl<UserFileMapper, UserFile> impl
     }
 
     @Override
-    public List<FileListVo> userFileList(UserFile userFile, Long beginCount, Long pageCount) {
-        return userFileMapper.userFileList(userFile, beginCount, pageCount);
+    public IPage<FileListVo> userFileList(String filePath, Long currentPage, Long pageCount) {
+        Page<FileListVo> page = new Page<>(currentPage, pageCount);
+        UserFile userFile = new UserFile();
+        JwtUser sessionUserBean = SessionUtil.getSession();
+
+        userFile.setUserId(sessionUserBean.getUserId());
+        userFile.setFilePath(UFOPUtils.urlDecode(filePath));
+
+        return userFileMapper.selectPageVo(page, userFile, null);
     }
 
     @Override
@@ -140,7 +150,6 @@ public class UserFileService  extends ServiceImpl<UserFileMapper, UserFile> impl
 
     }
 
-
     @Override
     public IPage<FileListVo> getFileByFileType(Integer fileTypeId, Long currentPage, Long pageCount, long userId) {
         Page<FileListVo> page = new Page<>(currentPage, pageCount);
@@ -149,22 +158,9 @@ public class UserFileService  extends ServiceImpl<UserFileMapper, UserFile> impl
         if (extendNameList != null && extendNameList.isEmpty()) {
             return page;
         }
-        return userFileMapper.selectFileByExtendName(page, extendNameList, userId);
-    }
-
-    @Override
-    public Long selectCountByExtendName(List<String> fileNameList, Long beginCount, Long pageCount, long userId) {
-        return userFileMapper.selectCountByExtendName(fileNameList, beginCount, pageCount, userId);
-    }
-
-    @Override
-    public List<FileListVo> selectFileNotInExtendNames(List<String> fileNameList, Long beginCount, Long pageCount, long userId) {
-        return userFileMapper.selectFileNotInExtendNames(fileNameList, beginCount, pageCount, userId);
-    }
-
-    @Override
-    public Long selectCountNotInExtendNames(List<String> fileNameList, Long beginCount, Long pageCount, long userId) {
-        return userFileMapper.selectCountNotInExtendNames(fileNameList, beginCount, pageCount, userId);
+        UserFile userFile = new UserFile();
+        userFile.setUserId(userId);
+        return userFileMapper.selectPageVo(page, userFile, extendNameList);
     }
 
     @Override

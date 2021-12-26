@@ -11,10 +11,7 @@ import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
 
-/**
- * @author: xxxg
- * @date: 2021/11/18 10:45
- */
+
 @Service
 public class NoticeService extends ServiceImpl<NoticeMapper, Notice> implements INoticeService {
     @Resource

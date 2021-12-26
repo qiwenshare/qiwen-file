@@ -21,7 +21,6 @@ public class OperationLogUtil {
      */
     public static OperationLogBean getOperationLogObj(HttpServletRequest request, Long userId, String isSuccess, String source, String operation, String detail) {
 
-//        UserBean sessionUserBean = (UserBean) SecurityUtils.getSubject().getPrincipal();
         //用户需要登录才能进行的操作，需要记录操作日志
         OperationLogBean operationLogBean = new OperationLogBean();
         operationLogBean.setUserId(userId);

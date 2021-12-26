@@ -18,4 +18,5 @@ public class QiwenFileUtil {
         userFile.setDeleteBatchNum(null);
         return userFile;
     }
+
 }

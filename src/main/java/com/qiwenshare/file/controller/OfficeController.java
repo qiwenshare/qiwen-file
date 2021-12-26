@@ -106,7 +106,6 @@ public class OfficeController {
             fileBean.setFileSize(0L);
             fileBean.setFileUrl(fileUrl);
             fileBean.setStorageType(storageType);
-//            fileBean.setPointCount(1);
             fileBean.setIdentifier(uuid);
             fileBean.setCreateTime(DateUtil.getCurrentTime());
             fileBean.setCreateUserId(loginUser.getUserId());

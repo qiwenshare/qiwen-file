@@ -1,30 +1,15 @@
 package com.qiwenshare.file.controller;
 
-import cn.hutool.core.bean.BeanUtil;
-import com.alibaba.fastjson.JSON;
-import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.qiwenshare.file.api.IElasticSearchService;
 import com.qiwenshare.file.component.FileDealComp;
-import com.qiwenshare.file.config.es.FileSearch;
-import com.qiwenshare.file.domain.FileBean;
 import com.qiwenshare.file.domain.UserFile;
-import com.qiwenshare.file.service.FileService;
-import com.qiwenshare.file.service.FiletransferService;
 import com.qiwenshare.file.service.UserFileService;
-import com.qiwenshare.file.service.UserService;
-import com.qiwenshare.file.vo.file.FileListVo;
-import com.qiwenshare.ufop.factory.UFOPFactory;
-import com.qiwenshare.ufop.operation.read.Reader;
-import com.qiwenshare.ufop.operation.read.domain.ReadFile;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.catalina.User;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Controller;
 
 import javax.annotation.Resource;
-import java.text.SimpleDateFormat;
-import java.util.Calendar;
 import java.util.List;
 
 @Slf4j
@@ -32,11 +17,7 @@ import java.util.List;
 public class TaskController {
 
     @Resource
-    FileService fileService;
-    @Resource
     UserFileService userFileService;
-    @Resource
-    FiletransferService filetransferService;
     @Autowired
     private IElasticSearchService elasticSearchService;
     @Resource

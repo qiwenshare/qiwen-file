@@ -7,7 +7,9 @@ import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.qiwenshare.common.anno.MyLog;
 import com.qiwenshare.common.result.RestResult;
 import com.qiwenshare.common.util.DateUtil;
-import com.qiwenshare.file.api.*;
+import com.qiwenshare.file.api.IShareFileService;
+import com.qiwenshare.file.api.IShareService;
+import com.qiwenshare.file.api.IUserFileService;
 import com.qiwenshare.file.component.FileDealComp;
 import com.qiwenshare.file.config.security.user.JwtUser;
 import com.qiwenshare.file.domain.Share;
@@ -36,14 +38,11 @@ import java.util.*;
 public class ShareController {
 
     public static final String CURRENT_MODULE = "文件分享";
-    @Resource
-    IUserService userService;
+
     @Resource
     IShareFileService shareFileService;
     @Resource
     IShareService shareService;
-    @Resource
-    IFileService fileService;
     @Resource
     IUserFileService userFileService;
     @Resource
@@ -129,12 +128,8 @@ public class ShareController {
                     p.setFilePath(p.getFilePath().replaceFirst(filePath + fileName, savefilePath + savefileName));
                     saveUserFileList.add(p);
                     log.info("当前文件：" + JSON.toJSONString(p));
-                    if (p.getIsDir() == 0) {
-//                        fileService.increaseFilePointCount(p.getFileId());
-                    }
+
                 });
-            } else {
-//                fileService.increaseFilePointCount(userFile.getFileId());
             }
             userFile.setUserFileId(null);
             userFile.setUserId(userId);

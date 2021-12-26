@@ -258,9 +258,10 @@ public class FileDealComp {
     public void uploadESByUserFileId(Long userFileId) {
 
         try {
-            UserFile userFile = new UserFile();
-            userFile.setUserFileId(userFileId);
-            List<FileListVo> userfileResult = userFileMapper.userFileList(userFile, null, null);
+
+            Map<String, Object> param = new HashMap<>();
+            param.put("userFileId", userFileId);
+            List<UserFile> userfileResult = userFileMapper.selectByMap(param);
             if (userfileResult != null && userfileResult.size() > 0) {
                 FileSearch fileSearch = new FileSearch();
                 BeanUtil.copyProperties(userfileResult.get(0), fileSearch);

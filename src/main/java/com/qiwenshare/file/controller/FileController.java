@@ -197,35 +197,13 @@ public class FileController {
             @Parameter(description = "当前页", required = true) long currentPage,
             @Parameter(description = "页面数量", required = true) long pageCount){
 
-        UserFile userFile = new UserFile();
-        JwtUser sessionUserBean =  SessionUtil.getSession();
-        if (userFile == null) {
-            return RestResult.fail();
 
-        }
-        userFile.setUserId(sessionUserBean.getUserId());
+        IPage<FileListVo> fileList = userFileService.userFileList(filePath, currentPage, pageCount);
 
-
-        List<FileListVo> fileList = null;
-        userFile.setFilePath(UFOPUtils.urlDecode(filePath));
-        if (currentPage == 0 || pageCount == 0) {
-            fileList = userFileService.userFileList(userFile, 0L, 10L);
-        } else {
-            long beginCount = (currentPage - 1) * pageCount;
-
-            fileList = userFileService.userFileList(userFile, beginCount, pageCount);
-
-        }
-
-        LambdaQueryWrapper<UserFile> userFileLambdaQueryWrapper = new LambdaQueryWrapper<>();
-        userFileLambdaQueryWrapper.eq(UserFile::getUserId, userFile.getUserId())
-                .eq(UserFile::getFilePath, userFile.getFilePath())
-                .eq(UserFile::getDeleteFlag, 0);
-        long total = userFileService.count(userFileLambdaQueryWrapper);
 
         Map<String, Object> map = new HashMap<>();
-        map.put("total", total);
-        map.put("list", fileList);
+        map.put("total", fileList.getTotal());
+        map.put("list", fileList.getRecords());
 
 
         return RestResult.success().data(map);
@@ -269,8 +247,6 @@ public class FileController {
     @MyLog(operation = "解压文件", module = CURRENT_MODULE)
     @ResponseBody
     public RestResult<String> unzipFile(@RequestBody UnzipFileDTO unzipFileDto) {
-
-        JwtUser sessionUserBean =  SessionUtil.getSession();
 
         try {
             fileService.unzipFile(unzipFileDto.getUserFileId(), unzipFileDto.getUnzipMode(), unzipFileDto.getFilePath());
