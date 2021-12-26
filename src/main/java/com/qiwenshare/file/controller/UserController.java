@@ -91,6 +91,7 @@ public class UserController {
         userLoginVo.setToken("Bearer " + token);
         restResult.setData(userLoginVo);
         restResult.setSuccess(true);
+        restResult.setCode(200001);
         return restResult;
 
     }

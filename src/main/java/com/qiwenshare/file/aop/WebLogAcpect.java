@@ -4,8 +4,8 @@ import com.qiwenshare.common.anno.MyLog;
 import com.qiwenshare.common.result.RestResult;
 import com.qiwenshare.file.api.IOperationLogService;
 import com.qiwenshare.file.api.IUserService;
-import com.qiwenshare.file.domain.UserBean;
 import com.qiwenshare.file.util.OperationLogUtil;
+import com.qiwenshare.file.vo.user.UserLoginVo;
 import org.aspectj.lang.JoinPoint;
 import org.aspectj.lang.annotation.AfterReturning;
 import org.aspectj.lang.annotation.Aspect;
@@ -83,6 +83,11 @@ public class WebLogAcpect {
             boolean isSuccess = ((RestResult) ret).getSuccess();
             String errorMessage = ((RestResult) ret).getMessage();
             Long userId = userService.getUserIdByToken(token);
+            Integer code = ((RestResult) ret).getCode();
+            if (code != null && code == 200001) {
+                UserLoginVo data = (UserLoginVo) ((RestResult) ret).getData();
+                userId = data.getUserId();
+            }
             if (isSuccess) {
 
                 operationLogService.insertOperationLog(
