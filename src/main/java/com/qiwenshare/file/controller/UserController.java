@@ -83,7 +83,7 @@ public class UserController {
             return RestResult.fail().message("创建token失败！");
         }
         UserBean sessionUserBean = userService.findUserInfoByTelephone(telephone);
-        if (sessionUserBean.getAvailable() == 0) {
+        if (sessionUserBean.getAvailable() != null && sessionUserBean.getAvailable() == 0) {
             return RestResult.fail().message("用户已被禁用");
         }
         UserLoginVo userLoginVo = new UserLoginVo();
