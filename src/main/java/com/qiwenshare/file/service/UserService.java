@@ -152,7 +152,6 @@ public class UserService extends ServiceImpl<UserMapper, UserBean> implements IU
             authorities.add(simpleGrantedAuthority);
         }
 
-//        List<SimpleGrantedAuthority> authorities = roleList.stream().map(Role::getRoleName).map(SimpleGrantedAuthority::new).collect(Collectors.toList());
         JwtUser jwtUser = new JwtUser(user.getUserId(), user.getUsername(), user.getPassword(),
                 user.getAvailable(), authorities);
         return jwtUser;

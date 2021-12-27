@@ -154,13 +154,9 @@ public class UserFileService  extends ServiceImpl<UserFileMapper, UserFile> impl
     public IPage<FileListVo> getFileByFileType(Integer fileTypeId, Long currentPage, Long pageCount, long userId) {
         Page<FileListVo> page = new Page<>(currentPage, pageCount);
 
-        List<String> extendNameList = fileTypeMapper.selectExtendNameByFileType(fileTypeId);
-        if (extendNameList != null && extendNameList.isEmpty()) {
-            return page;
-        }
         UserFile userFile = new UserFile();
         userFile.setUserId(userId);
-        return userFileMapper.selectPageVo(page, userFile, extendNameList);
+        return userFileMapper.selectPageVo(page, userFile, fileTypeId);
     }
 
     @Override

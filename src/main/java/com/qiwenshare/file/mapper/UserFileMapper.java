@@ -28,6 +28,6 @@ public interface UserFileMapper extends BaseMapper<UserFile> {
                                @Param("newFilePath") String newfilePath,
                                @Param("userId") long userId);
 
-    IPage<FileListVo> selectPageVo(Page<?> page, @Param("userFile") UserFile userFile, @Param("extendNameList") List<String> extendNameList);
+    IPage<FileListVo> selectPageVo(Page<?> page, @Param("userFile") UserFile userFile, @Param("fileTypeId") Integer fileTypeId);
     Long selectStorageSizeByUserId(@Param("userId") Long userId);
 }

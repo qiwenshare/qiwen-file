@@ -70,6 +70,8 @@ public class OperationLogBean {
      */
     private String logLevel;
 
+
     private Integer platform;
+
 
 }
