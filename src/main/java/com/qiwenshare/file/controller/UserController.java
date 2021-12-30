@@ -103,6 +103,7 @@ public class UserController {
     @GetMapping("/checkuserlogininfo")
     @ResponseBody
     public RestResult<UserLoginVo> checkUserLoginInfo() {
+        UserLoginVo userLoginVo = new UserLoginVo();
         JwtUser sessionUserBean = SessionUtil.getSession();
 
         if (sessionUserBean != null && !"anonymousUser".equals(sessionUserBean.getUsername())) {
@@ -114,7 +115,9 @@ public class UserController {
             userLoginInfo.setUserId(sessionUserBean.getUserId());
             userLoginInfo.setUserloginDate(DateUtil.getCurrentTime());
             userLoginInfoService.save(userLoginInfo);
-            return RestResult.success().data(sessionUserBean);
+            UserBean user = userService.getById(sessionUserBean.getUserId());
+            BeanUtil.copyProperties(user, userLoginVo);
+            return RestResult.success().data(userLoginVo);
 
         } else {
             return RestResult.fail().message("用户暂未登录");

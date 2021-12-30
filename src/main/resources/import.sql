@@ -1,12 +1,16 @@
-insert ignore into user (userId, username, telephone, salt, password, available) values (1, 'admin', 'admin', 'admin', 'df655ad8d3229f3269fad2a8bab59b6c', 1);
+delete from user where userId = 1;
+insert into user (userId, username, telephone, salt, password, available) values (1, 'admin', 'admin', 'admin', 'df655ad8d3229f3269fad2a8bab59b6c', 1);
 
-INSERT ignore INTO `role` (`roleid`, `available`, `description`, `roleName`, `createTime`, `createUserId`, `modifyTime`, `modifyUserId`) VALUES (1, 1, '超级管理员', '超级管理员', NULL, NULL, '2021-11-10 20:46:06', NULL);
-INSERT ignore INTO `role` (`roleid`, `available`, `description`, `roleName`, `createTime`, `createUserId`, `modifyTime`, `modifyUserId`) VALUES (2, 1, '普通用户', '普通用户', NULL, NULL, NULL, NULL);
+delete from role where roleId in (1, 2);
+INSERT INTO `role` (`roleId`, `available`, `description`, `roleName`, `createTime`, `createUserId`, `modifyTime`, `modifyUserId`) VALUES (1, 1, '超级管理员', '超级管理员', NULL, NULL, '2021-11-10 20:46:06', NULL);
+INSERT INTO `role` (`roleId`, `available`, `description`, `roleName`, `createTime`, `createUserId`, `modifyTime`, `modifyUserId`) VALUES (2, 1, '普通用户', '普通用户', NULL, NULL, NULL, NULL);
 
-insert ignore into sysparam (sysParamId, sysParamKey, sysParamValue, sysParamDesc) values (1, 'totalStorageSize', '1024', '总存储大小（单位M）');
-insert ignore into sysparam (sysParamId, sysParamKey, sysParamValue, sysParamDesc) values (2, 'initDataFlag', '1', '系统初始化数据标识');
-insert ignore into sysparam (sysParamId, sysParamKey, sysParamValue, sysParamDesc) values (3, 'version', '1.1.2', '当前脚本的版本号');
+delete from sysparam where sysParamId in (1, 2, 3);
+insert into sysparam (sysParamId, sysParamKey, sysParamValue, sysParamDesc) values (1, 'totalStorageSize', '1024', '总存储大小（单位M）');
+insert into sysparam (sysParamId, sysParamKey, sysParamValue, sysParamDesc) values (2, 'initDataFlag', '1', '系统初始化数据标识');
+insert into sysparam (sysParamId, sysParamKey, sysParamValue, sysParamDesc) values (3, 'version', '1.1.2', '当前脚本的版本号');
 
+delete from filetype where fileTypeId in (0, 1, 2, 3, 4, 5)
 INSERT INTO `filetype` (`fileTypeId`, `fileTypeName`) VALUES (0, '全部');
 INSERT INTO `filetype` (`fileTypeId`, `fileTypeName`) VALUES (1, '图片');
 INSERT INTO `filetype` (`fileTypeId`, `fileTypeName`) VALUES (2, '文档');
@@ -14,6 +18,7 @@ INSERT INTO `filetype` (`fileTypeId`, `fileTypeName`) VALUES (3, '视频');
 INSERT INTO `filetype` (`fileTypeId`, `fileTypeName`) VALUES (4, '音乐');
 INSERT INTO `filetype` (`fileTypeId`, `fileTypeName`) VALUES (5, '其他');
 
+delete from fileextend where 1 = 1;
 INSERT INTO `fileextend` (`fileExtendName`) VALUES ('bmp');
 INSERT INTO `fileextend` (`fileExtendName`) VALUES ('jpg');
 INSERT INTO `fileextend` (`fileExtendName`) VALUES ('png');
@@ -89,7 +94,7 @@ INSERT INTO `fileextend` (`fileExtendName`) VALUES ('js');
 INSERT INTO `fileextend` (`fileExtendName`) VALUES ('css');
 INSERT INTO `fileextend` (`fileExtendName`) VALUES ('json');
 
-
+delete from fileclassification where 1 = 1;
 INSERT INTO `fileclassification` (`fileClassificationId`, `fileTypeId`, `fileExtendName`) VALUES (1, 1, 'bmp');
 INSERT INTO `fileclassification` (`fileClassificationId`, `fileTypeId`, `fileExtendName`) VALUES (2, 1, 'jpg');
 INSERT INTO `fileclassification` (`fileClassificationId`, `fileTypeId`, `fileExtendName`) VALUES (3, 1, 'png');
