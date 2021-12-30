@@ -1,6 +1,7 @@
-package com.qiwenshare.file.config.jwt;
+package com.qiwenshare.file.component;
 
 import com.qiwenshare.common.util.math.CalculatorUtils;
+import com.qiwenshare.file.config.jwt.JwtProperties;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.JwtBuilder;
 import io.jsonwebtoken.Jwts;
@@ -15,14 +16,14 @@ import javax.crypto.spec.SecretKeySpec;
 import java.util.Date;
 
 @Component
-public class JjwtUtils {
+public class JwtComp {
 
 	@Resource
 	JwtProperties jwtProperties;
 
 
 	// 由字符串生成加密key
-	public SecretKey generalKey() {
+	private SecretKey generalKey() {
 		// 本地的密码解码
 		byte[] encodedKey = Base64.decodeBase64(jwtProperties.getSecret());
 		// 根据给定的字节数组使用AES加密算法构造一个密钥

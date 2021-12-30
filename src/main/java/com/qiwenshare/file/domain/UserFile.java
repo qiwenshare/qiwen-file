@@ -19,34 +19,34 @@ public class UserFile {
     @Column(columnDefinition = "bigint(20)")
     private Long userFileId;
 
-    @Column(columnDefinition = "bigint(20)")
+    @Column(columnDefinition = "bigint(20) comment '用户id'")
     private Long userId;
 
-    @Column(columnDefinition="bigint(20)")
+    @Column(columnDefinition="bigint(20) comment '文件id'")
     private Long fileId;
 
-    @Column(columnDefinition="varchar(100)")
+    @Column(columnDefinition="varchar(100) comment '文件名'")
     private String fileName;
 
-    @Column(columnDefinition="varchar(500)")
+    @Column(columnDefinition="varchar(500) comment '文件路径'")
     private String filePath;
 
-    @Column(columnDefinition="varchar(100)")
+    @Column(columnDefinition="varchar(100) comment '扩展名'")
     private String extendName;
 
-    @Column(columnDefinition="int(1)")
+    @Column(columnDefinition="int(1) comment '是否是目录(0-否,1-是)'")
     private Integer isDir;
 
-    @Column(columnDefinition="varchar(25)")
+    @Column(columnDefinition="varchar(25) comment '上传时间'")
     private String uploadTime;
 
-    @Column(columnDefinition="int(11)")
+    @Column(columnDefinition="int(11) comment '删除标识(0-未删除，1-已删除)'")
     private Integer deleteFlag;
 
-    @Column(columnDefinition="varchar(25)")
+    @Column(columnDefinition="varchar(25) comment '删除时间'")
     private String deleteTime;
 
-    @Column(columnDefinition = "varchar(50)")
+    @Column(columnDefinition = "varchar(50) comment '删除批次号'")
     private String deleteBatchNum;
 
 }

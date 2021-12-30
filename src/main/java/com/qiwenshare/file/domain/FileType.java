@@ -22,6 +22,8 @@ public class FileType {
     @GeneratedValue(strategy = GenerationType.AUTO)
     @TableId(type = IdType.AUTO)
     private Integer fileTypeId;
+    @Column(columnDefinition="varchar(50) comment '文件类型名'")
     private String fileTypeName;
+    @Column(columnDefinition="int(2) comment '次序'")
     private Integer orderNum;
 }

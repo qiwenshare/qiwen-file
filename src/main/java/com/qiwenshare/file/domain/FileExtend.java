@@ -22,8 +22,8 @@ public class FileExtend {
     @GeneratedValue(strategy = GenerationType.AUTO)
     @TableId(type = IdType.AUTO)
     private String fileExtendName;
-
+    @Column(columnDefinition="varchar(25) comment '文件扩展名描述'")
     private String fileExtendDesc;
-
+    @Column(columnDefinition="varchar(100) comment '文件扩展名预览图'")
     private String fileExtendImgUrl;
 }

@@ -23,6 +23,8 @@ public class FileClassification {
     @TableId(type = IdType.AUTO)
     @Column(columnDefinition="bigint(20)")
     private Long fileClassificationId;
+    @Column(columnDefinition="bigint(20) comment '文件类型id'")
     private Integer fileTypeId;
+    @Column(columnDefinition="varchar(25) comment '文件扩展名'")
     private String fileExtendName;
 }

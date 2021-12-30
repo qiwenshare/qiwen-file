@@ -28,11 +28,13 @@ public class OperationLogBean {
     /**
      * 用户id
      */
+    @Column(columnDefinition="bigint(20) comment '用户id'")
     private Long userId;
 
     /**
      * 操作
      */
+    @Column(columnDefinition="varchar(50) comment '操作'")
     private String operation;
 
     /**
@@ -43,16 +45,19 @@ public class OperationLogBean {
     /**
      * 终端IP
      */
+    @Column(columnDefinition="varchar(20) comment '终端ip地址'")
     private String terminal;
 
     /**
      * 操作结果
      */
+    @Column(columnDefinition="varchar(20) comment '操作结果'")
     private String result;
 
     /**
      * 操作详情
      */
+    @Column(columnDefinition="varchar(100) comment '操作详情'")
     private String detail;
 
     /**
@@ -63,6 +68,7 @@ public class OperationLogBean {
     /**
      * 时间
      */
+    @Column(columnDefinition="varchar(25) comment '操作时间'")
     private String time;
 
     /**
@@ -70,7 +76,7 @@ public class OperationLogBean {
      */
     private String logLevel;
 
-
+    @Column(columnDefinition="int(2) comment '平台(1-社区,2-管理端,3-网盘,4-股票)'")
     private Integer platform;
 
 

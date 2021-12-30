@@ -9,14 +9,11 @@ import com.qiwenshare.file.api.*;
 import com.qiwenshare.file.config.es.FileSearch;
 import com.qiwenshare.file.domain.*;
 import com.qiwenshare.file.mapper.UserFileMapper;
-import com.qiwenshare.file.vo.file.FileListVo;
+import com.qiwenshare.file.util.TreeNode;
 import com.qiwenshare.ufop.factory.UFOPFactory;
-import com.qiwenshare.ufop.operation.read.Reader;
-import com.qiwenshare.ufop.operation.read.domain.ReadFile;
 import com.qiwenshare.ufop.util.UFOPUtils;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import javax.annotation.Resource;
@@ -187,7 +184,7 @@ public class FileDealComp {
      * @param nodeNameQueue
      * @return
      */
-    public TreeNode insertTreeNode(TreeNode treeNode, long id,  String filePath, Queue<String> nodeNameQueue){
+    public TreeNode insertTreeNode(TreeNode treeNode, long id, String filePath, Queue<String> nodeNameQueue){
 
         List<TreeNode> childrenTreeNodes = treeNode.getChildren();
         String currentNodeName = nodeNameQueue.peek();

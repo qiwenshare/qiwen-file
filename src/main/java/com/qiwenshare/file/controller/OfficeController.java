@@ -12,7 +12,7 @@ import com.qiwenshare.file.api.IUserFileService;
 import com.qiwenshare.file.api.IUserService;
 import com.qiwenshare.file.config.security.user.JwtUser;
 import com.qiwenshare.file.domain.FileBean;
-import com.qiwenshare.file.domain.FileModel;
+import com.qiwenshare.file.util.FileModel;
 import com.qiwenshare.file.domain.UserFile;
 import com.qiwenshare.file.dto.file.CreateOfficeFileDTO;
 import com.qiwenshare.file.dto.file.EditOfficeFileDTO;
@@ -108,6 +108,7 @@ public class OfficeController {
             fileBean.setIdentifier(uuid);
             fileBean.setCreateTime(DateUtil.getCurrentTime());
             fileBean.setCreateUserId(loginUser.getUserId());
+            fileBean.setFileStatus(1);
             boolean saveFlag = fileService.save(fileBean);
             UserFile userFile = new UserFile();
             if(saveFlag) {

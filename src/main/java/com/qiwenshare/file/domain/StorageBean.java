@@ -25,10 +25,10 @@ public class StorageBean {
     @Column(columnDefinition="bigint(20)")
     private Long userId;
 
-    @Column(columnDefinition="bigint(20)")
+    @Column(columnDefinition="bigint(20) comment '占用存储大小'")
     private Long storageSize;
 
-    @Column(columnDefinition="bigint(20)")
+    @Column(columnDefinition="bigint(20) comment '总存储大小'")
     private Long totalStorageSize;
 
     @Column(columnDefinition="varchar(25) comment '修改时间'")

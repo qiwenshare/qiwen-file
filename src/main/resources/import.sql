@@ -4,7 +4,8 @@ INSERT ignore INTO `role` (`roleid`, `available`, `description`, `roleName`, `cr
 INSERT ignore INTO `role` (`roleid`, `available`, `description`, `roleName`, `createTime`, `createUserId`, `modifyTime`, `modifyUserId`) VALUES (2, 1, '普通用户', '普通用户', NULL, NULL, NULL, NULL);
 
 insert ignore into sysparam (sysParamId, sysParamKey, sysParamValue, sysParamDesc) values (1, 'totalStorageSize', '1024', '总存储大小（单位M）');
-
+insert ignore into sysparam (sysParamId, sysParamKey, sysParamValue, sysParamDesc) values (2, 'initDataFlag', '1', '系统初始化数据标识');
+insert ignore into sysparam (sysParamId, sysParamKey, sysParamValue, sysParamDesc) values (3, 'version', '1.1.2', '当前脚本的版本号');
 
 INSERT INTO `filetype` (`fileTypeId`, `fileTypeName`) VALUES (0, '全部');
 INSERT INTO `filetype` (`fileTypeId`, `fileTypeName`) VALUES (1, '图片');

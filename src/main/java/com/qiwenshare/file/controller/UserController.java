@@ -6,9 +6,9 @@ import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.qiwenshare.common.anno.MyLog;
 import com.qiwenshare.common.result.RestResult;
 import com.qiwenshare.common.util.DateUtil;
-import com.qiwenshare.common.util.JjwtUtil;
 import com.qiwenshare.file.api.IUserLoginInfoService;
 import com.qiwenshare.file.api.IUserService;
+import com.qiwenshare.file.component.JwtComp;
 import com.qiwenshare.file.config.security.user.JwtUser;
 import com.qiwenshare.file.domain.UserBean;
 import com.qiwenshare.file.domain.UserLoginInfo;
@@ -38,6 +38,8 @@ public class UserController {
     IUserService userService;
     @Resource
     IUserLoginInfoService userLoginInfoService;
+    @Resource
+    JwtComp jwtComp;
 
     public static Map<String, String> verificationCodeMap = new HashMap<>();
 
@@ -77,7 +79,7 @@ public class UserController {
         param.put("userId", result.getUserId());
         String token = "";
         try {
-            token = JjwtUtil.createJWT("qiwenshare", "qiwen", JSON.toJSONString(param));
+            token = jwtComp.createJWT(JSON.toJSONString(param));
         } catch (Exception e) {
             log.info("登录失败：{}", e);
             return RestResult.fail().message("创建token失败！");

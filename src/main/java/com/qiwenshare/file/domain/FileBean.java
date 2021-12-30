@@ -25,31 +25,31 @@ public class FileBean {
     @Column(columnDefinition="bigint(20)")
     private Long fileId;
 
-    @Column(columnDefinition="varchar(500)")
+    @Column(columnDefinition="varchar(500) comment '文件url'")
     private String fileUrl;
 
-    @Column(columnDefinition="bigint(10)")
+    @Column(columnDefinition="bigint(10) comment '文件大小'")
     private Long fileSize;
 
-    @Column(columnDefinition="int(1)")
+    @Column(columnDefinition="int(1) comment '文件状态(0-失效，1-生效)'")
     private Integer fileStatus;
 
-    @Column(columnDefinition="int(1)")
+    @Column(columnDefinition="int(1) comment '存储类型'")
     private Integer storageType;
 
-    @Column(columnDefinition="varchar(32)")
+    @Column(columnDefinition="varchar(32) comment 'md5唯一标识'")
     private String identifier;
 
-    @Column(columnDefinition="varchar(25)")
+    @Column(columnDefinition="varchar(25) comment '创建时间'")
     private String createTime;
 
-    @Column(columnDefinition="bigint(20)")
+    @Column(columnDefinition="bigint(20) comment '创建用户id'")
     private Long createUserId;
 
-    @Column(columnDefinition="varchar(25)")
+    @Column(columnDefinition="varchar(25) comment '修改时间'")
     private String modifyTime;
 
-    @Column(columnDefinition="bigint(20)")
+    @Column(columnDefinition="bigint(20) comment '修改用户id'")
     private Long modifyUserId;
 
     public FileBean(){

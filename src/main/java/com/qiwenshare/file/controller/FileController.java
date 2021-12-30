@@ -1,7 +1,6 @@
 package com.qiwenshare.file.controller;
 
 import com.alibaba.fastjson.JSON;
-import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.qiwenshare.common.anno.MyLog;
@@ -15,7 +14,7 @@ import com.qiwenshare.file.component.FileDealComp;
 import com.qiwenshare.file.config.es.FileSearch;
 import com.qiwenshare.file.config.security.user.JwtUser;
 import com.qiwenshare.file.domain.FileBean;
-import com.qiwenshare.file.domain.TreeNode;
+import com.qiwenshare.file.util.TreeNode;
 import com.qiwenshare.file.domain.UserFile;
 import com.qiwenshare.file.dto.file.*;
 import com.qiwenshare.file.util.SessionUtil;
@@ -24,7 +23,6 @@ import com.qiwenshare.ufop.factory.UFOPFactory;
 import com.qiwenshare.ufop.operation.download.domain.DownloadFile;
 import com.qiwenshare.ufop.operation.write.Writer;
 import com.qiwenshare.ufop.operation.write.domain.WriteFile;
-import com.qiwenshare.ufop.util.UFOPUtils;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.tags.Tag;
