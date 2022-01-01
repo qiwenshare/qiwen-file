@@ -10,7 +10,7 @@ insert into sysparam (sysParamId, sysParamKey, sysParamValue, sysParamDesc) valu
 insert into sysparam (sysParamId, sysParamKey, sysParamValue, sysParamDesc) values (2, 'initDataFlag', '1', '系统初始化数据标识');
 insert into sysparam (sysParamId, sysParamKey, sysParamValue, sysParamDesc) values (3, 'version', '1.1.2', '当前脚本的版本号');
 
-delete from filetype where fileTypeId in (0, 1, 2, 3, 4, 5)
+delete from filetype where fileTypeId in (0, 1, 2, 3, 4, 5);
 INSERT INTO `filetype` (`fileTypeId`, `fileTypeName`) VALUES (0, '全部');
 INSERT INTO `filetype` (`fileTypeId`, `fileTypeName`) VALUES (1, '图片');
 INSERT INTO `filetype` (`fileTypeId`, `fileTypeName`) VALUES (2, '文档');

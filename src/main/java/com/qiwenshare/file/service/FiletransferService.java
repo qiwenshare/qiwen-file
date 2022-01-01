@@ -5,6 +5,7 @@ import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
 import com.qiwenshare.common.util.DateUtil;
+import com.qiwenshare.common.util.MimeUtils;
 import com.qiwenshare.file.api.IFiletransferService;
 import com.qiwenshare.file.component.FileDealComp;
 import com.qiwenshare.file.config.security.user.JwtUser;
@@ -40,6 +41,7 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.awt.image.BufferedImage;
 import java.io.*;
+import java.util.Base64;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -70,6 +72,8 @@ public class FiletransferService implements IFiletransferService {
     @Resource
     ImageMapper imageMapper;
 
+    @Resource
+    PictureFileMapper pictureFileMapper;
 
 
     @Override
@@ -387,15 +391,55 @@ public class FiletransferService implements IFiletransferService {
                 previewer.imageOriginalPreview(httpServletResponse, previewFile);
             }
         } catch (Exception e){
-            //org.apache.catalina.connector.ClientAbortException: java.io.IOException: 你的主机中的软件中止了一个已建立的连接。
-            if (e.getMessage().contains("ClientAbortException")) {
-            //该异常忽略不做处理
-        } else {
-            log.error("预览文件出现异常：{}", e.getMessage());
+                //org.apache.catalina.connector.ClientAbortException: java.io.IOException: 你的主机中的软件中止了一个已建立的连接。
+                if (e.getMessage().contains("ClientAbortException")) {
+                //该异常忽略不做处理
+            } else {
+                log.error("预览文件出现异常：{}", e.getMessage());
+            }
+
         }
 
     }
 
+    @Override
+    public void previewPictureFile(HttpServletResponse httpServletResponse, PreviewDTO previewDTO) {
+        byte[] bytesUrl = Base64.getDecoder().decode(previewDTO.getUrl());
+        PictureFile pictureFile = new PictureFile();
+        pictureFile.setFileUrl(new String(bytesUrl));
+        pictureFile = pictureFileMapper.selectOne(new QueryWrapper<>(pictureFile));
+        Previewer previewer = ufopFactory.getPreviewer(pictureFile.getStorageType());
+        if (previewer == null) {
+            log.error("预览失败，文件存储类型不支持预览，storageType:{}", pictureFile.getStorageType());
+            throw new UploadException("预览失败");
+        }
+        PreviewFile previewFile = new PreviewFile();
+        previewFile.setFileUrl(pictureFile.getFileUrl());
+        previewFile.setFileSize(pictureFile.getFileSize());
+        try {
+
+            String mime= MimeUtils.getMime(pictureFile.getExtendName());
+            httpServletResponse.setHeader("Content-Type", mime);
+
+            String fileName = pictureFile.getFileName() + "." + pictureFile.getExtendName();
+            try {
+                fileName = new String(fileName.getBytes("utf-8"), "ISO-8859-1");
+            } catch (UnsupportedEncodingException e) {
+                e.printStackTrace();
+            }
+
+            httpServletResponse.addHeader("Content-Disposition", "fileName=" + fileName);// 设置文件名
+
+            previewer.imageOriginalPreview(httpServletResponse, previewFile);
+        } catch (Exception e){
+            //org.apache.catalina.connector.ClientAbortException: java.io.IOException: 你的主机中的软件中止了一个已建立的连接。
+            if (e.getMessage().contains("ClientAbortException")) {
+                //该异常忽略不做处理
+            } else {
+                log.error("预览文件出现异常：{}", e.getMessage());
+            }
+
+        }
     }
 
     @Override

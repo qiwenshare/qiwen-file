@@ -18,6 +18,7 @@ public interface IFiletransferService {
 
     void downloadFile(HttpServletResponse httpServletResponse, DownloadFileDTO downloadFileDTO);
     void previewFile(HttpServletResponse httpServletResponse, PreviewDTO previewDTO);
+    void previewPictureFile(HttpServletResponse httpServletResponse, PreviewDTO previewDTO);
     void deleteFile(FileBean fileBean);
 
     Long selectStorageSizeByUserId(Long userId);

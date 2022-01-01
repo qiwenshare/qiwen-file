@@ -30,6 +30,7 @@ import org.springframework.web.bind.annotation.*;
 
 import javax.annotation.Resource;
 import javax.imageio.ImageIO;
+import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.awt.image.BufferedImage;
@@ -107,11 +108,18 @@ public class FiletransferController {
     @Operation(summary = "下载文件", description = "下载文件接口", tags = {"filetransfer"})
     @MyLog(operation = "下载文件", module = CURRENT_MODULE)
     @RequestMapping(value = "/downloadfile", method = RequestMethod.GET)
-    public void downloadFile(HttpServletResponse httpServletResponse, DownloadFileDTO downloadFileDTO) {
+    public void downloadFile(HttpServletRequest httpServletRequest, HttpServletResponse httpServletResponse, DownloadFileDTO downloadFileDTO) {
+        Cookie[] cookieArr = httpServletRequest.getCookies();
+        String token = "";
+        for (Cookie cookie : cookieArr) {
+            if ("token".equals(cookie.getName())) {
+                token = cookie.getValue();
+            }
+        }
         boolean authResult = fileDealComp.checkAuthDownloadAndPreview(downloadFileDTO.getShareBatchNum(),
                 downloadFileDTO.getExtractionCode(),
-                downloadFileDTO.getToken(),
-                downloadFileDTO.getUserFileId());
+                token,
+                downloadFileDTO.getUserFileId(), null);
         if (!authResult) {
             log.error("没有权限下载！！！");
             return;
@@ -139,11 +147,26 @@ public class FiletransferController {
     @Operation(summary="预览文件", description="用于文件预览", tags = {"filetransfer"})
     @GetMapping("/preview")
     public void preview(HttpServletRequest httpServletRequest, HttpServletResponse httpServletResponse,  PreviewDTO previewDTO){
+
+        if (previewDTO.getPlatform() != null && previewDTO.getPlatform() == 2) {
+            filetransferService.previewPictureFile(httpServletResponse, previewDTO);
+            return ;
+        }
+
+        Cookie[] cookieArr = httpServletRequest.getCookies();
+        String token = "";
+        for (Cookie cookie : cookieArr) {
+            if ("token".equals(cookie.getName())) {
+                token = cookie.getValue();
+            }
+        }
+
         UserFile userFile = userFileService.getById(previewDTO.getUserFileId());
         boolean authResult = fileDealComp.checkAuthDownloadAndPreview(previewDTO.getShareBatchNum(),
                 previewDTO.getExtractionCode(),
-                previewDTO.getToken(),
-                previewDTO.getUserFileId());
+                token,
+                previewDTO.getUserFileId(),
+                previewDTO.getPlatform());
 
         if (!authResult) {
             log.error("没有权限预览！！！");
@@ -197,7 +220,6 @@ public class FiletransferController {
         httpServletResponse.addHeader("Content-Disposition", "fileName=" + fileName);// 设置文件名
 
         filetransferService.previewFile(httpServletResponse, previewDTO);
-
 
     }
 

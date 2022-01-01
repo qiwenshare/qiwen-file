@@ -299,8 +299,12 @@ public class FileDealComp {
     public boolean checkAuthDownloadAndPreview(String shareBatchNum,
                                                String extractionCode,
                                                String token,
-                                               long userFileId) {
+                                               Long userFileId,
+                                               Integer platform) {
         log.debug("权限检查开始：shareBatchNum:{}, extractionCode:{}, token:{}, userFileId{}" , shareBatchNum, extractionCode, token, userFileId);
+        if (platform != null && platform == 2) {
+            return true;
+        }
         UserFile userFile = userFileService.getById(userFileId);
         log.debug(JSON.toJSONString(userFile));
         if ("undefined".equals(shareBatchNum)  || StringUtils.isEmpty(shareBatchNum)) {

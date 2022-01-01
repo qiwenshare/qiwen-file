@@ -48,6 +48,7 @@ public class UserService extends ServiceImpl<UserMapper, UserBean> implements IU
             return null;
         }
         token = token.replace("Bearer ", "");
+        token = token.replace("Bearer%20", "");
         try {
             c = jwtComp.parseJWT(token);
         } catch (Exception e) {

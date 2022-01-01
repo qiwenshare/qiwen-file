@@ -7,10 +7,11 @@ import lombok.Data;
 @Schema(name = "预览文件DTO",required = true)
 public class PreviewDTO {
     private Long userFileId;
-    private String token;
     @Schema(description="批次号")
     private String shareBatchNum;
     @Schema(description="提取码")
     private String extractionCode;
     private String isMin;
+    private Integer platform;
+    private String url;
 }
