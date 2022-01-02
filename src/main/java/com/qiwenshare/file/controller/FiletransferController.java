@@ -1,20 +1,20 @@
 package com.qiwenshare.file.controller;
 
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
-import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.qiwenshare.common.anno.MyLog;
-import com.qiwenshare.common.exception.NotLoginException;
 import com.qiwenshare.common.result.RestResult;
 import com.qiwenshare.common.util.DateUtil;
 import com.qiwenshare.common.util.MimeUtils;
 import com.qiwenshare.file.api.*;
 import com.qiwenshare.file.component.FileDealComp;
+import com.qiwenshare.file.config.security.user.JwtUser;
 import com.qiwenshare.file.domain.*;
 import com.qiwenshare.file.dto.file.DownloadFileDTO;
-import com.qiwenshare.file.dto.file.UploadFileDTO;
 import com.qiwenshare.file.dto.file.PreviewDTO;
+import com.qiwenshare.file.dto.file.UploadFileDTO;
 import com.qiwenshare.file.mapper.ImageMapper;
 import com.qiwenshare.file.service.StorageService;
+import com.qiwenshare.file.util.SessionUtil;
 import com.qiwenshare.file.vo.file.FileListVo;
 import com.qiwenshare.file.vo.file.UploadFileVo;
 import com.qiwenshare.ufop.constant.UploadFileStatusEnum;
@@ -30,6 +30,7 @@ import org.springframework.web.bind.annotation.*;
 
 import javax.annotation.Resource;
 import javax.imageio.ImageIO;
+import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.awt.image.BufferedImage;
@@ -41,7 +42,7 @@ import java.util.List;
 import java.util.Map;
 
 @Slf4j
-@Tag(name = "filetransfer", description = "该接口为文件传输接口，主要用来做文件的上传和下载")
+@Tag(name = "filetransfer", description = "该接口为文件传输接口，主要用来做文件的上传、下载和预览")
 @RestController
 @RequestMapping("/filetransfer")
 public class FiletransferController {
@@ -75,85 +76,15 @@ public class FiletransferController {
     @RequestMapping(value = "/uploadfile", method = RequestMethod.GET)
     @MyLog(operation = "极速上传", module = CURRENT_MODULE)
     @ResponseBody
-    public RestResult<UploadFileVo> uploadFileSpeed(UploadFileDTO uploadFileDto, @RequestHeader("token") String token) {
+    public RestResult<UploadFileVo> uploadFileSpeed(UploadFileDTO uploadFileDto) {
 
-        UserBean sessionUserBean = userService.getUserBeanByToken(token);
+        JwtUser sessionUserBean = SessionUtil.getSession();
 
         boolean isCheckSuccess = storageService.checkStorage(sessionUserBean.getUserId(), uploadFileDto.getTotalSize());
         if (!isCheckSuccess) {
             return RestResult.fail().message("存储空间不足");
         }
-
-        UploadFileVo uploadFileVo = new UploadFileVo();
-        Map<String, Object> param = new HashMap<String, Object>();
-        param.put("identifier", uploadFileDto.getIdentifier());
-
-        List<FileBean> list = fileService.listByMap(param);
-        if (list != null && !list.isEmpty()) {
-            FileBean file = list.get(0);
-
-            UserFile userFile = new UserFile();
-
-            userFile.setUserId(sessionUserBean.getUserId());
-            String relativePath = uploadFileDto.getRelativePath();
-            if (relativePath.contains("/")) {
-                userFile.setFilePath(uploadFileDto.getFilePath() + UFOPUtils.getParentPath(relativePath) + "/");
-                fileDealComp.restoreParentFilePath(uploadFileDto.getFilePath() + UFOPUtils.getParentPath(relativePath) + "/", sessionUserBean.getUserId());
-                fileDealComp.deleteRepeatSubDirFile(uploadFileDto.getFilePath(), sessionUserBean.getUserId());
-            } else {
-                userFile.setFilePath(uploadFileDto.getFilePath());
-            }
-
-            String fileName = uploadFileDto.getFilename();
-            userFile.setFileName(UFOPUtils.getFileNameNotExtend(fileName));
-            userFile.setExtendName(UFOPUtils.getFileExtendName(fileName));
-            userFile.setDeleteFlag(0);
-            List<FileListVo> userFileList = userFileService.userFileList(userFile, null, null);
-            if (userFileList.size() <= 0) {
-
-                userFile.setIsDir(0);
-                userFile.setUploadTime(DateUtil.getCurrentTime());
-                userFile.setFileId(file.getFileId());
-                //"fileName", "filePath", "extendName", "deleteFlag", "userId"
-
-                userFileService.save(userFile);
-                fileService.increaseFilePointCount(file.getFileId());
-                fileDealComp.uploadESByUserFileId(userFile.getUserFileId());
-            }
-
-            uploadFileVo.setSkipUpload(true);
-
-        } else {
-            uploadFileVo.setSkipUpload(false);
-
-            List<Integer> uploaded = uploadTaskDetailService.getUploadedChunkNumList(uploadFileDto.getIdentifier());
-            if (uploaded != null && !uploaded.isEmpty()) {
-                uploadFileVo.setUploaded(uploaded);
-            } else {
-
-                LambdaQueryWrapper<UploadTask> lambdaQueryWrapper = new LambdaQueryWrapper<>();
-                lambdaQueryWrapper.eq(UploadTask::getIdentifier, uploadFileDto.getIdentifier());
-                List<UploadTask> rslist = uploadTaskService.list(lambdaQueryWrapper);
-                if (rslist == null || rslist.isEmpty()) {
-                    UploadTask uploadTask = new UploadTask();
-                    uploadTask.setIdentifier(uploadFileDto.getIdentifier());
-                    uploadTask.setUploadTime(DateUtil.getCurrentTime());
-                    uploadTask.setUploadStatus(UploadFileStatusEnum.UNCOMPLATE.getCode());
-                    uploadTask.setFileName(uploadFileDto.getFilename());
-                    String relativePath = uploadFileDto.getRelativePath();
-                    if (relativePath.contains("/")) {
-                        uploadTask.setFilePath(uploadFileDto.getFilePath() + UFOPUtils.getParentPath(relativePath) + "/");
-                    } else {
-                        uploadTask.setFilePath(uploadFileDto.getFilePath());
-                    }
-                    uploadTask.setExtendName(uploadTask.getExtendName());
-                    uploadTask.setUserId(sessionUserBean.getUserId());
-
-                    uploadTaskService.save(uploadTask);
-                }
-            }
-
-        }
+        UploadFileVo uploadFileVo = filetransferService.uploadFileSpeed(uploadFileDto);
         return RestResult.success().data(uploadFileVo);
 
     }
@@ -162,12 +93,9 @@ public class FiletransferController {
     @RequestMapping(value = "/uploadfile", method = RequestMethod.POST)
     @MyLog(operation = "上传文件", module = CURRENT_MODULE)
     @ResponseBody
-    public RestResult<UploadFileVo> uploadFile(HttpServletRequest request, UploadFileDTO uploadFileDto, @RequestHeader("token") String token) {
+    public RestResult<UploadFileVo> uploadFile(HttpServletRequest request, UploadFileDTO uploadFileDto) {
 
-        UserBean sessionUserBean = userService.getUserBeanByToken(token);
-        if (sessionUserBean == null) {
-            throw new NotLoginException();
-        }
+        JwtUser sessionUserBean = SessionUtil.getSession();
 
         filetransferService.uploadFile(request, uploadFileDto, sessionUserBean.getUserId());
 
@@ -180,11 +108,18 @@ public class FiletransferController {
     @Operation(summary = "下载文件", description = "下载文件接口", tags = {"filetransfer"})
     @MyLog(operation = "下载文件", module = CURRENT_MODULE)
     @RequestMapping(value = "/downloadfile", method = RequestMethod.GET)
-    public void downloadFile(HttpServletResponse httpServletResponse, DownloadFileDTO downloadFileDTO) {
+    public void downloadFile(HttpServletRequest httpServletRequest, HttpServletResponse httpServletResponse, DownloadFileDTO downloadFileDTO) {
+        Cookie[] cookieArr = httpServletRequest.getCookies();
+        String token = "";
+        for (Cookie cookie : cookieArr) {
+            if ("token".equals(cookie.getName())) {
+                token = cookie.getValue();
+            }
+        }
         boolean authResult = fileDealComp.checkAuthDownloadAndPreview(downloadFileDTO.getShareBatchNum(),
                 downloadFileDTO.getExtractionCode(),
-                downloadFileDTO.getToken(),
-                downloadFileDTO.getUserFileId());
+                token,
+                downloadFileDTO.getUserFileId(), null);
         if (!authResult) {
             log.error("没有权限下载！！！");
             return;
@@ -212,11 +147,26 @@ public class FiletransferController {
     @Operation(summary="预览文件", description="用于文件预览", tags = {"filetransfer"})
     @GetMapping("/preview")
     public void preview(HttpServletRequest httpServletRequest, HttpServletResponse httpServletResponse,  PreviewDTO previewDTO){
+
+        if (previewDTO.getPlatform() != null && previewDTO.getPlatform() == 2) {
+            filetransferService.previewPictureFile(httpServletResponse, previewDTO);
+            return ;
+        }
+
+        Cookie[] cookieArr = httpServletRequest.getCookies();
+        String token = "";
+        for (Cookie cookie : cookieArr) {
+            if ("token".equals(cookie.getName())) {
+                token = cookie.getValue();
+            }
+        }
+
         UserFile userFile = userFileService.getById(previewDTO.getUserFileId());
         boolean authResult = fileDealComp.checkAuthDownloadAndPreview(previewDTO.getShareBatchNum(),
                 previewDTO.getExtractionCode(),
-                previewDTO.getToken(),
-                previewDTO.getUserFileId());
+                token,
+                previewDTO.getUserFileId(),
+                previewDTO.getPlatform());
 
         if (!authResult) {
             log.error("没有权限预览！！！");
@@ -271,18 +221,14 @@ public class FiletransferController {
 
         filetransferService.previewFile(httpServletResponse, previewDTO);
 
-
     }
 
     @Operation(summary = "获取存储信息", description = "获取存储信息", tags = {"filetransfer"})
     @RequestMapping(value = "/getstorage", method = RequestMethod.GET)
     @ResponseBody
-    public RestResult<StorageBean> getStorage(@RequestHeader("token") String token) {
+    public RestResult<StorageBean> getStorage() {
 
-        UserBean sessionUserBean = userService.getUserBeanByToken(token);
-        if (sessionUserBean == null) {
-            throw new NotLoginException();
-        }
+        JwtUser sessionUserBean = SessionUtil.getSession();
         StorageBean storageBean = new StorageBean();
 
         storageBean.setUserId(sessionUserBean.getUserId());

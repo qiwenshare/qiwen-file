@@ -1,6 +1,8 @@
 package com.qiwenshare.file.mapper;
 
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
+import com.baomidou.mybatisplus.core.metadata.IPage;
+import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.qiwenshare.file.domain.FileBean;
 import com.qiwenshare.file.domain.UserBean;
 import com.qiwenshare.file.domain.UserFile;
@@ -12,7 +14,6 @@ import java.util.Map;
 
 public interface UserFileMapper extends BaseMapper<UserFile> {
     void replaceFilePath(@Param("filePath") String filePath, @Param("oldFilePath") String oldFilePath, @Param("userId") Long userId);
-    List<FileListVo> userFileList(@Param("userFile") UserFile userFile, Long beginCount, Long pageCount);
 
     void updateFilepathByPathAndName(String oldfilePath, String newfilePath, String fileName, String extendName, long userId);
     void updateFilepathByFilepath(String oldfilePath, String newfilePath, long userId);
@@ -27,9 +28,6 @@ public interface UserFileMapper extends BaseMapper<UserFile> {
                                @Param("newFilePath") String newfilePath,
                                @Param("userId") long userId);
 
-    List<FileListVo> selectFileByExtendName(List<String> fileNameList, Long beginCount, Long pageCount, long userId);
-    Long selectCountByExtendName(List<String> fileNameList, Long beginCount, Long pageCount, long userId);
-    List<FileListVo> selectFileNotInExtendNames(List<String> fileNameList, Long beginCount, Long pageCount, long userId);
-    Long selectCountNotInExtendNames(List<String> fileNameList, Long beginCount, Long pageCount, long userId);
+    IPage<FileListVo> selectPageVo(Page<?> page, @Param("userFile") UserFile userFile, @Param("fileTypeId") Integer fileTypeId);
     Long selectStorageSizeByUserId(@Param("userId") Long userId);
 }

@@ -17,10 +17,10 @@ public class SysParam {
     @Column(columnDefinition="bigint(20)")
     @TableId(type = IdType.AUTO)
     private Long sysParamId;
-    @Column(columnDefinition="varchar(50)")
+    @Column(columnDefinition="varchar(50) comment '系统参数key'")
     private String sysParamKey;
-    @Column(columnDefinition="varchar(50)")
+    @Column(columnDefinition="varchar(50) comment '系统参数值'")
     private String sysParamValue;
-    @Column(columnDefinition="varchar(50)")
+    @Column(columnDefinition="varchar(50) comment '系统参数描述'")
     private String sysParamDesc;
 }

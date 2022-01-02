@@ -20,7 +20,7 @@ package com.qiwenshare.file.helper;
 
 
 
-import com.qiwenshare.file.domain.FileType;
+import com.qiwenshare.file.constant.FileType;
 
 import java.net.URL;
 import java.util.Arrays;

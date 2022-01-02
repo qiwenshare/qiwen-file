@@ -4,8 +4,10 @@ import com.qiwenshare.common.anno.MyLog;
 import com.qiwenshare.common.result.RestResult;
 import com.qiwenshare.file.api.IOperationLogService;
 import com.qiwenshare.file.api.IUserService;
-import com.qiwenshare.file.domain.UserBean;
+import com.qiwenshare.file.config.security.user.JwtUser;
 import com.qiwenshare.file.util.OperationLogUtil;
+import com.qiwenshare.file.util.SessionUtil;
+import com.qiwenshare.file.vo.user.UserLoginVo;
 import org.aspectj.lang.JoinPoint;
 import org.aspectj.lang.annotation.AfterReturning;
 import org.aspectj.lang.annotation.Aspect;
@@ -13,8 +15,6 @@ import org.aspectj.lang.annotation.Before;
 import org.aspectj.lang.annotation.Pointcut;
 import org.aspectj.lang.reflect.CodeSignature;
 import org.aspectj.lang.reflect.MethodSignature;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
 import org.springframework.web.context.request.RequestContextHolder;
 import org.springframework.web.context.request.ServletRequestAttributes;
@@ -38,7 +38,6 @@ public class WebLogAcpect {
 
     private String operation = "";
     private String module = "";
-    private String token = "";
     private HttpServletRequest request;
 
 
@@ -60,7 +59,6 @@ public class WebLogAcpect {
         MethodSignature signature = (MethodSignature) joinPoint.getSignature();
         //获取切入点所在的方法
         Method method = signature.getMethod();
-        Map<String, Object> map = getNameAndValue(joinPoint);
 
         //获取操作
         MyLog myLog = method.getAnnotation(MyLog.class);
@@ -68,7 +66,6 @@ public class WebLogAcpect {
         if (myLog != null) {
             operation = myLog.operation();
             module = myLog.module();
-            token = (String) map.get("token");
         }
 
         // 接收到请求，记录请求内容
@@ -84,14 +81,24 @@ public class WebLogAcpect {
         if (ret instanceof RestResult) {
             boolean isSuccess = ((RestResult) ret).getSuccess();
             String errorMessage = ((RestResult) ret).getMessage();
-            UserBean sessionUserBean = userService.getUserBeanByToken(token);
+            JwtUser sessionUser = SessionUtil.getSession();
+            Long userId = 0L;
+            if (sessionUser != null) {
+                userId = sessionUser.getUserId();
+            }
+
+            Integer code = ((RestResult) ret).getCode();
+            if (code != null && code == 200001) {
+                UserLoginVo data = (UserLoginVo) ((RestResult) ret).getData();
+                userId = data.getUserId();
+            }
             if (isSuccess) {
 
                 operationLogService.insertOperationLog(
-                        OperationLogUtil.getOperationLogObj(request,sessionUserBean, "成功", module, operation, "操作成功"));
+                        OperationLogUtil.getOperationLogObj(request, userId, "成功", module, operation, "操作成功"));
             } else {
                 operationLogService.insertOperationLog(
-                        OperationLogUtil.getOperationLogObj(request,sessionUserBean, "失败", module, operation, errorMessage));
+                        OperationLogUtil.getOperationLogObj(request, userId, "失败", module, operation, errorMessage));
             }
         }
 

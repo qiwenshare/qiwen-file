@@ -16,7 +16,7 @@
  *
  */
 
-package com.qiwenshare.file.domain;
+package com.qiwenshare.file.util;
 
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;

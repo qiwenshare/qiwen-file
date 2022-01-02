@@ -9,9 +9,7 @@ import java.util.List;
 
 public interface IFileService  extends IService<FileBean> {
 
-    void increaseFilePointCount(Long fileId);
-
-    void decreaseFilePointCount(Long fileId);
+    Long getFilePointCount(Long fileId);
     void unzipFile(long userFileId, int unzipMode, String filePath);
 
 

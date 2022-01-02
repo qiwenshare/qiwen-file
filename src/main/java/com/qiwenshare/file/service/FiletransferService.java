@@ -2,20 +2,25 @@ package com.qiwenshare.file.service;
 
 import cn.hutool.core.bean.BeanUtil;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
+import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
 import com.qiwenshare.common.util.DateUtil;
+import com.qiwenshare.common.util.MimeUtils;
 import com.qiwenshare.file.api.IFiletransferService;
 import com.qiwenshare.file.component.FileDealComp;
+import com.qiwenshare.file.config.security.user.JwtUser;
 import com.qiwenshare.file.domain.*;
 import com.qiwenshare.file.dto.file.DownloadFileDTO;
-import com.qiwenshare.file.dto.file.UploadFileDTO;
 import com.qiwenshare.file.dto.file.PreviewDTO;
+import com.qiwenshare.file.dto.file.UploadFileDTO;
 import com.qiwenshare.file.mapper.*;
+import com.qiwenshare.file.util.SessionUtil;
 import com.qiwenshare.file.vo.file.FileListVo;
+import com.qiwenshare.file.vo.file.UploadFileVo;
 import com.qiwenshare.ufop.constant.StorageTypeEnum;
 import com.qiwenshare.ufop.constant.UploadFileStatusEnum;
-import com.qiwenshare.ufop.exception.DownloadException;
-import com.qiwenshare.ufop.exception.UploadException;
+import com.qiwenshare.ufop.exception.operation.DownloadException;
+import com.qiwenshare.ufop.exception.operation.UploadException;
 import com.qiwenshare.ufop.factory.UFOPFactory;
 import com.qiwenshare.ufop.operation.delete.Deleter;
 import com.qiwenshare.ufop.operation.delete.domain.DeleteFile;
@@ -32,12 +37,14 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import javax.annotation.Resource;
-import javax.imageio.ImageIO;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.awt.image.BufferedImage;
 import java.io.*;
+import java.util.Base64;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.zip.Adler32;
 import java.util.zip.CheckedOutputStream;
 import java.util.zip.ZipEntry;
@@ -49,8 +56,6 @@ import java.util.zip.ZipOutputStream;
 public class FiletransferService implements IFiletransferService {
 
     @Resource
-    StorageMapper storageMapper;
-    @Resource
     FileMapper fileMapper;
 
     @Resource
@@ -61,11 +66,88 @@ public class FiletransferService implements IFiletransferService {
     @Resource
     FileDealComp fileDealComp;
     @Resource
-    UploadTaskDetailMapper UploadTaskDetailMapper;
+    UploadTaskDetailMapper uploadTaskDetailMapper;
     @Resource
     UploadTaskMapper uploadTaskMapper;
     @Resource
     ImageMapper imageMapper;
+
+    @Resource
+    PictureFileMapper pictureFileMapper;
+
+
+    @Override
+    public UploadFileVo uploadFileSpeed(UploadFileDTO uploadFileDTO) {
+        UploadFileVo uploadFileVo = new UploadFileVo();
+        JwtUser sessionUserBean = SessionUtil.getSession();
+        Map<String, Object> param = new HashMap<>();
+        param.put("identifier", uploadFileDTO.getIdentifier());
+        List<FileBean> list = fileMapper.selectByMap(param);
+
+        if (list != null && !list.isEmpty()) {
+            FileBean file = list.get(0);
+
+            UserFile userFile = new UserFile();
+
+            userFile.setUserId(sessionUserBean.getUserId());
+            String relativePath = uploadFileDTO.getRelativePath();
+            if (relativePath.contains("/")) {
+                userFile.setFilePath(uploadFileDTO.getFilePath() + UFOPUtils.getParentPath(relativePath) + "/");
+                fileDealComp.restoreParentFilePath(uploadFileDTO.getFilePath() + UFOPUtils.getParentPath(relativePath) + "/", sessionUserBean.getUserId());
+                fileDealComp.deleteRepeatSubDirFile(uploadFileDTO.getFilePath(), sessionUserBean.getUserId());
+            } else {
+                userFile.setFilePath(uploadFileDTO.getFilePath());
+            }
+
+            String fileName = uploadFileDTO.getFilename();
+            userFile.setFileName(UFOPUtils.getFileNameNotExtend(fileName));
+            userFile.setExtendName(UFOPUtils.getFileExtendName(fileName));
+            userFile.setDeleteFlag(0);
+
+            List<UserFile> userFileList = userFileMapper.selectList(new QueryWrapper<>(userFile));
+            if (userFileList.size() <= 0) {
+
+                userFile.setIsDir(0);
+                userFile.setUploadTime(DateUtil.getCurrentTime());
+                userFile.setFileId(file.getFileId());
+                userFileMapper.insert(userFile);
+                fileDealComp.uploadESByUserFileId(userFile.getUserFileId());
+            }
+
+            uploadFileVo.setSkipUpload(true);
+
+        } else {
+            uploadFileVo.setSkipUpload(false);
+
+            List<Integer> uploaded = uploadTaskDetailMapper.selectUploadedChunkNumList(uploadFileDTO.getIdentifier());
+            if (uploaded != null && !uploaded.isEmpty()) {
+                uploadFileVo.setUploaded(uploaded);
+            } else {
+
+                LambdaQueryWrapper<UploadTask> lambdaQueryWrapper = new LambdaQueryWrapper<>();
+                lambdaQueryWrapper.eq(UploadTask::getIdentifier, uploadFileDTO.getIdentifier());
+                List<UploadTask> rslist = uploadTaskMapper.selectList(lambdaQueryWrapper);
+                if (rslist == null || rslist.isEmpty()) {
+                    UploadTask uploadTask = new UploadTask();
+                    uploadTask.setIdentifier(uploadFileDTO.getIdentifier());
+                    uploadTask.setUploadTime(DateUtil.getCurrentTime());
+                    uploadTask.setUploadStatus(UploadFileStatusEnum.UNCOMPLATE.getCode());
+                    uploadTask.setFileName(uploadFileDTO.getFilename());
+                    String relativePath = uploadFileDTO.getRelativePath();
+                    if (relativePath.contains("/")) {
+                        uploadTask.setFilePath(uploadFileDTO.getFilePath() + UFOPUtils.getParentPath(relativePath) + "/");
+                    } else {
+                        uploadTask.setFilePath(uploadFileDTO.getFilePath());
+                    }
+                    uploadTask.setExtendName(uploadTask.getExtendName());
+                    uploadTask.setUserId(sessionUserBean.getUserId());
+                    uploadTaskMapper.insert(uploadTask);
+                }
+            }
+
+        }
+        return uploadFileVo;
+    }
 
     @Override
     public void uploadFile(HttpServletRequest request, UploadFileDTO uploadFileDto, Long userId) {
@@ -95,7 +177,7 @@ public class FiletransferService implements IFiletransferService {
                 fileBean.setFileUrl(uploadFileResult.getFileUrl());
                 fileBean.setFileSize(uploadFileResult.getFileSize());
                 fileBean.setStorageType(uploadFileResult.getStorageType().getCode());
-                fileBean.setPointCount(1);
+                fileBean.setFileStatus(1);
                 fileBean.setCreateTime(DateUtil.getCurrentTime());
                 fileBean.setCreateUserId(userId);
                 fileMapper.insert(fileBean);
@@ -114,7 +196,7 @@ public class FiletransferService implements IFiletransferService {
                 userFile.setExtendName(uploadFileResult.getExtendName());
                 userFile.setDeleteFlag(0);
                 userFile.setIsDir(0);
-                List<FileListVo> userFileList = userFileMapper.userFileList(userFile, null, null);
+                List<UserFile> userFileList = userFileMapper.selectList(new QueryWrapper<>(userFile));
                 if (userFileList.size() > 0) {
                     String fileName = fileDealComp.getRepeatFileName(userFile, uploadFileDto.getFilePath());
                     userFile.setFileName(fileName);
@@ -128,23 +210,14 @@ public class FiletransferService implements IFiletransferService {
 
                 LambdaQueryWrapper<UploadTaskDetail> lambdaQueryWrapper = new LambdaQueryWrapper<>();
                 lambdaQueryWrapper.eq(UploadTaskDetail::getIdentifier, uploadFileDto.getIdentifier());
-                UploadTaskDetailMapper.delete(lambdaQueryWrapper);
+                uploadTaskDetailMapper.delete(lambdaQueryWrapper);
 
                 LambdaUpdateWrapper<UploadTask> lambdaUpdateWrapper = new LambdaUpdateWrapper<>();
                 lambdaUpdateWrapper.set(UploadTask::getUploadStatus, UploadFileStatusEnum.SUCCESS.getCode())
                         .eq(UploadTask::getIdentifier, uploadFileDto.getIdentifier());
                 uploadTaskMapper.update(null, lambdaUpdateWrapper);
                 if (UFOPUtils.isImageFile(uploadFileResult.getExtendName())) {
-                    Downloader downloader = ufopFactory.getDownloader(uploadFileResult.getStorageType().getCode());
-                    DownloadFile downloadFile = new DownloadFile();
-                    downloadFile.setFileUrl(uploadFileResult.getFileUrl());
-                    InputStream is = downloader.getInputStream(downloadFile);
-                    BufferedImage src = null;
-                    try {
-                        src = ImageIO.read(is);
-                    } catch (IOException e) {
-                        e.printStackTrace();
-                    }
+                    BufferedImage src = uploadFileResult.getBufferedImage();
                     Image image = new Image();
                     image.setImageWidth(src.getWidth());
                     image.setImageHeight(src.getHeight());
@@ -153,26 +226,26 @@ public class FiletransferService implements IFiletransferService {
                 }
 
             } else if (UploadFileStatusEnum.UNCOMPLATE.equals(uploadFileResult.getStatus())) {
-                UploadTaskDetail UploadTaskDetail = new UploadTaskDetail();
-                UploadTaskDetail.setFilePath(uploadFileDto.getFilePath());
+                UploadTaskDetail uploadTaskDetail = new UploadTaskDetail();
+                uploadTaskDetail.setFilePath(uploadFileDto.getFilePath());
                 if (relativePath.contains("/")) {
-                    UploadTaskDetail.setFilePath(uploadFileDto.getFilePath() + UFOPUtils.getParentPath(relativePath) + "/");
+                    uploadTaskDetail.setFilePath(uploadFileDto.getFilePath() + UFOPUtils.getParentPath(relativePath) + "/");
                 } else {
-                    UploadTaskDetail.setFilePath(uploadFileDto.getFilePath());
+                    uploadTaskDetail.setFilePath(uploadFileDto.getFilePath());
                 }
-                UploadTaskDetail.setFilename(uploadFileDto.getFilename());
-                UploadTaskDetail.setChunkNumber(uploadFileDto.getChunkNumber());
-                UploadTaskDetail.setChunkSize((int)uploadFileDto.getChunkSize());
-                UploadTaskDetail.setRelativePath(uploadFileDto.getRelativePath());
-                UploadTaskDetail.setTotalChunks(uploadFileDto.getTotalChunks());
-                UploadTaskDetail.setTotalSize((int)uploadFileDto.getTotalSize());
-                UploadTaskDetail.setIdentifier(uploadFileDto.getIdentifier());
-                UploadTaskDetailMapper.insert(UploadTaskDetail);
+                uploadTaskDetail.setFilename(uploadFileDto.getFilename());
+                uploadTaskDetail.setChunkNumber(uploadFileDto.getChunkNumber());
+                uploadTaskDetail.setChunkSize((int)uploadFileDto.getChunkSize());
+                uploadTaskDetail.setRelativePath(uploadFileDto.getRelativePath());
+                uploadTaskDetail.setTotalChunks(uploadFileDto.getTotalChunks());
+                uploadTaskDetail.setTotalSize((int)uploadFileDto.getTotalSize());
+                uploadTaskDetail.setIdentifier(uploadFileDto.getIdentifier());
+                uploadTaskDetailMapper.insert(uploadTaskDetail);
 
             } else if (UploadFileStatusEnum.FAIL.equals(uploadFileResult.getStatus())) {
                 LambdaQueryWrapper<UploadTaskDetail> lambdaQueryWrapper = new LambdaQueryWrapper<>();
                 lambdaQueryWrapper.eq(UploadTaskDetail::getIdentifier, uploadFileDto.getIdentifier());
-                UploadTaskDetailMapper.delete(lambdaQueryWrapper);
+                uploadTaskDetailMapper.delete(lambdaQueryWrapper);
 
                 LambdaUpdateWrapper<UploadTask> lambdaUpdateWrapper = new LambdaUpdateWrapper<>();
                 lambdaUpdateWrapper.set(UploadTask::getUploadStatus, UploadFileStatusEnum.FAIL.getCode())
@@ -318,15 +391,55 @@ public class FiletransferService implements IFiletransferService {
                 previewer.imageOriginalPreview(httpServletResponse, previewFile);
             }
         } catch (Exception e){
-            //org.apache.catalina.connector.ClientAbortException: java.io.IOException: 你的主机中的软件中止了一个已建立的连接。
-            if (e.getMessage().contains("ClientAbortException")) {
-            //该异常忽略不做处理
-        } else {
-            log.error("预览文件出现异常：{}", e.getMessage());
+                //org.apache.catalina.connector.ClientAbortException: java.io.IOException: 你的主机中的软件中止了一个已建立的连接。
+                if (e.getMessage().contains("ClientAbortException")) {
+                //该异常忽略不做处理
+            } else {
+                log.error("预览文件出现异常：{}", e.getMessage());
+            }
+
         }
 
     }
 
+    @Override
+    public void previewPictureFile(HttpServletResponse httpServletResponse, PreviewDTO previewDTO) {
+        byte[] bytesUrl = Base64.getDecoder().decode(previewDTO.getUrl());
+        PictureFile pictureFile = new PictureFile();
+        pictureFile.setFileUrl(new String(bytesUrl));
+        pictureFile = pictureFileMapper.selectOne(new QueryWrapper<>(pictureFile));
+        Previewer previewer = ufopFactory.getPreviewer(pictureFile.getStorageType());
+        if (previewer == null) {
+            log.error("预览失败，文件存储类型不支持预览，storageType:{}", pictureFile.getStorageType());
+            throw new UploadException("预览失败");
+        }
+        PreviewFile previewFile = new PreviewFile();
+        previewFile.setFileUrl(pictureFile.getFileUrl());
+        previewFile.setFileSize(pictureFile.getFileSize());
+        try {
+
+            String mime= MimeUtils.getMime(pictureFile.getExtendName());
+            httpServletResponse.setHeader("Content-Type", mime);
+
+            String fileName = pictureFile.getFileName() + "." + pictureFile.getExtendName();
+            try {
+                fileName = new String(fileName.getBytes("utf-8"), "ISO-8859-1");
+            } catch (UnsupportedEncodingException e) {
+                e.printStackTrace();
+            }
+
+            httpServletResponse.addHeader("Content-Disposition", "fileName=" + fileName);// 设置文件名
+
+            previewer.imageOriginalPreview(httpServletResponse, previewFile);
+        } catch (Exception e){
+            //org.apache.catalina.connector.ClientAbortException: java.io.IOException: 你的主机中的软件中止了一个已建立的连接。
+            if (e.getMessage().contains("ClientAbortException")) {
+                //该异常忽略不做处理
+            } else {
+                log.error("预览文件出现异常：{}", e.getMessage());
+            }
+
+        }
     }
 
     @Override
@@ -339,34 +452,7 @@ public class FiletransferService implements IFiletransferService {
         deleter.delete(deleteFile);
     }
 
-    @Override
-    public StorageBean selectStorageBean(StorageBean storageBean) {
-        LambdaQueryWrapper<StorageBean> lambdaQueryWrapper = new LambdaQueryWrapper<>();
-        lambdaQueryWrapper.eq(StorageBean::getUserId, storageBean.getUserId());
-        return storageMapper.selectOne(lambdaQueryWrapper);
 
-    }
-
-    @Override
-    public void insertStorageBean(StorageBean storageBean) {
-        storageMapper.insert(storageBean);
-    }
-
-    @Override
-    public void updateStorageBean(StorageBean storageBean) {
-        LambdaUpdateWrapper<StorageBean> lambdaUpdateWrapper = new LambdaUpdateWrapper<>();
-        lambdaUpdateWrapper.set(StorageBean::getStorageSize, storageBean.getStorageSize())
-                .eq(StorageBean::getStorageId, storageBean.getStorageId())
-                .eq(StorageBean::getUserId, storageBean.getUserId());
-        storageMapper.update(null, lambdaUpdateWrapper);
-    }
-
-    @Override
-    public StorageBean selectStorageByUser(StorageBean storageBean) {
-        LambdaQueryWrapper<StorageBean> lambdaQueryWrapper = new LambdaQueryWrapper<>();
-        lambdaQueryWrapper.eq(StorageBean::getUserId, storageBean.getUserId());
-        return storageMapper.selectOne(lambdaQueryWrapper);
-    }
 
     @Override
     public Long selectStorageSizeByUserId(Long userId){

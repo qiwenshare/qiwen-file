@@ -4,9 +4,10 @@ import com.qiwenshare.common.exception.NotLoginException;
 import com.qiwenshare.common.result.RestResult;
 import com.qiwenshare.common.result.ResultCodeEnum;
 
-import com.qiwenshare.ufop.exception.UploadException;
+import com.qiwenshare.ufop.exception.operation.UploadException;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
@@ -65,6 +66,15 @@ public class GlobalExceptionHandlerAdvice {
     @ResponseBody
     @ResponseStatus(HttpStatus.UNAUTHORIZED)
     public RestResult error(NotLoginException e) {
+        e.printStackTrace();
+        log.error("全局异常捕获：" + e);
+        return RestResult.setResult(ResultCodeEnum.NOT_LOGIN_ERROR);
+    }
+
+    @ExceptionHandler(UsernameNotFoundException.class)
+    @ResponseBody
+    @ResponseStatus(HttpStatus.UNAUTHORIZED)
+    public RestResult error(UsernameNotFoundException e) {
         e.printStackTrace();
         log.error("全局异常捕获：" + e);
         return RestResult.setResult(ResultCodeEnum.NOT_LOGIN_ERROR);

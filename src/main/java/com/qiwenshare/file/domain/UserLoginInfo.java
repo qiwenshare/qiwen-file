@@ -22,6 +22,8 @@ public class UserLoginInfo {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @TableId(type = IdType.AUTO)
     private Long userLoginId;
+    @Column(columnDefinition = "varchar(30) comment '用户登录日期'")
     private String userloginDate;
+    @Column(columnDefinition = "bigint(20) comment '用户id'")
     private Long userId;
 }

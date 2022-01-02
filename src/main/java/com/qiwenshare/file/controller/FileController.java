@@ -1,12 +1,10 @@
 package com.qiwenshare.file.controller;
 
 import com.alibaba.fastjson.JSON;
-import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
+import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.qiwenshare.common.anno.MyLog;
-import com.qiwenshare.common.exception.NotLoginException;
 import com.qiwenshare.common.result.RestResult;
-import com.qiwenshare.common.result.ResultCodeEnum;
 import com.qiwenshare.common.util.DateUtil;
 import com.qiwenshare.file.advice.QiwenException;
 import com.qiwenshare.file.api.IFileService;
@@ -14,13 +12,10 @@ import com.qiwenshare.file.api.IUserFileService;
 import com.qiwenshare.file.api.IUserService;
 import com.qiwenshare.file.component.FileDealComp;
 import com.qiwenshare.file.config.es.FileSearch;
+import com.qiwenshare.file.config.security.user.JwtUser;
 import com.qiwenshare.file.domain.FileBean;
-import com.qiwenshare.file.domain.TreeNode;
-import com.qiwenshare.file.domain.UserBean;
+import com.qiwenshare.file.util.TreeNode;
 import com.qiwenshare.file.domain.UserFile;
-import com.qiwenshare.file.dto.file.BatchMoveFileDTO;
-import com.qiwenshare.file.dto.file.CopyFileDTO;
-import com.qiwenshare.file.dto.file.MoveFileDTO;
 import com.qiwenshare.file.dto.file.*;
 import com.qiwenshare.file.util.SessionUtil;
 import com.qiwenshare.file.vo.file.FileListVo;
@@ -28,14 +23,15 @@ import com.qiwenshare.ufop.factory.UFOPFactory;
 import com.qiwenshare.ufop.operation.download.domain.DownloadFile;
 import com.qiwenshare.ufop.operation.write.Writer;
 import com.qiwenshare.ufop.operation.write.domain.WriteFile;
-import com.qiwenshare.ufop.util.UFOPUtils;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.codec.digest.DigestUtils;
 import org.eclipse.jetty.util.StringUtil;
-import org.elasticsearch.index.query.*;
+import org.elasticsearch.index.query.DisMaxQueryBuilder;
+import org.elasticsearch.index.query.QueryBuilder;
+import org.elasticsearch.index.query.QueryBuilders;
 import org.elasticsearch.search.fetch.subphase.highlight.HighlightBuilder;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.PageRequest;
@@ -82,7 +78,7 @@ public class FileController {
     @ResponseBody
     public RestResult<String> createFile(@Valid @RequestBody CreateFileDTO createFileDto) {
 
-        UserBean sessionUserBean = (UserBean) SessionUtil.getSession();
+        JwtUser sessionUserBean = SessionUtil.getSession();
 
         boolean isDirExist = userFileService.isDirExist(createFileDto.getFileName(), createFileDto.getFilePath(), sessionUserBean.getUserId());
 
@@ -108,7 +104,7 @@ public class FileController {
     @MyLog(operation = "文件搜索", module = CURRENT_MODULE)
     @ResponseBody
     public RestResult<SearchHits<FileSearch>> searchFile(SearchFileDTO searchFileDTO) {
-        UserBean sessionUserBean = (UserBean) SessionUtil.getSession();
+        JwtUser sessionUserBean =  SessionUtil.getSession();
         NativeSearchQueryBuilder queryBuilder = new NativeSearchQueryBuilder();
         HighlightBuilder.Field allHighLight = new HighlightBuilder.Field("*").preTags("<span class='keyword'>")
                 .postTags("</span>");
@@ -142,6 +138,7 @@ public class FileController {
 
         QueryBuilder q2 = QueryBuilders.boolQuery()
                 .must(QueryBuilders.wildcardQuery("fileName", "*" + searchFileDTO.getFileName() + "*"))
+                .must(QueryBuilders.wildcardQuery("content", "*" + searchFileDTO.getFileName() + "*"))
                 .must(QueryBuilders.termQuery("userId", sessionUserBean.getUserId())).boost(2f); //模糊匹配
 
         disMaxQueryBuilder.add(q1);
@@ -165,10 +162,7 @@ public class FileController {
     @ResponseBody
     public RestResult<String> renameFile(@RequestBody RenameFileDTO renameFileDto) {
 
-        UserBean sessionUserBean = (UserBean) SessionUtil.getSession();
-        if (sessionUserBean == null) {
-            throw new NotLoginException();
-        }
+        JwtUser sessionUserBean =  SessionUtil.getSession();
         UserFile userFile = userFileService.getById(renameFileDto.getUserFileId());
 
         List<UserFile> userFiles = userFileService.selectUserFileByNameAndPath(renameFileDto.getFileName(), userFile.getFilePath(), sessionUserBean.getUserId());
@@ -201,38 +195,13 @@ public class FileController {
             @Parameter(description = "当前页", required = true) long currentPage,
             @Parameter(description = "页面数量", required = true) long pageCount){
 
-        UserFile userFile = new UserFile();
-        UserBean sessionUserBean = (UserBean) SessionUtil.getSession();
-        if (sessionUserBean == null) {
-            throw new NotLoginException();
-        }
-        if (userFile == null) {
-            return RestResult.fail();
 
-        }
-        userFile.setUserId(sessionUserBean.getUserId());
+        IPage<FileListVo> fileList = userFileService.userFileList(filePath, currentPage, pageCount);
 
-
-        List<FileListVo> fileList = null;
-        userFile.setFilePath(UFOPUtils.urlDecode(filePath));
-        if (currentPage == 0 || pageCount == 0) {
-            fileList = userFileService.userFileList(userFile, 0L, 10L);
-        } else {
-            long beginCount = (currentPage - 1) * pageCount;
-
-            fileList = userFileService.userFileList(userFile, beginCount, pageCount);
-
-        }
-
-        LambdaQueryWrapper<UserFile> userFileLambdaQueryWrapper = new LambdaQueryWrapper<>();
-        userFileLambdaQueryWrapper.eq(UserFile::getUserId, userFile.getUserId())
-                .eq(UserFile::getFilePath, userFile.getFilePath())
-                .eq(UserFile::getDeleteFlag, 0);
-        int total = userFileService.count(userFileLambdaQueryWrapper);
 
         Map<String, Object> map = new HashMap<>();
-        map.put("total", total);
-        map.put("list", fileList);
+        map.put("total", fileList.getTotal());
+        map.put("list", fileList.getRecords());
 
 
         return RestResult.success().data(map);
@@ -245,10 +214,7 @@ public class FileController {
     @ResponseBody
     public RestResult<String> deleteImageByIds(@RequestBody BatchDeleteFileDTO batchDeleteFileDto) {
 
-        UserBean sessionUserBean = (UserBean) SessionUtil.getSession();
-        if (sessionUserBean == null) {
-            throw new NotLoginException();
-        }
+        JwtUser sessionUserBean =  SessionUtil.getSession();
         List<UserFile> userFiles = JSON.parseArray(batchDeleteFileDto.getFiles(), UserFile.class);
         DigestUtils.md5Hex("data");
         for (UserFile userFile : userFiles) {
@@ -266,10 +232,7 @@ public class FileController {
     @ResponseBody
     public RestResult deleteFile(@RequestBody DeleteFileDTO deleteFileDto) {
 
-        UserBean sessionUserBean = (UserBean) SessionUtil.getSession();
-        if (sessionUserBean == null) {
-            throw new NotLoginException();
-        }
+        JwtUser sessionUserBean =  SessionUtil.getSession();
         userFileService.deleteUserFile(deleteFileDto.getUserFileId(), sessionUserBean.getUserId());
         fileDealComp.deleteESByUserFileId(deleteFileDto.getUserFileId());
 
@@ -283,10 +246,6 @@ public class FileController {
     @ResponseBody
     public RestResult<String> unzipFile(@RequestBody UnzipFileDTO unzipFileDto) {
 
-        UserBean sessionUserBean = (UserBean) SessionUtil.getSession();
-        if (sessionUserBean == null) {
-            throw new NotLoginException();
-        }
         try {
             fileService.unzipFile(unzipFileDto.getUserFileId(), unzipFileDto.getUnzipMode(), unzipFileDto.getFilePath());
         } catch (QiwenException e) {
@@ -303,10 +262,8 @@ public class FileController {
     @ResponseBody
     public RestResult<String> copyFile(@RequestBody CopyFileDTO copyFileDTO) {
 
-        UserBean sessionUserBean = (UserBean) SessionUtil.getSession();
-        if (sessionUserBean == null) {
-            throw new NotLoginException();
-        }
+        JwtUser sessionUserBean =  SessionUtil.getSession();
+
         long userFileId = copyFileDTO.getUserFileId();
         UserFile userFile = userFileService.getById(userFileId);
         String oldfilePath = userFile.getFilePath();
@@ -331,10 +288,8 @@ public class FileController {
     @ResponseBody
     public RestResult<String> moveFile(@RequestBody MoveFileDTO moveFileDto) {
 
-        UserBean sessionUserBean = (UserBean) SessionUtil.getSession();
-        if (sessionUserBean == null) {
-            throw new NotLoginException();
-        }
+        JwtUser sessionUserBean =  SessionUtil.getSession();
+
         String oldfilePath = moveFileDto.getOldFilePath();
         String newfilePath = moveFileDto.getFilePath();
         String fileName = moveFileDto.getFileName();
@@ -357,10 +312,8 @@ public class FileController {
     @ResponseBody
     public RestResult<String> batchMoveFile(@RequestBody BatchMoveFileDTO batchMoveFileDto) {
 
-        UserBean sessionUserBean = (UserBean) SessionUtil.getSession();
-        if (sessionUserBean == null) {
-            throw new NotLoginException();
-        }
+        JwtUser sessionUserBean =  SessionUtil.getSession();
+
         String files = batchMoveFileDto.getFiles();
         String newfilePath = batchMoveFileDto.getFilePath();
 
@@ -388,43 +341,17 @@ public class FileController {
     @RequestMapping(value = "/selectfilebyfiletype", method = RequestMethod.GET)
     @ResponseBody
     public RestResult<List<Map<String, Object>>> selectFileByFileType(@Parameter(description = "文件类型", required = true) int fileType,
-                                                                      @Parameter(description = "当前页", required = true) long currentPage,
-                                                                      @Parameter(description = "页面数量", required = true) long pageCount) {
+                                                                      @Parameter(description = "当前页", required = true) @RequestParam(defaultValue = "1") long currentPage,
+                                                                      @Parameter(description = "页面数量", required = true) @RequestParam(defaultValue = "10") long pageCount) {
 
-        UserBean sessionUserBean = (UserBean) SessionUtil.getSession();
-        if (sessionUserBean == null) {
-            throw new NotLoginException();
-        }
+        JwtUser sessionUserBean =  SessionUtil.getSession();
+
         long userId = sessionUserBean.getUserId();
 
-        List<FileListVo> fileList = new ArrayList<>();
-        Long beginCount = 0L;
-        if (pageCount == 0 || currentPage == 0) {
-            beginCount = 0L;
-            pageCount = 10L;
-        } else {
-            beginCount = (currentPage - 1) * pageCount;
-        }
-
-        Long total = 0L;
-        if (fileType == UFOPUtils.OTHER_TYPE) {
-
-            List<String> arrList = new ArrayList<>();
-            arrList.addAll(Arrays.asList(UFOPUtils.DOC_FILE));
-            arrList.addAll(Arrays.asList(UFOPUtils.IMG_FILE));
-            arrList.addAll(Arrays.asList(UFOPUtils.VIDEO_FILE));
-            arrList.addAll(Arrays.asList(UFOPUtils.MUSIC_FILE));
-
-            fileList = userFileService.selectFileNotInExtendNames(arrList,beginCount, pageCount, userId);
-            total = userFileService.selectCountNotInExtendNames(arrList,beginCount, pageCount, userId);
-        } else {
-            fileList = userFileService.selectFileByExtendName(UFOPUtils.getFileExtendsByType(fileType), beginCount, pageCount,userId);
-            total = userFileService.selectCountByExtendName(UFOPUtils.getFileExtendsByType(fileType), beginCount, pageCount,userId);
-        }
-
+        IPage<FileListVo> result = userFileService.getFileByFileType(fileType, currentPage, pageCount, userId);
         Map<String, Object> map = new HashMap<>();
-        map.put("list",fileList);
-        map.put("total", total);
+        map.put("list", result.getRecords());
+        map.put("total", result.getTotal());
         return RestResult.success().data(map);
 
     }
@@ -435,10 +362,7 @@ public class FileController {
     public RestResult<TreeNode> getFileTree() {
         RestResult<TreeNode> result = new RestResult<TreeNode>();
 
-        UserBean sessionUserBean = (UserBean) SessionUtil.getSession();
-        if (sessionUserBean == null) {
-            throw new NotLoginException();
-        }
+        JwtUser sessionUserBean =  SessionUtil.getSession();
 
         List<UserFile> userFileList = userFileService.selectFilePathTreeByUserId(sessionUserBean.getUserId());
         TreeNode resultTreeNode = new TreeNode();
@@ -484,10 +408,11 @@ public class FileController {
     @RequestMapping(value = "/update", method = RequestMethod.POST)
     @ResponseBody
     public RestResult<String> updateFile(@RequestBody UpdateFileDTO updateFileDTO) {
-        UserBean sessionUserBean = (UserBean) SessionUtil.getSession();
+        JwtUser sessionUserBean =  SessionUtil.getSession();
         UserFile userFile = userFileService.getById(updateFileDTO.getUserFileId());
         FileBean fileBean = fileService.getById(userFile.getFileId());
-        if (fileBean.getPointCount() > 1) {
+        Long pointCount = fileService.getFilePointCount(userFile.getFileId());
+        if (pointCount > 1) {
             return RestResult.fail().message("暂不支持修改");
         }
         String content = updateFileDTO.getFileContent();
@@ -511,7 +436,6 @@ public class FileController {
             fileService.updateById(fileBean);
         } catch (Exception e) {
             throw new QiwenException(999999, "修改文件异常");
-//            log.error(e.getMessage());
         } finally {
             try {
                 byteArrayInputStream.close();

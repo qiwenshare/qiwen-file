@@ -9,14 +9,11 @@ import com.qiwenshare.file.api.*;
 import com.qiwenshare.file.config.es.FileSearch;
 import com.qiwenshare.file.domain.*;
 import com.qiwenshare.file.mapper.UserFileMapper;
-import com.qiwenshare.file.vo.file.FileListVo;
+import com.qiwenshare.file.util.TreeNode;
 import com.qiwenshare.ufop.factory.UFOPFactory;
-import com.qiwenshare.ufop.operation.read.Reader;
-import com.qiwenshare.ufop.operation.read.domain.ReadFile;
 import com.qiwenshare.ufop.util.UFOPUtils;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import javax.annotation.Resource;
@@ -45,9 +42,12 @@ public class FileDealComp {
     IShareFileService shareFileService;
     @Resource
     IUserFileService userFileService;
+    @Resource
+    UFOPFactory ufopFactory;
 
-    @Autowired
+    @Resource
     private IElasticSearchService elasticSearchService;
+
     public static Executor exec = Executors.newFixedThreadPool(10);
 
     /**
@@ -184,7 +184,7 @@ public class FileDealComp {
      * @param nodeNameQueue
      * @return
      */
-    public TreeNode insertTreeNode(TreeNode treeNode, long id,  String filePath, Queue<String> nodeNameQueue){
+    public TreeNode insertTreeNode(TreeNode treeNode, long id, String filePath, Queue<String> nodeNameQueue){
 
         List<TreeNode> childrenTreeNodes = treeNode.getChildren();
         String currentNodeName = nodeNameQueue.peek();
@@ -255,9 +255,10 @@ public class FileDealComp {
     public void uploadESByUserFileId(Long userFileId) {
 
         try {
-            UserFile userFile = new UserFile();
-            userFile.setUserFileId(userFileId);
-            List<FileListVo> userfileResult = userFileMapper.userFileList(userFile, null, null);
+
+            Map<String, Object> param = new HashMap<>();
+            param.put("userFileId", userFileId);
+            List<UserFile> userfileResult = userFileMapper.selectByMap(param);
             if (userfileResult != null && userfileResult.size() > 0) {
                 FileSearch fileSearch = new FileSearch();
                 BeanUtil.copyProperties(userfileResult.get(0), fileSearch);
@@ -268,7 +269,7 @@ public class FileDealComp {
 //                    readFile.setFileUrl(fileSearch.getFileUrl());
 //                    String content = reader.read(readFile);
 //                    //全文搜索
-//    //                fileSearch.setContent(content);
+//                    fileSearch.setContent(content);
 //
 //                }
                 elasticSearchService.save(fileSearch);
@@ -298,20 +299,24 @@ public class FileDealComp {
     public boolean checkAuthDownloadAndPreview(String shareBatchNum,
                                                String extractionCode,
                                                String token,
-                                               long userFileId) {
+                                               Long userFileId,
+                                               Integer platform) {
         log.debug("权限检查开始：shareBatchNum:{}, extractionCode:{}, token:{}, userFileId{}" , shareBatchNum, extractionCode, token, userFileId);
+        if (platform != null && platform == 2) {
+            return true;
+        }
         UserFile userFile = userFileService.getById(userFileId);
         log.debug(JSON.toJSONString(userFile));
         if ("undefined".equals(shareBatchNum)  || StringUtils.isEmpty(shareBatchNum)) {
 
-            UserBean sessionUserBean = userService.getUserBeanByToken(token);
-            log.debug(JSON.toJSONString("当前登录session用户：" + sessionUserBean));
-            if (sessionUserBean == null) {
+            Long userId = userService.getUserIdByToken(token);
+            log.debug(JSON.toJSONString("当前登录session用户id：" + userId));
+            if (userId == null) {
                 return false;
             }
             log.debug("文件所属用户id：" + userFile.getUserId());
-            log.debug("登录用户id:" + sessionUserBean.getUserId());
-            if (userFile.getUserId().longValue() != sessionUserBean.getUserId().longValue()) {
+            log.debug("登录用户id:" + userId);
+            if (userFile.getUserId().longValue() != userId) {
                 log.info("用户id不一致，权限校验失败");
                 return false;
             }

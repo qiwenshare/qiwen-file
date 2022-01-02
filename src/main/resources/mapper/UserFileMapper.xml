@@ -11,11 +11,22 @@
         WHERE filepath LIKE N'${oldFilePath}%' and userId = #{userId};
     </update>
 
-    <select id="userFileList" resultType="com.qiwenshare.file.vo.file.FileListVo">
+
+    <select id="selectPageVo" parameterType="com.qiwenshare.file.domain.UserFile" resultType="com.qiwenshare.file.vo.file.FileListVo">
         select * from userfile a
-        left join file on file.fileId = a.fileId
         left join image on a.fileId = image.fileId
+        left join file on file.fileId = a.fileId
         <where>
+            <if test="fileTypeId != null">
+                <choose>
+                    <when test="fileTypeId != 5">
+                        extendName in (select fileExtendName from fileclassification where fileTypeId = #{fileTypeId})
+                    </when>
+                    <otherwise>
+                        extendName not in (select fileExtendName from fileclassification where fileTypeId in (1, 2, 3, 4))
+                    </otherwise>
+                </choose>
+            </if>
             <if test="userFile.userId != null">
                 and a.userId = #{userFile.userId}
             </if>
@@ -33,51 +44,7 @@
             </if>
             and a.deleteFlag = 0
         </where>
-        ORDER BY  isDir desc
-        <if test="beginCount != null and pageCount != null">
-            limit #{beginCount}, #{pageCount}
-        </if>
-    </select>
-
-    <sql id="selectByExtendName" >
-        left join file on file.fileId = userfile.fileId
-        where extendName in
-        <foreach collection="fileNameList" open="(" close=")" separator="," item="fileName" >
-            #{fileName}
-        </foreach>
-        and userId = #{userId}
-        and deleteFlag = 0
-    </sql>
-    <sql id="selectByNotExtendName">
-        left join file on file.fileId = userfile.fileId
-        where extendName not in
-        <foreach collection="fileNameList" open="(" close=")" separator="," item="fileName" >
-            #{fileName}
-        </foreach>
-        and userId = #{userId}
-        and deleteFlag = 0
-    </sql>
-    <select id="selectFileByExtendName" parameterType="com.qiwenshare.file.domain.UserFile" resultType="com.qiwenshare.file.vo.file.FileListVo">
-        select * from userfile
-        left join image on userfile.fileId = image.fileId
-        <include refid="selectByExtendName"></include>
-        limit #{beginCount}, #{pageCount}
-    </select>
-
-    <select id="selectCountByExtendName" parameterType="com.qiwenshare.file.domain.UserFile" resultType="java.lang.Long">
-        select count(*) from userfile
-        <include refid="selectByExtendName"></include>
-    </select>
-
-    <select id="selectFileNotInExtendNames" parameterType="com.qiwenshare.file.domain.UserFile" resultType="com.qiwenshare.file.vo.file.FileListVo">
-        select * from userfile
-        <include refid="selectByNotExtendName"></include>
-        limit #{beginCount}, #{pageCount}
-    </select>
-
-    <select id="selectCountNotInExtendNames" parameterType="com.qiwenshare.file.domain.UserFile" resultType="java.lang.Long">
-        select count(*) from userfile
-        <include refid="selectByNotExtendName"></include>
+        ORDER BY isDir desc
     </select>
 
 

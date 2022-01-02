@@ -17,49 +17,36 @@ import java.util.List;
 @Entity
 @TableName("permission")
 public class Permission {
-    /**
-     * 权限id
-     */
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @TableId(type = IdType.AUTO)
     private Long permissionId;//主键
 
-    /**
-     * 父编号
-     */
-    @Column
+    @Column(columnDefinition="bigint(20) comment '父编号'")
     private Long parentId;
 
-    /**
-     * 权限名称
-     */
-    @Column
+    @Column(columnDefinition="varchar(30) comment '权限名称'")
     private String permissionName;//名称.
 
-    /**
-     * 资源类型
-     */
-    @Column
+    @Column(columnDefinition="int(2) comment '资源类型'")
     private Integer resourceType;//资源类型
 
-    /**
-     * 权限字符串
-     */
-    @Column
+    @Column(columnDefinition="varchar(30) comment '权限标识码'")
     private String permissionCode;
 
-    @Column
+    @Column(columnDefinition="int(2) comment '次序'")
     private Integer orderNum;
 
-
+    @Column(columnDefinition="varchar(30) comment '创建时间'")
     private String createTime;
-
+    @Column(columnDefinition="bigint(20) comment '创建用户id'")
     private Long createUserId;
-
+    @Column(columnDefinition="varchar(30) comment '修改时间'")
     private String modifyTime;
-
+    @Column(columnDefinition="bigint(20) comment '修改用户id'")
     private Long modifyUserId;
+
 
 
 }
