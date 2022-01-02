@@ -152,12 +152,15 @@ public class FiletransferController {
             filetransferService.previewPictureFile(httpServletResponse, previewDTO);
             return ;
         }
-
-        Cookie[] cookieArr = httpServletRequest.getCookies();
         String token = "";
-        for (Cookie cookie : cookieArr) {
-            if ("token".equals(cookie.getName())) {
-                token = cookie.getValue();
+        if (StringUtils.isNotEmpty(previewDTO.getToken())) {
+            token = previewDTO.getToken();
+        } else {
+            Cookie[] cookieArr = httpServletRequest.getCookies();
+            for (Cookie cookie : cookieArr) {
+                if ("token".equals(cookie.getName())) {
+                    token = cookie.getValue();
+                }
             }
         }
 

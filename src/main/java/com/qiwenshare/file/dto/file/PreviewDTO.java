@@ -14,4 +14,5 @@ public class PreviewDTO {
     private String isMin;
     private Integer platform;
     private String url;
+    private String token;
 }
