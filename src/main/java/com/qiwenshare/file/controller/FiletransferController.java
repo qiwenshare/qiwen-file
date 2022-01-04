@@ -111,9 +111,11 @@ public class FiletransferController {
     public void downloadFile(HttpServletRequest httpServletRequest, HttpServletResponse httpServletResponse, DownloadFileDTO downloadFileDTO) {
         Cookie[] cookieArr = httpServletRequest.getCookies();
         String token = "";
-        for (Cookie cookie : cookieArr) {
-            if ("token".equals(cookie.getName())) {
-                token = cookie.getValue();
+        if (cookieArr != null) {
+            for (Cookie cookie : cookieArr) {
+                if ("token".equals(cookie.getName())) {
+                    token = cookie.getValue();
+                }
             }
         }
         boolean authResult = fileDealComp.checkAuthDownloadAndPreview(downloadFileDTO.getShareBatchNum(),
