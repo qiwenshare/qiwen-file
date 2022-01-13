@@ -14,6 +14,8 @@ import com.qiwenshare.ufop.factory.UFOPFactory;
 import com.qiwenshare.ufop.util.UFOPUtils;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Component;
 
 import javax.annotation.Resource;
@@ -42,10 +44,9 @@ public class FileDealComp {
     IShareFileService shareFileService;
     @Resource
     IUserFileService userFileService;
-    @Resource
-    UFOPFactory ufopFactory;
 
-    @Resource
+    @Autowired
+    @Lazy
     private IElasticSearchService elasticSearchService;
 
     public static Executor exec = Executors.newFixedThreadPool(10);
