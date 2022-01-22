@@ -3,21 +3,21 @@ package com.qiwenshare.file.controller;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.qiwenshare.common.anno.MyLog;
 import com.qiwenshare.common.result.RestResult;
-import com.qiwenshare.common.util.DateUtil;
 import com.qiwenshare.common.util.MimeUtils;
+import com.qiwenshare.common.util.security.JwtUser;
+import com.qiwenshare.common.util.security.SessionUtil;
 import com.qiwenshare.file.api.*;
 import com.qiwenshare.file.component.FileDealComp;
-import com.qiwenshare.file.config.security.user.JwtUser;
-import com.qiwenshare.file.domain.*;
+import com.qiwenshare.file.domain.FileBean;
+import com.qiwenshare.file.domain.Image;
+import com.qiwenshare.file.domain.StorageBean;
+import com.qiwenshare.file.domain.UserFile;
 import com.qiwenshare.file.dto.file.DownloadFileDTO;
 import com.qiwenshare.file.dto.file.PreviewDTO;
 import com.qiwenshare.file.dto.file.UploadFileDTO;
 import com.qiwenshare.file.mapper.ImageMapper;
 import com.qiwenshare.file.service.StorageService;
-import com.qiwenshare.file.util.SessionUtil;
-import com.qiwenshare.file.vo.file.FileListVo;
 import com.qiwenshare.file.vo.file.UploadFileVo;
-import com.qiwenshare.ufop.constant.UploadFileStatusEnum;
 import com.qiwenshare.ufop.factory.UFOPFactory;
 import com.qiwenshare.ufop.operation.download.Downloader;
 import com.qiwenshare.ufop.operation.download.domain.DownloadFile;
@@ -37,9 +37,7 @@ import java.awt.image.BufferedImage;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.UnsupportedEncodingException;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 @Slf4j
 @Tag(name = "filetransfer", description = "该接口为文件传输接口，主要用来做文件的上传、下载和预览")

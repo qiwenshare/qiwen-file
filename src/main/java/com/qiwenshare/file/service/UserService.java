@@ -6,13 +6,13 @@ import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.qiwenshare.common.result.RestResult;
 import com.qiwenshare.common.util.DateUtil;
 import com.qiwenshare.common.util.PasswordUtil;
+import com.qiwenshare.common.util.security.JwtUser;
 import com.qiwenshare.file.api.IUserService;
 import com.qiwenshare.file.component.JwtComp;
 import com.qiwenshare.file.component.UserDealComp;
-import com.qiwenshare.file.config.security.user.JwtUser;
 import com.qiwenshare.file.controller.UserController;
-import com.qiwenshare.file.domain.Role;
-import com.qiwenshare.file.domain.UserBean;
+import com.qiwenshare.file.domain.user.Role;
+import com.qiwenshare.file.domain.user.UserBean;
 import com.qiwenshare.file.mapper.UserMapper;
 import io.jsonwebtoken.Claims;
 import lombok.extern.slf4j.Slf4j;
@@ -70,14 +70,6 @@ public class UserService extends ServiceImpl<UserMapper, UserBean> implements IU
         return null;
     }
 
-
-    @Override
-    public UserBean selectUserByopenid(String openid) {
-        LambdaQueryWrapper<UserBean> lambdaQueryWrapper = new LambdaQueryWrapper<>();
-        lambdaQueryWrapper.eq(UserBean::getOpenId, openid);
-        return userMapper.selectOne(lambdaQueryWrapper);
-
-    }
 
     @Override
     public RestResult<String> registerUser(UserBean userBean) {

@@ -1,7 +1,6 @@
 package com.qiwenshare.file.config.security.filter;
 
-import com.qiwenshare.file.advice.QiwenException;
-import com.qiwenshare.file.mapper.SysParamMapper;
+import com.qiwenshare.common.exception.QiwenException;
 import com.qiwenshare.file.service.SysParamService;
 import com.qiwenshare.file.service.UserService;
 import org.apache.commons.lang3.StringUtils;

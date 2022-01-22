@@ -8,15 +8,15 @@ import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.qiwenshare.common.constant.FileConstant;
 import com.qiwenshare.common.util.DateUtil;
+import com.qiwenshare.common.util.security.JwtUser;
+import com.qiwenshare.common.util.security.SessionUtil;
 import com.qiwenshare.file.api.IUserFileService;
-import com.qiwenshare.file.config.security.user.JwtUser;
 import com.qiwenshare.file.domain.RecoveryFile;
 import com.qiwenshare.file.domain.UserFile;
 import com.qiwenshare.file.mapper.FileMapper;
 import com.qiwenshare.file.mapper.FileTypeMapper;
 import com.qiwenshare.file.mapper.RecoveryFileMapper;
 import com.qiwenshare.file.mapper.UserFileMapper;
-import com.qiwenshare.file.util.SessionUtil;
 import com.qiwenshare.file.vo.file.FileListVo;
 import com.qiwenshare.ufop.util.UFOPUtils;
 import lombok.extern.slf4j.Slf4j;
@@ -24,7 +24,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import javax.annotation.Resource;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 import java.util.concurrent.Executor;
@@ -88,12 +87,16 @@ public class UserFileService  extends ServiceImpl<UserFileMapper, UserFile> impl
     }
 
     @Override
-    public IPage<FileListVo> userFileList(String filePath, Long currentPage, Long pageCount) {
+    public IPage<FileListVo> userFileList(Long userId, String filePath, Long currentPage, Long pageCount) {
         Page<FileListVo> page = new Page<>(currentPage, pageCount);
         UserFile userFile = new UserFile();
         JwtUser sessionUserBean = SessionUtil.getSession();
+        if (userId == null) {
+            userFile.setUserId(sessionUserBean.getUserId());
+        } else {
+            userFile.setUserId(userId);
+        }
 
-        userFile.setUserId(sessionUserBean.getUserId());
         userFile.setFilePath(UFOPUtils.urlDecode(filePath));
 
         return userFileMapper.selectPageVo(page, userFile, null);

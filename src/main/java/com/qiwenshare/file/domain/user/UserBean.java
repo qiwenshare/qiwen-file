@@ -1,14 +1,11 @@
-package com.qiwenshare.file.domain;
+package com.qiwenshare.file.domain.user;
 
 import com.baomidou.mybatisplus.annotation.IdType;
-import com.baomidou.mybatisplus.annotation.TableField;
 import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableName;
 import lombok.Data;
 
 import javax.persistence.*;
-import javax.websocket.Session;
-import java.util.List;
 
 /**
  * 用户基础信息类
@@ -16,9 +13,7 @@ import java.util.List;
  * @author ma116
  */
 @Data
-@Table(name = "user", uniqueConstraints = {
-        @UniqueConstraint(name = "openIdIndex", columnNames = {"openId"})
-})
+@Table(name = "user")
 @Entity
 @TableName("user")
 public class UserBean {
@@ -29,20 +24,11 @@ public class UserBean {
     @TableId(type = IdType.AUTO)
     private Long userId;
 
-    @Column(columnDefinition = "varchar(30) comment 'openId'")
-    private String openId;
-
     @Column(columnDefinition = "varchar(30) comment '用户名'")
     private String username;
 
-    @Column(columnDefinition = "varchar(30) comment '真实名'")
-    private String realname;
-
     @Column(columnDefinition = "varchar(35) comment '密码'")
     private String password;
-
-    @Column(columnDefinition = "varchar(35) comment 'qq密码'")
-    private String qqPassword;
 
     @Column(columnDefinition = "varchar(15) comment '手机号'")
     private String telephone;
@@ -52,7 +38,6 @@ public class UserBean {
 
     @Column(columnDefinition = "varchar(3) comment '性别'")
     private String sex;
-
 
     @Column(columnDefinition = "varchar(30) comment '生日'")
     private String birthday;
@@ -76,7 +61,7 @@ public class UserBean {
     private String intro;
 
     @Column(columnDefinition = "varchar(20) comment '盐'")
-    private String salt;//加密密码的盐
+    private String salt;
 
     @Column(columnDefinition = "varchar(100) comment '头像'")
     private String imageUrl;
@@ -94,15 +79,5 @@ public class UserBean {
     @Column(columnDefinition = "bigint(20) comment '修改用户id'")
     private Long modifyUserId;
 
-
-    /**
-     * 角色列表
-     */
-//    @ManyToMany(fetch = FetchType.EAGER)//立即从数据库中进行加载数据
-//    @JoinTable(name = "user_role",
-//            joinColumns = {@JoinColumn(name = "userId")},
-//            inverseJoinColumns = {@JoinColumn(name = "roleid")})
-//    @TableField(exist = false)
-//    private List<Role> roles;
 
 }

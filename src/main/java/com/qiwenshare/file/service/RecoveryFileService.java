@@ -5,10 +5,8 @@ import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.qiwenshare.file.api.IRecoveryFileService;
 import com.qiwenshare.file.component.FileDealComp;
-import com.qiwenshare.file.domain.FileBean;
 import com.qiwenshare.file.domain.RecoveryFile;
 import com.qiwenshare.file.domain.UserFile;
-import com.qiwenshare.file.mapper.FileMapper;
 import com.qiwenshare.file.mapper.RecoveryFileMapper;
 import com.qiwenshare.file.mapper.UserFileMapper;
 import com.qiwenshare.file.vo.file.RecoveryFileListVo;
@@ -18,8 +16,6 @@ import org.springframework.transaction.annotation.Transactional;
 
 import javax.annotation.Resource;
 import java.util.List;
-import java.util.concurrent.Executor;
-import java.util.concurrent.Executors;
 
 @Slf4j
 @Service

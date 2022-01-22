@@ -3,7 +3,6 @@ package com.qiwenshare.file.util;
 import com.qiwenshare.common.util.CollectUtil;
 import com.qiwenshare.common.util.DateUtil;
 import com.qiwenshare.file.domain.OperationLogBean;
-import com.qiwenshare.file.domain.UserBean;
 
 import javax.servlet.http.HttpServletRequest;
 

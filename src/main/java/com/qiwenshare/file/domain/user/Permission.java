@@ -1,13 +1,11 @@
-package com.qiwenshare.file.domain;
+package com.qiwenshare.file.domain.user;
 
 import com.baomidou.mybatisplus.annotation.IdType;
-import com.baomidou.mybatisplus.annotation.TableField;
 import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableName;
 import lombok.Data;
 
 import javax.persistence.*;
-import java.util.List;
 
 /**
  * 权限实体类

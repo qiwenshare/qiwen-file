@@ -1,6 +1,7 @@
 package com.qiwenshare.file.advice;
 
 import com.qiwenshare.common.exception.NotLoginException;
+import com.qiwenshare.common.exception.QiwenException;
 import com.qiwenshare.common.result.RestResult;
 import com.qiwenshare.common.result.ResultCodeEnum;
 

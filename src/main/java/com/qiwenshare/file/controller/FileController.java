@@ -4,20 +4,20 @@ import com.alibaba.fastjson.JSON;
 import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.qiwenshare.common.anno.MyLog;
+import com.qiwenshare.common.exception.QiwenException;
 import com.qiwenshare.common.result.RestResult;
 import com.qiwenshare.common.util.DateUtil;
-import com.qiwenshare.file.advice.QiwenException;
+import com.qiwenshare.common.util.security.JwtUser;
+import com.qiwenshare.common.util.security.SessionUtil;
 import com.qiwenshare.file.api.IFileService;
 import com.qiwenshare.file.api.IUserFileService;
 import com.qiwenshare.file.api.IUserService;
 import com.qiwenshare.file.component.FileDealComp;
 import com.qiwenshare.file.config.es.FileSearch;
-import com.qiwenshare.file.config.security.user.JwtUser;
 import com.qiwenshare.file.domain.FileBean;
-import com.qiwenshare.file.util.TreeNode;
 import com.qiwenshare.file.domain.UserFile;
 import com.qiwenshare.file.dto.file.*;
-import com.qiwenshare.file.util.SessionUtil;
+import com.qiwenshare.file.util.TreeNode;
 import com.qiwenshare.file.vo.file.FileListVo;
 import com.qiwenshare.ufop.factory.UFOPFactory;
 import com.qiwenshare.ufop.operation.download.domain.DownloadFile;
@@ -196,7 +196,7 @@ public class FileController {
             @Parameter(description = "页面数量", required = true) long pageCount){
 
 
-        IPage<FileListVo> fileList = userFileService.userFileList(filePath, currentPage, pageCount);
+        IPage<FileListVo> fileList = userFileService.userFileList(null, filePath, currentPage, pageCount);
 
 
         Map<String, Object> map = new HashMap<>();
