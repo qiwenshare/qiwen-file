@@ -7,8 +7,8 @@
 <mapper namespace="com.qiwenshare.file.mapper.UserMapper">
 
     <insert id="insertUser" parameterType="com.qiwenshare.file.domain.user.UserBean" useGeneratedKeys="true" keyProperty="userId">
-        INSERT INTO user (username, salt, PASSWORD, qqPassword, telephone, sex, imageUrl, registerTime, available)
-        VALUES (#{username},#{salt}, #{password}, #{qqPassword}, #{telephone}, #{sex}, #{imageUrl}, #{registerTime}, 1);
+        INSERT INTO user (username, salt, PASSWORD,  telephone, sex, imageUrl, registerTime, available)
+        VALUES (#{username},#{salt}, #{password}, #{telephone}, #{sex}, #{imageUrl}, #{registerTime}, 1);
     </insert>
 
     <insert id="insertUserRole" parameterType="Long">
