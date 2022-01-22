@@ -135,9 +135,13 @@ public class FileDealComp {
                 userFile.setFilePath(parentFilePath + FileConstant.pathSeparator);
                 userFile.setDeleteFlag(0);
                 userFile.setIsDir(1);
+                userFile.setExtendName("");
                 userFile.setUploadTime(DateUtil.getCurrentTime());
-
-                userFileMapper.insert(userFile);
+                try {
+                    userFileMapper.insert(userFile);
+                } catch (Exception e) {
+                    //ignore
+                }
             }
 
         }

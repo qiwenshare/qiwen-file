@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.qiwenshare.file.mapper.CommonFileMapper">
+
+    <select id="selectCommonFileUser" parameterType="java.lang.Long" resultType="com.qiwenshare.file.vo.commonfile.CommonFileUser">
+        SELECT c.userId, (SELECT username FROM user WHERE user.userId = c.userId) username FROM commonfile a
+        LEFT JOIN filepermission b ON a.commonFileId = b.commonFileId
+        LEFT JOIN userfile c ON c.userFileId = a.userFileId
+        WHERE b.userId = #{userId}
+    </select>
+
+    <select id="selectCommonFileByUser" parameterType="java.lang.Long" resultType="com.qiwenshare.file.vo.commonfile.CommonFileListVo">
+        SELECT * FROM commonfile a
+        LEFT JOIN userfile b ON b.userFileId = a.userFileId
+        WHERE userId = #{userId}
+    </select>
+    
+
+</mapper>

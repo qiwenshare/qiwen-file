@@ -2,8 +2,8 @@ package com.qiwenshare.file.service;
 
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
+import com.qiwenshare.common.exception.QiwenException;
 import com.qiwenshare.common.operation.FileOperation;
-import com.qiwenshare.file.advice.QiwenException;
 import com.qiwenshare.file.api.IFileService;
 import com.qiwenshare.file.component.AsyncTaskComp;
 import com.qiwenshare.file.domain.FileBean;

@@ -1,9 +1,8 @@
 package com.qiwenshare.file.mapper;
 
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
-
-import com.qiwenshare.file.domain.Role;
-import com.qiwenshare.file.domain.UserBean;
+import com.qiwenshare.file.domain.user.Role;
+import com.qiwenshare.file.domain.user.UserBean;
 import org.apache.ibatis.annotations.Param;
 
 import java.util.List;

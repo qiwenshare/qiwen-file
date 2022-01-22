@@ -6,16 +6,15 @@ import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
 import com.qiwenshare.common.util.DateUtil;
 import com.qiwenshare.common.util.MimeUtils;
+import com.qiwenshare.common.util.security.JwtUser;
+import com.qiwenshare.common.util.security.SessionUtil;
 import com.qiwenshare.file.api.IFiletransferService;
 import com.qiwenshare.file.component.FileDealComp;
-import com.qiwenshare.file.config.security.user.JwtUser;
 import com.qiwenshare.file.domain.*;
 import com.qiwenshare.file.dto.file.DownloadFileDTO;
 import com.qiwenshare.file.dto.file.PreviewDTO;
 import com.qiwenshare.file.dto.file.UploadFileDTO;
 import com.qiwenshare.file.mapper.*;
-import com.qiwenshare.file.util.SessionUtil;
-import com.qiwenshare.file.vo.file.FileListVo;
 import com.qiwenshare.file.vo.file.UploadFileVo;
 import com.qiwenshare.ufop.constant.StorageTypeEnum;
 import com.qiwenshare.ufop.constant.UploadFileStatusEnum;
@@ -165,8 +164,13 @@ public class FiletransferService implements IFiletransferService {
             log.error("上传失败，请检查storageType是否配置正确");
             throw new UploadException("上传失败");
         }
-
-        List<UploadFileResult> uploadFileResultList = uploader.upload(request, uploadFile);
+        List<UploadFileResult> uploadFileResultList;
+        try {
+            uploadFileResultList = uploader.upload(request, uploadFile);
+        } catch (Exception e) {
+            log.error("上传失败，请检查UFOP连接配置是否正确");
+            throw new UploadException("上传失败");
+        }
         for (int i = 0; i < uploadFileResultList.size(); i++){
             UploadFileResult uploadFileResult = uploadFileResultList.get(i);
             FileBean fileBean = new FileBean();
@@ -383,7 +387,7 @@ public class FiletransferService implements IFiletransferService {
         }
         PreviewFile previewFile = new PreviewFile();
         previewFile.setFileUrl(fileBean.getFileUrl());
-        previewFile.setFileSize(fileBean.getFileSize());
+//        previewFile.setFileSize(fileBean.getFileSize());
         try {
             if ("true".equals(previewDTO.getIsMin())) {
                 previewer.imageThumbnailPreview(httpServletResponse, previewFile);
@@ -415,7 +419,7 @@ public class FiletransferService implements IFiletransferService {
         }
         PreviewFile previewFile = new PreviewFile();
         previewFile.setFileUrl(pictureFile.getFileUrl());
-        previewFile.setFileSize(pictureFile.getFileSize());
+//        previewFile.setFileSize(pictureFile.getFileSize());
         try {
 
             String mime= MimeUtils.getMime(pictureFile.getExtendName());

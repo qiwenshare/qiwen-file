@@ -26,6 +26,7 @@
                         extendName not in (select fileExtendName from fileclassification where fileTypeId in (1, 2, 3, 4))
                     </otherwise>
                 </choose>
+                and a.isDir = 0
             </if>
             <if test="userFile.userId != null">
                 and a.userId = #{userFile.userId}

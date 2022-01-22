@@ -2,8 +2,8 @@ package com.qiwenshare.file.api;
 
 import com.baomidou.mybatisplus.extension.service.IService;
 import com.qiwenshare.common.result.RestResult;
-import com.qiwenshare.file.domain.Role;
-import com.qiwenshare.file.domain.UserBean;
+import com.qiwenshare.file.domain.user.Role;
+import com.qiwenshare.file.domain.user.UserBean;
 
 import java.util.List;
 
@@ -12,7 +12,6 @@ public interface IUserService extends IService<UserBean> {
 
     Long getUserIdByToken(String token);
 
-    UserBean selectUserByopenid(String openid);
 
     /**
      * 用户注册

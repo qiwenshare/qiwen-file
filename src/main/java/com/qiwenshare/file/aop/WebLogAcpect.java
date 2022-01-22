@@ -2,11 +2,11 @@ package com.qiwenshare.file.aop;
 
 import com.qiwenshare.common.anno.MyLog;
 import com.qiwenshare.common.result.RestResult;
+import com.qiwenshare.common.util.security.JwtUser;
+import com.qiwenshare.common.util.security.SessionUtil;
 import com.qiwenshare.file.api.IOperationLogService;
 import com.qiwenshare.file.api.IUserService;
-import com.qiwenshare.file.config.security.user.JwtUser;
 import com.qiwenshare.file.util.OperationLogUtil;
-import com.qiwenshare.file.util.SessionUtil;
 import com.qiwenshare.file.vo.user.UserLoginVo;
 import org.aspectj.lang.JoinPoint;
 import org.aspectj.lang.annotation.AfterReturning;

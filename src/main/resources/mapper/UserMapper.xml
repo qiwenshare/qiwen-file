@@ -6,9 +6,9 @@
 
 <mapper namespace="com.qiwenshare.file.mapper.UserMapper">
 
-    <insert id="insertUser" parameterType="com.qiwenshare.file.domain.UserBean" useGeneratedKeys="true" keyProperty="userId">
-        INSERT INTO user (username, salt, PASSWORD, qqPassword, telephone, sex, openId, imageUrl, registerTime, available)
-        VALUES (#{username},#{salt}, #{password}, #{qqPassword}, #{telephone}, #{sex}, #{openId}, #{imageUrl}, #{registerTime}, 1);
+    <insert id="insertUser" parameterType="com.qiwenshare.file.domain.user.UserBean" useGeneratedKeys="true" keyProperty="userId">
+        INSERT INTO user (username, salt, PASSWORD,  telephone, sex, imageUrl, registerTime, available)
+        VALUES (#{username},#{salt}, #{password}, #{telephone}, #{sex}, #{imageUrl}, #{registerTime}, 1);
     </insert>
 
     <insert id="insertUserRole" parameterType="Long">
@@ -16,7 +16,7 @@
         VALUES (#{param1}, #{param2});
     </insert>
 
-    <select id="selectRoleListByUserId" resultType="com.qiwenshare.file.domain.Role">
+    <select id="selectRoleListByUserId" resultType="com.qiwenshare.file.domain.user.Role">
         select b.*
         from user_role a
         left join role b on b.roleId = a.roleId
@@ -30,7 +30,7 @@
     </select>
 
     <select id="selectUserByTelephoneAndPassword" parameterType="java.lang.String"
-            resultType="com.qiwenshare.file.domain.UserBean">
+            resultType="com.qiwenshare.file.domain.user.UserBean">
         select userId
         from user
         where telephone = #{telephone}

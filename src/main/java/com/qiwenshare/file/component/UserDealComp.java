@@ -2,7 +2,7 @@ package com.qiwenshare.file.component;
 
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.qiwenshare.common.constant.RegexConstant;
-import com.qiwenshare.file.domain.UserBean;
+import com.qiwenshare.file.domain.user.UserBean;
 import com.qiwenshare.file.mapper.UserMapper;
 import org.springframework.stereotype.Component;
 

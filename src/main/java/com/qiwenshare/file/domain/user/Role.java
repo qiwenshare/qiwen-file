@@ -1,4 +1,4 @@
-package com.qiwenshare.file.domain;
+package com.qiwenshare.file.domain.user;
 
 import com.baomidou.mybatisplus.annotation.IdType;
 import com.baomidou.mybatisplus.annotation.TableField;
