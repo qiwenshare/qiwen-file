@@ -14,13 +14,15 @@ import javax.persistence.*;
 public class SysParam {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(columnDefinition="bigint(20)")
+    @Column(columnDefinition = "bigint(20)")
     @TableId(type = IdType.AUTO)
     private Long sysParamId;
-    @Column(columnDefinition="varchar(50) comment '系统参数key'")
+    @Column(columnDefinition = "varchar(50)")
+    private String groupName;
+    @Column(columnDefinition = "varchar(50)")
     private String sysParamKey;
-    @Column(columnDefinition="varchar(50) comment '系统参数值'")
+    @Column(columnDefinition = "varchar(50)")
     private String sysParamValue;
-    @Column(columnDefinition="varchar(50) comment '系统参数描述'")
+    @Column(columnDefinition = "varchar(50)")
     private String sysParamDesc;
 }
