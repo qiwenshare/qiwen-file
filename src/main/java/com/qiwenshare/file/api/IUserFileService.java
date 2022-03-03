@@ -11,7 +11,7 @@ public interface IUserFileService extends IService<UserFile> {
     List<UserFile> selectUserFileByNameAndPath(String fileName, String filePath, Long userId);
     boolean isDirExist(String fileName, String filePath, long userId);
     List<UserFile> selectSameUserFile(String fileName, String filePath, String extendName, Long userId);
-    void replaceUserFilePath(String filePath, String oldFilePath, Long userId);
+
     IPage<FileListVo> userFileList(Long userId, String filePath, Long beginCount, Long pageCount);
     void updateFilepathByFilepath(String oldfilePath, String newfilePath, String fileName, String extendName, long userId);
     void userFileCopy(String oldfilePath, String newfilePath, String fileName, String extendName, long userId);

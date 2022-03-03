@@ -8,7 +8,6 @@ import com.qiwenshare.file.vo.file.FileListVo;
 import org.apache.ibatis.annotations.Param;
 
 public interface UserFileMapper extends BaseMapper<UserFile> {
-    void replaceFilePath(@Param("filePath") String filePath, @Param("oldFilePath") String oldFilePath, @Param("userId") Long userId);
 
     void updateFilepathByPathAndName(String oldfilePath, String newfilePath, String fileName, String extendName, long userId);
     void updateFilepathByFilepath(String oldfilePath, String newfilePath, long userId);
