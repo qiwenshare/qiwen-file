@@ -81,10 +81,6 @@ public class UserFileService  extends ServiceImpl<UserFileMapper, UserFile> impl
         return userFileMapper.selectList(lambdaQueryWrapper);
     }
 
-    @Override
-    public void replaceUserFilePath(String filePath, String oldFilePath, Long userId) {
-        userFileMapper.replaceFilePath(filePath, oldFilePath, userId);
-    }
 
     @Override
     public IPage<FileListVo> userFileList(Long userId, String filePath, Long currentPage, Long pageCount) {

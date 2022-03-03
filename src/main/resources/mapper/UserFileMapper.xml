@@ -6,10 +6,6 @@
 
 <mapper namespace="com.qiwenshare.file.mapper.UserFileMapper">
 
-    <update id="replaceFilePath">
-        UPDATE userfile SET filepath=REPLACE(filepath, #{oldFilePath}, #{filePath})
-        WHERE filepath LIKE N'${oldFilePath}%' and userId = #{userId};
-    </update>
 
 
     <select id="selectPageVo" parameterType="com.qiwenshare.file.domain.UserFile" resultType="com.qiwenshare.file.vo.file.FileListVo">

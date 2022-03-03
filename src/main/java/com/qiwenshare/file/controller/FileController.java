@@ -176,10 +176,13 @@ public class FileController {
                 .eq(UserFile::getUserFileId, renameFileDto.getUserFileId());
         userFileService.update(lambdaUpdateWrapper);
         if (1 == userFile.getIsDir()) {
-            userFileService.replaceUserFilePath(userFile.getFilePath() + renameFileDto.getFileName() + "/",
-                    userFile.getFilePath() + userFile.getFileName() + "/", sessionUserBean.getUserId());
-        }
+            List<UserFile> list = userFileService.selectFileListLikeRightFilePath(userFile.getFilePath() + userFile.getFileName() + "/", sessionUserBean.getUserId());
 
+            for (UserFile newUserFile : list) {
+                newUserFile.setFilePath(newUserFile.getFilePath().replaceFirst(userFile.getFilePath() + userFile.getFileName() + "/", userFile.getFilePath() + renameFileDto.getFileName() + "/"));
+                userFileService.updateById(newUserFile);
+            }
+        }
         fileDealComp.uploadESByUserFileId(renameFileDto.getUserFileId());
         return RestResult.success();
     }
