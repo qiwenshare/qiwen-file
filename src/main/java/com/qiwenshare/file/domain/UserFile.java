@@ -9,7 +9,8 @@ import javax.persistence.*;
 
 @Data
 @Table(name = "userfile", uniqueConstraints = {
-        @UniqueConstraint(name = "fileindex", columnNames = {"fileName", "filePath", "extendName", "deleteFlag", "userId"})})
+        @UniqueConstraint(name = "fileindex", columnNames = { "userId", "filePath", "fileName", "extendName", "deleteFlag"})}
+)
 @Entity
 @TableName("userfile")
 public class UserFile {
