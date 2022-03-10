@@ -1,5 +1,6 @@
 package com.qiwenshare.file.controller;
 
+import com.alibaba.fastjson.JSON;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.qiwenshare.common.anno.MyLog;
 import com.qiwenshare.common.result.RestResult;
@@ -49,15 +50,15 @@ public class CommonFileController {
         commonFile.setUserFileId(commonFileDTO.getUserFileId());
         commonFileService.save(commonFile);
 
-//        List<Long> list = JSON.parseArray(commonFileDTO.getCommonUserIds(), Long.class);
+       List<Long> list = JSON.parseArray(commonFileDTO.getCommonUserIds(), Long.class);
         List<FilePermission> filePermissionList = new ArrayList<>();
-//        for (Long userId : list) {
+       for (Long userId : list) {
             FilePermission filePermission = new FilePermission();
             filePermission.setUserId(Long.parseLong(commonFileDTO.getCommonUserIds()));
             filePermission.setCommonFileId(commonFile.commonFileId);
             filePermission.setFilePermissionCode(commonFileDTO.getPermissionCode());
             filePermissionList.add(filePermission);
-//        }
+       }
         filePermissionService.saveBatch(filePermissionList);
 
         return RestResult.success();

@@ -7,6 +7,8 @@ import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.qiwenshare.common.constant.FileConstant;
+import com.qiwenshare.common.exception.QiwenException;
+import com.qiwenshare.common.result.RestResult;
 import com.qiwenshare.common.util.DateUtil;
 import com.qiwenshare.common.util.security.JwtUser;
 import com.qiwenshare.common.util.security.SessionUtil;
@@ -28,6 +30,7 @@ import java.util.List;
 import java.util.UUID;
 import java.util.concurrent.Executor;
 import java.util.concurrent.Executors;
+import java.util.stream.Collectors;
 
 @Slf4j
 @Service
@@ -103,6 +106,12 @@ public class UserFileService  extends ServiceImpl<UserFileMapper, UserFile> impl
         if ("null".equals(extendName)){
             extendName = null;
         }
+        List<UserFile> userFileList = selectUserFileListByPath(newfilePath, userId);
+        List<String> userFileNameList = userFileList.stream().map(UserFile::getFileName).collect(Collectors.toList());
+        if (userFileNameList != null && userFileNameList.size() > 0 && userFileNameList.contains(fileName)) {
+            throw new QiwenException(200000, "目的路径同名文件已存在，不能移动");
+        }
+
         //移动根目录
         userFileMapper.updateFilepathByPathAndName(oldfilePath, newfilePath, fileName, extendName, userId);
 
@@ -156,6 +165,16 @@ public class UserFileService  extends ServiceImpl<UserFileMapper, UserFile> impl
         UserFile userFile = new UserFile();
         userFile.setUserId(userId);
         return userFileMapper.selectPageVo(page, userFile, fileTypeId);
+    }
+
+    @Override
+    public List<UserFile> selectUserFileListByPath(String filePath, Long userId) {
+        LambdaQueryWrapper<UserFile> lambdaQueryWrapper = new LambdaQueryWrapper<>();
+        lambdaQueryWrapper
+                .eq(UserFile::getFilePath, filePath)
+                .eq(UserFile::getUserId, userId)
+                .eq(UserFile::getDeleteFlag, 0);
+        return userFileMapper.selectList(lambdaQueryWrapper);
     }
 
     @Override
