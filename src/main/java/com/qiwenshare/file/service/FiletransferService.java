@@ -36,14 +36,14 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import javax.annotation.Resource;
+import javax.imageio.ImageIO;
+import javax.imageio.ImageReader;
+import javax.imageio.stream.ImageInputStream;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.awt.image.BufferedImage;
 import java.io.*;
-import java.util.Base64;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.zip.Adler32;
 import java.util.zip.CheckedOutputStream;
 import java.util.zip.ZipEntry;
@@ -220,13 +220,17 @@ public class FiletransferService implements IFiletransferService {
                 lambdaUpdateWrapper.set(UploadTask::getUploadStatus, UploadFileStatusEnum.SUCCESS.getCode())
                         .eq(UploadTask::getIdentifier, uploadFileDto.getIdentifier());
                 uploadTaskMapper.update(null, lambdaUpdateWrapper);
-                if (UFOPUtils.isImageFile(uploadFileResult.getExtendName())) {
-                    BufferedImage src = uploadFileResult.getBufferedImage();
-                    Image image = new Image();
-                    image.setImageWidth(src.getWidth());
-                    image.setImageHeight(src.getHeight());
-                    image.setFileId(fileBean.getFileId());
-                    imageMapper.insert(image);
+                try {
+                    if (UFOPUtils.isImageFile(uploadFileResult.getExtendName())) {
+                        BufferedImage src = uploadFileResult.getBufferedImage();
+                        Image image = new Image();
+                        image.setImageWidth(src.getWidth());
+                        image.setImageHeight(src.getHeight());
+                        image.setFileId(fileBean.getFileId());
+                        imageMapper.insert(image);
+                    }
+                } catch (Exception e) {
+                    log.error("生成图片缩略图失败！");
                 }
 
             } else if (UploadFileStatusEnum.UNCOMPLATE.equals(uploadFileResult.getStatus())) {

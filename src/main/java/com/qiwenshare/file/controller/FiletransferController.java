@@ -177,31 +177,6 @@ public class FiletransferController {
         }
 
         FileBean fileBean = fileService.getById(userFile.getFileId());
-        /********************************** 图片预览适配 **************************************/
-        LambdaQueryWrapper<Image> imageLambdaQueryWrapper = new LambdaQueryWrapper<>();
-        imageLambdaQueryWrapper.eq(Image::getFileId, fileBean.getFileId());
-        List<Image> result = imageMapper.selectList(imageLambdaQueryWrapper);
-        if (result == null || result.isEmpty()) {
-            if (UFOPUtils.isImageFile(userFile.getExtendName())) {
-                Downloader downloader = ufopFactory.getDownloader(fileBean.getStorageType());
-                DownloadFile downloadFile = new DownloadFile();
-                downloadFile.setFileUrl(fileBean.getFileUrl());
-                InputStream is = downloader.getInputStream(downloadFile);
-                BufferedImage src = null;
-                try {
-                    src = ImageIO.read(is);
-                } catch (IOException e) {
-                    e.printStackTrace();
-                }
-                Image image = new Image();
-                image.setImageWidth(src.getWidth());
-                image.setImageHeight(src.getHeight());
-                image.setFileId(fileBean.getFileId());
-                imageMapper.insert(image);
-            }
-        }
-
-        /***************************************************************************/
 
         String mime= MimeUtils.getMime(userFile.getExtendName());
         httpServletResponse.setHeader("Content-Type", mime);
