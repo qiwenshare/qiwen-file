@@ -22,6 +22,7 @@ import com.qiwenshare.file.mapper.UserFileMapper;
 import com.qiwenshare.file.vo.file.FileListVo;
 import com.qiwenshare.ufop.util.UFOPUtils;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -103,9 +104,6 @@ public class UserFileService  extends ServiceImpl<UserFileMapper, UserFile> impl
 
     @Override
     public void updateFilepathByFilepath(String oldfilePath, String newfilePath, String fileName, String extendName, long userId) {
-        if ("null".equals(extendName)){
-            extendName = null;
-        }
         List<UserFile> userFileList = selectUserFileListByPath(newfilePath, userId);
         List<String> userFileNameList = userFileList.stream().map(UserFile::getFileName).collect(Collectors.toList());
         if (userFileNameList != null && userFileNameList.size() > 0 && userFileNameList.contains(fileName)) {
@@ -124,7 +122,7 @@ public class UserFileService  extends ServiceImpl<UserFileMapper, UserFile> impl
         oldfilePath = oldfilePath.replace("%", "\\%");
         oldfilePath = oldfilePath.replace("_", "\\_");
 
-        if (extendName == null) { //为null说明是目录，则需要移动子目录
+        if (StringUtils.isEmpty(extendName)) { //为空说明是目录，则需要移动子目录
             userFileMapper.updateFilepathByFilepath(oldfilePath, newfilePath, userId);
         }
 
