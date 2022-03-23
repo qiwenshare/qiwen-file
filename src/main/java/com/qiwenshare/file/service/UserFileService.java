@@ -105,8 +105,9 @@ public class UserFileService  extends ServiceImpl<UserFileMapper, UserFile> impl
     @Override
     public void updateFilepathByFilepath(String oldfilePath, String newfilePath, String fileName, String extendName, long userId) {
         List<UserFile> userFileList = selectUserFileListByPath(newfilePath, userId);
-        List<String> userFileNameList = userFileList.stream().map(UserFile::getFileName).collect(Collectors.toList());
-        if (userFileNameList != null && userFileNameList.size() > 0 && userFileNameList.contains(fileName)) {
+        List<UserFile> userFileNameList = userFileList.stream().filter(o -> o.getFileName().equals(fileName) && o.getExtendName().equals(extendName)).collect(Collectors.toList());
+
+        if (userFileNameList != null && userFileNameList.size() > 0) {
             throw new QiwenException(200000, "目的路径同名文件已存在，不能移动");
         }
 
