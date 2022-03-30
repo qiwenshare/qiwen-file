@@ -1,5 +1,6 @@
 package com.qiwenshare.file.util;
 
+import com.qiwenshare.common.constant.PlatformEnum;
 import com.qiwenshare.common.util.CollectUtil;
 import com.qiwenshare.common.util.DateUtil;
 import com.qiwenshare.file.domain.OperationLogBean;
@@ -29,7 +30,7 @@ public class OperationLogUtil {
         operationLogBean.setResult(isSuccess);
         operationLogBean.setOperation(operation);
         operationLogBean.setDetail(detail);
-        operationLogBean.setPlatform(3);
+        operationLogBean.setPlatform(PlatformEnum.PAN.getCode());
 
         return operationLogBean;
     }
