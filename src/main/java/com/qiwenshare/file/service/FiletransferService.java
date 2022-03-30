@@ -202,7 +202,7 @@ public class FiletransferService implements IFiletransferService {
                 userFile.setIsDir(0);
                 List<UserFile> userFileList = userFileMapper.selectList(new QueryWrapper<>(userFile));
                 if (userFileList.size() > 0) {
-                    String fileName = fileDealComp.getRepeatFileName(userFile, uploadFileDto.getFilePath());
+                    String fileName = fileDealComp.getRepeatFileName(userFile, userFile.getFilePath());
                     userFile.setFileName(fileName);
                 }
                 userFile.setFileId(fileBean.getFileId());
@@ -391,7 +391,6 @@ public class FiletransferService implements IFiletransferService {
         }
         PreviewFile previewFile = new PreviewFile();
         previewFile.setFileUrl(fileBean.getFileUrl());
-//        previewFile.setFileSize(fileBean.getFileSize());
         try {
             if ("true".equals(previewDTO.getIsMin())) {
                 previewer.imageThumbnailPreview(httpServletResponse, previewFile);
