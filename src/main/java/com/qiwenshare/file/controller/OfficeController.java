@@ -122,15 +122,11 @@ public class OfficeController {
                 userFile.setFileId(fileBean.getFileId());
                 userFileService.save(userFile);
             }
-
-            result.success();
-            result.setMessage("文件创建成功！");
+            return RestResult.success().message("文件创建成功");
         } catch (Exception e) {
             log.error(e.getMessage());
-            result.setCode(500);
-            result.setMessage("服务器错误！");
+            return RestResult.fail().message(e.getMessage());
         }
-        return result;
     }
 
     @Operation(summary = "预览office文件", description = "预览office文件", tags = {"office"})

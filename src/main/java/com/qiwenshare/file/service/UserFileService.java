@@ -118,13 +118,13 @@ public class UserFileService  extends ServiceImpl<UserFileMapper, UserFile> impl
         oldfilePath = oldfilePath + fileName + "/";
         newfilePath = newfilePath + fileName + "/";
 
-        oldfilePath = oldfilePath.replace("\\", "\\\\\\\\");
-        oldfilePath = oldfilePath.replace("'", "\\'");
-        oldfilePath = oldfilePath.replace("%", "\\%");
-        oldfilePath = oldfilePath.replace("_", "\\_");
-
         if (StringUtils.isEmpty(extendName)) { //为空说明是目录，则需要移动子目录
-            userFileMapper.updateFilepathByFilepath(oldfilePath, newfilePath, userId);
+            List<UserFile> list = selectFileListLikeRightFilePath(oldfilePath, userId);
+
+            for (UserFile newUserFile : list) {
+                newUserFile.setFilePath(newUserFile.getFilePath().replaceFirst(oldfilePath, newfilePath));
+                userFileMapper.updateById(newUserFile);
+            }
         }
 
     }
