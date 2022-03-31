@@ -210,7 +210,7 @@ public class FiletransferController {
             //返回码需要为206，代表只处理了部分请求，响应了部分数据
             httpServletResponse.setStatus(HttpServletResponse.SC_PARTIAL_CONTENT);
             // 每次请求只返回1MB的视频流
-            byte[] bytes = new byte[1024 * 1024];
+            byte[] bytes = new byte[1024 * 1024 * 5];
             System.out.println("文件长度：" + inputStream.available());
             System.out.println("range：" + range);
             inputStream.skip(range);
