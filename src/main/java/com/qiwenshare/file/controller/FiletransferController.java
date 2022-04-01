@@ -25,6 +25,8 @@ import com.qiwenshare.ufop.util.UFOPUtils;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.extern.slf4j.Slf4j;
+
+import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.web.bind.annotation.*;
 
@@ -36,6 +38,7 @@ import javax.servlet.http.HttpServletResponse;
 import java.awt.image.BufferedImage;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.OutputStream;
 import java.io.UnsupportedEncodingException;
 import java.util.List;
 
@@ -146,7 +149,7 @@ public class FiletransferController {
 
     @Operation(summary="预览文件", description="用于文件预览", tags = {"filetransfer"})
     @GetMapping("/preview")
-    public void preview(HttpServletRequest httpServletRequest, HttpServletResponse httpServletResponse,  PreviewDTO previewDTO){
+    public void preview(HttpServletRequest httpServletRequest, HttpServletResponse httpServletResponse,  PreviewDTO previewDTO) throws IOException {
 
         if (previewDTO.getPlatform() != null && previewDTO.getPlatform() == 2) {
             filetransferService.previewPictureFile(httpServletResponse, previewDTO);
@@ -176,18 +179,6 @@ public class FiletransferController {
             return;
         }
 
-        FileBean fileBean = fileService.getById(userFile.getFileId());
-
-        String mime= MimeUtils.getMime(userFile.getExtendName());
-        httpServletResponse.setHeader("Content-Type", mime);
-        String rangeString = httpServletRequest.getHeader("Range");//如果是video标签发起的请求就不会为null
-        if (StringUtils.isNotEmpty(rangeString)) {
-            long range = Long.valueOf(rangeString.substring(rangeString.indexOf("=") + 1, rangeString.indexOf("-")));
-            httpServletResponse.setContentLength(Math.toIntExact(fileBean.getFileSize()));
-            httpServletResponse.setHeader("Content-Range", String.valueOf(range + (Math.toIntExact(fileBean.getFileSize()) - 1)));
-        }
-        httpServletResponse.setHeader("Accept-Ranges", "bytes");
-
         String fileName = userFile.getFileName() + "." + userFile.getExtendName();
         try {
             fileName = new String(fileName.getBytes("utf-8"), "ISO-8859-1");
@@ -197,7 +188,44 @@ public class FiletransferController {
 
         httpServletResponse.addHeader("Content-Disposition", "fileName=" + fileName);// 设置文件名
 
-        filetransferService.previewFile(httpServletResponse, previewDTO);
+        FileBean fileBean = fileService.getById(userFile.getFileId());
+        if (UFOPUtils.isVideoFile(userFile.getExtendName()) && !"true".equals(previewDTO.getIsMin())) {
+            Downloader downloader = ufopFactory.getDownloader(fileBean.getStorageType());
+            DownloadFile downloadFile = new DownloadFile();
+            downloadFile.setFileUrl(fileBean.getFileUrl());
+            InputStream inputStream = downloader.getInputStream(downloadFile);
+
+
+            String mime = MimeUtils.getMime(userFile.getExtendName());
+            httpServletResponse.setHeader("Content-Type", mime);
+
+            //获取从那个字节开始读取文件
+            String rangeString = httpServletRequest.getHeader("Range");
+            int range = 0;
+            if (StringUtils.isNotBlank(rangeString)) {
+                range = Integer.valueOf(rangeString.substring(rangeString.indexOf("=") + 1, rangeString.indexOf("-")));
+            }
+            //获取响应的输出流
+            OutputStream outputStream = httpServletResponse.getOutputStream();
+            //返回码需要为206，代表只处理了部分请求，响应了部分数据
+            httpServletResponse.setStatus(HttpServletResponse.SC_PARTIAL_CONTENT);
+            // 每次请求只返回1MB的视频流
+            byte[] bytes = new byte[1024 * 1024 * 5];
+            System.out.println("文件长度：" + inputStream.available());
+            System.out.println("range：" + range);
+            inputStream.skip(range);
+            int len = IOUtils.read(inputStream, bytes);
+            //设置此次相应返回的数据长度
+            httpServletResponse.setContentLength(len);
+            httpServletResponse.setHeader("Accept-Ranges", "bytes");
+            //设置此次相应返回的数据范围
+            httpServletResponse.setHeader("Content-Range", "bytes " + range + "-" + (fileBean.getFileSize() - 1) + "/" + fileBean.getFileSize());
+            // 将这1MB的视频流响应给客户端
+            outputStream.write(bytes, 0, len);
+            outputStream.close();
+        } else {
+            filetransferService.previewFile(httpServletResponse, previewDTO);
+        }
 
     }
 
