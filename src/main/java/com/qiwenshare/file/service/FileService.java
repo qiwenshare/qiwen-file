@@ -1,9 +1,12 @@
 package com.qiwenshare.file.service;
 
+import com.alibaba.fastjson.JSON;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
+import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.qiwenshare.common.exception.QiwenException;
 import com.qiwenshare.common.operation.FileOperation;
+import com.qiwenshare.common.util.DateUtil;
 import com.qiwenshare.file.api.IFileService;
 import com.qiwenshare.file.component.AsyncTaskComp;
 import com.qiwenshare.file.domain.FileBean;
@@ -81,19 +84,15 @@ public class FileService extends ServiceImpl<FileMapper, FileBean> implements IF
         String unzipUrl = UFOPUtils.getTempFile(fileBean.getFileUrl()).getAbsolutePath().replace("." + extendName, "");
 
         List<String> fileEntryNameList = new ArrayList<>();
-        if ("zip".equals(extendName)) {
-            fileEntryNameList = FileOperation.unzip(destFile, unzipUrl);
-        } else if ("rar".equals(extendName)) {
-            try {
-                fileEntryNameList = FileOperation.unrar(destFile, unzipUrl);
-            } catch (Exception e) {
-                e.printStackTrace();
-                log.error("rar解压失败" + e);
-                throw new QiwenException(500001, "rar解压异常：" + e.getMessage());
-            }
-        } else {
-            throw new QiwenException(500002, "不支持的文件格式！");
+
+        try {
+            fileEntryNameList = FileOperation.unrar(destFile, unzipUrl);
+        } catch (Exception e) {
+            e.printStackTrace();
+            log.error("解压失败" + e);
+            throw new QiwenException(500001, "解压异常：" + e.getMessage());
         }
+
         if (destFile.exists()) {
             destFile.delete();
         }
@@ -109,5 +108,17 @@ public class FileService extends ServiceImpl<FileMapper, FileBean> implements IF
         }
     }
 
+
+    public void updateFileDetail(long userFileId, String identifier, long fileSize, long modifyUserId) {
+        UserFile userFile = userFileMapper.selectById(userFileId);
+
+        FileBean fileBean = new FileBean();
+        fileBean.setIdentifier(identifier);
+        fileBean.setFileSize(fileSize);
+        fileBean.setModifyTime(DateUtil.getCurrentTime());
+        fileBean.setModifyUserId(modifyUserId);
+        fileBean.setFileId(userFile.getFileId());
+        fileMapper.updateById(fileBean);
+    }
 
 }
