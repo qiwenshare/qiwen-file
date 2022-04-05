@@ -19,10 +19,8 @@ import com.qiwenshare.file.domain.UserFile;
 import com.qiwenshare.file.dto.file.*;
 import com.qiwenshare.file.util.TreeNode;
 import com.qiwenshare.file.vo.file.FileListVo;
+import com.qiwenshare.ufop.constant.UFOPConstant;
 import com.qiwenshare.ufop.factory.UFOPFactory;
-import com.qiwenshare.ufop.operation.download.domain.DownloadFile;
-import com.qiwenshare.ufop.operation.write.Writer;
-import com.qiwenshare.ufop.operation.write.domain.WriteFile;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -46,9 +44,7 @@ import javax.annotation.Resource;
 import javax.validation.Valid;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
-import java.io.InputStream;
 import java.util.*;
-import java.util.stream.Collectors;
 
 @Tag(name = "file", description = "该接口为文件接口，主要用来做一些文件的基本操作，如创建目录，删除，移动，复制等。")
 @RestController
@@ -370,16 +366,16 @@ public class FileController {
 
         List<UserFile> userFileList = userFileService.selectFilePathTreeByUserId(sessionUserBean.getUserId());
         TreeNode resultTreeNode = new TreeNode();
-        resultTreeNode.setLabel("/");
+        resultTreeNode.setLabel(UFOPConstant.FILE_PATH_SEPARATOR);
         resultTreeNode.setId(0L);
         long id = 1;
         for (int i = 0; i < userFileList.size(); i++){
             UserFile userFile = userFileList.get(i);
-            String filePath = userFile.getFilePath() + userFile.getFileName() + "/";
+            String filePath = userFile.getFilePath() + userFile.getFileName() + UFOPConstant.FILE_PATH_SEPARATOR;
 
             Queue<String> queue = new LinkedList<>();
 
-            String[] strArr = filePath.split("/");
+            String[] strArr = filePath.split(UFOPConstant.FILE_PATH_SEPARATOR);
             for (int j = 0; j < strArr.length; j++){
                 if (!"".equals(strArr[j]) && strArr[j] != null){
                     queue.add(strArr[j]);
@@ -390,17 +386,14 @@ public class FileController {
                 continue;
             }
 
-            resultTreeNode = fileDealComp.insertTreeNode(resultTreeNode, id++, "/" , queue);
+            resultTreeNode = fileDealComp.insertTreeNode(resultTreeNode, id++, UFOPConstant.FILE_PATH_SEPARATOR , queue);
 
 
         }
         List<TreeNode> treeNodeList = resultTreeNode.getChildren();
-        Collections.sort(treeNodeList, new Comparator<TreeNode>() {
-            @Override
-            public int compare(TreeNode o1, TreeNode o2) {
-                long i = o1.getId() - o2.getId();
-                return (int) i;
-            }
+        Collections.sort(treeNodeList, (o1, o2) -> {
+            long i = o1.getId() - o2.getId();
+            return (int) i;
         });
         result.setSuccess(true);
         result.setData(resultTreeNode);
@@ -416,28 +409,21 @@ public class FileController {
         UserFile userFile = userFileService.getById(updateFileDTO.getUserFileId());
         FileBean fileBean = fileService.getById(userFile.getFileId());
         Long pointCount = fileService.getFilePointCount(userFile.getFileId());
+        String fileUrl = fileBean.getFileUrl();
         if (pointCount > 1) {
-            return RestResult.fail().message("暂不支持修改");
+            fileUrl = fileDealComp.copyFile(fileBean, userFile);
         }
         String content = updateFileDTO.getFileContent();
         ByteArrayInputStream byteArrayInputStream = new ByteArrayInputStream(content.getBytes());
         try {
-
-            Writer writer1 = ufopFactory.getWriter(fileBean.getStorageType());
-            WriteFile writeFile = new WriteFile();
-            writeFile.setFileUrl(fileBean.getFileUrl());
             int fileSize = byteArrayInputStream.available();
-            writeFile.setFileSize(fileSize);
-            writer1.write(byteArrayInputStream, writeFile);
-            DownloadFile downloadFile = new DownloadFile();
-            downloadFile.setFileUrl(fileBean.getFileUrl());
-            InputStream inputStream = ufopFactory.getDownloader(fileBean.getStorageType()).getInputStream(downloadFile);
-            String md5Str = DigestUtils.md5Hex(inputStream);
-            fileBean.setIdentifier(md5Str);
-            fileBean.setModifyTime(DateUtil.getCurrentTime());
-            fileBean.setModifyUserId(sessionUserBean.getUserId());
-            fileBean.setFileSize((long) fileSize);
-            fileService.updateById(fileBean);
+            fileDealComp.saveFileInputStream(fileBean.getStorageType(), fileUrl, byteArrayInputStream);
+
+            String md5Str = fileDealComp.getIdentifierByFile(fileUrl, fileBean.getStorageType());
+
+            fileService.updateFileDetail(userFile.getUserFileId(), md5Str, fileSize, sessionUserBean.getUserId());
+
+
         } catch (Exception e) {
             throw new QiwenException(999999, "修改文件异常");
         } finally {
@@ -449,6 +435,7 @@ public class FileController {
         }
         return RestResult.success().message("修改文件成功");
     }
+
 
 
 
