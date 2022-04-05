@@ -12,6 +12,7 @@ import com.qiwenshare.common.util.security.SessionUtil;
 import com.qiwenshare.file.api.IFileService;
 import com.qiwenshare.file.api.IUserFileService;
 import com.qiwenshare.file.api.IUserService;
+import com.qiwenshare.file.component.FileDealComp;
 import com.qiwenshare.file.domain.FileBean;
 import com.qiwenshare.file.domain.UserFile;
 import com.qiwenshare.file.dto.file.CreateOfficeFileDTO;
@@ -55,7 +56,8 @@ public class OfficeController {
     IUserService userService;
     @Resource
     UFOPFactory ufopFactory;
-
+    @Resource
+    FileDealComp fileDealComp;
     @Value("${deployment.host}")
     private String deploymentHost;
     @Value("${server.port}")
@@ -231,51 +233,31 @@ public class OfficeController {
                 UserFile userFile = userFileService.getById(userFileId);
                 FileBean fileBean = fileService.getById(userFile.getFileId());
                 Long pointCount = fileService.getFilePointCount(userFile.getFileId());
+                String fileUrl = fileBean.getFileUrl();
                 if (pointCount > 1) {
-                    //该场景，暂不支持编辑修改
-                    writer.write("{\"error\":1}");
-                    return ;
+                    fileUrl = fileDealComp.copyFile(fileBean, userFile);
                 }
 
                 URL url = new URL(downloadUri);
                 HttpURLConnection connection = (HttpURLConnection) url.openConnection();
 
-                int fileLength = 0;
                 try {
                     InputStream stream = connection.getInputStream();
+                    fileDealComp.saveFileInputStream(fileBean.getStorageType(), fileUrl, stream);
 
-                    Writer writer1 = ufopFactory.getWriter(fileBean.getStorageType());
-                    WriteFile writeFile = new WriteFile();
-                    writeFile.setFileUrl(fileBean.getFileUrl());
-
-                    writeFile.setFileSize(connection.getContentLength());
-                    writer1.write(stream, writeFile);
                 } catch (Exception e) {
                     log.error(e.getMessage());
                 } finally {
-                    if ("2".equals(status)) {
-                        LambdaUpdateWrapper<UserFile> userFileUpdateWrapper = new LambdaUpdateWrapper<>();
-                        userFileUpdateWrapper
-                                .set(UserFile::getUploadTime, DateUtil.getCurrentTime())
-                                .eq(UserFile::getUserFileId, userFileId);
-                        userFileService.update(userFileUpdateWrapper);
-                    }
-                    LambdaUpdateWrapper<FileBean> lambdaUpdateWrapper = new LambdaUpdateWrapper<>();
-                    fileLength = connection.getContentLength();
+
+                    int fileLength = connection.getContentLength();
                     log.info("当前修改文件大小为：" + Long.valueOf(fileLength));
 
                     DownloadFile downloadFile = new DownloadFile();
                     downloadFile.setFileUrl(fileBean.getFileUrl());
                     InputStream inputStream = ufopFactory.getDownloader(fileBean.getStorageType()).getInputStream(downloadFile);
                     String md5Str = DigestUtils.md5Hex(inputStream);
-                    lambdaUpdateWrapper
-                            .set(FileBean::getIdentifier, md5Str)
-                            .set(FileBean::getFileSize, Long.valueOf(fileLength))
-                            .set(FileBean::getModifyTime, DateUtil.getCurrentTime())
-                            .set(FileBean::getModifyUserId, userId)
-                            .eq(FileBean::getFileId, fileBean.getFileId());
-                    fileService.update(lambdaUpdateWrapper);
 
+                    fileService.updateFileDetail(userFile.getUserFileId(), md5Str, fileLength, userId);
                     connection.disconnect();
                 }
             }

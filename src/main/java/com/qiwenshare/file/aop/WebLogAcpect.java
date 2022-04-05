@@ -33,8 +33,6 @@ import java.util.Map;
 public class WebLogAcpect {
     @Resource
     IOperationLogService operationLogService;
-    @Resource
-    IUserService userService;
 
     private String operation = "";
     private String module = "";

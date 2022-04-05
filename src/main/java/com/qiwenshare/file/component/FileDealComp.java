@@ -8,17 +8,28 @@ import com.qiwenshare.common.util.DateUtil;
 import com.qiwenshare.file.api.*;
 import com.qiwenshare.file.config.es.FileSearch;
 import com.qiwenshare.file.domain.*;
+import com.qiwenshare.file.mapper.FileMapper;
 import com.qiwenshare.file.mapper.UserFileMapper;
 import com.qiwenshare.file.util.TreeNode;
 import com.qiwenshare.ufop.factory.UFOPFactory;
+import com.qiwenshare.ufop.operation.copy.Copier;
+import com.qiwenshare.ufop.operation.copy.domain.CopyFile;
+import com.qiwenshare.ufop.operation.download.Downloader;
+import com.qiwenshare.ufop.operation.download.domain.DownloadFile;
+import com.qiwenshare.ufop.operation.write.Writer;
+import com.qiwenshare.ufop.operation.write.domain.WriteFile;
 import com.qiwenshare.ufop.util.UFOPUtils;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.codec.digest.DigestUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Component;
 
 import javax.annotation.Resource;
+import java.io.File;
+import java.io.IOException;
+import java.io.InputStream;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -37,6 +48,8 @@ public class FileDealComp {
     @Resource
     UserFileMapper userFileMapper;
     @Resource
+    FileMapper fileMapper;
+    @Resource
     IUserService userService;
     @Resource
     IShareService shareService;
@@ -44,6 +57,8 @@ public class FileDealComp {
     IShareFileService shareFileService;
     @Resource
     IUserFileService userFileService;
+    @Resource
+    UFOPFactory ufopFactory;
 
     @Autowired
     @Lazy
@@ -351,5 +366,49 @@ public class FileDealComp {
 
         }
         return true;
+    }
+
+    /**
+     * 拷贝文件
+     * 场景：修改的文件被多处引用时，需要重新拷贝一份，然后在新的基础上修改
+     * @param fileBean
+     * @param userFile
+     * @return
+     */
+    public String copyFile(FileBean fileBean, UserFile userFile) {
+        Copier copier = ufopFactory.getCopier();
+        Downloader downloader = ufopFactory.getDownloader(fileBean.getStorageType());
+        DownloadFile downloadFile = new DownloadFile();
+        downloadFile.setFileUrl(fileBean.getFileUrl());
+        CopyFile copyFile = new CopyFile();
+        copyFile.setExtendName(userFile.getExtendName());
+        String fileUrl = copier.copy(downloader.getInputStream(downloadFile), copyFile);
+        if (downloadFile.getOssClient() != null) {
+            downloadFile.getOssClient().shutdown();
+        }
+        fileBean.setFileUrl(fileUrl);
+        fileBean.setFileId(null);
+        fileMapper.insert(fileBean);
+        userFile.setFileId(fileBean.getFileId());
+        userFile.setUploadTime(DateUtil.getCurrentTime());
+        userFileService.updateById(userFile);
+        return fileUrl;
+    }
+
+    public String getIdentifierByFile(String fileUrl, int storageType) throws IOException {
+        DownloadFile downloadFile = new DownloadFile();
+        downloadFile.setFileUrl(fileUrl);
+        InputStream inputStream = ufopFactory.getDownloader(storageType).getInputStream(downloadFile);
+        String md5Str = DigestUtils.md5Hex(inputStream);
+        return md5Str;
+    }
+
+    public void saveFileInputStream(int storageType, String fileUrl, InputStream inputStream) throws IOException {
+        Writer writer1 = ufopFactory.getWriter(storageType);
+        WriteFile writeFile = new WriteFile();
+        writeFile.setFileUrl(fileUrl);
+        int fileSize = inputStream.available();
+        writeFile.setFileSize(fileSize);
+        writer1.write(inputStream, writeFile);
     }
 }
