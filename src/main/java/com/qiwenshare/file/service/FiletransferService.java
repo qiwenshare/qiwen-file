@@ -290,92 +290,97 @@ public class FiletransferService implements IFiletransferService {
                     .eq(UserFile::getDeleteFlag, 0);
             List<UserFile> userFileList = userFileMapper.selectList(lambdaQueryWrapper);
 
-            String staticPath = UFOPUtils.getStaticPath();
-            String tempPath = staticPath + "temp" + File.separator;
-            File tempDirFile = new File(tempPath);
-            if (!tempDirFile.exists()) {
-                tempDirFile.mkdirs();
-            }
+            downloadUserFileList(httpServletResponse, userFile.getFilePath(), userFile.getFileName(), userFileList);
+        }
+    }
 
-            FileOutputStream f = null;
+    @Override
+    public void downloadUserFileList(HttpServletResponse httpServletResponse, String filePath, String fileName, List<UserFile> userFileList) {
+        String staticPath = UFOPUtils.getStaticPath();
+        String tempPath = staticPath + "temp" + File.separator;
+        File tempDirFile = new File(tempPath);
+        if (!tempDirFile.exists()) {
+            tempDirFile.mkdirs();
+        }
+
+        FileOutputStream f = null;
+        try {
+            f = new FileOutputStream(tempPath + fileName + ".zip");
+        } catch (FileNotFoundException e) {
+            e.printStackTrace();
+        }
+        CheckedOutputStream csum = new CheckedOutputStream(f, new Adler32());
+        ZipOutputStream zos = new ZipOutputStream(csum);
+        BufferedOutputStream out = new BufferedOutputStream(zos);
+
+        try {
+            for (UserFile userFile1 : userFileList) {
+                FileBean fileBean = fileMapper.selectById(userFile1.getFileId());
+                Downloader downloader = ufopFactory.getDownloader(fileBean.getStorageType());
+                if (downloader == null) {
+                    log.error("下载失败，文件存储类型不支持下载，storageType:{}", fileBean.getStorageType());
+                    throw new UploadException("下载失败");
+                }
+                DownloadFile downloadFile = new DownloadFile();
+                downloadFile.setFileUrl(fileBean.getFileUrl());
+                downloadFile.setFileSize(fileBean.getFileSize());
+                InputStream inputStream = downloader.getInputStream(downloadFile);
+                BufferedInputStream bis = new BufferedInputStream(inputStream);
+                try {
+                    zos.putNextEntry(new ZipEntry(userFile1.getFilePath().replace(filePath, "/") + userFile1.getFileName() + "." + userFile1.getExtendName()));
+
+                    byte[] buffer = new byte[1024];
+                    int i = bis.read(buffer);
+                    while (i != -1) {
+                        out.write(buffer, 0, i);
+                        i = bis.read(buffer);
+                    }
+                } catch (IOException e) {
+                    log.error("" + e);
+                    e.printStackTrace();
+                } finally {
+                    try {
+                        bis.close();
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                    }
+                    try {
+                        out.flush();
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                    }
+                }
+            }
+        } catch (Exception e) {
+            log.error("压缩过程中出现异常:"+ e);
+        } finally {
             try {
-                f = new FileOutputStream(tempPath + userFile.getFileName() + ".zip");
-            } catch (FileNotFoundException e) {
+                out.close();
+            } catch (IOException e) {
                 e.printStackTrace();
             }
-            CheckedOutputStream csum = new CheckedOutputStream(f, new Adler32());
-            ZipOutputStream zos = new ZipOutputStream(csum);
-            BufferedOutputStream out = new BufferedOutputStream(zos);
-
-            try {
-                for (UserFile userFile1 : userFileList) {
-                    FileBean fileBean = fileMapper.selectById(userFile1.getFileId());
-                    Downloader downloader = ufopFactory.getDownloader(fileBean.getStorageType());
-                    if (downloader == null) {
-                        log.error("下载失败，文件存储类型不支持下载，storageType:{}", fileBean.getStorageType());
-                        throw new UploadException("下载失败");
-                    }
-                    DownloadFile downloadFile = new DownloadFile();
-                    downloadFile.setFileUrl(fileBean.getFileUrl());
-                    downloadFile.setFileSize(fileBean.getFileSize());
-                    InputStream inputStream = downloader.getInputStream(downloadFile);
-                    BufferedInputStream bis = new BufferedInputStream(inputStream);
-                    try {
-                        zos.putNextEntry(new ZipEntry(userFile1.getFilePath().replace(userFile.getFilePath(), "/") + userFile1.getFileName() + "." + userFile1.getExtendName()));
-
-                        byte[] buffer = new byte[1024];
-                        int i = bis.read(buffer);
-                        while (i != -1) {
-                            out.write(buffer, 0, i);
-                            i = bis.read(buffer);
-                        }
-                    } catch (IOException e) {
-                        log.error("" + e);
-                        e.printStackTrace();
-                    } finally {
-                        try {
-                            bis.close();
-                        } catch (IOException e) {
-                            e.printStackTrace();
-                        }
-                        try {
-                            out.flush();
-                        } catch (IOException e) {
-                            e.printStackTrace();
-                        }
-                    }
-                }
-            } catch (Exception e) {
-                log.error("压缩过程中出现异常:"+ e);
-            } finally {
-                try {
-                    out.close();
-                } catch (IOException e) {
-                    e.printStackTrace();
-                }
+        }
+        String zipPath = "";
+        try {
+            Downloader downloader = ufopFactory.getDownloader(StorageTypeEnum.LOCAL.getCode());
+            DownloadFile downloadFile = new DownloadFile();
+            downloadFile.setFileUrl("temp" + File.separator + fileName + ".zip");
+            File tempFile = new File(UFOPUtils.getStaticPath() + downloadFile.getFileUrl());
+            httpServletResponse.setContentLengthLong(tempFile.length());
+            downloader.download(httpServletResponse, downloadFile);
+            zipPath = UFOPUtils.getStaticPath() + "temp" + File.separator + fileName + ".zip";
+        } catch (Exception e) {
+            //org.apache.catalina.connector.ClientAbortException: java.io.IOException: Connection reset by peer
+            if (e.getMessage().contains("ClientAbortException")) {
+                //该异常忽略不做处理
+            } else {
+                log.error("下传zip文件出现异常：{}", e.getMessage());
             }
-            String zipPath = "";
-            try {
-                Downloader downloader = ufopFactory.getDownloader(StorageTypeEnum.LOCAL.getCode());
-                DownloadFile downloadFile = new DownloadFile();
-                downloadFile.setFileUrl("temp" + File.separator + userFile.getFileName() + ".zip");
-                File tempFile = new File(UFOPUtils.getStaticPath() + downloadFile.getFileUrl());
-                httpServletResponse.setContentLengthLong(tempFile.length());
-                downloader.download(httpServletResponse, downloadFile);
-                zipPath = UFOPUtils.getStaticPath() + "temp" + File.separator + userFile.getFileName() + ".zip";
-            } catch (Exception e) {
-                //org.apache.catalina.connector.ClientAbortException: java.io.IOException: Connection reset by peer
-                if (e.getMessage().contains("ClientAbortException")) {
-                    //该异常忽略不做处理
-                } else {
-                    log.error("下传zip文件出现异常：{}", e.getMessage());
-                }
 
-            } finally {
-                File file = new File(zipPath);
-                if (file.exists()) {
-                    file.delete();
-                }
+        } finally {
+            File file = new File(zipPath);
+            if (file.exists()) {
+                file.delete();
             }
         }
     }
