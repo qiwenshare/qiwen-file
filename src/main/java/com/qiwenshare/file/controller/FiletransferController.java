@@ -1,17 +1,18 @@
 package com.qiwenshare.file.controller;
 
-import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
+import com.alibaba.fastjson.JSON;
 import com.qiwenshare.common.anno.MyLog;
 import com.qiwenshare.common.result.RestResult;
+import com.qiwenshare.common.util.DateUtil;
 import com.qiwenshare.common.util.MimeUtils;
 import com.qiwenshare.common.util.security.JwtUser;
 import com.qiwenshare.common.util.security.SessionUtil;
 import com.qiwenshare.file.api.*;
 import com.qiwenshare.file.component.FileDealComp;
 import com.qiwenshare.file.domain.FileBean;
-import com.qiwenshare.file.domain.Image;
 import com.qiwenshare.file.domain.StorageBean;
 import com.qiwenshare.file.domain.UserFile;
+import com.qiwenshare.file.dto.file.BatchDeleteFileDTO;
 import com.qiwenshare.file.dto.file.DownloadFileDTO;
 import com.qiwenshare.file.dto.file.PreviewDTO;
 import com.qiwenshare.file.dto.file.UploadFileDTO;
@@ -25,17 +26,14 @@ import com.qiwenshare.ufop.util.UFOPUtils;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.extern.slf4j.Slf4j;
-
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.web.bind.annotation.*;
 
 import javax.annotation.Resource;
-import javax.imageio.ImageIO;
 import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-import java.awt.image.BufferedImage;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -145,6 +143,25 @@ public class FiletransferController {
         httpServletResponse.addHeader("Content-Disposition", "attachment;fileName=" + fileName);// 设置文件名
 
         filetransferService.downloadFile(httpServletResponse, downloadFileDTO);
+    }
+
+    @Operation(summary = "批量下载文件", description = "批量下载文件", tags = {"filetransfer"})
+    @RequestMapping(value = "/batchdeletefile", method = RequestMethod.POST)
+    @MyLog(operation = "批量删除文件", module = CURRENT_MODULE)
+    @ResponseBody
+    public RestResult<String> batchDownloadFile(HttpServletResponse httpServletResponse, @RequestBody BatchDeleteFileDTO batchDeleteFileDto) {
+
+        List<UserFile> userFiles = JSON.parseArray(batchDeleteFileDto.getFiles(), UserFile.class);
+        if (userFiles == null || userFiles.isEmpty()) {
+            return RestResult.fail().message("文件列表为空！");
+        }
+        UserFile userFile = userFileService.getById(userFiles.get(0).getUserFileId());
+        httpServletResponse.setContentType("application/force-download");// 设置强制下载不打开
+        String fileName = DateUtil.getCurrentTime();
+        httpServletResponse.addHeader("Content-Disposition", "attachment;fileName=" + fileName);// 设置文件名
+        filetransferService.downloadUserFileList(httpServletResponse, userFile.getFilePath(), fileName, userFiles);
+
+        return RestResult.success().message("批量下载文件成功");
     }
 
     @Operation(summary="预览文件", description="用于文件预览", tags = {"filetransfer"})

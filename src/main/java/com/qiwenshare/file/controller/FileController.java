@@ -1,5 +1,11 @@
 package com.qiwenshare.file.controller;
 
+import cn.hutool.core.bean.BeanUtil;
+import co.elastic.clients.elasticsearch.ElasticsearchClient;
+import co.elastic.clients.elasticsearch._types.SortOrder;
+import co.elastic.clients.elasticsearch.core.SearchResponse;
+import co.elastic.clients.elasticsearch.core.search.HighlighterEncoder;
+import co.elastic.clients.elasticsearch.core.search.Hit;
 import com.alibaba.fastjson.JSON;
 import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
@@ -19,6 +25,7 @@ import com.qiwenshare.file.domain.UserFile;
 import com.qiwenshare.file.dto.file.*;
 import com.qiwenshare.file.util.TreeNode;
 import com.qiwenshare.file.vo.file.FileListVo;
+import com.qiwenshare.file.vo.file.SearchFileVO;
 import com.qiwenshare.ufop.constant.UFOPConstant;
 import com.qiwenshare.ufop.factory.UFOPFactory;
 import io.swagger.v3.oas.annotations.Operation;
@@ -26,18 +33,9 @@ import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.codec.digest.DigestUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.eclipse.jetty.util.StringUtil;
-import org.elasticsearch.index.query.DisMaxQueryBuilder;
-import org.elasticsearch.index.query.QueryBuilder;
-import org.elasticsearch.index.query.QueryBuilders;
-import org.elasticsearch.search.fetch.subphase.highlight.HighlightBuilder;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Sort;
-import org.springframework.data.elasticsearch.core.ElasticsearchRestTemplate;
-import org.springframework.data.elasticsearch.core.SearchHits;
-import org.springframework.data.elasticsearch.core.query.NativeSearchQuery;
-import org.springframework.data.elasticsearch.core.query.NativeSearchQueryBuilder;
 import org.springframework.web.bind.annotation.*;
 
 import javax.annotation.Resource;
@@ -59,12 +57,12 @@ public class FileController {
     @Resource
     IUserFileService userFileService;
 
-    @Autowired
-    private ElasticsearchRestTemplate elasticsearchRestTemplate;
     @Resource
     FileDealComp fileDealComp;
     @Resource
     UFOPFactory ufopFactory;
+    @Autowired
+    private ElasticsearchClient elasticsearchClient;
 
     public static final String CURRENT_MODULE = "文件接口";
 
@@ -100,58 +98,55 @@ public class FileController {
     @GetMapping(value = "/search")
     @MyLog(operation = "文件搜索", module = CURRENT_MODULE)
     @ResponseBody
-    public RestResult<SearchHits<FileSearch>> searchFile(SearchFileDTO searchFileDTO) {
+    public RestResult<List<SearchFileVO>> searchFile(SearchFileDTO searchFileDTO) {
         JwtUser sessionUserBean =  SessionUtil.getSession();
-        NativeSearchQueryBuilder queryBuilder = new NativeSearchQueryBuilder();
-        HighlightBuilder.Field allHighLight = new HighlightBuilder.Field("*").preTags("<span class='keyword'>")
-                .postTags("</span>");
 
-        queryBuilder.withHighlightFields(allHighLight);
-
-        //设置分页
         int currentPage = (int)searchFileDTO.getCurrentPage() - 1;
         int pageCount = (int)(searchFileDTO.getPageCount() == 0 ? 10 : searchFileDTO.getPageCount());
-        String order = searchFileDTO.getOrder();
-        Sort.Direction direction = null;
-        if (searchFileDTO.getDirection() == null) {
-            direction = Sort.Direction.DESC;
-        } else if ("asc".equals(searchFileDTO.getDirection())) {
-            direction = Sort.Direction.ASC;
-        } else if ("desc".equals(searchFileDTO.getDirection())) {
-            direction = Sort.Direction.DESC;
-        } else {
-            direction = Sort.Direction.DESC;
+
+        SearchResponse<FileSearch> search = null;
+        try {
+            search = elasticsearchClient.search(s -> s
+                            .index("filesearch")
+                            .query(_1 -> _1
+                                    .bool(_2 -> _2
+                                            .must(_3 -> _3
+                                                    .bool(_4 -> _4
+                                                            .should(_5 -> _5
+                                                                    .match(_6 -> _6
+                                                                            .field("fileName")
+                                                                            .query(searchFileDTO.getFileName())))
+                                                            .should(_5 -> _5
+                                                                    .wildcard(_6 -> _6
+                                                                            .field("fileName")
+                                                                            .wildcard("*" + searchFileDTO.getFileName() + "*")))))
+                                            .must(_3 -> _3
+                                                    .term(_4 -> _4
+                                                            .field("userId")
+                                                            .value(sessionUserBean.getUserId())))
+                                    ))
+                            .from(currentPage)
+                            .size(pageCount)
+                            .highlight(h -> h
+                                    .fields("fileName", f -> f.type("plain")
+                                            .preTags("<span class='keyword'>").postTags("</span>"))
+                                    .encoder(HighlighterEncoder.Html))
+                            ,
+                    FileSearch.class);
+        } catch (IOException e) {
+            e.printStackTrace();
         }
-        if (order == null) {
-            queryBuilder.withPageable(PageRequest.of(currentPage, pageCount));
-        } else {
-            queryBuilder.withPageable(PageRequest.of(currentPage, pageCount, Sort.by(direction, order)));
+
+        List<SearchFileVO> searchFileVOList = new ArrayList<>();
+        for (Hit<FileSearch> hit : search.hits().hits()) {
+            SearchFileVO searchFileVO = new SearchFileVO();
+            BeanUtil.copyProperties(hit.source(), searchFileVO);
+            searchFileVO.setHighLight(hit.highlight());
+            searchFileVOList.add(searchFileVO);
         }
-        DisMaxQueryBuilder disMaxQueryBuilder = QueryBuilders.disMaxQuery();
-
-        QueryBuilder q1 = QueryBuilders.boolQuery()
-                .must(QueryBuilders.multiMatchQuery(searchFileDTO.getFileName(), "fileName", "content"))
-                .must(QueryBuilders.termQuery("userId", sessionUserBean.getUserId())).boost(1f);  //分词
-
-        QueryBuilder q2 = QueryBuilders.boolQuery()
-                .must(QueryBuilders.wildcardQuery("fileName", "*" + searchFileDTO.getFileName() + "*"))
-                .must(QueryBuilders.wildcardQuery("content", "*" + searchFileDTO.getFileName() + "*"))
-                .must(QueryBuilders.termQuery("userId", sessionUserBean.getUserId())).boost(2f); //模糊匹配
-
-        disMaxQueryBuilder.add(q1);
-        disMaxQueryBuilder.add(q2);
-        NativeSearchQuery searchQuery = new NativeSearchQueryBuilder()
-                .withQuery(disMaxQueryBuilder).withHighlightFields(allHighLight).build();
-//
-//        queryBuilder.withQuery(QueryBuilders.boolQuery()
-////                .must(QueryBuilders.matchQuery("fileName", searchFileDTO.getFileName()))
-//                .must(QueryBuilders.multiMatchQuery(searchFileDTO.getFileName(),"fileName", "content"))
-//                .must(QueryBuilders.termQuery("userId", sessionUserBean.getUserId()))
-//                ).withQuery(QueryBuilders.wildcardQuery("fileName", "*" + searchFileDTO.getFileName() + "*"));
-        SearchHits<FileSearch> search = elasticsearchRestTemplate.search(searchQuery, FileSearch.class);
-
-        return RestResult.success().data(search);
+        return RestResult.success().data(searchFileVOList);
     }
+
 
     @Operation(summary = "文件重命名", description = "文件重命名", tags = {"file"})
     @RequestMapping(value = "/renamefile", method = RequestMethod.POST)

@@ -1,6 +1,7 @@
 package com.qiwenshare.file.component;
 
 import cn.hutool.core.bean.BeanUtil;
+import co.elastic.clients.elasticsearch.ElasticsearchClient;
 import com.alibaba.fastjson.JSON;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.qiwenshare.common.constant.FileConstant;
@@ -60,9 +61,11 @@ public class FileDealComp {
     @Resource
     UFOPFactory ufopFactory;
 
+//    @Autowired
+//    @Lazy
+//    private IElasticSearchService elasticSearchService;
     @Autowired
-    @Lazy
-    private IElasticSearchService elasticSearchService;
+    private ElasticsearchClient elasticsearchClient;
 
     public static Executor exec = Executors.newFixedThreadPool(10);
 
@@ -292,7 +295,7 @@ public class FileDealComp {
 //                    fileSearch.setContent(content);
 //
 //                }
-                elasticSearchService.save(fileSearch);
+                elasticsearchClient.index(i -> i.index("filesearch").id(String.valueOf(fileSearch.getUserFileId())).document(fileSearch));
             }
         } catch (Exception e) {
             log.debug("ES更新操作失败，请检查配置");
@@ -303,7 +306,9 @@ public class FileDealComp {
     public void deleteESByUserFileId(Long userFileId) {
         exec.execute(()->{
             try {
-                elasticSearchService.deleteById(userFileId);
+                elasticsearchClient.delete(d -> d
+                        .index("filesearch")
+                        .id(String.valueOf(userFileId)));
             } catch (Exception e) {
                 log.debug("ES删除操作失败，请检查配置");
             }
