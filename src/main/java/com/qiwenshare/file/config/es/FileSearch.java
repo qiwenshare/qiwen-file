@@ -1,8 +1,10 @@
 package com.qiwenshare.file.config.es;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import lombok.Data;
 
 @Data
+@JsonIgnoreProperties(ignoreUnknown = true)
 public class FileSearch {
     private String indexName;
     private Long userFileId;
