@@ -7,6 +7,6 @@ import lombok.Data;
 @Schema(name = "批量下载文件DTO",required = true)
 public class BatchDownloadFileDTO {
     @Schema(description="文件集合", required = true)
-    private String files;
+    private String userFileIds;
 
 }
