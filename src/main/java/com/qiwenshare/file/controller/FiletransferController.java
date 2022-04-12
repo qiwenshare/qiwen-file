@@ -1,6 +1,7 @@
 package com.qiwenshare.file.controller;
 
 import com.alibaba.fastjson.JSON;
+import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.qiwenshare.common.anno.MyLog;
 import com.qiwenshare.common.result.RestResult;
 import com.qiwenshare.common.util.DateUtil;
@@ -16,6 +17,7 @@ import com.qiwenshare.file.dto.file.BatchDeleteFileDTO;
 import com.qiwenshare.file.dto.file.DownloadFileDTO;
 import com.qiwenshare.file.dto.file.PreviewDTO;
 import com.qiwenshare.file.dto.file.UploadFileDTO;
+import com.qiwenshare.file.dto.file.BatchDownloadFileDTO;
 import com.qiwenshare.file.mapper.ImageMapper;
 import com.qiwenshare.file.service.StorageService;
 import com.qiwenshare.file.vo.file.UploadFileVo;
@@ -39,6 +41,9 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.UnsupportedEncodingException;
 import java.util.List;
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.stream.Collectors;
 
 @Slf4j
 @Tag(name = "filetransfer", description = "该接口为文件传输接口，主要用来做文件的上传、下载和预览")
@@ -146,22 +151,37 @@ public class FiletransferController {
     }
 
     @Operation(summary = "批量下载文件", description = "批量下载文件", tags = {"filetransfer"})
-    @RequestMapping(value = "/batchdeletefile", method = RequestMethod.POST)
-    @MyLog(operation = "批量删除文件", module = CURRENT_MODULE)
+    @RequestMapping(value = "/batchDownloadFile", method = RequestMethod.GET)
+    @MyLog(operation = "批量下载文件", module = CURRENT_MODULE)
     @ResponseBody
-    public RestResult<String> batchDownloadFile(HttpServletResponse httpServletResponse, @RequestBody BatchDeleteFileDTO batchDeleteFileDto) {
+    public void batchDownloadFile(HttpServletResponse httpServletResponse, BatchDownloadFileDTO batchDownloadFileDTO) {
 
-        List<UserFile> userFiles = JSON.parseArray(batchDeleteFileDto.getFiles(), UserFile.class);
-        if (userFiles == null || userFiles.isEmpty()) {
-            return RestResult.fail().message("文件列表为空！");
+        String files = batchDownloadFileDTO.getUserFileIds();
+        String[] userFileIdStrs = files.split(",");
+        List<Long> userFileIds = new ArrayList<>();
+        for(String userFileIdStr : userFileIdStrs) {
+            Long userFileId = Long.parseLong(userFileIdStr);
+            UserFile userFile = userFileService.getById(userFileId);
+            if (userFile.getIsDir() == 0) {
+                userFileIds.add(userFileId);
+            } else {
+                LambdaQueryWrapper<UserFile> lambdaQueryWrapper = new LambdaQueryWrapper<>();
+                lambdaQueryWrapper.likeRight(UserFile::getFilePath, userFile.getFilePath() + userFile.getFileName() + "/")
+                        .eq(UserFile::getUserId, userFile.getUserId())
+                        .eq(UserFile::getIsDir, 0)
+                        .eq(UserFile::getDeleteFlag, 0);
+                List<UserFile> userFileList = userFileService.list(lambdaQueryWrapper);
+                List<Long> userFileIds1 = userFileList.stream().map(UserFile::getUserFileId).collect(Collectors.toList());
+                userFileIds.addAll(userFileIds1);
+            }
+            
         }
-        UserFile userFile = userFileService.getById(userFiles.get(0).getUserFileId());
+        UserFile userFile = userFileService.getById(userFileIds.get(0));
         httpServletResponse.setContentType("application/force-download");// 设置强制下载不打开
-        String fileName = DateUtil.getCurrentTime();
-        httpServletResponse.addHeader("Content-Disposition", "attachment;fileName=" + fileName);// 设置文件名
-        filetransferService.downloadUserFileList(httpServletResponse, userFile.getFilePath(), fileName, userFiles);
-
-        return RestResult.success().message("批量下载文件成功");
+        Date date = new Date();
+        String fileName = String.valueOf(date.getTime());
+        httpServletResponse.addHeader("Content-Disposition", "attachment;fileName=" + fileName + ".zip");// 设置文件名
+        filetransferService.downloadUserFileList(httpServletResponse, userFile.getFilePath(), fileName, userFileIds);
     }
 
     @Operation(summary="预览文件", description="用于文件预览", tags = {"filetransfer"})

@@ -48,6 +48,7 @@ import java.util.zip.Adler32;
 import java.util.zip.CheckedOutputStream;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
+import java.util.stream.Collectors;
 
 @Slf4j
 @Service
@@ -289,13 +290,14 @@ public class FiletransferService implements IFiletransferService {
                     .eq(UserFile::getIsDir, 0)
                     .eq(UserFile::getDeleteFlag, 0);
             List<UserFile> userFileList = userFileMapper.selectList(lambdaQueryWrapper);
+            List<Long> userFileIds = userFileList.stream().map(UserFile::getUserFileId).collect(Collectors.toList());
 
-            downloadUserFileList(httpServletResponse, userFile.getFilePath(), userFile.getFileName(), userFileList);
+            downloadUserFileList(httpServletResponse, userFile.getFilePath(), userFile.getFileName(), userFileIds);
         }
     }
 
     @Override
-    public void downloadUserFileList(HttpServletResponse httpServletResponse, String filePath, String fileName, List<UserFile> userFileList) {
+    public void downloadUserFileList(HttpServletResponse httpServletResponse, String filePath, String fileName, List<Long> userFileIds) {
         String staticPath = UFOPUtils.getStaticPath();
         String tempPath = staticPath + "temp" + File.separator;
         File tempDirFile = new File(tempPath);
@@ -314,7 +316,8 @@ public class FiletransferService implements IFiletransferService {
         BufferedOutputStream out = new BufferedOutputStream(zos);
 
         try {
-            for (UserFile userFile1 : userFileList) {
+            for (Long userFileId : userFileIds) {
+                UserFile userFile1 = userFileMapper.selectById(userFileId);
                 FileBean fileBean = fileMapper.selectById(userFile1.getFileId());
                 Downloader downloader = ufopFactory.getDownloader(fileBean.getStorageType());
                 if (downloader == null) {
