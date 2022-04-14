@@ -168,15 +168,15 @@ public class FiletransferController {
                 LambdaQueryWrapper<UserFile> lambdaQueryWrapper = new LambdaQueryWrapper<>();
                 lambdaQueryWrapper.likeRight(UserFile::getFilePath, userFile.getFilePath() + userFile.getFileName() + "/")
                         .eq(UserFile::getUserId, userFile.getUserId())
-                        .eq(UserFile::getIsDir, 0)
                         .eq(UserFile::getDeleteFlag, 0);
                 List<UserFile> userFileList = userFileService.list(lambdaQueryWrapper);
                 List<Long> userFileIds1 = userFileList.stream().map(UserFile::getUserFileId).collect(Collectors.toList());
+                userFileIds.add(userFile.getUserFileId());
                 userFileIds.addAll(userFileIds1);
             }
             
         }
-        UserFile userFile = userFileService.getById(userFileIds.get(0));
+        UserFile userFile = userFileService.getById(Integer.parseInt(userFileIdStrs[0]));
         httpServletResponse.setContentType("application/force-download");// 设置强制下载不打开
         Date date = new Date();
         String fileName = String.valueOf(date.getTime());
