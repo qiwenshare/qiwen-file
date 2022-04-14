@@ -42,6 +42,7 @@ import java.io.InputStream;
 import java.io.PrintWriter;
 import java.net.HttpURLConnection;
 import java.net.URL;
+import java.net.URLDecoder;
 import java.util.List;
 import java.util.Scanner;
 import java.util.UUID;
@@ -97,6 +98,7 @@ public class OfficeController {
                 templateFilePath = "template/PowerPoint.pptx";
             }
             String url2 = ClassUtils.getDefaultClassLoader().getResource("static/" + templateFilePath).getPath();
+            url2 = URLDecoder.decode(url2, "UTF-8");
             FileInputStream fileInputStream = new FileInputStream(url2);
             Copier copier = ufopFactory.getCopier();
             CopyFile copyFile = new CopyFile();

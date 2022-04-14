@@ -32,6 +32,7 @@ import com.qiwenshare.ufop.operation.upload.domain.UploadFile;
 import com.qiwenshare.ufop.operation.upload.domain.UploadFileResult;
 import com.qiwenshare.ufop.util.UFOPUtils;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.io.IOUtils;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -287,7 +288,6 @@ public class FiletransferService implements IFiletransferService {
             LambdaQueryWrapper<UserFile> lambdaQueryWrapper = new LambdaQueryWrapper<>();
             lambdaQueryWrapper.likeRight(UserFile::getFilePath, userFile.getFilePath() + userFile.getFileName() + "/")
                     .eq(UserFile::getUserId, userFile.getUserId())
-                    .eq(UserFile::getIsDir, 0)
                     .eq(UserFile::getDeleteFlag, 0);
             List<UserFile> userFileList = userFileMapper.selectList(lambdaQueryWrapper);
             List<Long> userFileIds = userFileList.stream().map(UserFile::getUserFileId).collect(Collectors.toList());
@@ -318,42 +318,46 @@ public class FiletransferService implements IFiletransferService {
         try {
             for (Long userFileId : userFileIds) {
                 UserFile userFile1 = userFileMapper.selectById(userFileId);
-                FileBean fileBean = fileMapper.selectById(userFile1.getFileId());
-                Downloader downloader = ufopFactory.getDownloader(fileBean.getStorageType());
-                if (downloader == null) {
-                    log.error("下载失败，文件存储类型不支持下载，storageType:{}", fileBean.getStorageType());
-                    throw new UploadException("下载失败");
-                }
-                DownloadFile downloadFile = new DownloadFile();
-                downloadFile.setFileUrl(fileBean.getFileUrl());
-                downloadFile.setFileSize(fileBean.getFileSize());
-                InputStream inputStream = downloader.getInputStream(downloadFile);
-                BufferedInputStream bis = new BufferedInputStream(inputStream);
-                try {
-                    zos.putNextEntry(new ZipEntry(userFile1.getFilePath().replace(filePath, "/") + userFile1.getFileName() + "." + userFile1.getExtendName()));
+                if (userFile1.getIsDir() == 0) {
+                    FileBean fileBean = fileMapper.selectById(userFile1.getFileId());
+                    Downloader downloader = ufopFactory.getDownloader(fileBean.getStorageType());
+                    if (downloader == null) {
+                        log.error("下载失败，文件存储类型不支持下载，storageType:{}", fileBean.getStorageType());
+                        throw new UploadException("下载失败");
+                    }
+                    DownloadFile downloadFile = new DownloadFile();
+                    downloadFile.setFileUrl(fileBean.getFileUrl());
+                    downloadFile.setFileSize(fileBean.getFileSize());
+                    InputStream inputStream = downloader.getInputStream(downloadFile);
+                    BufferedInputStream bis = new BufferedInputStream(inputStream);
+                    try {
+                        zos.putNextEntry(new ZipEntry(userFile1.getFilePath().replace(filePath, "/") + userFile1.getFileName() + "." + userFile1.getExtendName()));
 
-                    byte[] buffer = new byte[1024];
-                    int i = bis.read(buffer);
-                    while (i != -1) {
-                        out.write(buffer, 0, i);
-                        i = bis.read(buffer);
-                    }
-                } catch (IOException e) {
-                    log.error("" + e);
-                    e.printStackTrace();
-                } finally {
-                    try {
-                        bis.close();
+                        byte[] buffer = new byte[1024];
+                        int i = bis.read(buffer);
+                        while (i != -1) {
+                            out.write(buffer, 0, i);
+                            i = bis.read(buffer);
+                        }
                     } catch (IOException e) {
+                        log.error("" + e);
                         e.printStackTrace();
+                    } finally {
+                        IOUtils.closeQuietly(bis);
+                        try {
+                            out.flush();
+                        } catch (IOException e) {
+                            e.printStackTrace();
+                        }
                     }
-                    try {
-                        out.flush();
-                    } catch (IOException e) {
-                        e.printStackTrace();
-                    }
+                } else {
+                    // 空文件夹的处理
+                    zos.putNextEntry(new ZipEntry(userFile1.getFilePath() + userFile1.getFileName() + "/"));
+                    // 没有文件，不需要文件的copy
+                    zos.closeEntry();
                 }
             }
+
         } catch (Exception e) {
             log.error("压缩过程中出现异常:"+ e);
         } finally {
