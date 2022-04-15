@@ -1,5 +1,6 @@
 package com.qiwenshare.file.service;
 
+import cn.hutool.core.net.URLDecoder;
 import cn.hutool.core.util.RandomUtil;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
@@ -8,7 +9,6 @@ import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.qiwenshare.common.constant.FileConstant;
 import com.qiwenshare.common.exception.QiwenException;
-import com.qiwenshare.common.result.RestResult;
 import com.qiwenshare.common.util.DateUtil;
 import com.qiwenshare.common.util.security.JwtUser;
 import com.qiwenshare.common.util.security.SessionUtil;
@@ -20,13 +20,13 @@ import com.qiwenshare.file.mapper.FileTypeMapper;
 import com.qiwenshare.file.mapper.RecoveryFileMapper;
 import com.qiwenshare.file.mapper.UserFileMapper;
 import com.qiwenshare.file.vo.file.FileListVo;
-import com.qiwenshare.ufop.util.UFOPUtils;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import javax.annotation.Resource;
+import java.nio.charset.StandardCharsets;
 import java.util.List;
 import java.util.UUID;
 import java.util.concurrent.Executor;
@@ -97,7 +97,7 @@ public class UserFileService  extends ServiceImpl<UserFileMapper, UserFile> impl
             userFile.setUserId(userId);
         }
 
-        userFile.setFilePath(UFOPUtils.urlDecode(filePath));
+        userFile.setFilePath(URLDecoder.decodeForPath(filePath, StandardCharsets.UTF_8));
 
         return userFileMapper.selectPageVo(page, userFile, null);
     }
