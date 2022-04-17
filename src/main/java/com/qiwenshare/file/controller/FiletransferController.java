@@ -197,9 +197,11 @@ public class FiletransferController {
             token = previewDTO.getToken();
         } else {
             Cookie[] cookieArr = httpServletRequest.getCookies();
-            for (Cookie cookie : cookieArr) {
-                if ("token".equals(cookie.getName())) {
-                    token = cookie.getValue();
+            if (cookieArr != null) {
+                for (Cookie cookie : cookieArr) {
+                    if ("token".equals(cookie.getName())) {
+                        token = cookie.getValue();
+                    }
                 }
             }
         }
