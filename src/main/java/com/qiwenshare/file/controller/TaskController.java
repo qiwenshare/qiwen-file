@@ -1,9 +1,12 @@
 package com.qiwenshare.file.controller;
 
 import co.elastic.clients.elasticsearch.ElasticsearchClient;
+import com.qiwenshare.file.api.IShareFileService;
 import com.qiwenshare.file.component.FileDealComp;
+import com.qiwenshare.file.domain.ShareFile;
 import com.qiwenshare.file.domain.UserFile;
 import com.qiwenshare.file.io.QiwenFile;
+import com.qiwenshare.file.service.ShareFileService;
 import com.qiwenshare.file.service.UserFileService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -21,6 +24,8 @@ public class TaskController {
     UserFileService userFileService;
     @Resource
     FileDealComp fileDealComp;
+    @Resource
+    IShareFileService shareFileService;
     @Autowired
     private ElasticsearchClient elasticsearchClient;
 
@@ -45,10 +50,19 @@ public class TaskController {
     public void updateFilePath() {
         List<UserFile> list = userFileService.list();
         for (UserFile userFile : list) {
-            QiwenFile qiwenFile = new QiwenFile(userFile.getFilePath(), true);
             String path = QiwenFile.formatPath(userFile.getFilePath());
             userFile.setFilePath(path);
             userFileService.updateById(userFile);
+        }
+    }
+
+    @Scheduled(fixedRate = Long.MAX_VALUE)
+    public void updateShareFilePath() {
+        List<ShareFile> list = shareFileService.list();
+        for (ShareFile shareFile : list) {
+            String path = QiwenFile.formatPath(shareFile.getShareFilePath());
+            shareFile.setShareFilePath(path);
+            shareFileService.updateById(shareFile);
         }
     }
 }
