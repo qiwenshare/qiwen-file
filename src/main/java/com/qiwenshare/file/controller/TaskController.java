@@ -50,9 +50,15 @@ public class TaskController {
     public void updateFilePath() {
         List<UserFile> list = userFileService.list();
         for (UserFile userFile : list) {
-            String path = QiwenFile.formatPath(userFile.getFilePath());
-            userFile.setFilePath(path);
-            userFileService.updateById(userFile);
+            try {
+                String path = QiwenFile.formatPath(userFile.getFilePath());
+                if (!userFile.getFilePath().equals(path)) {
+                    userFile.setFilePath(path);
+                    userFileService.updateById(userFile);
+                }
+            } catch (Exception e) {
+                // ignore
+            }
         }
     }
 
@@ -60,9 +66,13 @@ public class TaskController {
     public void updateShareFilePath() {
         List<ShareFile> list = shareFileService.list();
         for (ShareFile shareFile : list) {
-            String path = QiwenFile.formatPath(shareFile.getShareFilePath());
-            shareFile.setShareFilePath(path);
-            shareFileService.updateById(shareFile);
+            try {
+                String path = QiwenFile.formatPath(shareFile.getShareFilePath());
+                shareFile.setShareFilePath(path);
+                shareFileService.updateById(shareFile);
+            } catch (Exception e) {
+                //ignore
+            }
         }
     }
 }
