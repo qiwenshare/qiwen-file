@@ -31,6 +31,8 @@ public class OperationLogUtil {
         operationLogBean.setOperation(operation);
         operationLogBean.setDetail(detail);
         operationLogBean.setPlatform(PlatformEnum.PAN.getCode());
+        operationLogBean.setRequestURI(request.getRequestURI());
+        operationLogBean.setRequestMethod(request.getMethod());
 
         return operationLogBean;
     }

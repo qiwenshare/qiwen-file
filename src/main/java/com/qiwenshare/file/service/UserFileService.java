@@ -60,21 +60,6 @@ public class UserFileService  extends ServiceImpl<UserFileMapper, UserFile> impl
     }
 
     @Override
-    public boolean isDirExist(String fileName, String filePath, long userId){
-        LambdaQueryWrapper<UserFile> lambdaQueryWrapper = new LambdaQueryWrapper<>();
-        lambdaQueryWrapper.eq(UserFile::getFileName, fileName)
-                .eq(UserFile::getFilePath, filePath)
-                .eq(UserFile::getUserId, userId)
-                .eq(UserFile::getDeleteFlag, 0)
-                .eq(UserFile::getIsDir, 1);
-        List<UserFile> list = userFileMapper.selectList(lambdaQueryWrapper);
-        if (list != null && !list.isEmpty()) {
-            return true;
-        }
-        return false;
-    }
-
-    @Override
     public List<UserFile> selectSameUserFile(String fileName, String filePath, String extendName, Long userId) {
         LambdaQueryWrapper<UserFile> lambdaQueryWrapper = new LambdaQueryWrapper<>();
         lambdaQueryWrapper.eq(UserFile::getFileName, fileName)
@@ -115,8 +100,8 @@ public class UserFileService  extends ServiceImpl<UserFileMapper, UserFile> impl
         userFileMapper.updateFilepathByPathAndName(oldfilePath, newfilePath, fileName, extendName, userId);
 
         //移动子目录
-        oldfilePath = oldfilePath + fileName + "/";
-        newfilePath = newfilePath + fileName + "/";
+        oldfilePath = oldfilePath + "/" + fileName;
+        newfilePath = newfilePath + "/" + fileName;
 
         if (StringUtils.isEmpty(extendName)) { //为空说明是目录，则需要移动子目录
             List<UserFile> list = selectFileListLikeRightFilePath(oldfilePath, userId);
@@ -142,8 +127,8 @@ public class UserFileService  extends ServiceImpl<UserFileMapper, UserFile> impl
 
 
         //移动子目录
-        oldfilePath = oldfilePath + fileName + "/";
-        newfilePath = newfilePath + fileName + "/";
+        oldfilePath = oldfilePath + "/" + fileName;
+        newfilePath = newfilePath + "/" + fileName;
 
         oldfilePath = oldfilePath.replace("\\", "\\\\\\\\");
         oldfilePath = oldfilePath.replace("'", "\\'");
@@ -204,7 +189,7 @@ public class UserFileService  extends ServiceImpl<UserFileMapper, UserFile> impl
 
 
     @Override
-    public void deleteUserFile(Long userFileId, Long sessionUserId) {
+    public void deleteUserFile(String userFileId, Long sessionUserId) {
         UserFile userFile = userFileMapper.selectById(userFileId);
         String uuid = UUID.randomUUID().toString();
         if (userFile.getIsDir() == 1) {
@@ -215,7 +200,7 @@ public class UserFileService  extends ServiceImpl<UserFileMapper, UserFile> impl
                     .eq(UserFile::getUserFileId, userFileId);
             userFileMapper.update(null, userFileLambdaUpdateWrapper);
 
-            String filePath = userFile.getFilePath() + userFile.getFileName() + "/";
+            String filePath = userFile.getFilePath() + "/" + userFile.getFileName();
             updateFileDeleteStateByFilePath(filePath, uuid, sessionUserId);
 
         }else{

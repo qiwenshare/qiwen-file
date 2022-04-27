@@ -23,8 +23,8 @@ public class FilePermission {
     @TableId(type = IdType.AUTO)
     @Column(columnDefinition="bigint(20)")
     public Long filePermissionId;
-    @Column(columnDefinition="bigint(20)  comment '共享文件id'")
-    public Long commonFileId;
+    @Column(columnDefinition="varchar(20)  comment '共享文件id'")
+    public String commonFileId;
     @Column(columnDefinition="bigint(20) comment '用户id'")
     public Long userId;
     @Column(columnDefinition="int(2) comment '文件权限码'")

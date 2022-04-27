@@ -7,7 +7,7 @@ import lombok.Data;
 @Data
 public class ShareFileListVO {
     @Schema(description="文件id")
-    private Long fileId;
+    private String fileId;
     @Schema(description="文件时间戳姓名")
     private String timeStampName;
     @Schema(description="文件url")
@@ -20,7 +20,7 @@ public class ShareFileListVO {
     @Schema(description="存储类型")
     private Integer storageType;
     @Schema(description="用户文件id")
-    private Long userFileId;
+    private String userFileId;
 //
 //    private Long userId;
 

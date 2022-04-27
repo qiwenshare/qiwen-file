@@ -1,5 +1,6 @@
 package com.qiwenshare.file.controller;
 
+import cn.hutool.core.util.IdUtil;
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
 import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
@@ -106,6 +107,7 @@ public class OfficeController {
             String fileUrl = copier.copy(fileInputStream, copyFile);
 
             FileBean fileBean = new FileBean();
+            fileBean.setFileId(IdUtil.getSnowflakeNextIdStr());
             fileBean.setFileSize(0L);
             fileBean.setFileUrl(fileUrl);
             fileBean.setStorageType(storageType);
@@ -116,6 +118,7 @@ public class OfficeController {
             boolean saveFlag = fileService.save(fileBean);
             UserFile userFile = new UserFile();
             if(saveFlag) {
+                userFile.setUserFileId(IdUtil.getSnowflakeNextIdStr());
                 userFile.setUserId(loginUser.getUserId());
                 userFile.setFileName(fileName);
                 userFile.setFilePath(filePath);

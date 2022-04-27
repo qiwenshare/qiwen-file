@@ -2,12 +2,12 @@ package com.qiwenshare.file.component;
 
 import com.alibaba.fastjson.JSON;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
-import com.qiwenshare.common.util.DateUtil;
 import com.qiwenshare.file.api.IFiletransferService;
 import com.qiwenshare.file.api.IRecoveryFileService;
 import com.qiwenshare.file.api.IUserFileService;
 import com.qiwenshare.file.domain.FileBean;
 import com.qiwenshare.file.domain.UserFile;
+import com.qiwenshare.file.io.QiwenFile;
 import com.qiwenshare.file.mapper.FileMapper;
 import com.qiwenshare.file.mapper.UserFileMapper;
 import com.qiwenshare.ufop.factory.UFOPFactory;
@@ -15,6 +15,7 @@ import com.qiwenshare.ufop.operation.copy.domain.CopyFile;
 import com.qiwenshare.ufop.util.UFOPUtils;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.codec.digest.DigestUtils;
+import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.io.IOUtils;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.scheduling.annotation.Async;
@@ -58,14 +59,14 @@ public class AsyncTaskComp {
     @Value("${ufop.storage-type}")
     private Integer storageType;
 
-    public Long getFilePointCount(Long fileId) {
+    public Long getFilePointCount(String fileId) {
         LambdaQueryWrapper<UserFile> lambdaQueryWrapper = new LambdaQueryWrapper<>();
         lambdaQueryWrapper.eq(UserFile::getFileId, fileId);
         long count = userFileMapper.selectCount(lambdaQueryWrapper);
         return count;
     }
 
-    public Future<String> deleteUserFile(Long userFileId) {
+    public Future<String> deleteUserFile(String userFileId) {
 
         long begin = System.currentTimeMillis();
         UserFile userFile = userFileService.getById(userFileId);
@@ -115,17 +116,8 @@ public class AsyncTaskComp {
         String totalFileUrl = unzipUrl + entryName;
         File currentFile = new File(totalFileUrl);
 
-
-        UserFile saveUserFile = new UserFile();
-
-        saveUserFile.setUploadTime(DateUtil.getCurrentTime());
-        saveUserFile.setUserId(userFile.getUserId());
-        saveUserFile.setFilePath(UFOPUtils.pathSplitFormat(userFile.getFilePath() + entryName.replace(currentFile.getName(), "")).replace("\\", "/"));
-
-        if (currentFile.isDirectory()) {
-            saveUserFile.setIsDir(1);
-            saveUserFile.setFileName(currentFile.getName());
-        } else {
+        String fileId = null;
+        if (!currentFile.isDirectory()) {
 
             FileInputStream fis = null;
             String md5Str = UUID.randomUUID().toString();
@@ -147,18 +139,17 @@ public class AsyncTaskComp {
                 List<FileBean> list = fileMapper.selectByMap(param);
 
                 if (list != null && !list.isEmpty()) { //文件已存在
-                    saveUserFile.setFileId(list.get(0).getFileId());
+                    fileId = list.get(0).getFileId();
                 } else { //文件不存在
                     fileInputStream = new FileInputStream(currentFile);
                     CopyFile createFile = new CopyFile();
-                    createFile.setExtendName(UFOPUtils.getFileExtendName(totalFileUrl));
+                    createFile.setExtendName(FilenameUtils.getExtension(totalFileUrl));
                     String saveFileUrl = ufopFactory.getCopier().copy(fileInputStream, createFile);
 
                     FileBean tempFileBean = new FileBean(saveFileUrl, currentFile.length(), storageType, md5Str, userFile.getUserId());
 ;
                     fileMapper.insert(tempFileBean);
-
-                    saveUserFile.setFileId(tempFileBean.getFileId());
+                    fileId = tempFileBean.getFileId();
                 }
             } catch (IOException e) {
                 e.printStackTrace();
@@ -173,21 +164,18 @@ public class AsyncTaskComp {
                 currentFile.delete();
             }
 
-            saveUserFile.setIsDir(0);
-            saveUserFile.setExtendName(UFOPUtils.getFileExtendName(totalFileUrl));
-            saveUserFile.setFileName(UFOPUtils.getFileNameNotExtend(currentFile.getName()));
 
         }
 
 
-        saveUserFile.setDeleteFlag(0);
-
+        QiwenFile qiwenFile = null;
         if (unzipMode == 1) {
-            saveUserFile.setFilePath(UFOPUtils.pathSplitFormat(userFile.getFilePath() + userFile.getFileName() + "/" + entryName.replace(currentFile.getName(), "")).replace("\\", "/"));
+            qiwenFile = new QiwenFile(userFile.getFilePath() + userFile.getFileName(), entryName, currentFile.isDirectory());
         } else if (unzipMode == 2) {
-            saveUserFile.setFilePath(UFOPUtils.pathSplitFormat(filePath + entryName.replace(currentFile.getName(), "")).replace("\\", "/"));
+            qiwenFile = new QiwenFile(filePath, entryName, currentFile.isDirectory());
         }
 
+        UserFile saveUserFile = new UserFile(qiwenFile, userFile.getUserId(), fileId);
         String fileName = fileDealComp.getRepeatFileName(saveUserFile, saveUserFile.getFilePath());
 
         if (saveUserFile.getIsDir() == 1 && !fileName.equals(saveUserFile.getFileName())) {
@@ -197,34 +185,8 @@ public class AsyncTaskComp {
             userFileMapper.insert(saveUserFile);
         }
 
-
         return new AsyncResult<String>("saveUnzipFile");
     }
 
-    //获取异步结果
-    public Future<String> task4() throws InterruptedException {
-        long begin = System.currentTimeMillis();
-        Thread.sleep(2000L);
-        long end = System.currentTimeMillis();
-        System.out.println("任务4耗时=" + (end - begin));
-        return new AsyncResult<String>("任务4");
-    }
-
-
-    public Future<String> task5() throws InterruptedException {
-        long begin = System.currentTimeMillis();
-        Thread.sleep(3000L);
-        long end = System.currentTimeMillis();
-        System.out.println("任务5耗时=" + (end - begin));
-        return new AsyncResult<String>("任务5");
-    }
-
-    public Future<String> task6() throws InterruptedException {
-        long begin = System.currentTimeMillis();
-        Thread.sleep(1000L);
-        long end = System.currentTimeMillis();
-        System.out.println("任务6耗时=" + (end - begin));
-        return new AsyncResult<String>("任务6");
-    }
 
 }

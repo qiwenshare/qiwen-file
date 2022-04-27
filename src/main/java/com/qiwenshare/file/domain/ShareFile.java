@@ -19,8 +19,8 @@ public class ShareFile {
 
     @Column(columnDefinition="varchar(50) comment '分享批次号'")
     private String shareBatchNum;
-    @Column(columnDefinition="bigint(20) comment '用户文件id'")
-    private Long userFileId;
+    @Column(columnDefinition="varchar(20) comment '用户文件id'")
+    private String userFileId;
     @Column(columnDefinition="varchar(100) comment '分享文件路径'")
     private String shareFilePath;
 

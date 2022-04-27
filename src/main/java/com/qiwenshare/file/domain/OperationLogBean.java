@@ -72,12 +72,14 @@ public class OperationLogBean {
     private String time;
 
     /**
-     * 日志级别
+     * 日志级别 1-正常 2-警告 3-错误
      */
-    private String logLevel;
+    private Integer logLevel;
 
     @Column(columnDefinition="int(2) comment '平台(1-社区,2-管理端,3-网盘,4-股票)'")
     private Integer platform;
 
+    private String requestURI;
+    private String requestMethod;
 
 }

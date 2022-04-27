@@ -17,9 +17,9 @@ public class ShareListVO {
     private Integer shareType;//0公共，1私密，2好友
     private Integer shareStatus;//0正常，1已失效，2已撤销
     private Long shareFileId;
-    private Long userFileId;
+    private String userFileId;
     private String shareFilePath;
-    private Long fileId;
+    private String fileId;
     private String fileName;
     private String filePath;
     private String extendName;

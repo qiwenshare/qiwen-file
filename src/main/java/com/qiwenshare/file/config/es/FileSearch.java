@@ -7,8 +7,8 @@ import lombok.Data;
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class FileSearch {
     private String indexName;
-    private Long userFileId;
-    private Long fileId;
+    private String userFileId;
+    private String fileId;
     private String fileName;
     private String content;
     private String fileUrl;

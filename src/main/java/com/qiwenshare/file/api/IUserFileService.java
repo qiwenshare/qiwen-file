@@ -9,7 +9,6 @@ import java.util.List;
 
 public interface IUserFileService extends IService<UserFile> {
     List<UserFile> selectUserFileByNameAndPath(String fileName, String filePath, Long userId);
-    boolean isDirExist(String fileName, String filePath, long userId);
     List<UserFile> selectSameUserFile(String fileName, String filePath, String extendName, Long userId);
 
     IPage<FileListVo> userFileList(Long userId, String filePath, Long beginCount, Long pageCount);
@@ -20,6 +19,6 @@ public interface IUserFileService extends IService<UserFile> {
     List<UserFile> selectUserFileListByPath(String filePath, Long userId);
     List<UserFile> selectFileListLikeRightFilePath(String filePath, long userId);
     List<UserFile> selectFilePathTreeByUserId(Long userId);
-    void deleteUserFile(Long userFileId, Long sessionUserId);
+    void deleteUserFile(String userFileId, Long sessionUserId);
 
 }

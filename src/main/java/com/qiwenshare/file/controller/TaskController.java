@@ -3,6 +3,7 @@ package com.qiwenshare.file.controller;
 import co.elastic.clients.elasticsearch.ElasticsearchClient;
 import com.qiwenshare.file.component.FileDealComp;
 import com.qiwenshare.file.domain.UserFile;
+import com.qiwenshare.file.io.QiwenFile;
 import com.qiwenshare.file.service.UserFileService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -24,7 +25,7 @@ public class TaskController {
     private ElasticsearchClient elasticsearchClient;
 
 
-    @Scheduled(fixedRate = 1000 * 60 * 60 * 24)
+    @Scheduled(initialDelay = 1000 * 60 * 60 * 24, fixedRate = Long.MAX_VALUE)
     public void updateElasticSearch() {
 
         try {
@@ -38,5 +39,16 @@ public class TaskController {
             fileDealComp.uploadESByUserFileId(userFile.getUserFileId());
         }
 
+    }
+
+    @Scheduled(fixedRate = Long.MAX_VALUE)
+    public void updateFilePath() {
+        List<UserFile> list = userFileService.list();
+        for (UserFile userFile : list) {
+            QiwenFile qiwenFile = new QiwenFile(userFile.getFilePath(), true);
+            String path = QiwenFile.formatPath(userFile.getFilePath());
+            userFile.setFilePath(path);
+            userFileService.updateById(userFile);
+        }
     }
 }

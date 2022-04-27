@@ -17,6 +17,7 @@ import com.qiwenshare.file.domain.Share;
 import com.qiwenshare.file.domain.ShareFile;
 import com.qiwenshare.file.domain.UserFile;
 import com.qiwenshare.file.dto.sharefile.*;
+import com.qiwenshare.file.io.QiwenFile;
 import com.qiwenshare.file.vo.share.ShareFileListVO;
 import com.qiwenshare.file.vo.share.ShareFileVO;
 import com.qiwenshare.file.vo.share.ShareListVO;
@@ -79,12 +80,13 @@ public class ShareController {
                 return RestResult.fail().message("您只能分享自己的文件");
             }
             if (userFile.getIsDir() == 1) {
-                List<UserFile> userfileList = userFileService.selectFileListLikeRightFilePath(userFile.getFilePath() + userFile.getFileName() + "/", sessionUserBean.getUserId());
+                QiwenFile qiwenFile = new QiwenFile(userFile.getFilePath(), userFile.getFileName(), true);
+                List<UserFile> userfileList = userFileService.selectFileListLikeRightFilePath(qiwenFile.getPath(), sessionUserBean.getUserId());
                 for (UserFile userFile1 : userfileList) {
                     ShareFile shareFile1 = new ShareFile();
                     shareFile1.setUserFileId(userFile1.getUserFileId());
                     shareFile1.setShareBatchNum(uuid);
-                    shareFile1.setShareFilePath(userFile1.getFilePath().replaceFirst(userFile.getFilePath(), "/"));
+                    shareFile1.setShareFilePath(userFile1.getFilePath().replaceFirst(userFile.getFilePath().equals("/") ? "" : userFile.getFilePath(), ""));
                     saveFileList.add(shareFile1);
                 }
             }
@@ -125,7 +127,7 @@ public class ShareController {
                 userfileList.forEach(p->{
                     p.setUserFileId(null);
                     p.setUserId(userId);
-                    p.setFilePath(p.getFilePath().replaceFirst(filePath + fileName, savefilePath + savefileName));
+                    p.setFilePath(p.getFilePath().replaceFirst(filePath + "/" + fileName, savefilePath + "/" + savefileName));
                     saveUserFileList.add(p);
                     log.info("当前文件：" + JSON.toJSONString(p));
 

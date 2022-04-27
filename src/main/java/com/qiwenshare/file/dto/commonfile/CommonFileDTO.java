@@ -13,11 +13,7 @@ import lombok.Data;
 @Schema(name = "共享文件DTO",required = true)
 public class CommonFileDTO {
     @Schema(name = "用户文件id")
-    private Long userFileId;
-    @Schema(name = "共享文件类型")
-    private Integer commonFileType;
+    private String userFileId;
     @Schema(name = "共享用户id集合")
-    private String commonUserIds;
-    @Schema(name = "权限码")
-    private Integer permissionCode;
+    private String commonUserList;
 }

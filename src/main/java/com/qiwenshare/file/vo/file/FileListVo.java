@@ -4,7 +4,7 @@ import lombok.Data;
 
 @Data
 public class FileListVo {
-    private Long fileId;
+    private String fileId;
 
     private String timeStampName;
 
@@ -18,7 +18,7 @@ public class FileListVo {
 
     private String identifier;
 
-    private Long userFileId;
+    private String userFileId;
 
     private Long userId;
 

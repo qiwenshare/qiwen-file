@@ -7,7 +7,7 @@ import lombok.Data;
 @Schema(name = "复制文件DTO",required = true)
 public class CopyFileDTO {
     @Schema(description = "用户文件id", required = true)
-    private long userFileId;
+    private String userFileId;
 
     @Schema(description = "文件路径", required = true)
     private String filePath;
