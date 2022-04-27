@@ -52,7 +52,7 @@ public class FileService extends ServiceImpl<FileMapper, FileBean> implements IF
     AsyncTaskComp asyncTaskComp;
 
     @Override
-    public Long getFilePointCount(Long fileId) {
+    public Long getFilePointCount(String fileId) {
         LambdaQueryWrapper<UserFile> lambdaQueryWrapper = new LambdaQueryWrapper<>();
         lambdaQueryWrapper.eq(UserFile::getFileId, fileId);
         long count = userFileMapper.selectCount(lambdaQueryWrapper);
@@ -60,7 +60,7 @@ public class FileService extends ServiceImpl<FileMapper, FileBean> implements IF
     }
 
     @Override
-    public void unzipFile(long userFileId, int unzipMode, String filePath) {
+    public void unzipFile(String userFileId, int unzipMode, String filePath) {
         UserFile userFile = userFileMapper.selectById(userFileId);
         FileBean fileBean = fileMapper.selectById(userFile.getFileId());
         File destFile = new File(UFOPUtils.getStaticPath() + "temp" + File.separator + fileBean.getFileUrl());
@@ -69,7 +69,6 @@ public class FileService extends ServiceImpl<FileMapper, FileBean> implements IF
         Downloader downloader = ufopFactory.getDownloader(fileBean.getStorageType());
         DownloadFile downloadFile = new DownloadFile();
         downloadFile.setFileUrl(fileBean.getFileUrl());
-        downloadFile.setFileSize(fileBean.getFileSize());
         InputStream inputStream = downloader.getInputStream(downloadFile);
 
         try {
@@ -86,7 +85,7 @@ public class FileService extends ServiceImpl<FileMapper, FileBean> implements IF
         List<String> fileEntryNameList = new ArrayList<>();
 
         try {
-            fileEntryNameList = FileOperation.unrar(destFile, unzipUrl);
+            fileEntryNameList = FileOperation.unzip(destFile, unzipUrl);
         } catch (Exception e) {
             e.printStackTrace();
             log.error("解压失败" + e);
@@ -109,7 +108,7 @@ public class FileService extends ServiceImpl<FileMapper, FileBean> implements IF
     }
 
 
-    public void updateFileDetail(long userFileId, String identifier, long fileSize, long modifyUserId) {
+    public void updateFileDetail(String userFileId, String identifier, long fileSize, long modifyUserId) {
         UserFile userFile = userFileMapper.selectById(userFileId);
 
         FileBean fileBean = new FileBean();

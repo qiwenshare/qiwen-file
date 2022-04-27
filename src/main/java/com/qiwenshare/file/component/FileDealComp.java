@@ -4,31 +4,36 @@ import cn.hutool.core.bean.BeanUtil;
 import co.elastic.clients.elasticsearch.ElasticsearchClient;
 import com.alibaba.fastjson.JSON;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
-import com.qiwenshare.common.constant.FileConstant;
 import com.qiwenshare.common.util.DateUtil;
-import com.qiwenshare.file.api.*;
+import com.qiwenshare.file.api.IShareFileService;
+import com.qiwenshare.file.api.IShareService;
+import com.qiwenshare.file.api.IUserService;
 import com.qiwenshare.file.config.es.FileSearch;
-import com.qiwenshare.file.domain.*;
+import com.qiwenshare.file.domain.FileBean;
+import com.qiwenshare.file.domain.Share;
+import com.qiwenshare.file.domain.ShareFile;
+import com.qiwenshare.file.domain.UserFile;
+import com.qiwenshare.file.io.QiwenFile;
 import com.qiwenshare.file.mapper.FileMapper;
 import com.qiwenshare.file.mapper.UserFileMapper;
+import com.qiwenshare.file.util.QiwenFileUtil;
 import com.qiwenshare.file.util.TreeNode;
 import com.qiwenshare.ufop.factory.UFOPFactory;
 import com.qiwenshare.ufop.operation.copy.Copier;
 import com.qiwenshare.ufop.operation.copy.domain.CopyFile;
 import com.qiwenshare.ufop.operation.download.Downloader;
 import com.qiwenshare.ufop.operation.download.domain.DownloadFile;
+import com.qiwenshare.ufop.operation.read.Reader;
+import com.qiwenshare.ufop.operation.read.domain.ReadFile;
 import com.qiwenshare.ufop.operation.write.Writer;
 import com.qiwenshare.ufop.operation.write.domain.WriteFile;
-import com.qiwenshare.ufop.util.UFOPUtils;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.codec.digest.DigestUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Component;
 
 import javax.annotation.Resource;
-import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.HashMap;
@@ -37,8 +42,6 @@ import java.util.Map;
 import java.util.Queue;
 import java.util.concurrent.Executor;
 import java.util.concurrent.Executors;
-import java.util.concurrent.locks.Lock;
-import java.util.concurrent.locks.ReentrantLock;
 
 /**
  * 文件逻辑处理组件
@@ -57,13 +60,8 @@ public class FileDealComp {
     @Resource
     IShareFileService shareFileService;
     @Resource
-    IUserFileService userFileService;
-    @Resource
     UFOPFactory ufopFactory;
 
-//    @Autowired
-//    @Lazy
-//    private IElasticSearchService elasticSearchService;
     @Autowired
     private ElasticsearchClient elasticsearchClient;
 
@@ -130,40 +128,33 @@ public class FileDealComp {
      * @param filePath
      * @param sessionUserId
      */
-    public void restoreParentFilePath(String filePath, Long sessionUserId) {
-        // 加锁，防止并发情况下有重复创建目录情况
-        Lock lock = new ReentrantLock();
-        lock.lock();
-        String parentFilePath = UFOPUtils.getParentPath(filePath);
-        while(parentFilePath.contains("/")) {
-            String fileName = parentFilePath.substring(parentFilePath.lastIndexOf("/") + 1);
-            parentFilePath = UFOPUtils.getParentPath(parentFilePath);
+    public void restoreParentFilePath(QiwenFile ufopFile1, Long sessionUserId) {
+
+        QiwenFile qiwenFile = new QiwenFile(ufopFile1.getPath(), ufopFile1.isDirectory());
+        if (qiwenFile.isFile()) {
+            qiwenFile = qiwenFile.getParentFile();
+        }
+        while(qiwenFile.getParent() != null) {
+            String fileName = qiwenFile.getName();
+            String parentFilePath = qiwenFile.getParent();
 
             LambdaQueryWrapper<UserFile> lambdaQueryWrapper = new LambdaQueryWrapper<>();
-            lambdaQueryWrapper.eq(UserFile::getFilePath, parentFilePath + FileConstant.pathSeparator)
+            lambdaQueryWrapper.eq(UserFile::getFilePath, parentFilePath)
                     .eq(UserFile::getFileName, fileName)
                     .eq(UserFile::getDeleteFlag, 0)
                     .eq(UserFile::getIsDir, 1)
                     .eq(UserFile::getUserId, sessionUserId);
             List<UserFile> userFileList = userFileMapper.selectList(lambdaQueryWrapper);
             if (userFileList.size() == 0) {
-                UserFile userFile = new UserFile();
-                userFile.setUserId(sessionUserId);
-                userFile.setFileName(fileName);
-                userFile.setFilePath(parentFilePath + FileConstant.pathSeparator);
-                userFile.setDeleteFlag(0);
-                userFile.setIsDir(1);
-                userFile.setExtendName("");
-                userFile.setUploadTime(DateUtil.getCurrentTime());
+                UserFile userFile = QiwenFileUtil.getQiwenDir(sessionUserId, parentFilePath, fileName);
                 try {
                     userFileMapper.insert(userFile);
                 } catch (Exception e) {
                     //ignore
                 }
             }
-
+            qiwenFile = new QiwenFile(parentFilePath, true);
         }
-        lock.unlock();
     }
 
 
@@ -215,7 +206,8 @@ public class FileDealComp {
             return treeNode;
         }
 
-        filePath = filePath + currentNodeName + "/";
+        QiwenFile qiwenFile = new QiwenFile(filePath, currentNodeName, true);
+        filePath = qiwenFile.getPath();
 
         if (!isExistPath(childrenTreeNodes, currentNodeName)){  //1、判断有没有该子节点，如果没有则插入
             //插入
@@ -275,7 +267,7 @@ public class FileDealComp {
     }
 
 
-    public void uploadESByUserFileId(Long userFileId) {
+    public void uploadESByUserFileId(String userFileId) {
 
         try {
 
@@ -285,16 +277,16 @@ public class FileDealComp {
             if (userfileResult != null && userfileResult.size() > 0) {
                 FileSearch fileSearch = new FileSearch();
                 BeanUtil.copyProperties(userfileResult.get(0), fileSearch);
-//                if (fileSearch.getIsDir() == 0) {
-//
-//                    Reader reader = ufopFactory.getReader(fileSearch.getStorageType());
-//                    ReadFile readFile = new ReadFile();
-//                    readFile.setFileUrl(fileSearch.getFileUrl());
-//                    String content = reader.read(readFile);
-//                    //全文搜索
-//                    fileSearch.setContent(content);
-//
-//                }
+                if (fileSearch.getIsDir() == 0) {
+
+                    Reader reader = ufopFactory.getReader(fileSearch.getStorageType());
+                    ReadFile readFile = new ReadFile();
+                    readFile.setFileUrl(fileSearch.getFileUrl());
+                    String content = reader.read(readFile);
+                    //全文搜索
+                    fileSearch.setContent(content);
+
+                }
                 elasticsearchClient.index(i -> i.index("filesearch").id(String.valueOf(fileSearch.getUserFileId())).document(fileSearch));
             }
         } catch (Exception e) {
@@ -303,7 +295,7 @@ public class FileDealComp {
 
     }
 
-    public void deleteESByUserFileId(Long userFileId) {
+    public void deleteESByUserFileId(String userFileId) {
         exec.execute(()->{
             try {
                 elasticsearchClient.delete(d -> d
@@ -324,13 +316,13 @@ public class FileDealComp {
     public boolean checkAuthDownloadAndPreview(String shareBatchNum,
                                                String extractionCode,
                                                String token,
-                                               Long userFileId,
+                                               String userFileId,
                                                Integer platform) {
         log.debug("权限检查开始：shareBatchNum:{}, extractionCode:{}, token:{}, userFileId{}" , shareBatchNum, extractionCode, token, userFileId);
         if (platform != null && platform == 2) {
             return true;
         }
-        UserFile userFile = userFileService.getById(userFileId);
+        UserFile userFile = userFileMapper.selectById(userFileId);
         log.debug(JSON.toJSONString(userFile));
         if ("undefined".equals(shareBatchNum)  || StringUtils.isEmpty(shareBatchNum)) {
 
@@ -396,7 +388,7 @@ public class FileDealComp {
         fileMapper.insert(fileBean);
         userFile.setFileId(fileBean.getFileId());
         userFile.setUploadTime(DateUtil.getCurrentTime());
-        userFileService.updateById(userFile);
+        userFileMapper.updateById(userFile);
         return fileUrl;
     }
 
@@ -415,5 +407,19 @@ public class FileDealComp {
         int fileSize = inputStream.available();
         writeFile.setFileSize(fileSize);
         writer1.write(inputStream, writeFile);
+    }
+
+    public boolean isDirExist(String fileName, String filePath, long userId){
+        LambdaQueryWrapper<UserFile> lambdaQueryWrapper = new LambdaQueryWrapper<>();
+        lambdaQueryWrapper.eq(UserFile::getFileName, fileName)
+                .eq(UserFile::getFilePath, QiwenFile.formatPath(filePath))
+                .eq(UserFile::getUserId, userId)
+                .eq(UserFile::getDeleteFlag, 0)
+                .eq(UserFile::getIsDir, 1);
+        List<UserFile> list = userFileMapper.selectList(lambdaQueryWrapper);
+        if (list != null && !list.isEmpty()) {
+            return true;
+        }
+        return false;
     }
 }

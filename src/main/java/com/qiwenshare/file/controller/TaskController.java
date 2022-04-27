@@ -1,8 +1,12 @@
 package com.qiwenshare.file.controller;
 
 import co.elastic.clients.elasticsearch.ElasticsearchClient;
+import com.qiwenshare.file.api.IShareFileService;
 import com.qiwenshare.file.component.FileDealComp;
+import com.qiwenshare.file.domain.ShareFile;
 import com.qiwenshare.file.domain.UserFile;
+import com.qiwenshare.file.io.QiwenFile;
+import com.qiwenshare.file.service.ShareFileService;
 import com.qiwenshare.file.service.UserFileService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -20,11 +24,13 @@ public class TaskController {
     UserFileService userFileService;
     @Resource
     FileDealComp fileDealComp;
+    @Resource
+    IShareFileService shareFileService;
     @Autowired
     private ElasticsearchClient elasticsearchClient;
 
 
-    @Scheduled(fixedRate = 1000 * 60 * 60 * 24)
+    @Scheduled(initialDelay = 1000 * 60 * 60 * 24, fixedRate = Long.MAX_VALUE)
     public void updateElasticSearch() {
 
         try {
@@ -38,5 +44,35 @@ public class TaskController {
             fileDealComp.uploadESByUserFileId(userFile.getUserFileId());
         }
 
+    }
+
+    @Scheduled(fixedRate = Long.MAX_VALUE)
+    public void updateFilePath() {
+        List<UserFile> list = userFileService.list();
+        for (UserFile userFile : list) {
+            try {
+                String path = QiwenFile.formatPath(userFile.getFilePath());
+                if (!userFile.getFilePath().equals(path)) {
+                    userFile.setFilePath(path);
+                    userFileService.updateById(userFile);
+                }
+            } catch (Exception e) {
+                // ignore
+            }
+        }
+    }
+
+    @Scheduled(fixedRate = Long.MAX_VALUE)
+    public void updateShareFilePath() {
+        List<ShareFile> list = shareFileService.list();
+        for (ShareFile shareFile : list) {
+            try {
+                String path = QiwenFile.formatPath(shareFile.getShareFilePath());
+                shareFile.setShareFilePath(path);
+                shareFileService.updateById(shareFile);
+            } catch (Exception e) {
+                //ignore
+            }
+        }
     }
 }

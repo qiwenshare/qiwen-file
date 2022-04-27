@@ -13,7 +13,7 @@ import java.util.Map;
  */
 @Data
 public class SearchFileVO {
-    private Long userFileId;
+    private String userFileId;
     private String fileName;
     private String filePath;
     private String extendName;

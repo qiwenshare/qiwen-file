@@ -1,24 +1,23 @@
 package com.qiwenshare.file.controller;
 
-import com.alibaba.fastjson.JSON;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.qiwenshare.common.anno.MyLog;
 import com.qiwenshare.common.result.RestResult;
-import com.qiwenshare.common.util.DateUtil;
 import com.qiwenshare.common.util.MimeUtils;
 import com.qiwenshare.common.util.security.JwtUser;
 import com.qiwenshare.common.util.security.SessionUtil;
-import com.qiwenshare.file.api.*;
+import com.qiwenshare.file.api.IFileService;
+import com.qiwenshare.file.api.IFiletransferService;
+import com.qiwenshare.file.api.IUserFileService;
 import com.qiwenshare.file.component.FileDealComp;
 import com.qiwenshare.file.domain.FileBean;
 import com.qiwenshare.file.domain.StorageBean;
 import com.qiwenshare.file.domain.UserFile;
-import com.qiwenshare.file.dto.file.BatchDeleteFileDTO;
+import com.qiwenshare.file.dto.file.BatchDownloadFileDTO;
 import com.qiwenshare.file.dto.file.DownloadFileDTO;
 import com.qiwenshare.file.dto.file.PreviewDTO;
 import com.qiwenshare.file.dto.file.UploadFileDTO;
-import com.qiwenshare.file.dto.file.BatchDownloadFileDTO;
-import com.qiwenshare.file.mapper.ImageMapper;
+import com.qiwenshare.file.io.QiwenFile;
 import com.qiwenshare.file.service.StorageService;
 import com.qiwenshare.file.vo.file.UploadFileVo;
 import com.qiwenshare.ufop.factory.UFOPFactory;
@@ -40,9 +39,9 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.UnsupportedEncodingException;
-import java.util.List;
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.List;
 import java.util.stream.Collectors;
 
 @Slf4j
@@ -57,22 +56,14 @@ public class FiletransferController {
     @Resource
     IFileService fileService;
     @Resource
-    IUserService userService;
-    @Resource
     IUserFileService userFileService;
     @Resource
     FileDealComp fileDealComp;
     @Resource
     StorageService storageService;
     @Resource
-    IUploadTaskService uploadTaskService;
-    @Resource
-    ImageMapper imageMapper;
-    @Resource
     UFOPFactory ufopFactory;
 
-    @Resource
-    IUploadTaskDetailService uploadTaskDetailService;
 
     public static final String CURRENT_MODULE = "文件传输接口";
 
@@ -158,25 +149,24 @@ public class FiletransferController {
 
         String files = batchDownloadFileDTO.getUserFileIds();
         String[] userFileIdStrs = files.split(",");
-        List<Long> userFileIds = new ArrayList<>();
-        for(String userFileIdStr : userFileIdStrs) {
-            Long userFileId = Long.parseLong(userFileIdStr);
+        List<String> userFileIds = new ArrayList<>();
+        for(String userFileId : userFileIdStrs) {
             UserFile userFile = userFileService.getById(userFileId);
             if (userFile.getIsDir() == 0) {
                 userFileIds.add(userFileId);
             } else {
                 LambdaQueryWrapper<UserFile> lambdaQueryWrapper = new LambdaQueryWrapper<>();
-                lambdaQueryWrapper.likeRight(UserFile::getFilePath, userFile.getFilePath() + userFile.getFileName() + "/")
+                lambdaQueryWrapper.likeRight(UserFile::getFilePath, userFile.getFilePath() + QiwenFile.separator + userFile.getFileName())
                         .eq(UserFile::getUserId, userFile.getUserId())
                         .eq(UserFile::getDeleteFlag, 0);
                 List<UserFile> userFileList = userFileService.list(lambdaQueryWrapper);
-                List<Long> userFileIds1 = userFileList.stream().map(UserFile::getUserFileId).collect(Collectors.toList());
+                List<String> userFileIds1 = userFileList.stream().map(UserFile::getUserFileId).collect(Collectors.toList());
                 userFileIds.add(userFile.getUserFileId());
                 userFileIds.addAll(userFileIds1);
             }
             
         }
-        UserFile userFile = userFileService.getById(Integer.parseInt(userFileIdStrs[0]));
+        UserFile userFile = userFileService.getById(userFileIdStrs[0]);
         httpServletResponse.setContentType("application/force-download");// 设置强制下载不打开
         Date date = new Date();
         String fileName = String.valueOf(date.getTime());
@@ -197,9 +187,11 @@ public class FiletransferController {
             token = previewDTO.getToken();
         } else {
             Cookie[] cookieArr = httpServletRequest.getCookies();
-            for (Cookie cookie : cookieArr) {
-                if ("token".equals(cookie.getName())) {
-                    token = cookie.getValue();
+            if (cookieArr != null) {
+                for (Cookie cookie : cookieArr) {
+                    if ("token".equals(cookie.getName())) {
+                        token = cookie.getValue();
+                    }
                 }
             }
         }
@@ -248,8 +240,6 @@ public class FiletransferController {
             httpServletResponse.setStatus(HttpServletResponse.SC_PARTIAL_CONTENT);
             // 每次请求只返回1MB的视频流
             byte[] bytes = new byte[1024 * 1024 * 5];
-            System.out.println("文件长度：" + inputStream.available());
-            System.out.println("range：" + range);
             inputStream.skip(range);
             int len = IOUtils.read(inputStream, bytes);
             //设置此次相应返回的数据长度

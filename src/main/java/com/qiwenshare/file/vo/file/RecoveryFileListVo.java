@@ -9,11 +9,11 @@ public class RecoveryFileListVo {
     @Schema(description = "回收文件id", example = "1")
     private Long recoveryFileId;
     @Schema(description = "id", example = "1")
-    private Long userFileId;
+    private String userFileId;
     @Schema(description = "userId", example = "1")
     private Long userId;
     @Schema(description = "fileId", example = "1")
-    private Long fileId;
+    private String fileId;
     @Schema(description = "文件名", example = "图片")
     private String fileName;
     @Schema(description = "文件路径", example = "upload/bddd/caaa")

@@ -24,7 +24,7 @@ public class Image {
     @Column(columnDefinition="bigint(20)")
     private Long imageId;
     @Column(columnDefinition = "bigint(20) comment '文件id'")
-    private Long fileId;
+    private String fileId;
     @Column(columnDefinition="int(5) comment '图像的宽'")
     private Integer imageWidth;
     @Column(columnDefinition="int(5) comment '图像的高'")

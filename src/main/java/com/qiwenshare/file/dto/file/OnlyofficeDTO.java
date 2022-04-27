@@ -5,7 +5,7 @@ import lombok.Data;
 
 @Data
 public class OnlyofficeDTO {
-    private long fileId;
+    private String fileId;
 
     private String fileName;
 

@@ -5,10 +5,10 @@ import com.qiwenshare.file.domain.FileBean;
 
 public interface IFileService  extends IService<FileBean> {
 
-    Long getFilePointCount(Long fileId);
-    void unzipFile(long userFileId, int unzipMode, String filePath);
+    Long getFilePointCount(String fileId);
+    void unzipFile(String userFileId, int unzipMode, String filePath);
 
-    public void updateFileDetail(long userFileId, String identifier, long fileSize, long modifyUserId);
+    public void updateFileDetail(String userFileId, String identifier, long fileSize, long modifyUserId);
 
 
 

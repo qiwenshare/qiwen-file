@@ -7,7 +7,7 @@ import lombok.Data;
 @Schema(name = "删除文件DTO",required = true)
 public class DeleteFileDTO {
     @Schema(description = "用户文件id", required = true)
-    private Long userFileId;
+    private String userFileId;
 
 
 }

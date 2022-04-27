@@ -7,6 +7,7 @@ import com.qiwenshare.file.api.IRecoveryFileService;
 import com.qiwenshare.file.component.FileDealComp;
 import com.qiwenshare.file.domain.RecoveryFile;
 import com.qiwenshare.file.domain.UserFile;
+import com.qiwenshare.file.io.QiwenFile;
 import com.qiwenshare.file.mapper.RecoveryFileMapper;
 import com.qiwenshare.file.mapper.UserFileMapper;
 import com.qiwenshare.file.vo.file.RecoveryFileListVo;
@@ -49,8 +50,8 @@ public class RecoveryFileService  extends ServiceImpl<RecoveryFileMapper, Recove
                 .set(UserFile::getDeleteBatchNum, "")
                 .eq(UserFile::getDeleteBatchNum, deleteBatchNum);
         userFileMapper.update(null, userFileLambdaUpdateWrapper);
-
-        fileDealComp.restoreParentFilePath(filePath, sessionUserId);
+        QiwenFile qiwenFile = new QiwenFile(filePath, true);
+        fileDealComp.restoreParentFilePath(qiwenFile, sessionUserId);
 
         fileDealComp.deleteRepeatSubDirFile(filePath, sessionUserId);
         // TODO 如果被还原的文件已存在，暂未实现

@@ -7,7 +7,7 @@ import lombok.Data;
 @Schema(name = "解压缩文件DTO",required = true)
 public class UnzipFileDTO {
     @Schema(description = "文件url", required = true)
-    private long userFileId;
+    private String userFileId;
 
     @Schema(description = "解压模式 0-解压到当前文件夹， 1-自动创建该文件名目录，并解压到目录里， 2-手动选择解压目录", required = true)
     private int unzipMode;

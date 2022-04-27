@@ -18,7 +18,7 @@ public interface IFiletransferService {
     void uploadFile(HttpServletRequest request, UploadFileDTO UploadFileDto, Long userId);
 
     void downloadFile(HttpServletResponse httpServletResponse, DownloadFileDTO downloadFileDTO);
-    void downloadUserFileList(HttpServletResponse httpServletResponse, String filePath, String fileName, List<Long> userFileIds);
+    void downloadUserFileList(HttpServletResponse httpServletResponse, String filePath, String fileName, List<String> userFileIds);
     void previewFile(HttpServletResponse httpServletResponse, PreviewDTO previewDTO);
     void previewPictureFile(HttpServletResponse httpServletResponse, PreviewDTO previewDTO);
     void deleteFile(FileBean fileBean);

@@ -4,7 +4,7 @@ import lombok.Data;
 
 @Data
 public class EditOfficeFileDTO {
-   private long userFileId;
+   private String userFileId;
    private String previewUrl;
 //   private String filePath;
 //   private String fileName;

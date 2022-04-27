@@ -1,5 +1,6 @@
 package com.qiwenshare.file.controller;
 
+import cn.hutool.core.util.IdUtil;
 import com.alibaba.fastjson.JSON;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.qiwenshare.common.anno.MyLog;
@@ -9,6 +10,7 @@ import com.qiwenshare.common.util.security.SessionUtil;
 import com.qiwenshare.file.api.ICommonFileService;
 import com.qiwenshare.file.api.IFilePermissionService;
 import com.qiwenshare.file.api.IUserFileService;
+import com.qiwenshare.file.constant.CommonFileTypeEnum;
 import com.qiwenshare.file.domain.CommonFile;
 import com.qiwenshare.file.domain.FilePermission;
 import com.qiwenshare.file.domain.UserFile;
@@ -48,15 +50,16 @@ public class CommonFileController {
     public RestResult<String> commonFile( @RequestBody CommonFileDTO commonFileDTO) {
         CommonFile commonFile = new CommonFile();
         commonFile.setUserFileId(commonFileDTO.getUserFileId());
+        commonFile.setCommonFileId(IdUtil.getSnowflakeNextIdStr());
+
         commonFileService.save(commonFile);
 
-       List<Long> list = JSON.parseArray(commonFileDTO.getCommonUserIds(), Long.class);
+        List<FilePermission> list = JSON.parseArray(commonFileDTO.getCommonUserList(), FilePermission.class);
+
         List<FilePermission> filePermissionList = new ArrayList<>();
-       for (Long userId : list) {
-            FilePermission filePermission = new FilePermission();
-            filePermission.setUserId(Long.parseLong(commonFileDTO.getCommonUserIds()));
+       for (FilePermission filePermission : list) {
+           filePermission.setFilePermissionId(IdUtil.getSnowflakeNextId());
             filePermission.setCommonFileId(commonFile.commonFileId);
-            filePermission.setFilePermissionCode(commonFileDTO.getPermissionCode());
             filePermissionList.add(filePermission);
        }
         filePermissionService.saveBatch(filePermissionList);
@@ -80,7 +83,7 @@ public class CommonFileController {
     @ResponseBody
     public RestResult<CommonFileListVo> getCommonFileByUser(
             @Parameter(description = "用户id", required = true) Long userId,
-            @Parameter(description = "用户文件路径", required = true) Long userFileId,
+            @Parameter(description = "用户文件路径", required = true) String userFileId,
             @Parameter(description = "文件路径", required = true) String filePath,
             @Parameter(description = "当前页", required = true) long currentPage,
             @Parameter(description = "页面数量", required = true) long pageCount){

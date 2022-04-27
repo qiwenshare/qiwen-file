@@ -13,7 +13,7 @@ import lombok.Data;
 @Schema(name = "修改文件DTO",required = true)
 public class UpdateFileDTO {
     @Schema(description = "用户文件id")
-    private Long userFileId;
+    private String userFileId;
     @Schema(description = "文件内容")
     private String fileContent;
 }

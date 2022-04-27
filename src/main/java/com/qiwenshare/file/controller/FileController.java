@@ -2,7 +2,6 @@ package com.qiwenshare.file.controller;
 
 import cn.hutool.core.bean.BeanUtil;
 import co.elastic.clients.elasticsearch.ElasticsearchClient;
-import co.elastic.clients.elasticsearch._types.SortOrder;
 import co.elastic.clients.elasticsearch.core.SearchResponse;
 import co.elastic.clients.elasticsearch.core.search.HighlighterEncoder;
 import co.elastic.clients.elasticsearch.core.search.Hit;
@@ -17,23 +16,21 @@ import com.qiwenshare.common.util.security.JwtUser;
 import com.qiwenshare.common.util.security.SessionUtil;
 import com.qiwenshare.file.api.IFileService;
 import com.qiwenshare.file.api.IUserFileService;
-import com.qiwenshare.file.api.IUserService;
 import com.qiwenshare.file.component.FileDealComp;
 import com.qiwenshare.file.config.es.FileSearch;
 import com.qiwenshare.file.domain.FileBean;
 import com.qiwenshare.file.domain.UserFile;
 import com.qiwenshare.file.dto.file.*;
+import com.qiwenshare.file.io.QiwenFile;
+import com.qiwenshare.file.util.QiwenFileUtil;
 import com.qiwenshare.file.util.TreeNode;
 import com.qiwenshare.file.vo.file.FileListVo;
 import com.qiwenshare.file.vo.file.SearchFileVO;
-import com.qiwenshare.ufop.constant.UFOPConstant;
-import com.qiwenshare.ufop.factory.UFOPFactory;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.codec.digest.DigestUtils;
-import org.apache.commons.lang3.StringUtils;
 import org.eclipse.jetty.util.StringUtil;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
@@ -53,14 +50,10 @@ public class FileController {
     @Resource
     IFileService fileService;
     @Resource
-    IUserService userService;
-    @Resource
     IUserFileService userFileService;
 
     @Resource
     FileDealComp fileDealComp;
-    @Resource
-    UFOPFactory ufopFactory;
     @Autowired
     private ElasticsearchClient elasticsearchClient;
 
@@ -75,19 +68,14 @@ public class FileController {
 
         JwtUser sessionUserBean = SessionUtil.getSession();
 
-        boolean isDirExist = userFileService.isDirExist(createFileDto.getFileName(), createFileDto.getFilePath(), sessionUserBean.getUserId());
+
+        boolean isDirExist = fileDealComp.isDirExist(createFileDto.getFileName(), createFileDto.getFilePath(), sessionUserBean.getUserId());
 
         if (isDirExist) {
             return RestResult.fail().message("同名文件已存在");
         }
 
-        UserFile userFile = new UserFile();
-        userFile.setUserId(sessionUserBean.getUserId());
-        userFile.setFileName(createFileDto.getFileName());
-        userFile.setFilePath(createFileDto.getFilePath());
-        userFile.setDeleteFlag(0);
-        userFile.setIsDir(1);
-        userFile.setUploadTime(DateUtil.getCurrentTime());
+        UserFile userFile = QiwenFileUtil.getQiwenDir(sessionUserBean.getUserId(), createFileDto.getFilePath(), createFileDto.getFileName());
 
         userFileService.save(userFile);
         fileDealComp.uploadESByUserFileId(userFile.getUserFileId());
@@ -119,7 +107,16 @@ public class FileController {
                                                             .should(_5 -> _5
                                                                     .wildcard(_6 -> _6
                                                                             .field("fileName")
-                                                                            .wildcard("*" + searchFileDTO.getFileName() + "*")))))
+                                                                            .wildcard("*" + searchFileDTO.getFileName() + "*")))
+                                                            .should(_5 -> _5
+                                                                    .match(_6 -> _6
+                                                                            .field("content")
+                                                                            .query(searchFileDTO.getFileName())))
+                                                            .should(_5 -> _5
+                                                                    .wildcard(_6 -> _6
+                                                                            .field("content")
+                                                                            .wildcard("*" + searchFileDTO.getFileName() + "*")))
+                                                    ))
                                             .must(_3 -> _3
                                                     .term(_4 -> _4
                                                             .field("userId")
@@ -259,15 +256,15 @@ public class FileController {
 
         JwtUser sessionUserBean =  SessionUtil.getSession();
 
-        long userFileId = copyFileDTO.getUserFileId();
+        String userFileId = copyFileDTO.getUserFileId();
         UserFile userFile = userFileService.getById(userFileId);
         String oldfilePath = userFile.getFilePath();
         String newfilePath = copyFileDTO.getFilePath();
         String fileName = userFile.getFileName();
         String extendName = userFile.getExtendName();
         if (userFile.getIsDir() == 1) {
-            String testFilePath = oldfilePath + fileName +  "/";
-            if (newfilePath.startsWith(testFilePath)) {
+            QiwenFile qiwenFile = new QiwenFile(oldfilePath, fileName, true);
+            if (newfilePath.startsWith(qiwenFile.getPath() + QiwenFile.separator) || newfilePath.equals(qiwenFile.getPath())) {
                 return RestResult.fail().message("原路径与目标路径冲突，不能复制");
             }
         }
@@ -290,8 +287,8 @@ public class FileController {
         String fileName = moveFileDto.getFileName();
         String extendName = moveFileDto.getExtendName();
         if (StringUtil.isEmpty(extendName)) {
-            String testFilePath = oldfilePath + fileName +  "/";
-            if (newfilePath.startsWith(testFilePath)) {
+            QiwenFile qiwenFile = new QiwenFile(oldfilePath, fileName, true);
+            if (newfilePath.startsWith(qiwenFile.getPath() + QiwenFile.separator) || newfilePath.equals(qiwenFile.getPath())) {
                 return RestResult.fail().message("原路径与目标路径冲突，不能移动");
             }
         }
@@ -317,8 +314,8 @@ public class FileController {
         for (UserFile userFile : fileList) {
            
             if (StringUtil.isEmpty(userFile.getExtendName())) {
-                String testFilePath = userFile.getFilePath() + userFile.getFileName() +  "/";
-                if (newfilePath.startsWith(testFilePath)) {
+                QiwenFile qiwenFile = new QiwenFile(userFile.getFilePath(), userFile.getFileName(), true);
+                if (newfilePath.startsWith(qiwenFile.getPath() + QiwenFile.separator) || newfilePath.equals(qiwenFile.getPath())) {
                     return RestResult.fail().message("原路径与目标路径冲突，不能移动");
                 }
             }
@@ -361,16 +358,17 @@ public class FileController {
 
         List<UserFile> userFileList = userFileService.selectFilePathTreeByUserId(sessionUserBean.getUserId());
         TreeNode resultTreeNode = new TreeNode();
-        resultTreeNode.setLabel(UFOPConstant.FILE_PATH_SEPARATOR);
+        resultTreeNode.setLabel(QiwenFile.separator);
         resultTreeNode.setId(0L);
         long id = 1;
         for (int i = 0; i < userFileList.size(); i++){
             UserFile userFile = userFileList.get(i);
-            String filePath = userFile.getFilePath() + userFile.getFileName() + UFOPConstant.FILE_PATH_SEPARATOR;
+            QiwenFile qiwenFile = new QiwenFile(userFile.getFilePath(), userFile.getFileName(), false);
+            String filePath = qiwenFile.getPath();
 
             Queue<String> queue = new LinkedList<>();
 
-            String[] strArr = filePath.split(UFOPConstant.FILE_PATH_SEPARATOR);
+            String[] strArr = filePath.split(QiwenFile.separator);
             for (int j = 0; j < strArr.length; j++){
                 if (!"".equals(strArr[j]) && strArr[j] != null){
                     queue.add(strArr[j]);
@@ -381,7 +379,7 @@ public class FileController {
                 continue;
             }
 
-            resultTreeNode = fileDealComp.insertTreeNode(resultTreeNode, id++, UFOPConstant.FILE_PATH_SEPARATOR , queue);
+            resultTreeNode = fileDealComp.insertTreeNode(resultTreeNode, id++, QiwenFile.separator, queue);
 
 
         }

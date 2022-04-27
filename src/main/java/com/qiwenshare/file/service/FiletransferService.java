@@ -1,6 +1,5 @@
 package com.qiwenshare.file.service;
 
-import cn.hutool.core.bean.BeanUtil;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
@@ -14,7 +13,9 @@ import com.qiwenshare.file.domain.*;
 import com.qiwenshare.file.dto.file.DownloadFileDTO;
 import com.qiwenshare.file.dto.file.PreviewDTO;
 import com.qiwenshare.file.dto.file.UploadFileDTO;
+import com.qiwenshare.file.io.QiwenFile;
 import com.qiwenshare.file.mapper.*;
+import com.qiwenshare.file.util.QiwenFileUtil;
 import com.qiwenshare.file.vo.file.UploadFileVo;
 import com.qiwenshare.ufop.constant.StorageTypeEnum;
 import com.qiwenshare.ufop.constant.UploadFileStatusEnum;
@@ -37,19 +38,19 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import javax.annotation.Resource;
-import javax.imageio.ImageIO;
-import javax.imageio.ImageReader;
-import javax.imageio.stream.ImageInputStream;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.awt.image.BufferedImage;
 import java.io.*;
-import java.util.*;
+import java.util.Base64;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
 import java.util.zip.Adler32;
 import java.util.zip.CheckedOutputStream;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
-import java.util.stream.Collectors;
 
 @Slf4j
 @Service
@@ -85,38 +86,32 @@ public class FiletransferService implements IFiletransferService {
         param.put("identifier", uploadFileDTO.getIdentifier());
         List<FileBean> list = fileMapper.selectByMap(param);
 
+        String filePath = uploadFileDTO.getFilePath();
+        String relativePath = uploadFileDTO.getRelativePath();
+        QiwenFile qiwenFile = null;
+        if (relativePath.contains("/")) {
+            qiwenFile = new QiwenFile(filePath, relativePath, false);
+        } else {
+            qiwenFile = new QiwenFile(filePath, uploadFileDTO.getFilename(), false);
+        }
+
         if (list != null && !list.isEmpty()) {
             FileBean file = list.get(0);
 
-            UserFile userFile = new UserFile();
-
-            userFile.setUserId(sessionUserBean.getUserId());
-            String relativePath = uploadFileDTO.getRelativePath();
             if (relativePath.contains("/")) {
-                userFile.setFilePath(uploadFileDTO.getFilePath() + UFOPUtils.getParentPath(relativePath) + "/");
-                fileDealComp.restoreParentFilePath(uploadFileDTO.getFilePath() + UFOPUtils.getParentPath(relativePath) + "/", sessionUserBean.getUserId());
+                fileDealComp.restoreParentFilePath(qiwenFile, sessionUserBean.getUserId());
                 fileDealComp.deleteRepeatSubDirFile(uploadFileDTO.getFilePath(), sessionUserBean.getUserId());
-            } else {
-                userFile.setFilePath(uploadFileDTO.getFilePath());
             }
 
-            String fileName = uploadFileDTO.getFilename();
-            userFile.setFileName(UFOPUtils.getFileNameNotExtend(fileName));
-            userFile.setExtendName(UFOPUtils.getFileExtendName(fileName));
-            userFile.setDeleteFlag(0);
-
-            List<UserFile> userFileList = userFileMapper.selectList(new QueryWrapper<>(userFile));
+            UserFile userFile = new UserFile(qiwenFile, sessionUserBean.getUserId(), file.getFileId());
+            UserFile param1 = QiwenFileUtil.searchQiwenFileParam(userFile);
+            List<UserFile> userFileList = userFileMapper.selectList(new QueryWrapper<>(param1));
             if (userFileList.size() <= 0) {
-
-                userFile.setIsDir(0);
-                userFile.setUploadTime(DateUtil.getCurrentTime());
-                userFile.setFileId(file.getFileId());
                 userFileMapper.insert(userFile);
                 fileDealComp.uploadESByUserFileId(userFile.getUserFileId());
             }
 
             uploadFileVo.setSkipUpload(true);
-
         } else {
             uploadFileVo.setSkipUpload(false);
 
@@ -133,14 +128,9 @@ public class FiletransferService implements IFiletransferService {
                     uploadTask.setIdentifier(uploadFileDTO.getIdentifier());
                     uploadTask.setUploadTime(DateUtil.getCurrentTime());
                     uploadTask.setUploadStatus(UploadFileStatusEnum.UNCOMPLATE.getCode());
-                    uploadTask.setFileName(uploadFileDTO.getFilename());
-                    String relativePath = uploadFileDTO.getRelativePath();
-                    if (relativePath.contains("/")) {
-                        uploadTask.setFilePath(uploadFileDTO.getFilePath() + UFOPUtils.getParentPath(relativePath) + "/");
-                    } else {
-                        uploadTask.setFilePath(uploadFileDTO.getFilePath());
-                    }
-                    uploadTask.setExtendName(uploadTask.getExtendName());
+                    uploadTask.setFileName(qiwenFile.getNameNotExtend());
+                    uploadTask.setFilePath(qiwenFile.getParent());
+                    uploadTask.setExtendName(qiwenFile.getExtendName());
                     uploadTask.setUserId(sessionUserBean.getUserId());
                     uploadTaskMapper.insert(uploadTask);
                 }
@@ -175,42 +165,35 @@ public class FiletransferService implements IFiletransferService {
         }
         for (int i = 0; i < uploadFileResultList.size(); i++){
             UploadFileResult uploadFileResult = uploadFileResultList.get(i);
-            FileBean fileBean = new FileBean();
-            BeanUtil.copyProperties(uploadFileDto, fileBean);
             String relativePath = uploadFileDto.getRelativePath();
+            QiwenFile qiwenFile = null;
+            if (relativePath.contains("/")) {
+                qiwenFile = new QiwenFile(uploadFileDto.getFilePath(), relativePath, false);
+            } else {
+                qiwenFile = new QiwenFile(uploadFileDto.getFilePath(), uploadFileDto.getFilename(), false);
+            }
 
             if (UploadFileStatusEnum.SUCCESS.equals(uploadFileResult.getStatus())){
-                fileBean.setFileUrl(uploadFileResult.getFileUrl());
-                fileBean.setFileSize(uploadFileResult.getFileSize());
-                fileBean.setStorageType(uploadFileResult.getStorageType().getCode());
-                fileBean.setFileStatus(1);
-                fileBean.setCreateTime(DateUtil.getCurrentTime());
+                FileBean fileBean = new FileBean(uploadFileResult);
                 fileBean.setCreateUserId(userId);
                 fileMapper.insert(fileBean);
-                UserFile userFile = new UserFile();
+
+
+                UserFile userFile = new UserFile(qiwenFile, userId, fileBean.getFileId());
 
                 if (relativePath.contains("/")) {
-                    userFile.setFilePath(uploadFileDto.getFilePath() + UFOPUtils.getParentPath(relativePath) + "/");
-                    fileDealComp.restoreParentFilePath(uploadFileDto.getFilePath() + UFOPUtils.getParentPath(relativePath) + "/", userId);
+                    fileDealComp.restoreParentFilePath(qiwenFile, userId);
                     fileDealComp.deleteRepeatSubDirFile(uploadFileDto.getFilePath(), userId);
-
-                } else {
-                    userFile.setFilePath(uploadFileDto.getFilePath());
                 }
-                userFile.setUserId(userId);
-                userFile.setFileName(uploadFileResult.getFileName());
-                userFile.setExtendName(uploadFileResult.getExtendName());
-                userFile.setDeleteFlag(0);
-                userFile.setIsDir(0);
-                List<UserFile> userFileList = userFileMapper.selectList(new QueryWrapper<>(userFile));
+
+                UserFile param = QiwenFileUtil.searchQiwenFileParam(userFile);
+                List<UserFile> userFileList = userFileMapper.selectList(new QueryWrapper<>(param));
                 if (userFileList.size() > 0) {
                     String fileName = fileDealComp.getRepeatFileName(userFile, userFile.getFilePath());
                     userFile.setFileName(fileName);
                 }
-                userFile.setFileId(fileBean.getFileId());
-
-                userFile.setUploadTime(DateUtil.getCurrentTime());
                 userFileMapper.insert(userFile);
+
                 fileDealComp.uploadESByUserFileId(userFile.getUserFileId());
 
 
@@ -237,13 +220,8 @@ public class FiletransferService implements IFiletransferService {
 
             } else if (UploadFileStatusEnum.UNCOMPLATE.equals(uploadFileResult.getStatus())) {
                 UploadTaskDetail uploadTaskDetail = new UploadTaskDetail();
-                uploadTaskDetail.setFilePath(uploadFileDto.getFilePath());
-                if (relativePath.contains("/")) {
-                    uploadTaskDetail.setFilePath(uploadFileDto.getFilePath() + UFOPUtils.getParentPath(relativePath) + "/");
-                } else {
-                    uploadTaskDetail.setFilePath(uploadFileDto.getFilePath());
-                }
-                uploadTaskDetail.setFilename(uploadFileDto.getFilename());
+                uploadTaskDetail.setFilePath(qiwenFile.getParent());
+                uploadTaskDetail.setFilename(qiwenFile.getNameNotExtend());
                 uploadTaskDetail.setChunkNumber(uploadFileDto.getChunkNumber());
                 uploadTaskDetail.setChunkSize((int)uploadFileDto.getChunkSize());
                 uploadTaskDetail.setRelativePath(uploadFileDto.getRelativePath());
@@ -281,23 +259,22 @@ public class FiletransferService implements IFiletransferService {
             DownloadFile downloadFile = new DownloadFile();
 
             downloadFile.setFileUrl(fileBean.getFileUrl());
-            downloadFile.setFileSize(fileBean.getFileSize());
             httpServletResponse.setContentLengthLong(fileBean.getFileSize());
             downloader.download(httpServletResponse, downloadFile);
         } else {
             LambdaQueryWrapper<UserFile> lambdaQueryWrapper = new LambdaQueryWrapper<>();
-            lambdaQueryWrapper.likeRight(UserFile::getFilePath, userFile.getFilePath() + userFile.getFileName() + "/")
+            lambdaQueryWrapper.likeRight(UserFile::getFilePath, userFile.getFilePath() + "/" + userFile.getFileName())
                     .eq(UserFile::getUserId, userFile.getUserId())
                     .eq(UserFile::getDeleteFlag, 0);
             List<UserFile> userFileList = userFileMapper.selectList(lambdaQueryWrapper);
-            List<Long> userFileIds = userFileList.stream().map(UserFile::getUserFileId).collect(Collectors.toList());
+            List<String> userFileIds = userFileList.stream().map(UserFile::getUserFileId).collect(Collectors.toList());
 
             downloadUserFileList(httpServletResponse, userFile.getFilePath(), userFile.getFileName(), userFileIds);
         }
     }
 
     @Override
-    public void downloadUserFileList(HttpServletResponse httpServletResponse, String filePath, String fileName, List<Long> userFileIds) {
+    public void downloadUserFileList(HttpServletResponse httpServletResponse, String filePath, String fileName, List<String> userFileIds) {
         String staticPath = UFOPUtils.getStaticPath();
         String tempPath = staticPath + "temp" + File.separator;
         File tempDirFile = new File(tempPath);
@@ -316,7 +293,7 @@ public class FiletransferService implements IFiletransferService {
         BufferedOutputStream out = new BufferedOutputStream(zos);
 
         try {
-            for (Long userFileId : userFileIds) {
+            for (String userFileId : userFileIds) {
                 UserFile userFile1 = userFileMapper.selectById(userFileId);
                 if (userFile1.getIsDir() == 0) {
                     FileBean fileBean = fileMapper.selectById(userFile1.getFileId());
@@ -327,11 +304,10 @@ public class FiletransferService implements IFiletransferService {
                     }
                     DownloadFile downloadFile = new DownloadFile();
                     downloadFile.setFileUrl(fileBean.getFileUrl());
-                    downloadFile.setFileSize(fileBean.getFileSize());
                     InputStream inputStream = downloader.getInputStream(downloadFile);
                     BufferedInputStream bis = new BufferedInputStream(inputStream);
                     try {
-                        zos.putNextEntry(new ZipEntry(userFile1.getFilePath().replace(filePath, "/") + userFile1.getFileName() + "." + userFile1.getExtendName()));
+                        zos.putNextEntry(new ZipEntry(userFile1.getFilePath().replaceFirst(filePath, "")  + "/" + userFile1.getFileName() + "." + userFile1.getExtendName()));
 
                         byte[] buffer = new byte[1024];
                         int i = bis.read(buffer);

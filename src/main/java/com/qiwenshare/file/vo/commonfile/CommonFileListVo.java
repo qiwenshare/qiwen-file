@@ -9,7 +9,7 @@ public class CommonFileListVo {
 
     private String fileName;
 
-    private Long userFileId;
+    private String userFileId;
 
     private Long userId;
 

@@ -19,12 +19,12 @@ import javax.persistence.*;
 @TableName("commonfile")
 public class CommonFile {
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @GeneratedValue(strategy = GenerationType.AUTO)
     @TableId(type = IdType.AUTO)
-    @Column(columnDefinition="bigint(20)")
-    public Long commonFileId;
+    @Column(columnDefinition="varchar(20)")
+    public String commonFileId;
     @Column(columnDefinition="bigint(20) comment '用户文件id'")
-    public Long userFileId;
+    public String userFileId;
 //    @Column(columnDefinition="int(2) comment '文件权限'")
 //    public Integer filePermission;
 }

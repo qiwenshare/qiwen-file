@@ -1,9 +1,11 @@
 package com.qiwenshare.file.domain;
 
+import cn.hutool.core.util.IdUtil;
 import com.baomidou.mybatisplus.annotation.IdType;
 import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableName;
 import com.qiwenshare.common.util.DateUtil;
+import com.qiwenshare.ufop.operation.upload.domain.UploadFileResult;
 import lombok.Data;
 
 import javax.persistence.*;
@@ -20,10 +22,10 @@ import javax.persistence.*;
 public class FileBean {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @GeneratedValue(strategy = GenerationType.AUTO)
     @TableId(type = IdType.AUTO)
-    @Column(columnDefinition="bigint(20)")
-    private Long fileId;
+    @Column(columnDefinition="varchar(20)")
+    private String fileId;
 
     @Column(columnDefinition="varchar(500) comment '文件url'")
     private String fileUrl;
@@ -56,7 +58,19 @@ public class FileBean {
 
     }
 
+    public FileBean(UploadFileResult uploadFileResult) {
+        this.fileId = IdUtil.getSnowflakeNextIdStr();
+        this.fileUrl = uploadFileResult.getFileUrl();
+        this.fileSize = uploadFileResult.getFileSize();
+        this.fileStatus = 1;
+        this.storageType = uploadFileResult.getStorageType().getCode();
+        this.identifier = uploadFileResult.getIdentifier();
+        this.createTime = DateUtil.getCurrentTime();
+
+    }
+
     public FileBean(String fileUrl, Long fileSize, Integer storageType, String identifier, Long userId) {
+        this.fileId = IdUtil.getSnowflakeNextIdStr();
         this.fileUrl = fileUrl;
         this.fileSize = fileSize;
         this.fileStatus = 1;
