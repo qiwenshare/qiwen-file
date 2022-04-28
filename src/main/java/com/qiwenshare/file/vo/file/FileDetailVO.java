@@ -1,10 +1,17 @@
 package com.qiwenshare.file.vo.file;
 
+import com.qiwenshare.file.domain.Image;
 import com.qiwenshare.file.domain.Music;
 import lombok.Data;
 
+/**
+ * @author MAC
+ * @version 1.0
+ * @description: TODO
+ * @date 2022/4/28 23:45
+ */
 @Data
-public class FileListVo {
+public class FileDetailVO {
     private String fileId;
 
     private String timeStampName;
@@ -40,7 +47,7 @@ public class FileListVo {
 
     private String deleteBatchNum;
 
-    private Integer imageWidth;
-    private Integer imageHeight;
+    private Image image;
 
+    private Music music;
 }

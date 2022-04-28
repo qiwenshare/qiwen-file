@@ -24,6 +24,7 @@ import com.qiwenshare.file.dto.file.*;
 import com.qiwenshare.file.io.QiwenFile;
 import com.qiwenshare.file.util.QiwenFileUtil;
 import com.qiwenshare.file.util.TreeNode;
+import com.qiwenshare.file.vo.file.FileDetailVO;
 import com.qiwenshare.file.vo.file.FileListVo;
 import com.qiwenshare.file.vo.file.SearchFileVO;
 import io.swagger.v3.oas.annotations.Operation;
@@ -427,6 +428,15 @@ public class FileController {
             }
         }
         return RestResult.success().message("修改文件成功");
+    }
+
+    @Operation(summary = "查询文件详情", description = "查询文件详情", tags = {"file"})
+    @RequestMapping(value = "/detail", method = RequestMethod.GET)
+    @ResponseBody
+    public RestResult<FileDetailVO> queryFileDetail(
+            @Parameter(description = "用户文件Id", required = true) String userFileId){
+        FileDetailVO vo = fileService.getFileDetail(userFileId);
+        return RestResult.success().data(vo);
     }
 
 

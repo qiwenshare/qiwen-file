@@ -6,8 +6,6 @@
 
 <mapper namespace="com.qiwenshare.file.mapper.UserFileMapper">
 
-
-
     <select id="selectPageVo" parameterType="com.qiwenshare.file.domain.UserFile" resultType="com.qiwenshare.file.vo.file.FileListVo">
         select * from userfile a
         left join image on a.fileId = image.fileId
