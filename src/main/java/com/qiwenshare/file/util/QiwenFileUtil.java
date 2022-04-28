@@ -40,12 +40,12 @@ public class QiwenFileUtil {
 
     public static UserFile searchQiwenFileParam(UserFile userFile) {
         UserFile param = new UserFile();
-        userFile.setFilePath(QiwenFile.formatPath(userFile.getFilePath()));
-        userFile.setFileName(userFile.getFileName());
-        userFile.setExtendName(userFile.getExtendName());
-        userFile.setDeleteFlag(0);
-        userFile.setUserId(userFile.getUserId());
-        userFile.setIsDir(0);
+        param.setFilePath(QiwenFile.formatPath(userFile.getFilePath()));
+        param.setFileName(userFile.getFileName());
+        param.setExtendName(userFile.getExtendName());
+        param.setDeleteFlag(0);
+        param.setUserId(userFile.getUserId());
+        param.setIsDir(0);
         return param;
     }
 
