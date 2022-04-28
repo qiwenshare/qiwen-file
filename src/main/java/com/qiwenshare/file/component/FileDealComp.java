@@ -277,7 +277,7 @@ public class FileDealComp {
             if (userfileResult != null && userfileResult.size() > 0) {
                 FileSearch fileSearch = new FileSearch();
                 BeanUtil.copyProperties(userfileResult.get(0), fileSearch);
-                if (fileSearch.getIsDir() == 0) {
+                /*if (fileSearch.getIsDir() == 0) {
 
                     Reader reader = ufopFactory.getReader(fileSearch.getStorageType());
                     ReadFile readFile = new ReadFile();
@@ -286,7 +286,7 @@ public class FileDealComp {
                     //全文搜索
                     fileSearch.setContent(content);
 
-                }
+                }*/
                 elasticsearchClient.index(i -> i.index("filesearch").id(String.valueOf(fileSearch.getUserFileId())).document(fileSearch));
             }
         } catch (Exception e) {
