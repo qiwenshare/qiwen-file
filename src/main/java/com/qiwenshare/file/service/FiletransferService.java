@@ -1,8 +1,12 @@
 package com.qiwenshare.file.service;
 
+import cn.hutool.core.util.IdUtil;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
+import com.mpatric.mp3agic.ID3v1;
+import com.mpatric.mp3agic.ID3v2;
+import com.mpatric.mp3agic.Mp3File;
 import com.qiwenshare.common.util.DateUtil;
 import com.qiwenshare.common.util.MimeUtils;
 import com.qiwenshare.common.util.security.JwtUser;
@@ -22,6 +26,8 @@ import com.qiwenshare.ufop.constant.UploadFileStatusEnum;
 import com.qiwenshare.ufop.exception.operation.DownloadException;
 import com.qiwenshare.ufop.exception.operation.UploadException;
 import com.qiwenshare.ufop.factory.UFOPFactory;
+import com.qiwenshare.ufop.operation.copy.Copier;
+import com.qiwenshare.ufop.operation.copy.domain.CopyFile;
 import com.qiwenshare.ufop.operation.delete.Deleter;
 import com.qiwenshare.ufop.operation.delete.domain.DeleteFile;
 import com.qiwenshare.ufop.operation.download.Downloader;
@@ -34,14 +40,18 @@ import com.qiwenshare.ufop.operation.upload.domain.UploadFileResult;
 import com.qiwenshare.ufop.util.UFOPUtils;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.io.IOUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import sun.nio.cs.ext.GBK;
 
 import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.awt.image.BufferedImage;
 import java.io.*;
+import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
 import java.util.Base64;
 import java.util.HashMap;
 import java.util.List;
@@ -73,6 +83,8 @@ public class FiletransferService implements IFiletransferService {
     UploadTaskMapper uploadTaskMapper;
     @Resource
     ImageMapper imageMapper;
+    @Resource
+    MusicMapper musicMapper;
 
     @Resource
     PictureFileMapper pictureFileMapper;
@@ -214,8 +226,89 @@ public class FiletransferService implements IFiletransferService {
                         image.setFileId(fileBean.getFileId());
                         imageMapper.insert(image);
                     }
+                    if ("mp3".equalsIgnoreCase(uploadFileResult.getExtendName())) {
+                        Downloader downloader = ufopFactory.getDownloader(uploadFileResult.getStorageType().getCode());
+                        DownloadFile downloadFile = new DownloadFile();
+                        downloadFile.setFileUrl(uploadFileResult.getFileUrl());
+                        InputStream inputStream = downloader.getInputStream(downloadFile);
+                        File outFile = UFOPUtils.getTempFile(uploadFileResult.getFileUrl());
+                        if (!outFile.exists()) {
+                            outFile.createNewFile();
+                        }
+                        FileOutputStream fileOutputStream = new FileOutputStream(outFile);
+                        IOUtils.copy(inputStream, fileOutputStream);
+                        fileOutputStream.close();
+                        Mp3File mp3file = new Mp3File(outFile);
+                        Music music = new Music();
+                        music.setMusicId(IdUtil.getSnowflakeNextIdStr());
+                        music.setFileId(fileBean.getFileId());
+                        if (mp3file.hasId3v1Tag()) {
+                            ID3v1 id3v1Tag = mp3file.getId3v1Tag();
+                            music.setTrack(formatChatset(id3v1Tag.getTrack()));
+                            music.setArtist(formatChatset(id3v1Tag.getTrack()));
+                            music.setTitle(formatChatset(id3v1Tag.getTitle()));
+                            music.setAlbum(formatChatset(id3v1Tag.getAlbum()));
+                            music.setYear(formatChatset(id3v1Tag.getYear()));
+                            music.setGenre(formatChatset(id3v1Tag.getGenre() + " (" + id3v1Tag.getGenreDescription() + ")"));
+                            music.setComment(formatChatset(id3v1Tag.getComment()));
+                        }
+                        Mp3File mp3file2 = new Mp3File(outFile);
+                        if (mp3file2.hasId3v2Tag()) {
+                            ID3v2 id3v2Tag = mp3file2.getId3v2Tag();
+                            if (StringUtils.isEmpty(music.getTrack())) {
+                                music.setTrack(formatChatset(id3v2Tag.getTrack()));
+                            }
+                            if (StringUtils.isEmpty(music.getArtist())) {
+                                music.setArtist(formatChatset(id3v2Tag.getArtist()));
+                            }
+                            if (StringUtils.isEmpty(music.getTitle())) {
+                                music.setTitle(formatChatset(id3v2Tag.getTitle()));
+                            }
+                            if (StringUtils.isEmpty(music.getAlbum())) {
+                                music.setAlbum(formatChatset(id3v2Tag.getAlbum()));
+                            }
+                            if (StringUtils.isEmpty(music.getYear())) {
+                                music.setYear(formatChatset(id3v2Tag.getYear()));
+                            }
+                            if (StringUtils.isEmpty(music.getGenre())) {
+                                music.setGenre(formatChatset(id3v2Tag.getGenre() + " (" + id3v2Tag.getGenreDescription() + ")"));
+                            }
+                            if (StringUtils.isEmpty(music.getComment())) {
+                                music.setComment(formatChatset(id3v2Tag.getComment()));
+                            }
+                            music.setLyrics(formatChatset(id3v2Tag.getLyrics()));
+                            music.setComposer(formatChatset(id3v2Tag.getComposer()));
+                            music.setPublicer(formatChatset(id3v2Tag.getPublisher()));
+                            music.setOriginalArtist(formatChatset(id3v2Tag.getOriginalArtist()));
+                            music.setAlbumArtist(formatChatset(id3v2Tag.getAlbumArtist()));
+                            music.setCopyright(formatChatset(id3v2Tag.getCopyright()));
+                            music.setUrl(formatChatset(id3v2Tag.getUrl()));
+                            music.setEncoder(formatChatset(id3v2Tag.getEncoder()));
+
+                            byte[] albumImageData = id3v2Tag.getAlbumImage();
+
+                            if (albumImageData != null) {
+                                File outFile1 = UFOPUtils.getTempFile(uploadFileResult.getFileName() + ".png");
+                                if (!outFile1.exists()) {
+                                    outFile1.createNewFile();
+                                }
+                                music.setAlbumImage(Base64.getEncoder().encodeToString(albumImageData));
+//                                FileOutputStream fileOutputStream1 = new FileOutputStream(outFile1);
+//                                IOUtils.write(albumImageData, fileOutputStream1);
+//                                Copier copier = ufopFactory.getCopier();
+//                                CopyFile copyFile = new CopyFile();
+//                                copyFile.setExtendName("png");
+//                                String fileUrl = copier.copy(new FileInputStream(outFile1), copyFile);
+//                                music.setAlbumImageUrl(fileUrl);
+
+                                System.out.println("Have album image data, length: " + albumImageData.length + " bytes");
+                                System.out.println("Album image mime type: " + id3v2Tag.getAlbumImageMimeType());
+                            }
+                        }
+                        musicMapper.insert(music);
+                    }
                 } catch (Exception e) {
-                    log.error("生成图片缩略图失败！");
+                    log.error("生成图片缩略图失败！", e);
                 }
 
             } else if (UploadFileStatusEnum.UNCOMPLATE.equals(uploadFileResult.getStatus())) {
@@ -242,6 +335,17 @@ public class FiletransferService implements IFiletransferService {
             }
         }
 
+    }
+
+    private String formatChatset(String str) {
+        if (str == null) {
+            return "";
+        }
+        if (java.nio.charset.Charset.forName("ISO-8859-1").newEncoder().canEncode(str)) {
+            byte[] bytes = str.getBytes(StandardCharsets.ISO_8859_1);
+            return new String(bytes, Charset.forName("GBK"));
+        }
+        return str;
     }
 
     @Override
@@ -307,7 +411,8 @@ public class FiletransferService implements IFiletransferService {
                     InputStream inputStream = downloader.getInputStream(downloadFile);
                     BufferedInputStream bis = new BufferedInputStream(inputStream);
                     try {
-                        zos.putNextEntry(new ZipEntry(userFile1.getFilePath().replaceFirst(filePath, "")  + "/" + userFile1.getFileName() + "." + userFile1.getExtendName()));
+                        QiwenFile qiwenFile = new QiwenFile(userFile1.getFilePath().replaceFirst(filePath, ""), userFile1.getFileName() + "." + userFile1.getExtendName(), false);
+                        zos.putNextEntry(new ZipEntry(qiwenFile.getPath()));
 
                         byte[] buffer = new byte[1024];
                         int i = bis.read(buffer);
@@ -327,8 +432,9 @@ public class FiletransferService implements IFiletransferService {
                         }
                     }
                 } else {
+                    QiwenFile qiwenFile = new QiwenFile(userFile1.getFilePath(), userFile1.getFileName(), true);
                     // 空文件夹的处理
-                    zos.putNextEntry(new ZipEntry(userFile1.getFilePath() + userFile1.getFileName() + "/"));
+                    zos.putNextEntry(new ZipEntry(qiwenFile.getPath() + QiwenFile.separator));
                     // 没有文件，不需要文件的copy
                     zos.closeEntry();
                 }

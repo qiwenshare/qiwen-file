@@ -1,7 +1,9 @@
 package com.qiwenshare.file.service;
 
+import cn.hutool.core.bean.BeanUtil;
 import com.alibaba.fastjson.JSON;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
+import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.qiwenshare.common.exception.QiwenException;
@@ -10,10 +12,15 @@ import com.qiwenshare.common.util.DateUtil;
 import com.qiwenshare.file.api.IFileService;
 import com.qiwenshare.file.component.AsyncTaskComp;
 import com.qiwenshare.file.domain.FileBean;
+import com.qiwenshare.file.domain.Image;
+import com.qiwenshare.file.domain.Music;
 import com.qiwenshare.file.domain.UserFile;
 import com.qiwenshare.file.mapper.FileMapper;
+import com.qiwenshare.file.mapper.ImageMapper;
+import com.qiwenshare.file.mapper.MusicMapper;
 import com.qiwenshare.file.mapper.UserFileMapper;
 import com.qiwenshare.file.util.QiwenFileUtil;
+import com.qiwenshare.file.vo.file.FileDetailVO;
 import com.qiwenshare.ufop.factory.UFOPFactory;
 import com.qiwenshare.ufop.operation.download.Downloader;
 import com.qiwenshare.ufop.operation.download.domain.DownloadFile;
@@ -50,6 +57,10 @@ public class FileService extends ServiceImpl<FileMapper, FileBean> implements IF
 
     @Resource
     AsyncTaskComp asyncTaskComp;
+    @Resource
+    MusicMapper musicMapper;
+    @Resource
+    ImageMapper imageMapper;
 
     @Override
     public Long getFilePointCount(String fileId) {
@@ -107,7 +118,7 @@ public class FileService extends ServiceImpl<FileMapper, FileBean> implements IF
         }
     }
 
-
+    @Override
     public void updateFileDetail(String userFileId, String identifier, long fileSize, long modifyUserId) {
         UserFile userFile = userFileMapper.selectById(userFileId);
 
@@ -118,6 +129,20 @@ public class FileService extends ServiceImpl<FileMapper, FileBean> implements IF
         fileBean.setModifyUserId(modifyUserId);
         fileBean.setFileId(userFile.getFileId());
         fileMapper.updateById(fileBean);
+    }
+
+    @Override
+    public FileDetailVO getFileDetail(String userFileId) {
+        UserFile userFile = userFileMapper.selectById(userFileId);
+        FileBean fileBean = fileMapper.selectById(userFile.getFileId());
+        Music music = musicMapper.selectOne(new QueryWrapper<Music>().eq("fileId", userFile.getFileId()));
+        Image image = imageMapper.selectOne(new QueryWrapper<Image>().eq("fileId", userFile.getFileId()));
+        FileDetailVO fileDetailVO = new FileDetailVO();
+        BeanUtil.copyProperties(userFile, fileDetailVO);
+        BeanUtil.copyProperties(fileBean, fileDetailVO);
+        fileDetailVO.setMusic(music);
+        fileDetailVO.setImage(image);
+        return fileDetailVO;
     }
 
 }

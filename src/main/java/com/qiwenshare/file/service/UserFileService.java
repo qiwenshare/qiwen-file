@@ -15,6 +15,7 @@ import com.qiwenshare.common.util.security.SessionUtil;
 import com.qiwenshare.file.api.IUserFileService;
 import com.qiwenshare.file.domain.RecoveryFile;
 import com.qiwenshare.file.domain.UserFile;
+import com.qiwenshare.file.io.QiwenFile;
 import com.qiwenshare.file.mapper.FileMapper;
 import com.qiwenshare.file.mapper.FileTypeMapper;
 import com.qiwenshare.file.mapper.RecoveryFileMapper;
@@ -100,11 +101,11 @@ public class UserFileService  extends ServiceImpl<UserFileMapper, UserFile> impl
         userFileMapper.updateFilepathByPathAndName(oldfilePath, newfilePath, fileName, extendName, userId);
 
         //移动子目录
-        oldfilePath = oldfilePath + "/" + fileName;
-        newfilePath = newfilePath + "/" + fileName;
+        oldfilePath = new QiwenFile(oldfilePath, fileName, true).getPath();
+        newfilePath = new QiwenFile(newfilePath, fileName, true).getPath();
 
         if (StringUtils.isEmpty(extendName)) { //为空说明是目录，则需要移动子目录
-            List<UserFile> list = selectFileListLikeRightFilePath(oldfilePath, userId);
+            List<UserFile> list = selectUserFileByLikeRightFilePath(oldfilePath, userId);
 
             for (UserFile newUserFile : list) {
                 newUserFile.setFilePath(newUserFile.getFilePath().replaceFirst(oldfilePath, newfilePath));
@@ -127,8 +128,8 @@ public class UserFileService  extends ServiceImpl<UserFileMapper, UserFile> impl
 
 
         //移动子目录
-        oldfilePath = oldfilePath + "/" + fileName;
-        newfilePath = newfilePath + "/" + fileName;
+        oldfilePath = new QiwenFile(oldfilePath, fileName, true).getPath();
+        newfilePath = new QiwenFile(newfilePath, fileName, true).getPath();
 
         oldfilePath = oldfilePath.replace("\\", "\\\\\\\\");
         oldfilePath = oldfilePath.replace("'", "\\'");
@@ -162,23 +163,6 @@ public class UserFileService  extends ServiceImpl<UserFileMapper, UserFile> impl
     }
 
     @Override
-    public List<UserFile> selectFileListLikeRightFilePath(String filePath, long userId) {
-        filePath = filePath.replace("\\", "\\\\\\\\");
-        filePath = filePath.replace("'", "\\'");
-        filePath = filePath.replace("%", "\\%");
-        filePath = filePath.replace("_", "\\_");
-
-        LambdaQueryWrapper<UserFile> lambdaQueryWrapper = new LambdaQueryWrapper<>();
-
-        log.info("查询文件路径：" + filePath);
-
-        lambdaQueryWrapper.eq(UserFile::getUserId, userId)
-                .likeRight(UserFile::getFilePath, filePath)
-                .eq(UserFile::getDeleteFlag, 0);
-        return userFileMapper.selectList(lambdaQueryWrapper);
-    }
-
-    @Override
     public List<UserFile> selectFilePathTreeByUserId(Long userId) {
         LambdaQueryWrapper<UserFile> lambdaQueryWrapper = new LambdaQueryWrapper<>();
         lambdaQueryWrapper.eq(UserFile::getUserId, userId)
@@ -200,7 +184,7 @@ public class UserFileService  extends ServiceImpl<UserFileMapper, UserFile> impl
                     .eq(UserFile::getUserFileId, userFileId);
             userFileMapper.update(null, userFileLambdaUpdateWrapper);
 
-            String filePath = userFile.getFilePath() + "/" + userFile.getFileName();
+            String filePath = new QiwenFile(userFile.getFilePath(), userFile.getFileName(), true).getPath();
             updateFileDeleteStateByFilePath(filePath, uuid, sessionUserId);
 
         }else{
@@ -222,9 +206,14 @@ public class UserFileService  extends ServiceImpl<UserFileMapper, UserFile> impl
 
     }
 
+    @Override
+    public List<UserFile> selectUserFileByLikeRightFilePath(String filePath, long userId) {
+        return userFileMapper.selectUserFileByLikeRightFilePath(filePath, userId);
+    }
+
     private void updateFileDeleteStateByFilePath(String filePath, String deleteBatchNum, Long userId) {
         executor.execute(() -> {
-            List<UserFile> fileList = selectFileListLikeRightFilePath(filePath, userId);
+            List<UserFile> fileList = selectUserFileByLikeRightFilePath(filePath, userId);
             for (int i = 0; i < fileList.size(); i++){
                 UserFile userFileTemp = fileList.get(i);
                     //标记删除标志

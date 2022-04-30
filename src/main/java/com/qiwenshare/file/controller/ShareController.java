@@ -81,7 +81,7 @@ public class ShareController {
             }
             if (userFile.getIsDir() == 1) {
                 QiwenFile qiwenFile = new QiwenFile(userFile.getFilePath(), userFile.getFileName(), true);
-                List<UserFile> userfileList = userFileService.selectFileListLikeRightFilePath(qiwenFile.getPath(), sessionUserBean.getUserId());
+                List<UserFile> userfileList = userFileService.selectUserFileByLikeRightFilePath(qiwenFile.getPath(), sessionUserBean.getUserId());
                 for (UserFile userFile1 : userfileList) {
                     ShareFile shareFile1 = new ShareFile();
                     shareFile1.setUserFileId(userFile1.getUserFileId());
@@ -121,7 +121,7 @@ public class ShareController {
             String savefileName = fileDealComp.getRepeatFileName(userFile, savefilePath);
 
             if (userFile.getIsDir() == 1) {
-                List<UserFile> userfileList = userFileService.selectFileListLikeRightFilePath(userFile.getFilePath() + userFile.getFileName(), userFile.getUserId());
+                List<UserFile> userfileList = userFileService.selectUserFileByLikeRightFilePath(new QiwenFile(userFile.getFilePath(), userFile.getFileName(), true).getPath(), userFile.getUserId());
                 log.info("查询文件列表：" + JSON.toJSONString(userfileList));
                 String filePath = userFile.getFilePath();
                 userfileList.forEach(p->{

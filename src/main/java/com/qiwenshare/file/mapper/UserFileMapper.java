@@ -7,6 +7,8 @@ import com.qiwenshare.file.domain.UserFile;
 import com.qiwenshare.file.vo.file.FileListVo;
 import org.apache.ibatis.annotations.Param;
 
+import java.util.List;
+
 public interface UserFileMapper extends BaseMapper<UserFile> {
 
     void updateFilepathByPathAndName(String oldfilePath, String newfilePath, String fileName, String extendName, long userId);
@@ -21,6 +23,8 @@ public interface UserFileMapper extends BaseMapper<UserFile> {
     void batchInsertByFilepath(@Param("oldFilePath") String oldFilePath,
                                @Param("newFilePath") String newfilePath,
                                @Param("userId") long userId);
+
+    List<UserFile> selectUserFileByLikeRightFilePath(@Param("filePath") String filePath, @Param("userId") long userId);
 
     IPage<FileListVo> selectPageVo(Page<?> page, @Param("userFile") UserFile userFile, @Param("fileTypeId") Integer fileTypeId);
     Long selectStorageSizeByUserId(@Param("userId") Long userId);

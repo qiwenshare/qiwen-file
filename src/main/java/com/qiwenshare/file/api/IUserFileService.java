@@ -4,6 +4,7 @@ import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.service.IService;
 import com.qiwenshare.file.domain.UserFile;
 import com.qiwenshare.file.vo.file.FileListVo;
+import org.apache.ibatis.annotations.Param;
 
 import java.util.List;
 
@@ -17,8 +18,9 @@ public interface IUserFileService extends IService<UserFile> {
 
     IPage<FileListVo> getFileByFileType(Integer fileTypeId, Long currentPage, Long pageCount, long userId);
     List<UserFile> selectUserFileListByPath(String filePath, Long userId);
-    List<UserFile> selectFileListLikeRightFilePath(String filePath, long userId);
     List<UserFile> selectFilePathTreeByUserId(Long userId);
     void deleteUserFile(String userFileId, Long sessionUserId);
+
+    List<UserFile> selectUserFileByLikeRightFilePath(@Param("filePath") String filePath, @Param("userId") long userId);
 
 }
