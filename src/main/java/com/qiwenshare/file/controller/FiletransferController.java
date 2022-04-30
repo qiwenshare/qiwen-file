@@ -155,11 +155,8 @@ public class FiletransferController {
             if (userFile.getIsDir() == 0) {
                 userFileIds.add(userFileId);
             } else {
-                LambdaQueryWrapper<UserFile> lambdaQueryWrapper = new LambdaQueryWrapper<>();
-                lambdaQueryWrapper.likeRight(UserFile::getFilePath, userFile.getFilePath() + QiwenFile.separator + userFile.getFileName())
-                        .eq(UserFile::getUserId, userFile.getUserId())
-                        .eq(UserFile::getDeleteFlag, 0);
-                List<UserFile> userFileList = userFileService.list(lambdaQueryWrapper);
+                QiwenFile qiwenFile = new QiwenFile(userFile.getFilePath(), userFile.getFileName(), true);
+                List<UserFile> userFileList = userFileService.selectUserFileByLikeRightFilePath(qiwenFile.getPath(), userFile.getUserId());
                 List<String> userFileIds1 = userFileList.stream().map(UserFile::getUserFileId).collect(Collectors.toList());
                 userFileIds.add(userFile.getUserFileId());
                 userFileIds.addAll(userFileIds1);

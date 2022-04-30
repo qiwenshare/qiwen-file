@@ -42,6 +42,11 @@
         ORDER BY isDir desc
     </select>
 
+    <select id="selectUserFileByLikeRightFilePath" resultType="com.qiwenshare.file.domain.UserFile">
+        select * from userfile
+        where (filePath = #{filePath} or filePath like concat(#{filePath},'/%')) and userId = #{userId} and deleteFlag = 0
+    </select>
+
 
     <update id="updateFilepathByFilepath">
         UPDATE userfile SET filePath=REPLACE(filePath, #{param1}, #{param2})

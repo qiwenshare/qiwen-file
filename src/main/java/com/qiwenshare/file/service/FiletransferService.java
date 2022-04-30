@@ -411,7 +411,8 @@ public class FiletransferService implements IFiletransferService {
                     InputStream inputStream = downloader.getInputStream(downloadFile);
                     BufferedInputStream bis = new BufferedInputStream(inputStream);
                     try {
-                        zos.putNextEntry(new ZipEntry(userFile1.getFilePath().replaceFirst(filePath, "")  + "/" + userFile1.getFileName() + "." + userFile1.getExtendName()));
+                        QiwenFile qiwenFile = new QiwenFile(userFile1.getFilePath().replaceFirst(filePath, ""), userFile1.getFileName() + "." + userFile1.getExtendName(), false);
+                        zos.putNextEntry(new ZipEntry(qiwenFile.getPath()));
 
                         byte[] buffer = new byte[1024];
                         int i = bis.read(buffer);
@@ -431,8 +432,9 @@ public class FiletransferService implements IFiletransferService {
                         }
                     }
                 } else {
+                    QiwenFile qiwenFile = new QiwenFile(userFile1.getFilePath(), userFile1.getFileName(), true);
                     // 空文件夹的处理
-                    zos.putNextEntry(new ZipEntry(userFile1.getFilePath() + userFile1.getFileName() + "/"));
+                    zos.putNextEntry(new ZipEntry(qiwenFile.getPath() + QiwenFile.separator));
                     // 没有文件，不需要文件的copy
                     zos.closeEntry();
                 }

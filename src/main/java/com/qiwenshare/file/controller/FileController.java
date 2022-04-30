@@ -166,10 +166,11 @@ public class FileController {
                 .eq(UserFile::getUserFileId, renameFileDto.getUserFileId());
         userFileService.update(lambdaUpdateWrapper);
         if (1 == userFile.getIsDir()) {
-            List<UserFile> list = userFileService.selectFileListLikeRightFilePath(userFile.getFilePath() + userFile.getFileName() + "/", sessionUserBean.getUserId());
+            List<UserFile> list = userFileService.selectUserFileByLikeRightFilePath(new QiwenFile(userFile.getFilePath(), userFile.getFileName(), true).getPath(), sessionUserBean.getUserId());
 
             for (UserFile newUserFile : list) {
-                newUserFile.setFilePath(newUserFile.getFilePath().replaceFirst(userFile.getFilePath() + userFile.getFileName() + "/", userFile.getFilePath() + renameFileDto.getFileName() + "/"));
+                newUserFile.setFilePath(newUserFile.getFilePath().replaceFirst(new QiwenFile(userFile.getFilePath(), userFile.getFileName(), userFile.getIsDir() == 1).getPath(),
+                        new QiwenFile(userFile.getFilePath(), renameFileDto.getFileName(), userFile.getIsDir() == 1).getPath()));
                 userFileService.updateById(newUserFile);
             }
         }
