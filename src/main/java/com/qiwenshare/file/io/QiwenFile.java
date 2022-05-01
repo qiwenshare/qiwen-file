@@ -29,11 +29,21 @@ public class QiwenFile {
         }
         if (parent != null) {
             String parentPath = separator.equals(formatPath(parent)) ? "" : formatPath(parent);
-            this.path = parentPath + separator + formatPath(child);
+            String childPath = formatPath(child);
+            if (childPath.startsWith(separator)) {
+                childPath = childPath.replaceFirst(separator, "");
+            }
+            this.path = parentPath + separator + childPath;
         } else {
             this.path = formatPath(child);
         }
         this.isDirectory = isDirectory;
+    }
+
+    public static void main(String[] args) {
+        QiwenFile qiwen = new QiwenFile("/", "/sdf", true);
+        int index = "/sdf".lastIndexOf(separator);
+        System.out.println(index);
     }
 
     public static String formatPath(String path) {
@@ -95,8 +105,5 @@ public class QiwenFile {
         return !isDirectory;
     }
 
-    public static void main(String[] args) {
-        int index = "/sdf".lastIndexOf(separator);
-        System.out.println(index);
-    }
+    
 }
