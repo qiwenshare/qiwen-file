@@ -169,8 +169,10 @@ public class AsyncTaskComp {
 
 
         QiwenFile qiwenFile = null;
-        if (unzipMode == 1) {
-            qiwenFile = new QiwenFile(userFile.getFilePath() + userFile.getFileName(), entryName, currentFile.isDirectory());
+        if (unzipMode == 0) {
+            qiwenFile = new QiwenFile(userFile.getFilePath(), entryName, currentFile.isDirectory());
+        } else if (unzipMode == 1) {
+            qiwenFile = new QiwenFile(userFile.getFilePath() + "/" + userFile.getFileName(), entryName, currentFile.isDirectory());
         } else if (unzipMode == 2) {
             qiwenFile = new QiwenFile(filePath, entryName, currentFile.isDirectory());
         }
