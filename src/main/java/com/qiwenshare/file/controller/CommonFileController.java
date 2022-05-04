@@ -15,6 +15,7 @@ import com.qiwenshare.file.domain.CommonFile;
 import com.qiwenshare.file.domain.FilePermission;
 import com.qiwenshare.file.domain.UserFile;
 import com.qiwenshare.file.dto.commonfile.CommonFileDTO;
+import com.qiwenshare.file.io.QiwenFile;
 import com.qiwenshare.file.vo.commonfile.CommonFileListVo;
 import com.qiwenshare.file.vo.commonfile.CommonFileUser;
 import com.qiwenshare.file.vo.file.FileListVo;
@@ -82,13 +83,9 @@ public class CommonFileController {
     @RequestMapping(value = "/getCommonFileByUser", method = RequestMethod.GET)
     @ResponseBody
     public RestResult<CommonFileListVo> getCommonFileByUser(
-            @Parameter(description = "用户id", required = true) Long userId,
-            @Parameter(description = "用户文件路径", required = true) String userFileId,
-            @Parameter(description = "文件路径", required = true) String filePath,
-            @Parameter(description = "当前页", required = true) long currentPage,
-            @Parameter(description = "页面数量", required = true) long pageCount){
-
-        List<CommonFileListVo> commonFileVo = commonFileService.selectCommonFileByUser(userId);
+            @Parameter(description = "用户id", required = true) Long userId){
+        JwtUser sessionUserBean =  SessionUtil.getSession();
+        List<CommonFileListVo> commonFileVo = commonFileService.selectCommonFileByUser(userId, sessionUserBean.getUserId());
 
         return RestResult.success().data(commonFileVo);
 
@@ -105,8 +102,8 @@ public class CommonFileController {
 
         CommonFile commonFile = commonFileService.getById(commonFileId);
         UserFile userFile = userFileService.getById(commonFile.getUserFileId());
-        filePath = userFile.getFilePath() + filePath;
-        IPage<FileListVo> fileList = userFileService.userFileList(userFile.getUserId(), filePath, currentPage, pageCount);
+        QiwenFile qiwenFile = new QiwenFile(userFile.getFilePath(), filePath, true);
+        IPage<FileListVo> fileList = userFileService.userFileList(userFile.getUserId(), qiwenFile.getPath(), currentPage, pageCount);
 
         return RestResult.success().data(fileList);
 

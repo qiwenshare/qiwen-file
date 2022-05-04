@@ -9,5 +9,5 @@ import java.util.List;
 
 public interface ICommonFileService extends IService<CommonFile> {
     List<CommonFileUser> selectCommonFileUser(Long userId);
-    List<CommonFileListVo> selectCommonFileByUser(Long userId);
+    List<CommonFileListVo> selectCommonFileByUser(Long userId, Long sessionUserId);
 }
