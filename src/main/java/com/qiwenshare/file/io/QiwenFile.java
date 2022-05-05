@@ -1,7 +1,9 @@
 package com.qiwenshare.file.io;
 
+import com.qiwenshare.common.exception.QiwenException;
 import com.qiwenshare.ufop.util.UFOPUtils;
 import org.apache.commons.io.FilenameUtils;
+import org.apache.commons.lang3.StringUtils;
 
 /**
  * @author MAC
@@ -16,16 +18,16 @@ public class QiwenFile {
     private boolean isDirectory;
 
     public QiwenFile(String pathname, boolean isDirectory) {
-        if (pathname == null) {
-            throw new NullPointerException();
+        if (StringUtils.isEmpty(pathname)) {
+            throw new QiwenException("file name format error，pathname:" + pathname);
         }
         this.path = formatPath(pathname);
         this.isDirectory = isDirectory;
     }
 
     public QiwenFile(String parent, String child, boolean isDirectory) {
-        if (child == null) {
-            throw new NullPointerException();
+        if (StringUtils.isEmpty(child)) {
+            throw new QiwenException("file name format error，parent:" + parent +", child:" + child);
         }
         if (parent != null) {
             String parentPath = separator.equals(formatPath(parent)) ? "" : formatPath(parent);
@@ -38,12 +40,6 @@ public class QiwenFile {
             this.path = formatPath(child);
         }
         this.isDirectory = isDirectory;
-    }
-
-    public static void main(String[] args) {
-        QiwenFile qiwen = new QiwenFile("/", "/sdf", true);
-        int index = "/sdf".lastIndexOf(separator);
-        System.out.println(index);
     }
 
     public static String formatPath(String path) {

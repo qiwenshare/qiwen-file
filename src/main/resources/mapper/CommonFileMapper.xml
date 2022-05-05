@@ -13,10 +13,11 @@
         WHERE b.userId = #{userId}
     </select>
 
-    <select id="selectCommonFileByUser" parameterType="java.lang.Long" resultType="com.qiwenshare.file.vo.commonfile.CommonFileListVo">
+    <select id="selectCommonFileByUser" resultType="com.qiwenshare.file.vo.commonfile.CommonFileListVo">
         SELECT * FROM commonfile a
         LEFT JOIN userfile b ON b.userFileId = a.userFileId
-        WHERE userId = #{userId}
+        left join filepermission c on c.commonFileId = a.commonFileId
+        WHERE b.userId = #{userId} and c.userId = #{sessionUserId}
     </select>
     
 

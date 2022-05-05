@@ -28,8 +28,8 @@ public class CommonFileService extends ServiceImpl<CommonFileMapper, CommonFile>
     }
 
     @Override
-    public List<CommonFileListVo> selectCommonFileByUser(Long userId) {
-        return commonFileMapper.selectCommonFileByUser(userId);
+    public List<CommonFileListVo> selectCommonFileByUser(Long userId, Long sessionUserId) {
+        return commonFileMapper.selectCommonFileByUser(userId, sessionUserId);
     }
 
 

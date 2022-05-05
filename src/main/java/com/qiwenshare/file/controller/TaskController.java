@@ -30,15 +30,8 @@ public class TaskController {
     private ElasticsearchClient elasticsearchClient;
 
 
-    @Scheduled(initialDelay = 1000 * 60 * 60 * 24, fixedRate = Long.MAX_VALUE)
+    @Scheduled(fixedRate = 1000 * 60 * 60 * 24)
     public void updateElasticSearch() {
-
-        try {
-            elasticsearchClient.delete(d -> d.index("filesearch"));
-        } catch (Exception e) {
-            log.debug("删除ES失败:" + e);
-        }
-
         List<UserFile> userfileList = userFileService.list();
         for (UserFile userFile : userfileList) {
             fileDealComp.uploadESByUserFileId(userFile.getUserFileId());

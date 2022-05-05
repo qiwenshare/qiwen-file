@@ -67,8 +67,6 @@ public class AsyncTaskComp {
     }
 
     public Future<String> deleteUserFile(String userFileId) {
-
-        long begin = System.currentTimeMillis();
         UserFile userFile = userFileService.getById(userFileId);
         if (userFile.getIsDir() == 1) {
             LambdaQueryWrapper<UserFile> userFileLambdaQueryWrapper = new LambdaQueryWrapper<>();
@@ -105,9 +103,15 @@ public class AsyncTaskComp {
             }
         }
 
-        long end = System.currentTimeMillis();
-        System.out.println("任务 deleteUserFile 耗时=" + (end - begin));
         return new AsyncResult<String>("deleteUserFile");
+    }
+
+    public Future<String> checkESUserFileId(String userFileId) {
+        UserFile userFile = userFileMapper.selectById(userFileId);
+        if (userFile == null) {
+            fileDealComp.deleteESByUserFileId(userFileId);
+        }
+        return new AsyncResult<String>("checkUserFileId");
     }
 
 
