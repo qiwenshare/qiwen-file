@@ -16,6 +16,7 @@ import com.qiwenshare.common.util.security.JwtUser;
 import com.qiwenshare.common.util.security.SessionUtil;
 import com.qiwenshare.file.api.IFileService;
 import com.qiwenshare.file.api.IUserFileService;
+import com.qiwenshare.file.component.AsyncTaskComp;
 import com.qiwenshare.file.component.FileDealComp;
 import com.qiwenshare.file.config.es.FileSearch;
 import com.qiwenshare.file.domain.FileBean;
@@ -55,6 +56,8 @@ public class FileController {
 
     @Resource
     FileDealComp fileDealComp;
+    @Resource
+    AsyncTaskComp asyncTaskComp;
     @Autowired
     private ElasticsearchClient elasticsearchClient;
 
@@ -141,6 +144,7 @@ public class FileController {
             BeanUtil.copyProperties(hit.source(), searchFileVO);
             searchFileVO.setHighLight(hit.highlight());
             searchFileVOList.add(searchFileVO);
+            asyncTaskComp.checkESUserFileId(searchFileVO.getUserFileId());
         }
         return RestResult.success().data(searchFileVOList);
     }

@@ -287,7 +287,7 @@ public class FileDealComp {
                     fileSearch.setContent(content);
 
                 }*/
-                elasticsearchClient.index(i -> i.index("filesearch").id(String.valueOf(fileSearch.getUserFileId())).document(fileSearch));
+                elasticsearchClient.index(i -> i.index("filesearch").id(fileSearch.getUserFileId()).document(fileSearch));
             }
         } catch (Exception e) {
             log.debug("ES更新操作失败，请检查配置");
@@ -300,7 +300,7 @@ public class FileDealComp {
             try {
                 elasticsearchClient.delete(d -> d
                         .index("filesearch")
-                        .id(String.valueOf(userFileId)));
+                        .id(userFileId));
             } catch (Exception e) {
                 log.debug("ES删除操作失败，请检查配置");
             }
