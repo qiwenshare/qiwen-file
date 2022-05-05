@@ -30,7 +30,7 @@ public class TaskController {
     private ElasticsearchClient elasticsearchClient;
 
 
-    @Scheduled(initialDelay = 1000 * 60 * 60 * 24, fixedRate = Long.MAX_VALUE)
+    @Scheduled(fixedRate = Long.MAX_VALUE)
     public void updateElasticSearch() {
 
         try {
