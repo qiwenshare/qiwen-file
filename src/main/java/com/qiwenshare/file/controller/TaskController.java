@@ -30,7 +30,7 @@ public class TaskController {
     private ElasticsearchClient elasticsearchClient;
 
 
-    @Scheduled(fixedRate = Long.MAX_VALUE)
+    @Scheduled(fixedRate = 1000 * 60 * 60 * 24)
     public void updateElasticSearch() {
         List<UserFile> userfileList = userFileService.list();
         for (UserFile userFile : userfileList) {
