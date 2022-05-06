@@ -1,6 +1,7 @@
 package com.qiwenshare.file.controller;
 
 import cn.hutool.core.bean.BeanUtil;
+import cn.hutool.core.util.IdUtil;
 import cn.hutool.core.util.RandomUtil;
 import com.alibaba.fastjson.JSON;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
@@ -133,7 +134,7 @@ public class ShareController {
 
                 });
             }
-            userFile.setUserFileId(null);
+            userFile.setUserFileId(IdUtil.getSnowflakeNextIdStr());
             userFile.setUserId(userId);
             userFile.setFilePath(savefilePath);
             userFile.setFileName(savefileName);
