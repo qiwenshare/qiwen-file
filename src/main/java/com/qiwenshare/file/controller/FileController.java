@@ -182,9 +182,6 @@ public class FileController {
         return RestResult.success();
     }
 
-
-
-
     @Operation(summary = "获取文件列表", description = "用来做前台列表展示", tags = {"file"})
     @RequestMapping(value = "/getfilelist", method = RequestMethod.GET)
     @ResponseBody
@@ -276,6 +273,7 @@ public class FileController {
         }
 
         userFileService.userFileCopy(oldfilePath, newfilePath, fileName, extendName, sessionUserBean.getUserId());
+        fileDealComp.deleteRepeatSubDirFile(newfilePath, sessionUserBean.getUserId());
         return RestResult.success();
 
     }
@@ -300,6 +298,8 @@ public class FileController {
         }
 
         userFileService.updateFilepathByFilepath(oldfilePath, newfilePath, fileName, extendName, sessionUserBean.getUserId());
+
+        fileDealComp.deleteRepeatSubDirFile(newfilePath, sessionUserBean.getUserId());
         return RestResult.success();
 
     }
