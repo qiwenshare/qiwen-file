@@ -15,6 +15,7 @@ import com.qiwenshare.common.util.DateUtil;
 import com.qiwenshare.common.util.security.JwtUser;
 import com.qiwenshare.common.util.security.SessionUtil;
 import com.qiwenshare.file.api.IUserFileService;
+import com.qiwenshare.file.component.FileDealComp;
 import com.qiwenshare.file.domain.RecoveryFile;
 import com.qiwenshare.file.domain.UserFile;
 import com.qiwenshare.file.io.QiwenFile;
@@ -49,6 +50,8 @@ public class UserFileService  extends ServiceImpl<UserFileMapper, UserFile> impl
     RecoveryFileMapper recoveryFileMapper;
     @Resource
     FileTypeMapper fileTypeMapper;
+    @Resource
+    FileDealComp fileDealComp;
 
     public static Executor executor = Executors.newFixedThreadPool(20);
 
@@ -93,15 +96,31 @@ public class UserFileService  extends ServiceImpl<UserFileMapper, UserFile> impl
 
     @Override
     public void updateFilepathByFilepath(String oldfilePath, String newfilePath, String fileName, String extendName, long userId) {
-        List<UserFile> userFileList = selectUserFileListByPath(newfilePath, userId);
-        List<UserFile> userFileNameList = userFileList.stream().filter(o -> o.getFileName().equals(fileName) && o.getExtendName().equals(extendName)).collect(Collectors.toList());
+        List<UserFile> userFileList1 = selectUserFileListByPath(newfilePath, userId);
+        List<UserFile> userFileNameList = userFileList1.stream().filter(o -> o.getFileName().equals(fileName) && o.getExtendName().equals(extendName)).collect(Collectors.toList());
 
         if (userFileNameList != null && userFileNameList.size() > 0) {
             throw new QiwenException(200000, "目的路径同名文件已存在，不能移动");
         }
 
-        //移动根目录
-        userFileMapper.updateFilepathByPathAndName(oldfilePath, newfilePath, fileName, extendName, userId);
+
+        QueryWrapper<UserFile> queryWrapper = new QueryWrapper<UserFile>()
+                .eq("userId", userId)
+                .eq("filePath", oldfilePath).eq("fileName", fileName);
+        if (extendName == null) {
+            queryWrapper.eq("isDir", 1);
+        } else {
+            queryWrapper.eq("extendName", extendName);
+        }
+        queryWrapper.eq("deleteFlag", 0);
+        List<UserFile> userFileList = userFileMapper.selectList(queryWrapper);
+        for (UserFile userFile : userFileList) {
+            userFile.setFilePath(newfilePath);
+
+            String repeatFileName = fileDealComp.getRepeatFileName(userFile, userFile.getFilePath());
+            userFile.setFileName(repeatFileName);
+            userFileMapper.updateById(userFile);
+        }
 
         //移动子目录
         oldfilePath = new QiwenFile(oldfilePath, fileName, true).getPath();
@@ -112,6 +131,8 @@ public class UserFileService  extends ServiceImpl<UserFileMapper, UserFile> impl
 
             for (UserFile newUserFile : list) {
                 newUserFile.setFilePath(newUserFile.getFilePath().replaceFirst(oldfilePath, newfilePath));
+                String repeatFileName = fileDealComp.getRepeatFileName(newUserFile, newUserFile.getFilePath());
+                newUserFile.setFileName(repeatFileName);
                 userFileMapper.updateById(newUserFile);
             }
         }
@@ -132,8 +153,10 @@ public class UserFileService  extends ServiceImpl<UserFileMapper, UserFile> impl
         queryWrapper.eq("deleteFlag", 0);
         List<UserFile> userFileList = userFileMapper.selectList(queryWrapper);
         for (UserFile userFile : userFileList) {
-            userFile.setFilePath(userFile.getFilePath().replaceFirst(userFile.getFilePath(), newfilePath));
+            userFile.setFilePath(newfilePath);
             userFile.setUserFileId(IdUtil.getSnowflakeNextIdStr());
+            String repeatFileName = fileDealComp.getRepeatFileName(userFile, userFile.getFilePath());
+            userFile.setFileName(repeatFileName);
             userFileMapper.insert(userFile);
         }
 
@@ -149,6 +172,8 @@ public class UserFileService  extends ServiceImpl<UserFileMapper, UserFile> impl
             for (UserFile userFile : subUserFileList) {
                 userFile.setFilePath(userFile.getFilePath().replaceFirst(oldfilePath, newfilePath));
                 userFile.setUserFileId(IdUtil.getSnowflakeNextIdStr());
+                String repeatFileName = fileDealComp.getRepeatFileName(userFile, userFile.getFilePath());
+                userFile.setFileName(repeatFileName);
                 userFileMapper.insert(userFile);
             }
         }
