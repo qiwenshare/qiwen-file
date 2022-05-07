@@ -65,9 +65,11 @@ public class RecoveryFileController {
         for (RecoveryFile recoveryFile : recoveryFileList) {
             RecoveryFile recoveryFile1 = recoveryFileService.getById(recoveryFile.getRecoveryFileId());
 
-            asyncTaskComp.deleteUserFile(recoveryFile1.getUserFileId());
+            if (recoveryFile1 != null) {
+                asyncTaskComp.deleteUserFile(recoveryFile1.getUserFileId());
 
-            recoveryFileService.removeById(recoveryFile1.getRecoveryFileId());
+                recoveryFileService.removeById(recoveryFile1.getRecoveryFileId());
+            }
 
         }
         return RestResult.success().data("批量删除成功");
