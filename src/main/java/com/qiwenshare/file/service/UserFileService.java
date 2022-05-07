@@ -1,8 +1,10 @@
 package com.qiwenshare.file.service;
 
 import cn.hutool.core.net.URLDecoder;
+import cn.hutool.core.util.IdUtil;
 import cn.hutool.core.util.RandomUtil;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
+import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
@@ -28,6 +30,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import javax.annotation.Resource;
 import java.nio.charset.StandardCharsets;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 import java.util.concurrent.Executor;
@@ -118,27 +121,36 @@ public class UserFileService  extends ServiceImpl<UserFileMapper, UserFile> impl
     @Override
     public void userFileCopy(String oldfilePath, String newfilePath, String fileName, String extendName, long userId) {
 
-
-
-        if ("null".equals(extendName)){
-            extendName = null;
+        QueryWrapper<UserFile> queryWrapper = new QueryWrapper<UserFile>()
+                .eq("userId", userId)
+                .eq("filePath", oldfilePath).eq("fileName", fileName);
+        if (extendName == null) {
+            queryWrapper.eq("isDir", 1);
+        } else {
+            queryWrapper.eq("extendName", extendName);
+        }
+        queryWrapper.eq("deleteFlag", 0);
+        List<UserFile> userFileList = userFileMapper.selectList(queryWrapper);
+        for (UserFile userFile : userFileList) {
+            userFile.setFilePath(userFile.getFilePath().replaceFirst(userFile.getFilePath(), newfilePath));
+            userFile.setUserFileId(IdUtil.getSnowflakeNextIdStr());
+            userFileMapper.insert(userFile);
         }
 
-        userFileMapper.batchInsertByPathAndName(oldfilePath, newfilePath, fileName, extendName, userId);
-
-
-        //移动子目录
         oldfilePath = new QiwenFile(oldfilePath, fileName, true).getPath();
         newfilePath = new QiwenFile(newfilePath, fileName, true).getPath();
 
-        oldfilePath = oldfilePath.replace("\\", "\\\\\\\\");
-        oldfilePath = oldfilePath.replace("'", "\\'");
-        oldfilePath = oldfilePath.replace("%", "\\%");
-        oldfilePath = oldfilePath.replace("_", "\\_");
 
         if (extendName == null) { //为null说明是目录，则需要移动子目录
-            userFileMapper.batchInsertByFilepath(oldfilePath, newfilePath, userId);
-
+            QueryWrapper<UserFile> subQueryWrapper = new QueryWrapper<UserFile>();
+            subQueryWrapper.likeRight("filePath", oldfilePath);
+            subQueryWrapper.eq("userId", userId);
+            List<UserFile> subUserFileList = userFileMapper.selectList(subQueryWrapper);
+            for (UserFile userFile : subUserFileList) {
+                userFile.setFilePath(userFile.getFilePath().replaceFirst(oldfilePath, newfilePath));
+                userFile.setUserFileId(IdUtil.getSnowflakeNextIdStr());
+                userFileMapper.insert(userFile);
+            }
         }
 
     }
