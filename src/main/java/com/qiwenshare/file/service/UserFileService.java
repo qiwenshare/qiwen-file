@@ -96,13 +96,6 @@ public class UserFileService  extends ServiceImpl<UserFileMapper, UserFile> impl
 
     @Override
     public void updateFilepathByFilepath(String oldfilePath, String newfilePath, String fileName, String extendName, long userId) {
-        List<UserFile> userFileList1 = selectUserFileListByPath(newfilePath, userId);
-        List<UserFile> userFileNameList = userFileList1.stream().filter(o -> o.getFileName().equals(fileName) && o.getExtendName().equals(extendName)).collect(Collectors.toList());
-
-        if (userFileNameList != null && userFileNameList.size() > 0) {
-            throw new QiwenException(200000, "目的路径同名文件已存在，不能移动");
-        }
-
 
         QueryWrapper<UserFile> queryWrapper = new QueryWrapper<UserFile>()
                 .eq("userId", userId)
@@ -116,6 +109,10 @@ public class UserFileService  extends ServiceImpl<UserFileMapper, UserFile> impl
         List<UserFile> userFileList = userFileMapper.selectList(queryWrapper);
         for (UserFile userFile : userFileList) {
             userFile.setFilePath(newfilePath);
+            if (userFile.getIsDir() == 0) {
+                String repeatFileName = fileDealComp.getRepeatFileName(userFile, userFile.getFilePath());
+                userFile.setFileName(repeatFileName);
+            }
             userFileMapper.updateById(userFile);
         }
 
@@ -154,6 +151,10 @@ public class UserFileService  extends ServiceImpl<UserFileMapper, UserFile> impl
         for (UserFile userFile : userFileList) {
             userFile.setFilePath(newfilePath);
             userFile.setUserFileId(IdUtil.getSnowflakeNextIdStr());
+            if (userFile.getIsDir() == 0) {
+                String repeatFileName = fileDealComp.getRepeatFileName(userFile, userFile.getFilePath());
+                userFile.setFileName(repeatFileName);
+            }
             userFileMapper.insert(userFile);
         }
 
