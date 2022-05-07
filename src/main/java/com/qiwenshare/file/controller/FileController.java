@@ -276,6 +276,7 @@ public class FileController {
         }
 
         userFileService.userFileCopy(oldfilePath, newfilePath, fileName, extendName, sessionUserBean.getUserId());
+        fileDealComp.deleteRepeatSubDirFile(newfilePath, sessionUserBean.getUserId());
         return RestResult.success();
 
     }
@@ -300,6 +301,8 @@ public class FileController {
         }
 
         userFileService.updateFilepathByFilepath(oldfilePath, newfilePath, fileName, extendName, sessionUserBean.getUserId());
+
+        fileDealComp.deleteRepeatSubDirFile(newfilePath, sessionUserBean.getUserId());
         return RestResult.success();
 
     }
