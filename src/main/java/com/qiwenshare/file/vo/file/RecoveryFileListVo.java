@@ -18,6 +18,8 @@ public class RecoveryFileListVo {
     private String fileName;
     @Schema(description = "文件路径", example = "upload/bddd/caaa")
     private String filePath;
+    @Schema(description = "文件大小", example = "1024")
+    private long fileSize;
     @Schema(description = "文件扩展名", example = "zip")
     private String extendName;
     @Schema(description = "是否是目录，1-是，0-否", example = "1")
