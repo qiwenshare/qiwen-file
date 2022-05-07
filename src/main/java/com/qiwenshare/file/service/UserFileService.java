@@ -116,9 +116,6 @@ public class UserFileService  extends ServiceImpl<UserFileMapper, UserFile> impl
         List<UserFile> userFileList = userFileMapper.selectList(queryWrapper);
         for (UserFile userFile : userFileList) {
             userFile.setFilePath(newfilePath);
-
-            String repeatFileName = fileDealComp.getRepeatFileName(userFile, userFile.getFilePath());
-            userFile.setFileName(repeatFileName);
             userFileMapper.updateById(userFile);
         }
 
@@ -131,8 +128,10 @@ public class UserFileService  extends ServiceImpl<UserFileMapper, UserFile> impl
 
             for (UserFile newUserFile : list) {
                 newUserFile.setFilePath(newUserFile.getFilePath().replaceFirst(oldfilePath, newfilePath));
-                String repeatFileName = fileDealComp.getRepeatFileName(newUserFile, newUserFile.getFilePath());
-                newUserFile.setFileName(repeatFileName);
+                if (newUserFile.getIsDir() == 0) {
+                    String repeatFileName = fileDealComp.getRepeatFileName(newUserFile, newUserFile.getFilePath());
+                    newUserFile.setFileName(repeatFileName);
+                }
                 userFileMapper.updateById(newUserFile);
             }
         }
@@ -155,8 +154,6 @@ public class UserFileService  extends ServiceImpl<UserFileMapper, UserFile> impl
         for (UserFile userFile : userFileList) {
             userFile.setFilePath(newfilePath);
             userFile.setUserFileId(IdUtil.getSnowflakeNextIdStr());
-            String repeatFileName = fileDealComp.getRepeatFileName(userFile, userFile.getFilePath());
-            userFile.setFileName(repeatFileName);
             userFileMapper.insert(userFile);
         }
 
@@ -172,8 +169,10 @@ public class UserFileService  extends ServiceImpl<UserFileMapper, UserFile> impl
             for (UserFile userFile : subUserFileList) {
                 userFile.setFilePath(userFile.getFilePath().replaceFirst(oldfilePath, newfilePath));
                 userFile.setUserFileId(IdUtil.getSnowflakeNextIdStr());
-                String repeatFileName = fileDealComp.getRepeatFileName(userFile, userFile.getFilePath());
-                userFile.setFileName(repeatFileName);
+                if (userFile.getIsDir() == 0) {
+                    String repeatFileName = fileDealComp.getRepeatFileName(userFile, userFile.getFilePath());
+                    userFile.setFileName(repeatFileName);
+                }
                 userFileMapper.insert(userFile);
             }
         }
