@@ -578,18 +578,48 @@ public class FileDealComp {
         if (!isMatch) {
             for (Map item : list) {
                 singer = (String) item.get("singer");
-                id = (String) item.get("id");
-                mid = (String) item.get("mid");
+                id = String.valueOf(item.get("id"));
+                mid = String.valueOf(item.get("mid"));
                 try {
                     String singer2 = PinyinHelper.convertToPinyinString(singer.replaceAll(" ", ""), ",", PinyinFormat.WITHOUT_TONE);
                     String singer3 = PinyinHelper.convertToPinyinString(mp3Name.replaceAll(" ", ""), ",", PinyinFormat.WITHOUT_TONE);
                     if (singer3.contains(singer2) || singer2.contains(singer3)) {
+                        isMatch = true;
                         break;
                     }
                 } catch (PinyinException e) {
                     e.printStackTrace();
                 }
 
+            }
+        }
+
+        if (!isMatch) {
+            Map album = (Map) data.get("album");
+            List<Map> albumlist = (List<Map>) album.get("itemlist");
+            for (Map item : albumlist) {
+                String mp3name = (String) item.get("name");
+                singer = (String) item.get("singer");
+                id = (String) item.get("id");
+                mid = (String) item.get("mid");
+                if (singer.equals(singerName) && mp3Name.equals(mp3name)) {
+                    String res = HttpsUtils.doGetString("https://c.y.qq.com/v8/fcg-bin/musicmall.fcg?_=1652026128283&cv=4747474&ct=24&format=json&inCharset=utf-8&outCharset=utf-8&notice=0&platform=yqq.json&needNewCode=1&uin=0&g_tk_new_20200303=5381&g_tk=5381&cmd=get_album_buy_page&albummid=" + mid + "&albumid=0");
+                    Map map1 = JSON.parseObject(res, Map.class);
+                    Map data1 = (Map) map1.get("data");
+                    List<Map> list1 = (List<Map>) data1.get("songlist");
+                    for (Map item1 : list1) {
+                        if (mp3Name.equals((String) item1.get("songname"))) {
+                            id = String.valueOf(item1.get("songid"));
+                            mid = String.valueOf(item1.get("songmid"));
+                            isMatch = true;
+                            break;
+                        }
+                    }
+                    if (isMatch) {
+                        break;
+                    }
+
+                }
             }
         }
 
