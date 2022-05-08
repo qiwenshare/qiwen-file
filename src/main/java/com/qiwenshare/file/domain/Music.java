@@ -56,4 +56,7 @@ public class Music {
     private String encoder;
     @Column(columnDefinition = "mediumblob")
     private String albumImage;
+
+    @Column
+    private Float trackLength;
 }

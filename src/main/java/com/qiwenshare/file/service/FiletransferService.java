@@ -41,6 +41,9 @@ import com.qiwenshare.ufop.util.UFOPUtils;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.StringUtils;
+import org.jaudiotagger.audio.AudioFileIO;
+import org.jaudiotagger.audio.mp3.MP3AudioHeader;
+import org.jaudiotagger.audio.mp3.MP3File;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import sun.nio.cs.ext.GBK;
@@ -293,18 +296,13 @@ public class FiletransferService implements IFiletransferService {
                                     outFile1.createNewFile();
                                 }
                                 music.setAlbumImage(Base64.getEncoder().encodeToString(albumImageData));
-//                                FileOutputStream fileOutputStream1 = new FileOutputStream(outFile1);
-//                                IOUtils.write(albumImageData, fileOutputStream1);
-//                                Copier copier = ufopFactory.getCopier();
-//                                CopyFile copyFile = new CopyFile();
-//                                copyFile.setExtendName("png");
-//                                String fileUrl = copier.copy(new FileInputStream(outFile1), copyFile);
-//                                music.setAlbumImageUrl(fileUrl);
-
                                 System.out.println("Have album image data, length: " + albumImageData.length + " bytes");
                                 System.out.println("Album image mime type: " + id3v2Tag.getAlbumImageMimeType());
                             }
                         }
+                        MP3File f = (MP3File) AudioFileIO.read(outFile);
+                        MP3AudioHeader audioHeader = (MP3AudioHeader) f.getAudioHeader();
+                        music.setTrackLength(Float.parseFloat(audioHeader.getTrackLength() + ""));
                         musicMapper.insert(music);
                     }
                 } catch (Exception e) {
