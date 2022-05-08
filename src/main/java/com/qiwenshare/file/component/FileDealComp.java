@@ -170,7 +170,7 @@ public class FileDealComp {
         LambdaQueryWrapper<UserFile> lambdaQueryWrapper = new LambdaQueryWrapper<>();
 
         lambdaQueryWrapper.select(UserFile::getFileName, UserFile::getFilePath)
-                .likeRight(UserFile::getFilePath, filePath)
+                .likeRight(UserFile::getFilePath, QiwenFileUtil.formatLikePath(filePath))
                 .eq(UserFile::getIsDir, 1)
                 .eq(UserFile::getDeleteFlag, 0)
                 .eq(UserFile::getUserId, sessionUserId)

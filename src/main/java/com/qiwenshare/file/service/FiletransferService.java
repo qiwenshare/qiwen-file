@@ -248,7 +248,7 @@ public class FiletransferService implements IFiletransferService {
                         if (mp3file.hasId3v1Tag()) {
                             ID3v1 id3v1Tag = mp3file.getId3v1Tag();
                             music.setTrack(formatChatset(id3v1Tag.getTrack()));
-                            music.setArtist(formatChatset(id3v1Tag.getTrack()));
+                            music.setArtist(formatChatset(id3v1Tag.getArtist()));
                             music.setTitle(formatChatset(id3v1Tag.getTitle()));
                             music.setAlbum(formatChatset(id3v1Tag.getAlbum()));
                             music.setYear(formatChatset(id3v1Tag.getYear()));
@@ -364,8 +364,9 @@ public class FiletransferService implements IFiletransferService {
             httpServletResponse.setContentLengthLong(fileBean.getFileSize());
             downloader.download(httpServletResponse, downloadFile);
         } else {
+
             LambdaQueryWrapper<UserFile> lambdaQueryWrapper = new LambdaQueryWrapper<>();
-            lambdaQueryWrapper.likeRight(UserFile::getFilePath, userFile.getFilePath() + "/" + userFile.getFileName())
+            lambdaQueryWrapper.likeRight(UserFile::getFilePath,  QiwenFileUtil.formatLikePath(userFile.getFilePath() + "/" + userFile.getFileName()))
                     .eq(UserFile::getUserId, userFile.getUserId())
                     .eq(UserFile::getDeleteFlag, 0);
             List<UserFile> userFileList = userFileMapper.selectList(lambdaQueryWrapper);

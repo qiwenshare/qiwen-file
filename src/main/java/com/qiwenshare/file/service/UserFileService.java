@@ -10,7 +10,6 @@ import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.qiwenshare.common.constant.FileConstant;
-import com.qiwenshare.common.exception.QiwenException;
 import com.qiwenshare.common.util.DateUtil;
 import com.qiwenshare.common.util.security.JwtUser;
 import com.qiwenshare.common.util.security.SessionUtil;
@@ -23,6 +22,7 @@ import com.qiwenshare.file.mapper.FileMapper;
 import com.qiwenshare.file.mapper.FileTypeMapper;
 import com.qiwenshare.file.mapper.RecoveryFileMapper;
 import com.qiwenshare.file.mapper.UserFileMapper;
+import com.qiwenshare.file.util.QiwenFileUtil;
 import com.qiwenshare.file.vo.file.FileListVo;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
@@ -31,12 +31,10 @@ import org.springframework.transaction.annotation.Transactional;
 
 import javax.annotation.Resource;
 import java.nio.charset.StandardCharsets;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 import java.util.concurrent.Executor;
 import java.util.concurrent.Executors;
-import java.util.stream.Collectors;
 
 @Slf4j
 @Service
@@ -164,7 +162,7 @@ public class UserFileService  extends ServiceImpl<UserFileMapper, UserFile> impl
 
         if (extendName == null) { //为null说明是目录，则需要移动子目录
             QueryWrapper<UserFile> subQueryWrapper = new QueryWrapper<UserFile>();
-            subQueryWrapper.likeRight("filePath", oldfilePath);
+            subQueryWrapper.likeRight("filePath", QiwenFileUtil.formatLikePath(oldfilePath));
             subQueryWrapper.eq("userId", userId);
             List<UserFile> subUserFileList = userFileMapper.selectList(subQueryWrapper);
             for (UserFile userFile : subUserFileList) {
@@ -245,7 +243,7 @@ public class UserFileService  extends ServiceImpl<UserFileMapper, UserFile> impl
 
     @Override
     public List<UserFile> selectUserFileByLikeRightFilePath(String filePath, long userId) {
-        return userFileMapper.selectUserFileByLikeRightFilePath(filePath, userId);
+        return userFileMapper.selectUserFileByLikeRightFilePath(QiwenFileUtil.formatLikePath(filePath), userId);
     }
 
     private void updateFileDeleteStateByFilePath(String filePath, String deleteBatchNum, Long userId) {

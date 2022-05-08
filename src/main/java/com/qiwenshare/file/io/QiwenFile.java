@@ -51,6 +51,7 @@ public class QiwenFile {
             int length = path.length();
             return path.substring(0, length - 1);
         }
+
         return path;
     }
 
