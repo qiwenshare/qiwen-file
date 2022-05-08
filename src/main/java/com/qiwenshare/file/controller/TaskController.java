@@ -1,6 +1,7 @@
 package com.qiwenshare.file.controller;
 
 import co.elastic.clients.elasticsearch.ElasticsearchClient;
+import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.qiwenshare.file.api.IShareFileService;
 import com.qiwenshare.file.component.FileDealComp;
 import com.qiwenshare.file.domain.ShareFile;
@@ -32,7 +33,7 @@ public class TaskController {
 
     @Scheduled(fixedRate = 1000 * 60 * 60 * 24)
     public void updateElasticSearch() {
-        List<UserFile> userfileList = userFileService.list();
+        List<UserFile> userfileList = userFileService.list(new QueryWrapper<UserFile>().eq("deleteFlag", 0));
         for (int i = 0; i < userfileList.size(); i++) {
             QiwenFile ufopFile = new QiwenFile(userfileList.get(i).getFilePath(), userfileList.get(i).getFileName(), userfileList.get(i).getIsDir() == 1);
             fileDealComp.restoreParentFilePath(ufopFile, userfileList.get(i).getUserId());
@@ -40,7 +41,7 @@ public class TaskController {
                 log.info("目录健康检查进度：" + (i + 1) + "/" + userfileList.size());
             }
         }
-        userfileList = userFileService.list();
+        userfileList = userFileService.list(new QueryWrapper<UserFile>().eq("deleteFlag", 0));
         for (UserFile userFile : userfileList) {
             fileDealComp.uploadESByUserFileId(userFile.getUserFileId());
         }
