@@ -304,7 +304,7 @@ public class FiletransferService implements IFiletransferService {
                         }
                         if (StringUtils.isEmpty(music.getLyrics())) {
                             try {
-                                String lyc = getLyc(music.getTitle(), music.getArtist());
+                                String lyc = getLyc(music.getArtist(), music.getTitle());
                                 music.setLyrics(lyc);
                             } catch (Exception e) {
                                 log.info(e.getMessage());
