@@ -243,7 +243,7 @@ public class UserFileService  extends ServiceImpl<UserFileMapper, UserFile> impl
 
     @Override
     public List<UserFile> selectUserFileByLikeRightFilePath(String filePath, long userId) {
-        return userFileMapper.selectUserFileByLikeRightFilePath(QiwenFileUtil.formatLikePath(filePath), userId);
+        return userFileMapper.selectUserFileByLikeRightFilePath(filePath, userId);
     }
 
     private void updateFileDeleteStateByFilePath(String filePath, String deleteBatchNum, Long userId) {
