@@ -1,6 +1,7 @@
 package com.qiwenshare.file.service;
 
 import cn.hutool.core.util.IdUtil;
+import com.alibaba.fastjson.JSON;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
@@ -19,6 +20,7 @@ import com.qiwenshare.file.dto.file.PreviewDTO;
 import com.qiwenshare.file.dto.file.UploadFileDTO;
 import com.qiwenshare.file.io.QiwenFile;
 import com.qiwenshare.file.mapper.*;
+import com.qiwenshare.file.util.HttpsUtils;
 import com.qiwenshare.file.util.QiwenFileUtil;
 import com.qiwenshare.file.vo.file.UploadFileVo;
 import com.qiwenshare.ufop.constant.StorageTypeEnum;
@@ -300,6 +302,14 @@ public class FiletransferService implements IFiletransferService {
                                 System.out.println("Album image mime type: " + id3v2Tag.getAlbumImageMimeType());
                             }
                         }
+                        if (StringUtils.isEmpty(music.getLyrics())) {
+                            try {
+                                String lyc = getLyc(music.getTitle(), music.getArtist());
+                                music.setLyrics(lyc);
+                            } catch (Exception e) {
+                                log.info(e.getMessage());
+                            }
+                        }
                         MP3File f = (MP3File) AudioFileIO.read(outFile);
                         MP3AudioHeader audioHeader = (MP3AudioHeader) f.getAudioHeader();
                         music.setTrackLength(Float.parseFloat(audioHeader.getTrackLength() + ""));
@@ -371,6 +381,31 @@ public class FiletransferService implements IFiletransferService {
 
             downloadUserFileList(httpServletResponse, userFile.getFilePath(), userFile.getFileName(), userFileIds);
         }
+    }
+    
+    public String getLyc(String singerName, String mp3Name) {
+   
+        String s = HttpsUtils.doGetString("https://c.y.qq.com/splcloud/fcgi-bin/smartbox_new.fcg?_=1651992748984&cv=4747474&ct=24&format=json&inCharset=utf-8&outCharset=utf-8&notice=0&platform=yqq.json&needNewCode=1&uin=0&g_tk_new_20200303=5381&g_tk=5381&hostUin=0&is_xml=0&key=" + mp3Name);
+        Map map = JSON.parseObject(s, Map.class);
+        Map data = (Map) map.get("data");
+        Map song = (Map) data.get("song");
+        List<Map> list = (List<Map>) song.get("itemlist");
+        String singer = "";
+        String id = "";
+        String mid = "";
+        for (Map item : list) {
+            singer = (String) item.get("singer");
+            id = (String) item.get("id");
+            mid = (String) item.get("mid");
+            if (singer.equals(singerName)) {
+                break;
+            }
+        }
+
+        String s1 = HttpsUtils.doGetString("https://c.y.qq.com/lyric/fcgi-bin/fcg_query_lyric_new.fcg?_=1651993218842&cv=4747474&ct=24&format=json&inCharset=utf-8&outCharset=utf-8&notice=0&platform=yqq.json&needNewCode=1&uin=0&g_tk_new_20200303=5381&g_tk=5381&loginUin=0&" +
+                "songmid="+mid+"&" +
+                "musicid=" + id);
+        return s1;
     }
 
     @Override
