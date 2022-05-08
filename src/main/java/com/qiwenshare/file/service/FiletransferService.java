@@ -233,9 +233,7 @@ public class FiletransferService implements IFiletransferService {
                         .eq(UploadTask::getIdentifier, uploadFileDto.getIdentifier());
                 uploadTaskMapper.update(null, lambdaUpdateWrapper);
 
-                File outFile = null;
-                InputStream inputStream = null;
-                FileOutputStream fileOutputStream = null;
+
                 try {
                     if (UFOPUtils.isImageFile(uploadFileResult.getExtendName())) {
                         BufferedImage src = uploadFileResult.getBufferedImage();
@@ -245,149 +243,11 @@ public class FiletransferService implements IFiletransferService {
                         image.setFileId(fileBean.getFileId());
                         imageMapper.insert(image);
                     }
-                    if ("mp3".equalsIgnoreCase(uploadFileResult.getExtendName()) || "flac".equalsIgnoreCase(uploadFileResult.getExtendName())) {
-                        Downloader downloader = ufopFactory.getDownloader(uploadFileResult.getStorageType().getCode());
-                        DownloadFile downloadFile = new DownloadFile();
-                        downloadFile.setFileUrl(uploadFileResult.getFileUrl());
-                        inputStream = downloader.getInputStream(downloadFile);
-                        outFile = UFOPUtils.getTempFile(uploadFileResult.getFileUrl());
-                        if (!outFile.exists()) {
-                            outFile.createNewFile();
-                        }
-                        fileOutputStream = new FileOutputStream(outFile);
-                        IOUtils.copy(inputStream, fileOutputStream);
-//                        Mp3File mp3file = new Mp3File(outFile);
-                        Music music = new Music();
-                        music.setMusicId(IdUtil.getSnowflakeNextIdStr());
-                        music.setFileId(fileBean.getFileId());
-//                        if (mp3file.hasId3v1Tag()) {
-//                            ID3v1 id3v1Tag = mp3file.getId3v1Tag();
-//                            music.setTrack(formatChatset(id3v1Tag.getTrack()));
-//                            music.setArtist(formatChatset(id3v1Tag.getArtist()));
-//                            music.setTitle(formatChatset(id3v1Tag.getTitle()));
-//                            music.setAlbum(formatChatset(id3v1Tag.getAlbum()));
-//                            music.setYear(formatChatset(id3v1Tag.getYear()));
-//                            music.setGenre(formatChatset(id3v1Tag.getGenre() + " (" + id3v1Tag.getGenreDescription() + ")"));
-//                            music.setComment(formatChatset(id3v1Tag.getComment()));
-//                        }
-//                        Mp3File mp3file2 = new Mp3File(outFile);
-//                        if (mp3file2.hasId3v2Tag()) {
-//                            ID3v2 id3v2Tag = mp3file2.getId3v2Tag();
-//                            if (StringUtils.isEmpty(music.getTrack())) {
-//                                music.setTrack(formatChatset(id3v2Tag.getTrack()));
-//                            }
-//                            if (StringUtils.isEmpty(music.getArtist())) {
-//                                music.setArtist(formatChatset(id3v2Tag.getArtist()));
-//                            }
-//                            if (StringUtils.isEmpty(music.getTitle())) {
-//                                music.setTitle(formatChatset(id3v2Tag.getTitle()));
-//                            }
-//                            if (StringUtils.isEmpty(music.getAlbum())) {
-//                                music.setAlbum(formatChatset(id3v2Tag.getAlbum()));
-//                            }
-//                            if (StringUtils.isEmpty(music.getYear())) {
-//                                music.setYear(formatChatset(id3v2Tag.getYear()));
-//                            }
-//                            if (StringUtils.isEmpty(music.getGenre())) {
-//                                music.setGenre(formatChatset(id3v2Tag.getGenre() + " (" + id3v2Tag.getGenreDescription() + ")"));
-//                            }
-//                            if (StringUtils.isEmpty(music.getComment())) {
-//                                music.setComment(formatChatset(id3v2Tag.getComment()));
-//                            }
-//                            music.setLyrics(formatChatset(id3v2Tag.getLyrics()));
-//                            music.setComposer(formatChatset(id3v2Tag.getComposer()));
-//                            music.setPublicer(formatChatset(id3v2Tag.getPublisher()));
-//                            music.setOriginalArtist(formatChatset(id3v2Tag.getOriginalArtist()));
-//                            music.setAlbumArtist(formatChatset(id3v2Tag.getAlbumArtist()));
-//                            music.setCopyright(formatChatset(id3v2Tag.getCopyright()));
-//                            music.setUrl(formatChatset(id3v2Tag.getUrl()));
-//                            music.setEncoder(formatChatset(id3v2Tag.getEncoder()));
-//
-//                            byte[] albumImageData = id3v2Tag.getAlbumImage();
-//
-//                            if (albumImageData != null) {
-//                                File outFile1 = UFOPUtils.getTempFile(uploadFileResult.getFileName() + ".png");
-//                                if (!outFile1.exists()) {
-//                                    outFile1.createNewFile();
-//                                }
-//                                music.setAlbumImage(Base64.getEncoder().encodeToString(albumImageData));
-//                            }
-//                        }
-                        Tag tag = null;
-                        AudioHeader audioHeader = null;
-                        if ("mp3".equalsIgnoreCase(uploadFileResult.getExtendName())) {
-                            MP3File f = (MP3File) AudioFileIO.read(outFile);
-                            tag = f.getTag();
-                            audioHeader = f.getAudioHeader();
-//                            music.setTrackLength(Float.parseFloat(audioHeader.getTrackLength() + ""));
-                            MP3File mp3file = new MP3File(outFile);
-                            if (mp3file.hasID3v2Tag()) {
-                                AbstractID3v2Tag id3v2Tag = mp3file.getID3v2TagAsv24();
-                                AbstractID3v2Frame frame = (AbstractID3v2Frame) id3v2Tag.getFrame("APIC");
-                                FrameBodyAPIC body;
-                                if (frame != null && !frame.isEmpty()) {
-                                    body = (FrameBodyAPIC) frame.getBody();
-                                    byte[] imageData = body.getImageData();
-                                    music.setAlbumImage(Base64.getEncoder().encodeToString(imageData));
-                                }
-                                if (tag != null) {
-                                    music.setArtist(tag.getFirst(FieldKey.ARTIST));
-                                    music.setTitle(tag.getFirst(FieldKey.TITLE));
-                                    music.setAlbum(tag.getFirst(FieldKey.ALBUM));
-                                    music.setYear(tag.getFirst(FieldKey.YEAR));
-                                    music.setTrack(tag.getFirst(FieldKey.TRACK));
-                                    music.setGenre(tag.getFirst(FieldKey.GENRE));
-                                    music.setComment(tag.getFirst(FieldKey.COMMENT));
-                                    music.setLyrics(tag.getFirst(FieldKey.LYRICS));
-                                    music.setComposer(tag.getFirst(FieldKey.COMPOSER));
-                                    music.setAlbumArtist(tag.getFirst(FieldKey.ALBUM_ARTIST));
-                                    music.setEncoder(tag.getFirst(FieldKey.ENCODER));
-                                }
-                            }
-                        } else if ("flac".equalsIgnoreCase(uploadFileResult.getExtendName())) {
-                            AudioFile f = new FlacFileReader().read(outFile);
-                            tag = f.getTag();
-                            audioHeader = f.getAudioHeader();
-                            if (tag != null) {
-                                music.setArtist(StringUtils.join(tag.getFields(FieldKey.ARTIST), ","));
-                                music.setTitle(StringUtils.join(tag.getFields(FieldKey.TITLE), ","));
-                                music.setAlbum(StringUtils.join(tag.getFields(FieldKey.ALBUM), ","));
-                                music.setYear(StringUtils.join(tag.getFields(FieldKey.YEAR), ","));
-                                music.setTrack(StringUtils.join(tag.getFields(FieldKey.TRACK), ","));
-                                music.setGenre(StringUtils.join(tag.getFields(FieldKey.GENRE), ","));
-                                music.setComment(StringUtils.join(tag.getFields(FieldKey.COMMENT), ","));
-                                music.setLyrics(StringUtils.join(tag.getFields(FieldKey.LYRICS), ","));
-                                music.setComposer(StringUtils.join(tag.getFields(FieldKey.COMPOSER), ","));
-                                music.setAlbumArtist(StringUtils.join(tag.getFields(FieldKey.ALBUM_ARTIST), ","));
-                                music.setEncoder(StringUtils.join(tag.getFields(FieldKey.ENCODER), ","));
-                            }
-                        }
-
-                        if (audioHeader != null) {
-                            music.setTrackLength(Float.parseFloat(audioHeader.getTrackLength() + ""));
-                        }
-
-                        if (StringUtils.isEmpty(music.getLyrics())) {
-                            try {
-                                String lyc = getLyc(music.getArtist(), music.getTitle());
-                                music.setLyrics(lyc);
-                            } catch (Exception e) {
-                                log.info(e.getMessage());
-                            }
-                        }
-                        musicMapper.insert(music);
-                    }
                 } catch (Exception e) {
                     log.error("生成图片缩略图失败！", e);
-                } finally {
-                    IOUtils.closeQuietly(inputStream);
-                    IOUtils.closeQuietly(fileOutputStream);
-                    if (outFile != null) {
-                        if (outFile.exists()) {
-                            outFile.delete();
-                        }
-                    }
                 }
+
+                fileDealComp.parseMusicFile(uploadFileResult.getExtendName(), uploadFileResult.getStorageType().getCode(), uploadFileResult.getFileUrl(), fileBean.getFileId());
 
             } else if (UploadFileStatusEnum.UNCOMPLATE.equals(uploadFileResult.getStatus())) {
                 UploadTaskDetail uploadTaskDetail = new UploadTaskDetail();
@@ -414,6 +274,7 @@ public class FiletransferService implements IFiletransferService {
         }
 
     }
+
 
     private String formatChatset(String str) {
         if (str == null) {
@@ -451,57 +312,6 @@ public class FiletransferService implements IFiletransferService {
 
             downloadUserFileList(httpServletResponse, userFile.getFilePath(), userFile.getFileName(), userFileIds);
         }
-    }
-
-    public String getLyc(String singerName, String mp3Name) {
-   
-        String s = HttpsUtils.doGetString("https://c.y.qq.com/splcloud/fcgi-bin/smartbox_new.fcg?_=1651992748984&cv=4747474&ct=24&format=json&inCharset=utf-8&outCharset=utf-8&notice=0&platform=yqq.json&needNewCode=1&uin=0&g_tk_new_20200303=5381&g_tk=5381&hostUin=0&is_xml=0&key=" + mp3Name.replaceAll(" ", ""));
-        Map map = JSON.parseObject(s, Map.class);
-        Map data = (Map) map.get("data");
-        Map song = (Map) data.get("song");
-        List<Map> list = (List<Map>) song.get("itemlist");
-        String singer = "";
-        String id = "";
-        String mid = "";
-        boolean isMatch = false;
-        for (Map item : list) {
-            singer = (String) item.get("singer");
-            id = (String) item.get("id");
-            mid = (String) item.get("mid");
-            try {
-                String singer1 = PinyinHelper.convertToPinyinString(singerName.replaceAll(" ", ""), ",", PinyinFormat.WITHOUT_TONE);
-                String singer2 = PinyinHelper.convertToPinyinString(singer.replaceAll(" ", ""), ",", PinyinFormat.WITHOUT_TONE);
-                if (singer1.contains(singer2) || singer2.contains(singer1)) {
-                    break;
-                }
-            } catch (PinyinException e) {
-                e.printStackTrace();
-            }
-
-        }
-        if (!isMatch) {
-            for (Map item : list) {
-                singer = (String) item.get("singer");
-                id = (String) item.get("id");
-                mid = (String) item.get("mid");
-                try {
-                    String singer2 = PinyinHelper.convertToPinyinString(singer.replaceAll(" ", ""), ",", PinyinFormat.WITHOUT_TONE);
-                    String singer3 = PinyinHelper.convertToPinyinString(mp3Name.replaceAll(" ", ""), ",", PinyinFormat.WITHOUT_TONE);
-                    if (singer3.contains(singer2) || singer2.contains(singer3)) {
-                        break;
-                    }
-                } catch (PinyinException e) {
-                    e.printStackTrace();
-                }
-
-            }
-        }
-
-        String s1 = HttpsUtils.doGetString("https://c.y.qq.com/lyric/fcgi-bin/fcg_query_lyric_new.fcg?_=1651993218842&cv=4747474&ct=24&format=json&inCharset=utf-8&outCharset=utf-8&notice=0&platform=yqq.json&needNewCode=1&uin=0&g_tk_new_20200303=5381&g_tk=5381&loginUin=0&" +
-                "songmid="+mid+"&" +
-                "musicid=" + id);
-        Map map1 = JSON.parseObject(s1, Map.class);
-        return (String) map1.get("lyric");
     }
 
     @Override

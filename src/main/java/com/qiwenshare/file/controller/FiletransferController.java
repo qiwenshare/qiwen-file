@@ -222,7 +222,6 @@ public class FiletransferController {
             downloadFile.setFileUrl(fileBean.getFileUrl());
             InputStream inputStream = downloader.getInputStream(downloadFile);
 
-
             String mime = MimeUtils.getMime(userFile.getExtendName());
             httpServletResponse.setHeader("Content-Type", mime);
 

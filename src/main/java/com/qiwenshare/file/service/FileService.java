@@ -11,6 +11,7 @@ import com.qiwenshare.common.operation.FileOperation;
 import com.qiwenshare.common.util.DateUtil;
 import com.qiwenshare.file.api.IFileService;
 import com.qiwenshare.file.component.AsyncTaskComp;
+import com.qiwenshare.file.component.FileDealComp;
 import com.qiwenshare.file.domain.FileBean;
 import com.qiwenshare.file.domain.Image;
 import com.qiwenshare.file.domain.Music;
@@ -61,6 +62,8 @@ public class FileService extends ServiceImpl<FileMapper, FileBean> implements IF
     MusicMapper musicMapper;
     @Resource
     ImageMapper imageMapper;
+    @Resource
+    FileDealComp fileDealComp;
 
     @Override
     public Long getFilePointCount(String fileId) {
@@ -137,6 +140,14 @@ public class FileService extends ServiceImpl<FileMapper, FileBean> implements IF
         FileBean fileBean = fileMapper.selectById(userFile.getFileId());
         Music music = musicMapper.selectOne(new QueryWrapper<Music>().eq("fileId", userFile.getFileId()));
         Image image = imageMapper.selectOne(new QueryWrapper<Image>().eq("fileId", userFile.getFileId()));
+
+        if ("mp3".equalsIgnoreCase(userFile.getExtendName()) || "flac".equalsIgnoreCase(userFile.getExtendName())) {
+            if (music == null) {
+                fileDealComp.parseMusicFile(userFile.getExtendName(), fileBean.getStorageType(), fileBean.getFileUrl(), fileBean.getFileId());
+                music = musicMapper.selectOne(new QueryWrapper<Music>().eq("fileId", userFile.getFileId()));
+            }
+        }
+
         FileDetailVO fileDetailVO = new FileDetailVO();
         BeanUtil.copyProperties(userFile, fileDetailVO);
         BeanUtil.copyProperties(fileBean, fileDetailVO);
