@@ -152,6 +152,9 @@ INSERT INTO `fileclassification` (`fileClassificationId`, `fileTypeId`, `fileExt
 INSERT INTO `fileclassification` (`fileClassificationId`, `fileTypeId`, `fileExtendName`) VALUES (53, 2, 'css');
 INSERT INTO `fileclassification` (`fileClassificationId`, `fileTypeId`, `fileExtendName`) VALUES (54, 2, 'json');
 
+INSERT INTO `fileclassification` (`fileClassificationId`, `fileTypeId`, `fileExtendName`) VALUES (53, 2, 'md');
+INSERT INTO `fileclassification` (`fileClassificationId`, `fileTypeId`, `fileExtendName`) VALUES (54, 2, 'markdown');
+
 
 INSERT INTO `fileclassification` (`fileClassificationId`, `fileTypeId`, `fileExtendName`) VALUES (55, 3, 'avi');
 INSERT INTO `fileclassification` (`fileClassificationId`, `fileTypeId`, `fileExtendName`) VALUES (56, 3, 'mp4');
