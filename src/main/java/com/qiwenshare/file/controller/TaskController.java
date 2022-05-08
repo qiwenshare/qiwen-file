@@ -33,6 +33,14 @@ public class TaskController {
     @Scheduled(fixedRate = 1000 * 60 * 60 * 24)
     public void updateElasticSearch() {
         List<UserFile> userfileList = userFileService.list();
+        for (int i = 0; i < userfileList.size(); i++) {
+            QiwenFile ufopFile = new QiwenFile(userfileList.get(i).getFilePath(), userfileList.get(i).getFileName(), userfileList.get(i).getIsDir() == 1);
+            fileDealComp.restoreParentFilePath(ufopFile, userfileList.get(i).getUserId());
+            if (i % 1000 == 0 || i == userfileList.size() - 1) {
+                log.info("目录健康检查进度：" + (i + 1) + "/" + userfileList.size());
+            }
+        }
+        userfileList = userFileService.list();
         for (UserFile userFile : userfileList) {
             fileDealComp.uploadESByUserFileId(userFile.getUserFileId());
         }
