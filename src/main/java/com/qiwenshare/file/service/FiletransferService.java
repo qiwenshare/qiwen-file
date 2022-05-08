@@ -1,12 +1,13 @@
 package com.qiwenshare.file.service;
 
 import cn.hutool.core.util.IdUtil;
+import com.alibaba.fastjson.JSON;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
-import com.mpatric.mp3agic.ID3v1;
-import com.mpatric.mp3agic.ID3v2;
-import com.mpatric.mp3agic.Mp3File;
+import com.github.stuxuhai.jpinyin.PinyinException;
+import com.github.stuxuhai.jpinyin.PinyinFormat;
+import com.github.stuxuhai.jpinyin.PinyinHelper;
 import com.qiwenshare.common.util.DateUtil;
 import com.qiwenshare.common.util.MimeUtils;
 import com.qiwenshare.common.util.security.JwtUser;
@@ -19,6 +20,7 @@ import com.qiwenshare.file.dto.file.PreviewDTO;
 import com.qiwenshare.file.dto.file.UploadFileDTO;
 import com.qiwenshare.file.io.QiwenFile;
 import com.qiwenshare.file.mapper.*;
+import com.qiwenshare.file.util.HttpsUtils;
 import com.qiwenshare.file.util.QiwenFileUtil;
 import com.qiwenshare.file.vo.file.UploadFileVo;
 import com.qiwenshare.ufop.constant.StorageTypeEnum;
@@ -41,6 +43,22 @@ import com.qiwenshare.ufop.util.UFOPUtils;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.StringUtils;
+import org.jaudiotagger.audio.AudioFile;
+import org.jaudiotagger.audio.AudioFileIO;
+import org.jaudiotagger.audio.AudioHeader;
+import org.jaudiotagger.audio.exceptions.CannotReadException;
+import org.jaudiotagger.audio.exceptions.InvalidAudioFrameException;
+import org.jaudiotagger.audio.exceptions.ReadOnlyFileException;
+import org.jaudiotagger.audio.flac.FlacFileReader;
+import org.jaudiotagger.audio.mp3.MP3AudioHeader;
+import org.jaudiotagger.audio.mp3.MP3File;
+import org.jaudiotagger.tag.FieldKey;
+import org.jaudiotagger.tag.Tag;
+import org.jaudiotagger.tag.TagException;
+import org.jaudiotagger.tag.TagField;
+import org.jaudiotagger.tag.id3.AbstractID3v2Frame;
+import org.jaudiotagger.tag.id3.AbstractID3v2Tag;
+import org.jaudiotagger.tag.id3.framebody.FrameBodyAPIC;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import sun.nio.cs.ext.GBK;
@@ -52,10 +70,7 @@ import java.awt.image.BufferedImage;
 import java.io.*;
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
-import java.util.Base64;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.stream.Collectors;
 import java.util.zip.Adler32;
 import java.util.zip.CheckedOutputStream;
@@ -217,6 +232,8 @@ public class FiletransferService implements IFiletransferService {
                 lambdaUpdateWrapper.set(UploadTask::getUploadStatus, UploadFileStatusEnum.SUCCESS.getCode())
                         .eq(UploadTask::getIdentifier, uploadFileDto.getIdentifier());
                 uploadTaskMapper.update(null, lambdaUpdateWrapper);
+
+
                 try {
                     if (UFOPUtils.isImageFile(uploadFileResult.getExtendName())) {
                         BufferedImage src = uploadFileResult.getBufferedImage();
@@ -226,90 +243,11 @@ public class FiletransferService implements IFiletransferService {
                         image.setFileId(fileBean.getFileId());
                         imageMapper.insert(image);
                     }
-                    if ("mp3".equalsIgnoreCase(uploadFileResult.getExtendName())) {
-                        Downloader downloader = ufopFactory.getDownloader(uploadFileResult.getStorageType().getCode());
-                        DownloadFile downloadFile = new DownloadFile();
-                        downloadFile.setFileUrl(uploadFileResult.getFileUrl());
-                        InputStream inputStream = downloader.getInputStream(downloadFile);
-                        File outFile = UFOPUtils.getTempFile(uploadFileResult.getFileUrl());
-                        if (!outFile.exists()) {
-                            outFile.createNewFile();
-                        }
-                        FileOutputStream fileOutputStream = new FileOutputStream(outFile);
-                        IOUtils.copy(inputStream, fileOutputStream);
-                        fileOutputStream.close();
-                        Mp3File mp3file = new Mp3File(outFile);
-                        Music music = new Music();
-                        music.setMusicId(IdUtil.getSnowflakeNextIdStr());
-                        music.setFileId(fileBean.getFileId());
-                        if (mp3file.hasId3v1Tag()) {
-                            ID3v1 id3v1Tag = mp3file.getId3v1Tag();
-                            music.setTrack(formatChatset(id3v1Tag.getTrack()));
-                            music.setArtist(formatChatset(id3v1Tag.getTrack()));
-                            music.setTitle(formatChatset(id3v1Tag.getTitle()));
-                            music.setAlbum(formatChatset(id3v1Tag.getAlbum()));
-                            music.setYear(formatChatset(id3v1Tag.getYear()));
-                            music.setGenre(formatChatset(id3v1Tag.getGenre() + " (" + id3v1Tag.getGenreDescription() + ")"));
-                            music.setComment(formatChatset(id3v1Tag.getComment()));
-                        }
-                        Mp3File mp3file2 = new Mp3File(outFile);
-                        if (mp3file2.hasId3v2Tag()) {
-                            ID3v2 id3v2Tag = mp3file2.getId3v2Tag();
-                            if (StringUtils.isEmpty(music.getTrack())) {
-                                music.setTrack(formatChatset(id3v2Tag.getTrack()));
-                            }
-                            if (StringUtils.isEmpty(music.getArtist())) {
-                                music.setArtist(formatChatset(id3v2Tag.getArtist()));
-                            }
-                            if (StringUtils.isEmpty(music.getTitle())) {
-                                music.setTitle(formatChatset(id3v2Tag.getTitle()));
-                            }
-                            if (StringUtils.isEmpty(music.getAlbum())) {
-                                music.setAlbum(formatChatset(id3v2Tag.getAlbum()));
-                            }
-                            if (StringUtils.isEmpty(music.getYear())) {
-                                music.setYear(formatChatset(id3v2Tag.getYear()));
-                            }
-                            if (StringUtils.isEmpty(music.getGenre())) {
-                                music.setGenre(formatChatset(id3v2Tag.getGenre() + " (" + id3v2Tag.getGenreDescription() + ")"));
-                            }
-                            if (StringUtils.isEmpty(music.getComment())) {
-                                music.setComment(formatChatset(id3v2Tag.getComment()));
-                            }
-                            music.setLyrics(formatChatset(id3v2Tag.getLyrics()));
-                            music.setComposer(formatChatset(id3v2Tag.getComposer()));
-                            music.setPublicer(formatChatset(id3v2Tag.getPublisher()));
-                            music.setOriginalArtist(formatChatset(id3v2Tag.getOriginalArtist()));
-                            music.setAlbumArtist(formatChatset(id3v2Tag.getAlbumArtist()));
-                            music.setCopyright(formatChatset(id3v2Tag.getCopyright()));
-                            music.setUrl(formatChatset(id3v2Tag.getUrl()));
-                            music.setEncoder(formatChatset(id3v2Tag.getEncoder()));
-
-                            byte[] albumImageData = id3v2Tag.getAlbumImage();
-
-                            if (albumImageData != null) {
-                                File outFile1 = UFOPUtils.getTempFile(uploadFileResult.getFileName() + ".png");
-                                if (!outFile1.exists()) {
-                                    outFile1.createNewFile();
-                                }
-                                music.setAlbumImage(Base64.getEncoder().encodeToString(albumImageData));
-//                                FileOutputStream fileOutputStream1 = new FileOutputStream(outFile1);
-//                                IOUtils.write(albumImageData, fileOutputStream1);
-//                                Copier copier = ufopFactory.getCopier();
-//                                CopyFile copyFile = new CopyFile();
-//                                copyFile.setExtendName("png");
-//                                String fileUrl = copier.copy(new FileInputStream(outFile1), copyFile);
-//                                music.setAlbumImageUrl(fileUrl);
-
-                                System.out.println("Have album image data, length: " + albumImageData.length + " bytes");
-                                System.out.println("Album image mime type: " + id3v2Tag.getAlbumImageMimeType());
-                            }
-                        }
-                        musicMapper.insert(music);
-                    }
                 } catch (Exception e) {
                     log.error("生成图片缩略图失败！", e);
                 }
+
+                fileDealComp.parseMusicFile(uploadFileResult.getExtendName(), uploadFileResult.getStorageType().getCode(), uploadFileResult.getFileUrl(), fileBean.getFileId());
 
             } else if (UploadFileStatusEnum.UNCOMPLATE.equals(uploadFileResult.getStatus())) {
                 UploadTaskDetail uploadTaskDetail = new UploadTaskDetail();
@@ -336,6 +274,7 @@ public class FiletransferService implements IFiletransferService {
         }
 
     }
+
 
     private String formatChatset(String str) {
         if (str == null) {
@@ -366,11 +305,9 @@ public class FiletransferService implements IFiletransferService {
             httpServletResponse.setContentLengthLong(fileBean.getFileSize());
             downloader.download(httpServletResponse, downloadFile);
         } else {
-            LambdaQueryWrapper<UserFile> lambdaQueryWrapper = new LambdaQueryWrapper<>();
-            lambdaQueryWrapper.likeRight(UserFile::getFilePath, userFile.getFilePath() + "/" + userFile.getFileName())
-                    .eq(UserFile::getUserId, userFile.getUserId())
-                    .eq(UserFile::getDeleteFlag, 0);
-            List<UserFile> userFileList = userFileMapper.selectList(lambdaQueryWrapper);
+
+            List<UserFile> userFileList = userFileMapper.selectUserFileByLikeRightFilePath(userFile.getFilePath() + "/" + userFile.getFileName()
+                    , userFile.getUserId());
             List<String> userFileIds = userFileList.stream().map(UserFile::getUserFileId).collect(Collectors.toList());
 
             downloadUserFileList(httpServletResponse, userFile.getFilePath(), userFile.getFileName(), userFileIds);

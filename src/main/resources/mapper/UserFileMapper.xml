@@ -47,65 +47,6 @@
         where (filePath = #{filePath} or filePath like concat(#{filePath},'/%')) and userId = #{userId} and deleteFlag = 0
     </select>
 
-
-    <update id="updateFilepathByFilepath">
-        UPDATE userfile SET filePath=REPLACE(filePath, #{param1}, #{param2})
-        WHERE filePath like N'${param1}%' and userId = #{param3}
-    </update>
-
-    <update id="updateFilepathByPathAndName">
-        update userfile set filePath = #{param2}
-        where filePath = #{param1} and fileName = #{param3}
-        <if test="param4 != null">
-            and extendName = #{param4}
-        </if>
-        <if test="param4 == null">
-            and extendName is null
-        </if>
-        and userId = #{param5}
-    </update>
-
-    <insert id="batchInsertByPathAndName">
-        insert into userfile ( deleteBatchNum, deleteFlag, deleteTime,
-        extendName, fileId, fileName, filePath, isDir, uploadTime, userId)
-        (select deleteBatchNum, deleteFlag, deleteTime, extendName, fileId,
-            fileName,  #{newFilePath}, isDir, uploadTime, userId
-            from userfile
-            <where>
-                <if test="userId != 0">
-                    and userId = #{userId}
-                </if>
-                <if test="fileName != null">
-                    and fileName = #{fileName}
-                </if>
-                <if test="oldFilePath != null">
-                    and filePath = #{oldFilePath}
-                </if>
-                <choose>
-                    <when test="extendName != null">
-                        and extendName = #{extendName}
-                    </when>
-                    <otherwise>
-                        and isDir = 1
-                    </otherwise>
-                </choose>
-            </where>
-            
-        )
-    </insert>
-
-    <update id="batchInsertByFilepath">
-        insert into userfile ( deleteBatchNum, deleteFlag, deleteTime,
-        extendName, fileId, fileName, filePath, isDir, uploadTime, userId)
-        (select deleteBatchNum, deleteFlag, deleteTime, extendName, fileId,
-            fileName,  REPLACE(filePath, #{oldFilePath}, #{newFilePath}), isDir,
-            uploadTime, userId
-            from userfile
-            where filePath like N'${oldFilePath}%' and userId = #{userId}
-        )
-    </update>
-
-
     <select id="selectStorageSizeByUserId" resultType="java.lang.Long" parameterType="java.lang.Long">
         SELECT SUM(fileSize) FROM userfile
         LEFT JOIN file ON file.fileId = userfile.fileId

@@ -38,7 +38,7 @@ public class Music {
     private String genre;
     @Column
     private String comment;
-    @Column
+    @Column(columnDefinition="varchar(10000) comment '歌词'")
     private String lyrics;
     @Column
     private String composer;
@@ -56,4 +56,7 @@ public class Music {
     private String encoder;
     @Column(columnDefinition = "mediumblob")
     private String albumImage;
+
+    @Column
+    private Float trackLength;
 }

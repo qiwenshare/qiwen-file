@@ -49,4 +49,11 @@ public class QiwenFileUtil {
         return param;
     }
 
+    public static String formatLikePath(String filePath) {
+        String newFilePath = filePath.replace("'", "\\'");
+        newFilePath = newFilePath.replace("%", "\\%");
+        newFilePath = newFilePath.replace("_", "\\_");
+        return newFilePath;
+    }
+
 }

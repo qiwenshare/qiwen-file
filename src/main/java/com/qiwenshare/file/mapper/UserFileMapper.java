@@ -11,18 +11,8 @@ import java.util.List;
 
 public interface UserFileMapper extends BaseMapper<UserFile> {
 
-    void updateFilepathByPathAndName(String oldfilePath, String newfilePath, String fileName, String extendName, long userId);
-    void updateFilepathByFilepath(String oldfilePath, String newfilePath, long userId);
 
-    void batchInsertByPathAndName(@Param("oldFilePath") String oldFilePath,
-                                  @Param("newFilePath") String newfilePath,
-                                  @Param("fileName") String fileName,
-                                  @Param("extendName") String extendName,
-                                  @Param("userId") long userId);
 
-    void batchInsertByFilepath(@Param("oldFilePath") String oldFilePath,
-                               @Param("newFilePath") String newfilePath,
-                               @Param("userId") long userId);
 
     List<UserFile> selectUserFileByLikeRightFilePath(@Param("filePath") String filePath, @Param("userId") long userId);
 
