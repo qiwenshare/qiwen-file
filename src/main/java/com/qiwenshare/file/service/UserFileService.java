@@ -161,10 +161,8 @@ public class UserFileService  extends ServiceImpl<UserFileMapper, UserFile> impl
 
 
         if (extendName == null) { //为null说明是目录，则需要移动子目录
-            QueryWrapper<UserFile> subQueryWrapper = new QueryWrapper<UserFile>();
-            subQueryWrapper.likeRight("filePath", QiwenFileUtil.formatLikePath(oldfilePath));
-            subQueryWrapper.eq("userId", userId);
-            List<UserFile> subUserFileList = userFileMapper.selectList(subQueryWrapper);
+            List<UserFile> subUserFileList = userFileMapper.selectUserFileByLikeRightFilePath(oldfilePath, userId);
+
             for (UserFile userFile : subUserFileList) {
                 userFile.setFilePath(userFile.getFilePath().replaceFirst(oldfilePath, newfilePath));
                 userFile.setUserFileId(IdUtil.getSnowflakeNextIdStr());

@@ -365,11 +365,8 @@ public class FiletransferService implements IFiletransferService {
             downloader.download(httpServletResponse, downloadFile);
         } else {
 
-            LambdaQueryWrapper<UserFile> lambdaQueryWrapper = new LambdaQueryWrapper<>();
-            lambdaQueryWrapper.likeRight(UserFile::getFilePath,  QiwenFileUtil.formatLikePath(userFile.getFilePath() + "/" + userFile.getFileName()))
-                    .eq(UserFile::getUserId, userFile.getUserId())
-                    .eq(UserFile::getDeleteFlag, 0);
-            List<UserFile> userFileList = userFileMapper.selectList(lambdaQueryWrapper);
+            List<UserFile> userFileList = userFileMapper.selectUserFileByLikeRightFilePath(userFile.getFilePath() + "/" + userFile.getFileName()
+                    , userFile.getUserId());
             List<String> userFileIds = userFileList.stream().map(UserFile::getUserFileId).collect(Collectors.toList());
 
             downloadUserFileList(httpServletResponse, userFile.getFilePath(), userFile.getFileName(), userFileIds);
