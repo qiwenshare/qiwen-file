@@ -41,7 +41,7 @@ public class UserFile {
     @Column(columnDefinition="int(1) comment '是否是目录(0-否,1-是)'")
     private Integer isDir;
 
-    @Column(columnDefinition="varchar(25) comment '上传时间'")
+    @Column(columnDefinition="varchar(25) comment '修改时间'")
     private String uploadTime;
 
     @Column(columnDefinition="int(11) comment '删除标识(0-未删除，1-已删除)'")

@@ -11,8 +11,6 @@ import org.springframework.context.annotation.Configuration;
 
 @Configuration
 public class ElasticSearchConfig {
-
-    //注入IOC容器
     @Bean
     public ElasticsearchClient elasticsearchClient(){
         RestClient client = RestClient.builder(new HttpHost("localhost", 9200,"http")).build();

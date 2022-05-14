@@ -27,7 +27,7 @@ public class FilePermission {
     public String commonFileId;
     @Column(columnDefinition="bigint(20) comment '用户id'")
     public Long userId;
-    @Column(columnDefinition="int(2) comment '文件权限码'")
+    @Column(columnDefinition="int(2) comment '用户对文件的权限码'")
     public Integer filePermissionCode;
 
 }
