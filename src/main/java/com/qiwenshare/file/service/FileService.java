@@ -124,14 +124,16 @@ public class FileService extends ServiceImpl<FileMapper, FileBean> implements IF
     @Override
     public void updateFileDetail(String userFileId, String identifier, long fileSize, long modifyUserId) {
         UserFile userFile = userFileMapper.selectById(userFileId);
-
+        String currentTime = DateUtil.getCurrentTime();
         FileBean fileBean = new FileBean();
         fileBean.setIdentifier(identifier);
         fileBean.setFileSize(fileSize);
-        fileBean.setModifyTime(DateUtil.getCurrentTime());
+        fileBean.setModifyTime(currentTime);
         fileBean.setModifyUserId(modifyUserId);
         fileBean.setFileId(userFile.getFileId());
         fileMapper.updateById(fileBean);
+        userFile.setUploadTime(currentTime);
+        userFileMapper.updateById(userFile);
     }
 
     @Override

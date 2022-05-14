@@ -44,7 +44,7 @@ public class CommonFileController {
     @Resource
     IUserFileService userFileService;
 
-    @Operation(summary = "共享文件", description = "共享文件统一接口", tags = {"common"})
+    @Operation(summary = "将文件共享给他人", description = "共享文件统一接口", tags = {"common"})
     @PostMapping(value = "/commonfile")
     @MyLog(operation = "共享文件", module = CURRENT_MODULE)
     @ResponseBody
@@ -68,11 +68,11 @@ public class CommonFileController {
         return RestResult.success();
     }
 
-    @Operation(summary = "共享文件用户", description = "共享文件用户接口", tags = {"common"})
+    @Operation(summary = "获取共享空间的全量用户列表", description = "共享文件用户接口", tags = {"common"})
     @GetMapping(value = "/commonfileuser")
     @MyLog(operation = "共享文件用户", module = CURRENT_MODULE)
     @ResponseBody
-    public RestResult<List<CommonFileUser>> commonFileUser() {
+    public RestResult<List<CommonFileUser>> commonFileUserList() {
 
         JwtUser sessionUserBean =  SessionUtil.getSession();
         List<CommonFileUser> list = commonFileService.selectCommonFileUser(sessionUserBean.getUserId());
@@ -91,7 +91,7 @@ public class CommonFileController {
 
     }
 
-    @Operation(summary = "获取共享用户文件列表", description = "用来做前台列表展示", tags = {"file"})
+    @Operation(summary = "获取共享空间中某个用户的文件列表", description = "用来做前台列表展示", tags = {"file"})
     @RequestMapping(value = "/commonFileList", method = RequestMethod.GET)
     @ResponseBody
     public RestResult<FileListVo> commonFileList(
