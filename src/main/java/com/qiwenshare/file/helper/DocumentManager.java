@@ -19,15 +19,12 @@
 package com.qiwenshare.file.helper;
 
 
-
 import com.alibaba.fastjson.JSONObject;
-import com.qiwenshare.file.constant.FileType;
-import org.primeframework.jwt.Signer;
-import org.primeframework.jwt.Verifier;
-import org.primeframework.jwt.domain.JWT;
-import org.primeframework.jwt.hmac.HMACSigner;
-import org.primeframework.jwt.hmac.HMACVerifier;
+import com.qiwenshare.file.component.JwtComp;
+import com.qiwenshare.file.service.OfficeConverterService;
+import org.springframework.stereotype.Component;
 
+import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.*;
@@ -38,8 +35,13 @@ import java.net.URLEncoder;
 import java.text.SimpleDateFormat;
 import java.util.*;
 
+@Component
 public class DocumentManager
 {
+    @Resource
+    private JwtComp jwtComp;
+    @Resource
+    private OfficeConverterService officeConverterService;
     private static HttpServletRequest request;
 
     public static void Init(HttpServletRequest req, HttpServletResponse resp)
@@ -290,13 +292,13 @@ public class DocumentManager
         }
     }
 
-    public static ArrayList<Map<String, Object>> GetFilesInfo(){
+    public ArrayList<Map<String, Object>> GetFilesInfo(){
         ArrayList<Map<String, Object>> files = new ArrayList<>();
 
         for(File file : GetStoredFiles(null)){
             Map<String, Object> map = new LinkedHashMap<>();
             map.put("version", GetFileVersion(file.getName(), null));
-            map.put("id", ServiceConverter.GenerateRevisionId(CurUserHostAddress(null) + "/" + file.getName() + "/" + Long.toString(new File(StoragePath(file.getName(), null)).lastModified())));
+            map.put("id", officeConverterService.GenerateRevisionId(CurUserHostAddress(null) + "/" + file.getName() + "/" + Long.toString(new File(StoragePath(file.getName(), null)).lastModified())));
             map.put("contentLength", new BigDecimal(String.valueOf((file.length()/1024.0))).setScale(2, RoundingMode.HALF_UP) + " KB");
             map.put("pureContentLength", file.length());
             map.put("title", file.getName());
@@ -307,7 +309,7 @@ public class DocumentManager
         return files;
     }
 
-    public static ArrayList<Map<String, Object>> GetFilesInfo(String fileId){
+    public ArrayList<Map<String, Object>> GetFilesInfo(String fileId){
         ArrayList<Map<String, Object>> file = new ArrayList<>();
 
         for (Map<String, Object> map : GetFilesInfo()){
@@ -356,50 +358,52 @@ public class DocumentManager
         }
     }
 
-    public static String GetInternalExtension(FileType fileType)
-    {
-        if (fileType.equals(FileType.Word))
-            return ".docx";
+//    public static String GetInternalExtension(FileType fileType)
+//    {
+//        if (fileType.equals(FileType.Word))
+//            return ".docx";
+//
+//        if (fileType.equals(FileType.Cell))
+//            return ".xlsx";
+//
+//        if (fileType.equals(FileType.Slide))
+//            return ".pptx";
+//
+//        return ".docx";
+//    }
 
-        if (fileType.equals(FileType.Cell))
-            return ".xlsx";
-
-        if (fileType.equals(FileType.Slide))
-            return ".pptx";
-
-        return ".docx";
-    }
-
-    public static String CreateToken(Map<String, Object> payloadClaims)
-    {
-        try
-        {
-            Signer signer = HMACSigner.newSHA256Signer(GetTokenSecret());
-            JWT jwt = new JWT();
-            for (String key : payloadClaims.keySet())
-            {
-                jwt.addClaim(key, payloadClaims.get(key));
-            }
-            return JWT.getEncoder().encode(jwt, signer);
-        }
-        catch (Exception e)
-        {
-            return "";
-        }
-    }
-
-    public static JWT ReadToken(String token)
-    {
-        try
-        {
-            Verifier verifier = HMACVerifier.newVerifier(GetTokenSecret());
-            return JWT.getDecoder().decode(token, verifier);
-        }
-        catch (Exception exception)
-        {
-            return null;
-        }
-    }
+//    public static String CreateToken(Map<String, Object> payloadClaims)
+//    {
+//        jwtComp.createJWT(payloadClaims);
+//
+//        try
+//        {
+//            Signer signer = HMACSigner.newSHA256Signer(GetTokenSecret());
+//            JWT jwt = new JWT();
+//            for (String key : payloadClaims.keySet())
+//            {
+//                jwt.addClaim(key, payloadClaims.get(key));
+//            }
+//            return JWT.getEncoder().encode(jwt, signer);
+//        }
+//        catch (Exception e)
+//        {
+//            return "";
+//        }
+//    }
+//
+//    public static JWT ReadToken(String token)
+//    {
+//        try
+//        {
+//            Verifier verifier = HMACVerifier.newVerifier(GetTokenSecret());
+//            return JWT.getDecoder().decode(token, verifier);
+//        }
+//        catch (Exception exception)
+//        {
+//            return null;
+//        }
+//    }
 
     public static Boolean TokenEnabled()
     {

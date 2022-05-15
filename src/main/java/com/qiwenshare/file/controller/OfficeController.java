@@ -147,16 +147,17 @@ public class OfficeController {
             UserFile userFile = userFileService.getById(previewOfficeFileDTO.getUserFileId());
 
             String baseUrl = request.getScheme()+"://"+ deploymentHost + ":" + port + request.getContextPath();
-
-            FileModel file = new FileModel(userFile.getFileName() + "." + userFile.getExtendName(),
+            String query = "?type=show&token="+token;
+            String callbackUrl = baseUrl + "/office/IndexServlet" + query;
+            FileModel file = new FileModel(userFile.getUserFileId(),
+                    userFile.getFileName() + "." + userFile.getExtendName(),
                     previewOfficeFileDTO.getPreviewUrl(),
                     userFile.getUploadTime(),
                     String.valueOf(loginUser.getUserId()),
                     loginUser.getUsername(),
+                    callbackUrl,
                     "view");
 
-            String query = "?type=show&token="+token;
-            file.editorConfig.callbackUrl= baseUrl + "/office/IndexServlet" + query;
             JSONObject jsonObject = new JSONObject();
             jsonObject.put("file",file);
             jsonObject.put("docserviceApiUrl", ConfigManager.GetProperty("files.docservice.url.site") + ConfigManager.GetProperty("files.docservice.url.api"));
@@ -185,17 +186,17 @@ public class OfficeController {
             String baseUrl = request.getScheme()+"://"+ deploymentHost + ":" + port + request.getContextPath();
 
             log.info("回调地址baseUrl：" + baseUrl);
+            String query = "?type=edit&userFileId="+userFile.getUserFileId()+"&token="+token;
+            String callbackUrl = baseUrl + "/office/IndexServlet" + query;
 
-            FileModel file = new FileModel(userFile.getFileName() + "." + userFile.getExtendName(),
+            FileModel file = new FileModel(userFile.getUserFileId(),
+                    userFile.getFileName() + "." + userFile.getExtendName(),
                     editOfficeFileDTO.getPreviewUrl(),
                     userFile.getUploadTime(),
                     String.valueOf(loginUser.getUserId()),
                     loginUser.getUsername(),
+                    callbackUrl,
                     "edit");
-            file.changeType(request.getParameter("mode"), "edit");
-
-            String query = "?type=edit&userFileId="+userFile.getUserFileId()+"&token="+token;
-            file.editorConfig.callbackUrl= baseUrl + "/office/IndexServlet" + query;
 
             JSONObject jsonObject = new JSONObject();
             jsonObject.put("file",file);
