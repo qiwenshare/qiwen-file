@@ -69,12 +69,7 @@ public class UserController {
             @Parameter(description = "登录密码") String password){
         RestResult<UserLoginVo> restResult = new RestResult<UserLoginVo>();
         String salt = userService.getSaltByTelephone(telephone);
-//        String hashPassword = new SimpleHash("MD5", password, salt, 1024).toHex();
-        String hashPassword = password + salt;
-        for (int i = 0; i < 1024; i++) {
-            hashPassword = DigestUtils.md5Hex(hashPassword);
-        }
-
+        String hashPassword = new SimpleHash("MD5", password, salt, 1024).toHex();
         UserBean result = userService.selectUserByTelephoneAndPassword(telephone, hashPassword);
         if (result == null) {
             return RestResult.fail().message("手机号或密码错误！");
