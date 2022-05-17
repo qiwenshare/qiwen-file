@@ -48,7 +48,8 @@ stages:
           # nohup java -jar test.jar > nohup.out &
           cd ~/gitee_go/deploy/qiwen-file
           tar -zxvf qiwen-file.tar.gz
-          mv ~/gitee_go/deploy/qiwen-file/release ~/gitee_go/deploy/qiwen-file
+          rm qiwen-file.tar.gz
+          mv ~/gitee_go/deploy/qiwen-file/release/* ~/gitee_go/deploy/qiwen-file
           cp /home/qiwen-script/qiwen-file/application.properties conf/config/
           cp /home/qiwen-script/qiwen-file/settings.properties conf/config/
           cd bin
