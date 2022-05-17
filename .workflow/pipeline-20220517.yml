@@ -43,4 +43,5 @@ stages:
            echo 'Hello Gitee!'
 permissions:
   - role: admin
-    members: []
+    members:
+      - mac520
