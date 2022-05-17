@@ -54,6 +54,7 @@ stages:
           cp /home/qiwen-script/qiwen-file/application.properties conf/config/
           cp /home/qiwen-script/qiwen-file/settings.properties conf/config/
           cd bin
+          chmod -R 777 ./*
           sh restart.sh
            echo 'Hello Gitee!'
 permissions:
