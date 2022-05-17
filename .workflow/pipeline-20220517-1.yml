@@ -25,7 +25,7 @@ stages:
         artifacts:
           - name: BUILD_ARTIFACT
             path:
-              - ./target
+              - ./release
         settings: []
   - name: stage-4d60b905
     displayName: 未命名
