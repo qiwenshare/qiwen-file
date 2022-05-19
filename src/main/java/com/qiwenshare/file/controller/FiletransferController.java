@@ -213,7 +213,8 @@ public class FiletransferController {
         }
 
         httpServletResponse.addHeader("Content-Disposition", "fileName=" + fileName);// 设置文件名
-
+        String mime = MimeUtils.getMime(userFile.getExtendName());
+        httpServletResponse.setHeader("Content-Type", mime);
         FileBean fileBean = fileService.getById(userFile.getFileId());
         if ((UFOPUtils.isVideoFile(userFile.getExtendName()) || "mp3".equalsIgnoreCase(userFile.getExtendName()) || "flac".equalsIgnoreCase(userFile.getExtendName()))
                 && !"true".equals(previewDTO.getIsMin())) {
@@ -221,9 +222,6 @@ public class FiletransferController {
             DownloadFile downloadFile = new DownloadFile();
             downloadFile.setFileUrl(fileBean.getFileUrl());
             InputStream inputStream = downloader.getInputStream(downloadFile);
-
-            String mime = MimeUtils.getMime(userFile.getExtendName());
-            httpServletResponse.setHeader("Content-Type", mime);
 
             //获取从那个字节开始读取文件
             String rangeString = httpServletRequest.getHeader("Range");
