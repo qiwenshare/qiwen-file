@@ -2,14 +2,14 @@ version: '1.0'
 name: pipeline-20220517-1
 displayName: pipeline-20220517-1
 triggers:
-  trigger: auto
+  trigger: manual
   push:
     branches:
       prefix:
         - ''
 stages:
   - name: stage-c0fe9b78
-    displayName: 未命名
+    displayName: 编译
     strategy: naturally
     trigger: auto
     executor:
@@ -28,9 +28,9 @@ stages:
               - ./release
         settings: []
   - name: stage-4d60b905
-    displayName: 未命名
+    displayName: 部署
     strategy: naturally
-    trigger: manual
+    trigger: auto
     executor:
       - mac520
     steps:
