@@ -18,7 +18,7 @@
 
 package com.qiwenshare.file.service;
 
-import com.alibaba.fastjson.JSONObject;
+import com.alibaba.fastjson2.JSONObject;
 import com.google.gson.Gson;
 import com.qiwenshare.file.component.JwtComp;
 import com.qiwenshare.file.helper.ConfigManager;

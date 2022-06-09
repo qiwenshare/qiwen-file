@@ -13,8 +13,8 @@ public interface IUserFileService extends IService<UserFile> {
     List<UserFile> selectSameUserFile(String fileName, String filePath, String extendName, Long userId);
 
     IPage<FileListVo> userFileList(Long userId, String filePath, Long beginCount, Long pageCount);
-    void updateFilepathByFilepath(String oldfilePath, String newfilePath, String fileName, String extendName, long userId);
-    void userFileCopy(String oldfilePath, String newfilePath, String fileName, String extendName, long userId);
+    void updateFilepathByUserFileId(String userFileId, String newfilePath, long userId);
+    void userFileCopy(String userFileId, String newfilePath, long userId);
 
     IPage<FileListVo> getFileByFileType(Integer fileTypeId, Long currentPage, Long pageCount, long userId);
     List<UserFile> selectUserFileListByPath(String filePath, Long userId);

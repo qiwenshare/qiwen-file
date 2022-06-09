@@ -3,12 +3,13 @@ package com.qiwenshare.file.component;
 import cn.hutool.core.bean.BeanUtil;
 import cn.hutool.core.util.IdUtil;
 import co.elastic.clients.elasticsearch.ElasticsearchClient;
-import com.alibaba.fastjson.JSON;
+import com.alibaba.fastjson2.JSON;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.github.stuxuhai.jpinyin.PinyinException;
 import com.github.stuxuhai.jpinyin.PinyinFormat;
 import com.github.stuxuhai.jpinyin.PinyinHelper;
 import com.qiwenshare.common.util.DateUtil;
+import com.qiwenshare.common.util.HttpsUtils;
 import com.qiwenshare.file.api.IShareFileService;
 import com.qiwenshare.file.api.IShareService;
 import com.qiwenshare.file.api.IUserService;
@@ -18,17 +19,13 @@ import com.qiwenshare.file.io.QiwenFile;
 import com.qiwenshare.file.mapper.FileMapper;
 import com.qiwenshare.file.mapper.MusicMapper;
 import com.qiwenshare.file.mapper.UserFileMapper;
-import com.qiwenshare.file.util.HttpsUtils;
 import com.qiwenshare.file.util.QiwenFileUtil;
 import com.qiwenshare.file.util.TreeNode;
-import com.qiwenshare.ufop.constant.StorageTypeEnum;
 import com.qiwenshare.ufop.factory.UFOPFactory;
 import com.qiwenshare.ufop.operation.copy.Copier;
 import com.qiwenshare.ufop.operation.copy.domain.CopyFile;
 import com.qiwenshare.ufop.operation.download.Downloader;
 import com.qiwenshare.ufop.operation.download.domain.DownloadFile;
-import com.qiwenshare.ufop.operation.read.Reader;
-import com.qiwenshare.ufop.operation.read.domain.ReadFile;
 import com.qiwenshare.ufop.operation.write.Writer;
 import com.qiwenshare.ufop.operation.write.domain.WriteFile;
 import com.qiwenshare.ufop.util.UFOPUtils;
@@ -144,9 +141,8 @@ public class FileDealComp {
      *
      * @param sessionUserId
      */
-    public void restoreParentFilePath(QiwenFile ufopFile1, Long sessionUserId) {
+    public void restoreParentFilePath(QiwenFile qiwenFile, Long sessionUserId) {
 
-        QiwenFile qiwenFile = new QiwenFile(ufopFile1.getPath(), ufopFile1.isDirectory());
         if (qiwenFile.isFile()) {
             qiwenFile = qiwenFile.getParentFile();
         }
@@ -166,7 +162,11 @@ public class FileDealComp {
                 try {
                     userFileMapper.insert(userFile);
                 } catch (Exception e) {
-                    //ignore
+                    if (e.getMessage().contains("Duplicate entry")) {
+                        //ignore
+                    } else {
+                        log.error(e.getMessage());
+                    }
                 }
             }
             qiwenFile = new QiwenFile(parentFilePath, true);
@@ -549,8 +549,9 @@ public class FileDealComp {
     }
 
     public String getLyc(String singerName, String mp3Name) {
-
-        String s = HttpsUtils.doGetString("https://c.y.qq.com/splcloud/fcgi-bin/smartbox_new.fcg?_=1651992748984&cv=4747474&ct=24&format=json&inCharset=utf-8&outCharset=utf-8&notice=0&platform=yqq.json&needNewCode=1&uin=0&g_tk_new_20200303=5381&g_tk=5381&hostUin=0&is_xml=0&key=" + mp3Name.replaceAll(" ", ""));
+        Map<String, Object> headMap = new HashMap<>();
+        headMap.put("Referer", "https://y.qq.com/");
+        String s = HttpsUtils.doGetString("https://c.y.qq.com/splcloud/fcgi-bin/smartbox_new.fcg?_=1651992748984&cv=4747474&ct=24&format=json&inCharset=utf-8&outCharset=utf-8&notice=0&platform=yqq.json&needNewCode=1&uin=0&g_tk_new_20200303=5381&g_tk=5381&hostUin=0&is_xml=0&key=" + mp3Name.replaceAll(" ", ""), headMap);
         Map map = JSON.parseObject(s, Map.class);
         Map data = (Map) map.get("data");
         Map song = (Map) data.get("song");
@@ -603,7 +604,7 @@ public class FileDealComp {
                 id = (String) item.get("id");
                 mid = (String) item.get("mid");
                 if (singer.equals(singerName) && mp3Name.equals(mp3name)) {
-                    String res = HttpsUtils.doGetString("https://c.y.qq.com/v8/fcg-bin/musicmall.fcg?_=1652026128283&cv=4747474&ct=24&format=json&inCharset=utf-8&outCharset=utf-8&notice=0&platform=yqq.json&needNewCode=1&uin=0&g_tk_new_20200303=5381&g_tk=5381&cmd=get_album_buy_page&albummid=" + mid + "&albumid=0");
+                    String res = HttpsUtils.doGetString("https://c.y.qq.com/v8/fcg-bin/musicmall.fcg?_=1652026128283&cv=4747474&ct=24&format=json&inCharset=utf-8&outCharset=utf-8&notice=0&platform=yqq.json&needNewCode=1&uin=0&g_tk_new_20200303=5381&g_tk=5381&cmd=get_album_buy_page&albummid=" + mid + "&albumid=0", headMap);
                     Map map1 = JSON.parseObject(res, Map.class);
                     Map data1 = (Map) map1.get("data");
                     List<Map> list1 = (List<Map>) data1.get("songlist");
@@ -625,7 +626,7 @@ public class FileDealComp {
 
         String s1 = HttpsUtils.doGetString("https://c.y.qq.com/lyric/fcgi-bin/fcg_query_lyric_new.fcg?_=1651993218842&cv=4747474&ct=24&format=json&inCharset=utf-8&outCharset=utf-8&notice=0&platform=yqq.json&needNewCode=1&uin=0&g_tk_new_20200303=5381&g_tk=5381&loginUin=0&" +
                 "songmid="+mid+"&" +
-                "musicid=" + id);
+                "musicid=" + id, headMap);
         Map map1 = JSON.parseObject(s1, Map.class);
         return (String) map1.get("lyric");
     }

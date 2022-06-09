@@ -1,10 +1,11 @@
 package com.qiwenshare.file.service;
 
-import com.alibaba.fastjson.JSON;
+import com.alibaba.fastjson2.JSON;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.qiwenshare.common.result.RestResult;
 import com.qiwenshare.common.util.DateUtil;
+import com.qiwenshare.common.util.HashUtils;
 import com.qiwenshare.common.util.PasswordUtil;
 import com.qiwenshare.common.util.security.JwtUser;
 import com.qiwenshare.file.api.IUserService;
@@ -17,7 +18,6 @@ import com.qiwenshare.file.mapper.UserMapper;
 import io.jsonwebtoken.Claims;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
-import org.apache.shiro.crypto.hash.SimpleHash;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
@@ -91,7 +91,7 @@ public class UserService extends ServiceImpl<UserMapper, UserBean> implements IU
 
 
         String salt = PasswordUtil.getSaltValue();
-        String newPassword = new SimpleHash("MD5", userBean.getPassword(), salt, 1024).toHex();
+        String newPassword = HashUtils.hashHex("MD5", userBean.getPassword(), salt, 1024);
 
         userBean.setSalt(salt);
 

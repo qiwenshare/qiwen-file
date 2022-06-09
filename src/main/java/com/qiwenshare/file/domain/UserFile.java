@@ -12,7 +12,7 @@ import javax.persistence.*;
 
 @Data
 @Table(name = "userfile", uniqueConstraints = {
-        @UniqueConstraint(name = "fileindex", columnNames = { "userId", "filePath", "fileName", "extendName", "deleteFlag"})}
+        @UniqueConstraint(name = "fileindex", columnNames = { "userId", "filePath", "fileName", "extendName", "deleteFlag", "isDir"})}
 )
 @Entity
 @TableName("userfile")
@@ -35,7 +35,7 @@ public class UserFile {
     @Column(columnDefinition="varchar(500) comment '文件路径'")
     private String filePath;
 
-    @Column(columnDefinition="varchar(100) comment '扩展名'")
+    @Column(columnDefinition="varchar(100) NULL DEFAULT '' comment '扩展名'")
     private String extendName;
 
     @Column(columnDefinition="int(1) comment '是否是目录(0-否,1-是)'")
@@ -64,6 +64,14 @@ public class UserFile {
         this.isDir = qiwenFile.isDirectory() ? 1 : 0;
         this.uploadTime = DateUtil.getCurrentTime();
         this.deleteFlag = 0;
+    }
+
+    public boolean isDirectory() {
+        return this.isDir == 1;
+    }
+
+    public boolean isFile() {
+        return this.isDir == 0;
     }
 
 }

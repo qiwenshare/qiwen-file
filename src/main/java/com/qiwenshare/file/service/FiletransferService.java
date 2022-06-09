@@ -1,13 +1,8 @@
 package com.qiwenshare.file.service;
 
-import cn.hutool.core.util.IdUtil;
-import com.alibaba.fastjson.JSON;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
-import com.github.stuxuhai.jpinyin.PinyinException;
-import com.github.stuxuhai.jpinyin.PinyinFormat;
-import com.github.stuxuhai.jpinyin.PinyinHelper;
 import com.qiwenshare.common.util.DateUtil;
 import com.qiwenshare.common.util.MimeUtils;
 import com.qiwenshare.common.util.security.JwtUser;
@@ -20,7 +15,6 @@ import com.qiwenshare.file.dto.file.PreviewDTO;
 import com.qiwenshare.file.dto.file.UploadFileDTO;
 import com.qiwenshare.file.io.QiwenFile;
 import com.qiwenshare.file.mapper.*;
-import com.qiwenshare.file.util.HttpsUtils;
 import com.qiwenshare.file.util.QiwenFileUtil;
 import com.qiwenshare.file.vo.file.UploadFileVo;
 import com.qiwenshare.ufop.constant.StorageTypeEnum;
@@ -28,8 +22,6 @@ import com.qiwenshare.ufop.constant.UploadFileStatusEnum;
 import com.qiwenshare.ufop.exception.operation.DownloadException;
 import com.qiwenshare.ufop.exception.operation.UploadException;
 import com.qiwenshare.ufop.factory.UFOPFactory;
-import com.qiwenshare.ufop.operation.copy.Copier;
-import com.qiwenshare.ufop.operation.copy.domain.CopyFile;
 import com.qiwenshare.ufop.operation.delete.Deleter;
 import com.qiwenshare.ufop.operation.delete.domain.DeleteFile;
 import com.qiwenshare.ufop.operation.download.Downloader;
@@ -42,26 +34,8 @@ import com.qiwenshare.ufop.operation.upload.domain.UploadFileResult;
 import com.qiwenshare.ufop.util.UFOPUtils;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.io.IOUtils;
-import org.apache.commons.lang3.StringUtils;
-import org.jaudiotagger.audio.AudioFile;
-import org.jaudiotagger.audio.AudioFileIO;
-import org.jaudiotagger.audio.AudioHeader;
-import org.jaudiotagger.audio.exceptions.CannotReadException;
-import org.jaudiotagger.audio.exceptions.InvalidAudioFrameException;
-import org.jaudiotagger.audio.exceptions.ReadOnlyFileException;
-import org.jaudiotagger.audio.flac.FlacFileReader;
-import org.jaudiotagger.audio.mp3.MP3AudioHeader;
-import org.jaudiotagger.audio.mp3.MP3File;
-import org.jaudiotagger.tag.FieldKey;
-import org.jaudiotagger.tag.Tag;
-import org.jaudiotagger.tag.TagException;
-import org.jaudiotagger.tag.TagField;
-import org.jaudiotagger.tag.id3.AbstractID3v2Frame;
-import org.jaudiotagger.tag.id3.AbstractID3v2Tag;
-import org.jaudiotagger.tag.id3.framebody.FrameBodyAPIC;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import sun.nio.cs.ext.GBK;
 
 import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
@@ -70,7 +44,10 @@ import java.awt.image.BufferedImage;
 import java.io.*;
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
-import java.util.*;
+import java.util.Base64;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 import java.util.zip.Adler32;
 import java.util.zip.CheckedOutputStream;
@@ -98,8 +75,6 @@ public class FiletransferService implements IFiletransferService {
     UploadTaskMapper uploadTaskMapper;
     @Resource
     ImageMapper imageMapper;
-    @Resource
-    MusicMapper musicMapper;
 
     @Resource
     PictureFileMapper pictureFileMapper;
@@ -125,17 +100,15 @@ public class FiletransferService implements IFiletransferService {
         if (list != null && !list.isEmpty()) {
             FileBean file = list.get(0);
 
-            if (relativePath.contains("/")) {
-                fileDealComp.restoreParentFilePath(qiwenFile, sessionUserBean.getUserId());
-                fileDealComp.deleteRepeatSubDirFile(uploadFileDTO.getFilePath(), sessionUserBean.getUserId());
-            }
-
             UserFile userFile = new UserFile(qiwenFile, sessionUserBean.getUserId(), file.getFileId());
             UserFile param1 = QiwenFileUtil.searchQiwenFileParam(userFile);
             List<UserFile> userFileList = userFileMapper.selectList(new QueryWrapper<>(param1));
             if (userFileList.size() <= 0) {
                 userFileMapper.insert(userFile);
                 fileDealComp.uploadESByUserFileId(userFile.getUserFileId());
+            }
+            if (relativePath.contains("/")) {
+                fileDealComp.restoreParentFilePath(qiwenFile, sessionUserBean.getUserId());
             }
 
             uploadFileVo.setSkipUpload(true);
@@ -188,7 +161,7 @@ public class FiletransferService implements IFiletransferService {
             uploadFileResultList = uploader.upload(request, uploadFile);
         } catch (Exception e) {
             log.error("上传失败，请检查UFOP连接配置是否正确");
-            throw new UploadException("上传失败");
+            throw new UploadException("上传失败", e);
         }
         for (int i = 0; i < uploadFileResultList.size(); i++){
             UploadFileResult uploadFileResult = uploadFileResultList.get(i);
@@ -208,10 +181,7 @@ public class FiletransferService implements IFiletransferService {
 
                 UserFile userFile = new UserFile(qiwenFile, userId, fileBean.getFileId());
 
-                if (relativePath.contains("/")) {
-                    fileDealComp.restoreParentFilePath(qiwenFile, userId);
-                    fileDealComp.deleteRepeatSubDirFile(uploadFileDto.getFilePath(), userId);
-                }
+
 
                 UserFile param = QiwenFileUtil.searchQiwenFileParam(userFile);
                 List<UserFile> userFileList = userFileMapper.selectList(new QueryWrapper<>(param));
@@ -220,6 +190,10 @@ public class FiletransferService implements IFiletransferService {
                     userFile.setFileName(fileName);
                 }
                 userFileMapper.insert(userFile);
+
+                if (relativePath.contains("/")) {
+                    fileDealComp.restoreParentFilePath(qiwenFile, userId);
+                }
 
                 fileDealComp.uploadESByUserFileId(userFile.getUserFileId());
 
@@ -306,8 +280,8 @@ public class FiletransferService implements IFiletransferService {
             downloader.download(httpServletResponse, downloadFile);
         } else {
 
-            List<UserFile> userFileList = userFileMapper.selectUserFileByLikeRightFilePath(userFile.getFilePath() + "/" + userFile.getFileName()
-                    , userFile.getUserId());
+            QiwenFile qiwenFile = new QiwenFile(userFile.getFilePath(), userFile.getFileName(), true);
+            List<UserFile> userFileList = userFileMapper.selectUserFileByLikeRightFilePath(qiwenFile.getPath() , userFile.getUserId());
             List<String> userFileIds = userFileList.stream().map(UserFile::getUserFileId).collect(Collectors.toList());
 
             downloadUserFileList(httpServletResponse, userFile.getFilePath(), userFile.getFileName(), userFileIds);

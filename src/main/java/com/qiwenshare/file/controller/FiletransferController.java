@@ -23,6 +23,7 @@ import com.qiwenshare.file.vo.file.UploadFileVo;
 import com.qiwenshare.ufop.factory.UFOPFactory;
 import com.qiwenshare.ufop.operation.download.Downloader;
 import com.qiwenshare.ufop.operation.download.domain.DownloadFile;
+import com.qiwenshare.ufop.operation.download.domain.Range;
 import com.qiwenshare.ufop.util.UFOPUtils;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -213,40 +214,49 @@ public class FiletransferController {
         }
 
         httpServletResponse.addHeader("Content-Disposition", "fileName=" + fileName);// 设置文件名
+        String mime = MimeUtils.getMime(userFile.getExtendName());
+        httpServletResponse.setHeader("Content-Type", mime);
 
         FileBean fileBean = fileService.getById(userFile.getFileId());
         if ((UFOPUtils.isVideoFile(userFile.getExtendName()) || "mp3".equalsIgnoreCase(userFile.getExtendName()) || "flac".equalsIgnoreCase(userFile.getExtendName()))
                 && !"true".equals(previewDTO.getIsMin())) {
+            //获取从那个字节开始读取文件
+            String rangeString = httpServletRequest.getHeader("Range");
+            int start = 0;
+            if (StringUtils.isNotBlank(rangeString)) {
+                start = Integer.valueOf(rangeString.substring(rangeString.indexOf("=") + 1, rangeString.indexOf("-")));
+            }
+
             Downloader downloader = ufopFactory.getDownloader(fileBean.getStorageType());
             DownloadFile downloadFile = new DownloadFile();
             downloadFile.setFileUrl(fileBean.getFileUrl());
+            Range range = new Range();
+            range.setStart(start);
+            range.setLength(1024 * 1024 * 1);
+            downloadFile.setRange(range);
             InputStream inputStream = downloader.getInputStream(downloadFile);
 
-            String mime = MimeUtils.getMime(userFile.getExtendName());
-            httpServletResponse.setHeader("Content-Type", mime);
-
-            //获取从那个字节开始读取文件
-            String rangeString = httpServletRequest.getHeader("Range");
-            int range = 0;
-            if (StringUtils.isNotBlank(rangeString)) {
-                range = Integer.valueOf(rangeString.substring(rangeString.indexOf("=") + 1, rangeString.indexOf("-")));
-            }
-            //获取响应的输出流
             OutputStream outputStream = httpServletResponse.getOutputStream();
-            //返回码需要为206，代表只处理了部分请求，响应了部分数据
-            httpServletResponse.setStatus(HttpServletResponse.SC_PARTIAL_CONTENT);
-            // 每次请求只返回1MB的视频流
-            byte[] bytes = new byte[1024 * 1024 * 5];
-            inputStream.skip(range);
-            int len = IOUtils.read(inputStream, bytes);
-            //设置此次相应返回的数据长度
-            httpServletResponse.setContentLength(len);
-            httpServletResponse.setHeader("Accept-Ranges", "bytes");
-            //设置此次相应返回的数据范围
-            httpServletResponse.setHeader("Content-Range", "bytes " + range + "-" + (fileBean.getFileSize() - 1) + "/" + fileBean.getFileSize());
-            // 将这1MB的视频流响应给客户端
-            outputStream.write(bytes, 0, len);
-            outputStream.close();
+            try {
+
+                //返回码需要为206，代表只处理了部分请求，响应了部分数据
+                httpServletResponse.setStatus(HttpServletResponse.SC_PARTIAL_CONTENT);
+                // 每次请求只返回1MB的视频流
+
+                httpServletResponse.setHeader("Accept-Ranges", "bytes");
+                //设置此次相应返回的数据范围
+                httpServletResponse.setHeader("Content-Range", "bytes " + start + "-" + (fileBean.getFileSize() - 1) + "/" + fileBean.getFileSize());
+                IOUtils.copy(inputStream, outputStream);
+
+
+            } finally {
+                IOUtils.closeQuietly(inputStream);
+                IOUtils.closeQuietly(outputStream);
+                if (downloadFile.getOssClient() != null) {
+                    downloadFile.getOssClient().shutdown();
+                }
+            }
+
         } else {
             filetransferService.previewFile(httpServletResponse, previewDTO);
         }

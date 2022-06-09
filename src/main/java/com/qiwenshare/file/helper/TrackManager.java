@@ -18,9 +18,9 @@
 
 package com.qiwenshare.file.helper;
 
-import com.alibaba.fastjson.JSON;
-import com.alibaba.fastjson.JSONArray;
-import com.alibaba.fastjson.JSONObject;
+import com.alibaba.fastjson2.JSON;
+import com.alibaba.fastjson2.JSONArray;
+import com.alibaba.fastjson2.JSONObject;
 import com.google.gson.Gson;
 import com.qiwenshare.file.component.JwtComp;
 import com.qiwenshare.file.service.OfficeConverterService;

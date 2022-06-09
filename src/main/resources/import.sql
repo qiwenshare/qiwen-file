@@ -172,5 +172,3 @@ INSERT INTO `fileclassification` (`fileClassificationId`, `fileTypeId`, `fileExt
 
 INSERT INTO `fileclassification` (`fileClassificationId`, `fileTypeId`, `fileExtendName`) VALUES (70, 2, 'md');
 INSERT INTO `fileclassification` (`fileClassificationId`, `fileTypeId`, `fileExtendName`) VALUES (71, 2, 'markdown');
-
-

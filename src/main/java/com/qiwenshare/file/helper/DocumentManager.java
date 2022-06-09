@@ -19,7 +19,7 @@
 package com.qiwenshare.file.helper;
 
 
-import com.alibaba.fastjson.JSONObject;
+import com.alibaba.fastjson2.JSONObject;
 import com.qiwenshare.file.component.JwtComp;
 import com.qiwenshare.file.service.OfficeConverterService;
 import org.springframework.stereotype.Component;
@@ -231,7 +231,7 @@ public class DocumentManager
 
         File meta = new File(histDir + File.separator + "createdInfo.json");
         try (FileWriter writer = new FileWriter(meta)) {
-            json.writeJSONString(writer);
+//            json.writeJSONString(writer);
         }
     }
 
