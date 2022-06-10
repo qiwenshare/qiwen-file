@@ -1,0 +1,63 @@
+version: '1.0'
+name: pipeline-20220517-1
+displayName: pipeline-20220517-1
+triggers:
+  trigger: manual
+  push:
+    branches:
+      prefix:
+        - ''
+stages:
+  - name: stage-c0fe9b78
+    displayName: 编译
+    strategy: naturally
+    trigger: auto
+    executor:
+      - mac520
+    steps:
+      - step: build@maven
+        name: build_maven
+        displayName: Maven 构建
+        jdkVersion: '8'
+        mavenVersion: 3.3.9
+        commands:
+          - mvn -B clean package -Dmaven.test.skip=true
+        artifacts:
+          - name: BUILD_ARTIFACT
+            path:
+              - ./release
+        settings: []
+  - name: stage-4d60b905
+    displayName: 部署
+    strategy: naturally
+    trigger: auto
+    executor:
+      - mac520
+    steps:
+      - step: deploy@agent
+        name: deploy_agent
+        displayName: 主机部署
+        hostGroupID: qiwen
+        deployArtifact:
+          - source: build
+            name: qiwen-file
+            target: ~/gitee_go/deploy/qiwen-file
+            dependArtifact: BUILD_ARTIFACT
+        script: |-
+          # 请在此输入部署脚本，如启动Java应用如下
+          # nohup java -jar test.jar > nohup.out &
+          cd ~/gitee_go/deploy/qiwen-file
+          rm -r bin/ conf/ lib/ log/
+          tar -zxvf qiwen-file.tar.gz
+          rm qiwen-file.tar.gz
+          cp -r ~/gitee_go/deploy/qiwen-file/release/* ~/gitee_go/deploy/qiwen-file
+          rm -r release
+          cp /home/qiwen-script/qiwen-file/application.properties conf/config/
+          cp /home/qiwen-script/qiwen-file/settings.properties conf/config/
+          cd bin
+          chmod -R 777 ./*
+          sh restart.sh
+           echo 'Hello Gitee!'
+permissions:
+  - role: admin
+    members: []

@@ -18,17 +18,15 @@
 
 package com.qiwenshare.file.util;
 
-import com.alibaba.fastjson.JSONArray;
-import com.alibaba.fastjson.JSONObject;
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
 import com.qiwenshare.file.helper.DocumentManager;
 import com.qiwenshare.file.helper.FileUtility;
-import com.qiwenshare.file.helper.ServiceConverter;
 import lombok.Data;
 
 import java.io.File;
 import java.io.FileInputStream;
+import java.nio.charset.StandardCharsets;
 import java.util.*;
 
 @Data
@@ -41,7 +39,7 @@ public class FileModel
     public EditorConfig editorConfig;
     public String token;
 
-    public FileModel(String fileName, String fileUrl, String fileModifyTime, String uid, String uname, String mode)
+    public FileModel(String userFileId, String fileName, String fileUrl, String fileModifyTime, String uid, String uname, String callbackUrl, String mode)
     {
         if (fileName == null) fileName = "";
         fileName = fileName.trim();
@@ -53,12 +51,12 @@ public class FileModel
         document.url = fileUrl;
 //        document.urlUser = DocumentManager.GetFileUri(fileName, false);
         document.fileType = FileUtility.GetFileExtension(fileName).replace(".", "");
-        document.key = ServiceConverter.GenerateRevisionId(DocumentManager.CurUserHostAddress(null) + "/" + fileName + "/" + fileModifyTime);
+        document.key = Base64.getEncoder().encodeToString((userFileId + "_" + fileModifyTime).getBytes(StandardCharsets.UTF_8));
         document.info = new Info();
         document.info.favorite = uid != null && !uid.isEmpty() ? uid.equals("uid-2") : null;
 
         editorConfig = new EditorConfig(null);
-//        editorConfig.callbackUrl = DocumentManager.GetCallback(fileName);
+        editorConfig.callbackUrl = callbackUrl;
 //        editorConfig.lang = null;
 
         if (uid != null) editorConfig.user.id = uid;
@@ -90,90 +88,90 @@ public class FileModel
         editorConfig.InitDesktop(document.urlUser);
     }
 
-    public void BuildToken()
-    {
-        Map<String, Object> map = new HashMap<>();
-        map.put("type", type);
-        map.put("documentType", documentType);
-        map.put("document", document);
-        map.put("editorConfig", editorConfig);
+//    public void BuildToken()
+//    {
+//        Map<String, Object> map = new HashMap<>();
+//        map.put("type", type);
+//        map.put("documentType", documentType);
+//        map.put("document", document);
+//        map.put("editorConfig", editorConfig);
+//
+//        token = jwtComp.createJWT(map);
+//    }
 
-        token = DocumentManager.CreateToken(map);
-    }
-
-    public String[] GetHistory()
-    {
-        String histDir = DocumentManager.HistoryDir(DocumentManager.StoragePath(document.title, null));
-        if (DocumentManager.GetFileVersion(histDir) > 0) {
-            Integer curVer = DocumentManager.GetFileVersion(histDir);
-
-            List<Object> hist = new ArrayList<>();
-            Map<String, Object> histData = new HashMap<String, Object>();
-
-            for (Integer i = 1; i <= curVer; i++) {
-                Map<String, Object> obj = new HashMap<String, Object>();
-                Map<String, Object> dataObj = new HashMap<String, Object>();
-                String verDir = DocumentManager.VersionDir(histDir, i);
-
-                try {
-                    String key = null;
-
-                    key = i == curVer ? document.key : readFileToEnd(new File(verDir + File.separator + "key.txt"));
-
-                    obj.put("key", key);
-                    obj.put("version", i);
-
-                    if (i == 1) {
-                        String createdInfo = readFileToEnd(new File(histDir + File.separator + "createdInfo.json"));
-                        JSONObject json = JSONObject.parseObject(createdInfo);
-                        obj.put("created", json.get("created"));
-                        Map<String, Object> user = new HashMap<String, Object>();
-                        user.put("id", json.get("id"));
-                        user.put("name", json.get("name"));
-                        obj.put("user", user);
-                    }
-
-                    dataObj.put("key", key);
-                    dataObj.put("url", i == curVer ? document.url : DocumentManager.GetPathUri(verDir + File.separator + "prev" + FileUtility.GetFileExtension(document.title)));
-                    dataObj.put("version", i);
-
-                    if (i > 1) {
-                        JSONObject changes = JSONObject.parseObject(readFileToEnd(new File(DocumentManager.VersionDir(histDir, i - 1) + File.separator + "changes.json")));
-                        JSONObject change = (JSONObject) ((JSONArray) changes.get("changes")).get(0);
-
-                        obj.put("changes", changes.get("changes"));
-                        obj.put("serverVersion", changes.get("serverVersion"));
-                        obj.put("created", change.get("created"));
-                        obj.put("user", change.get("user"));
-
-                        Map<String, Object> prev = (Map<String, Object>) histData.get(Integer.toString(i - 2));
-                        Map<String, Object> prevInfo = new HashMap<String, Object>();
-                        prevInfo.put("key", prev.get("key"));
-                        prevInfo.put("url", prev.get("url"));
-                        dataObj.put("previous", prevInfo);
-                        dataObj.put("changesUrl", DocumentManager.GetPathUri(DocumentManager.VersionDir(histDir, i - 1) + File.separator + "diff.zip"));
-                    }
-
-                    if (DocumentManager.TokenEnabled())
-                    {
-                        dataObj.put("token", DocumentManager.CreateToken(dataObj));
-                    }
-
-                    hist.add(obj);
-                    histData.put(Integer.toString(i - 1), dataObj);
-
-                } catch (Exception ex) { }
-            }
-
-            Map<String, Object> histObj = new HashMap<String, Object>();
-            histObj.put("currentVersion", curVer);
-            histObj.put("history", hist);
-
-            Gson gson = new Gson();
-            return new String[] { gson.toJson(histObj), gson.toJson(histData) };
-        }
-        return new String[] { "", "" };
-    }
+//    public String[] GetHistory()
+//    {
+//        String histDir = DocumentManager.HistoryDir(DocumentManager.StoragePath(document.title, null));
+//        if (DocumentManager.GetFileVersion(histDir) > 0) {
+//            Integer curVer = DocumentManager.GetFileVersion(histDir);
+//
+//            List<Object> hist = new ArrayList<>();
+//            Map<String, Object> histData = new HashMap<String, Object>();
+//
+//            for (Integer i = 1; i <= curVer; i++) {
+//                Map<String, Object> obj = new HashMap<String, Object>();
+//                Map<String, Object> dataObj = new HashMap<String, Object>();
+//                String verDir = DocumentManager.VersionDir(histDir, i);
+//
+//                try {
+//                    String key = null;
+//
+//                    key = i == curVer ? document.key : readFileToEnd(new File(verDir + File.separator + "key.txt"));
+//
+//                    obj.put("key", key);
+//                    obj.put("version", i);
+//
+//                    if (i == 1) {
+//                        String createdInfo = readFileToEnd(new File(histDir + File.separator + "createdInfo.json"));
+//                        JSONObject json = JSONObject.parseObject(createdInfo);
+//                        obj.put("created", json.get("created"));
+//                        Map<String, Object> user = new HashMap<String, Object>();
+//                        user.put("id", json.get("id"));
+//                        user.put("name", json.get("name"));
+//                        obj.put("user", user);
+//                    }
+//
+//                    dataObj.put("key", key);
+//                    dataObj.put("url", i == curVer ? document.url : DocumentManager.GetPathUri(verDir + File.separator + "prev" + FileUtility.GetFileExtension(document.title)));
+//                    dataObj.put("version", i);
+//
+//                    if (i > 1) {
+//                        JSONObject changes = JSONObject.parseObject(readFileToEnd(new File(DocumentManager.VersionDir(histDir, i - 1) + File.separator + "changes.json")));
+//                        JSONObject change = (JSONObject) ((JSONArray) changes.get("changes")).get(0);
+//
+//                        obj.put("changes", changes.get("changes"));
+//                        obj.put("serverVersion", changes.get("serverVersion"));
+//                        obj.put("created", change.get("created"));
+//                        obj.put("user", change.get("user"));
+//
+//                        Map<String, Object> prev = (Map<String, Object>) histData.get(Integer.toString(i - 2));
+//                        Map<String, Object> prevInfo = new HashMap<String, Object>();
+//                        prevInfo.put("key", prev.get("key"));
+//                        prevInfo.put("url", prev.get("url"));
+//                        dataObj.put("previous", prevInfo);
+//                        dataObj.put("changesUrl", DocumentManager.GetPathUri(DocumentManager.VersionDir(histDir, i - 1) + File.separator + "diff.zip"));
+//                    }
+//
+//                    if (DocumentManager.TokenEnabled())
+//                    {
+//                        dataObj.put("token", jwtComp.createJWT(dataObj));
+//                    }
+//
+//                    hist.add(obj);
+//                    histData.put(Integer.toString(i - 1), dataObj);
+//
+//                } catch (Exception ex) { }
+//            }
+//
+//            Map<String, Object> histObj = new HashMap<String, Object>();
+//            histObj.put("currentVersion", curVer);
+//            histObj.put("history", hist);
+//
+//            Gson gson = new Gson();
+//            return new String[] { gson.toJson(histObj), gson.toJson(histData) };
+//        }
+//        return new String[] { "", "" };
+//    }
 
     private String readFileToEnd(File file) {
         String output = "";

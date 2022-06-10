@@ -6,11 +6,11 @@
     <parent>
         <groupId>com.qiwenshare</groupId>
         <artifactId>qiwenshare</artifactId>
-        <version>1.2.0</version>
+        <version>1.2.1</version>
     </parent>
 
     <artifactId>qiwen-file</artifactId>
-    <version>1.2.0-SNAPSHOT</version>
+    <version>1.2.1-SNAPSHOT</version>
     <name>qiwen-file</name>
     <description>pan.qiwenshare.com</description>
     <packaging>jar</packaging>
@@ -45,8 +45,8 @@
         </dependency>
         <!-- fastjson  -->
         <dependency>
-            <groupId>com.alibaba</groupId>
-            <artifactId>fastjson</artifactId>
+            <groupId>com.alibaba.fastjson2</groupId>
+            <artifactId>fastjson2</artifactId>
         </dependency>
 
         <!-- 导入Mysql数据库链接jar包-->
@@ -86,12 +86,6 @@
         </dependency>
         <!--mybatis end-->
 
-        <!--登陆认证和权限管理-->
-        <dependency>
-            <groupId>org.apache.shiro</groupId>
-            <artifactId>shiro-core</artifactId>
-        </dependency>
-
         <dependency>
             <groupId>com.qiwenshare</groupId>
             <artifactId>ufop-spring-boot-starter</artifactId>
@@ -113,36 +107,23 @@
         </dependency>
 
         <dependency>
-            <groupId>com.inversoft</groupId>
-            <artifactId>prime-jwt</artifactId>
-            <version>1.3.1</version>
-        </dependency>
-        <dependency>
             <groupId>commons-io</groupId>
             <artifactId>commons-io</artifactId>
             <version>2.11.0</version>
         </dependency>
-<!--        <dependency>-->
-<!--            <groupId>com.mpatric</groupId>-->
-<!--            <artifactId>mp3agic</artifactId>-->
-<!--            <version>0.9.1</version>-->
-<!--        </dependency>-->
 
         <dependency>
             <groupId>org</groupId>
             <artifactId>jaudiotagger</artifactId>
-            <version>2.0.1</version>
         </dependency>
 
         <dependency>
             <groupId>com.github.stuxuhai</groupId>
             <artifactId>jpinyin</artifactId>
-            <version>1.1.8</version>
         </dependency>
 
 
     </dependencies>
-
 
     <build>
         <plugins>
@@ -175,6 +156,7 @@
             </plugin>
 
             <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-assembly-plugin</artifactId>
                 <configuration>
                     <!-- not append assembly id in release file name -->

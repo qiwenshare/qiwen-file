@@ -7,7 +7,6 @@ import com.qiwenshare.file.component.FileDealComp;
 import com.qiwenshare.file.domain.ShareFile;
 import com.qiwenshare.file.domain.UserFile;
 import com.qiwenshare.file.io.QiwenFile;
-import com.qiwenshare.file.service.ShareFileService;
 import com.qiwenshare.file.service.UserFileService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;

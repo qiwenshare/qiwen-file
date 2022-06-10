@@ -1,5 +1,6 @@
 package com.qiwenshare.file.component;
 
+import com.alibaba.fastjson2.JSON;
 import com.qiwenshare.common.util.math.CalculatorUtils;
 import com.qiwenshare.file.config.jwt.JwtProperties;
 import io.jsonwebtoken.Claims;
@@ -7,13 +8,14 @@ import io.jsonwebtoken.JwtBuilder;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
 import io.jsonwebtoken.impl.DefaultClaims;
-import org.apache.commons.net.util.Base64;
+import org.apache.commons.codec.binary.Base64;
 import org.springframework.stereotype.Component;
 
 import javax.annotation.Resource;
 import javax.crypto.SecretKey;
 import javax.crypto.spec.SecretKeySpec;
 import java.util.Date;
+import java.util.Map;
 
 @Component
 public class JwtComp {
@@ -32,8 +34,8 @@ public class JwtComp {
 	}
  
 	// 创建jwt
-	public String createJWT(String subject) throws Exception {
-
+	public String createJWT(Map<String, Object> param) {
+		String subject = JSON.toJSONString(param);
 		// 生成JWT的时间
 		long nowTime = System.currentTimeMillis();
 		Date nowDate = new Date(nowTime);

@@ -16,10 +16,17 @@
  *
  */
 
-package com.qiwenshare.file.helper;
+package com.qiwenshare.file.service;
 
-import com.alibaba.fastjson.JSONObject;
+import com.alibaba.fastjson2.JSONObject;
 import com.google.gson.Gson;
+import com.qiwenshare.file.component.JwtComp;
+import com.qiwenshare.file.helper.ConfigManager;
+import com.qiwenshare.file.helper.DocumentManager;
+import com.qiwenshare.file.helper.FileUtility;
+import org.springframework.stereotype.Component;
+
+import javax.annotation.Resource;
 import java.io.*;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
@@ -28,8 +35,11 @@ import java.util.Map;
 import java.util.UUID;
 
 
-public class ServiceConverter
+@Component
+public class OfficeConverterService
 {
+    @Resource
+    private JwtComp jwtComp;
     private static int ConvertTimeout = 120000;
     private static final String DocumentConverterUrl = ConfigManager.GetProperty("files.docservice.url.site") + ConfigManager.GetProperty("files.docservice.url.converter");
     private static final String DocumentJwtHeader = ConfigManager.GetProperty("files.docservice.header");
@@ -61,7 +71,7 @@ public class ServiceConverter
         }
     }
 
-    public static String GetConvertedUri(String documentUri, String fromExtension, String toExtension, String documentRevisionId, String filePass, Boolean isAsync) throws Exception
+    public String GetConvertedUri(String documentUri, String fromExtension, String toExtension, String documentRevisionId, String filePass, Boolean isAsync) throws Exception
     {
         fromExtension = fromExtension == null || fromExtension.isEmpty() ? FileUtility.GetFileExtension(documentUri) : fromExtension;
 
@@ -95,12 +105,12 @@ public class ServiceConverter
             if (isAsync)
                 map.put("async", body.async);
 
-            String token = DocumentManager.CreateToken(map);
+            String token = jwtComp.createJWT(map);
             body.token = token;
 
             Map<String, Object> payloadMap = new HashMap<String, Object>();
             payloadMap.put("payload", map);
-            headerToken = DocumentManager.CreateToken(payloadMap);
+            headerToken = jwtComp.createJWT(payloadMap);
         }
 
         Gson gson = new Gson();

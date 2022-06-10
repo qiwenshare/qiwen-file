@@ -18,24 +18,33 @@
 
 package com.qiwenshare.file.helper;
 
-import com.alibaba.fastjson.JSONArray;
-import com.alibaba.fastjson.JSONObject;
+import com.alibaba.fastjson2.JSON;
+import com.alibaba.fastjson2.JSONArray;
+import com.alibaba.fastjson2.JSONObject;
 import com.google.gson.Gson;
-import org.primeframework.jwt.domain.JWT;
+import com.qiwenshare.file.component.JwtComp;
+import com.qiwenshare.file.service.OfficeConverterService;
+import io.jsonwebtoken.Claims;
+import org.springframework.stereotype.Component;
 
+import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
 import java.io.*;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
-import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Scanner;
 
+@Component
 public class TrackManager {
+    @Resource
+    private JwtComp jwtComp;
+    @Resource
+    private OfficeConverterService officeConverterService;
     private static final String DocumentJwtHeader = ConfigManager.GetProperty("files.docservice.header");
 
-    public static JSONObject readBody(HttpServletRequest request, PrintWriter writer) throws Exception {
+    public JSONObject readBody(HttpServletRequest request, PrintWriter writer) throws Exception {
         String bodyString = "";
 
         try {
@@ -78,37 +87,45 @@ public class TrackManager {
                 throw new Exception("{\"error\":1,\"message\":\"JWT expected\"}");
             }
 
-            JWT jwt = DocumentManager.ReadToken(token);
-            if (jwt == null) {
-                writer.write("{\"error\":1,\"message\":\"JWT validation failed\"}");
-                throw new Exception("{\"error\":1,\"message\":\"JWT validation failed\"}");
-            }
-
-            if (jwt.getObject("payload") != null) {
-                try {
-                    @SuppressWarnings("unchecked") LinkedHashMap<String, Object> payload =
-                            (LinkedHashMap<String, Object>)jwt.getObject("payload");
-
-                    jwt.claims = payload;
-                } catch (Exception ex) {
-                    writer.write("{\"error\":1,\"message\":\"Wrong payload\"}");
-                    throw ex;
-                }
-            }
-
+            Claims claims = jwtComp.parseJWT(token);
             try {
-                Gson gson = new Gson();
-                body = JSONObject.parseObject(gson.toJson(jwt.claims));
+                body = JSONObject.parseObject(JSON.toJSONString(claims));
             } catch (Exception ex) {
                 writer.write("JSONParser.parse error:" + ex.getMessage());
                 throw ex;
             }
+
+
+            if (body == null) {
+                writer.write("{\"error\":1,\"message\":\"JWT validation failed\"}");
+                throw new Exception("{\"error\":1,\"message\":\"JWT validation failed\"}");
+            }
+
+//            if (jwt.getObject("payload") != null) {
+//                try {
+//                    @SuppressWarnings("unchecked") LinkedHashMap<String, Object> payload =
+//                            (LinkedHashMap<String, Object>)jwt.getObject("payload");
+//
+//                    jwt.claims = payload;
+//                } catch (Exception ex) {
+//                    writer.write("{\"error\":1,\"message\":\"Wrong payload\"}");
+//                    throw ex;
+//                }
+//            }
+//
+//            try {
+//                Gson gson = new Gson();
+//                body = JSONObject.parseObject(gson.toJson(jwt.claims));
+//            } catch (Exception ex) {
+//                writer.write("JSONParser.parse error:" + ex.getMessage());
+//                throw ex;
+//            }
         }
 
         return body;
     }
 
-    public static void processSave(JSONObject body, String fileName, String userAddress) throws Exception {
+    public void processSave(JSONObject body, String fileName, String userAddress) throws Exception {
         String downloadUri = (String) body.get("url");
         String changesUri = (String) body.get("changesurl");
         String key = (String) body.get("key");
@@ -119,7 +136,7 @@ public class TrackManager {
 
         if (!curExt.equals(downloadExt)) {
             try {
-                String newFileUri = ServiceConverter.GetConvertedUri(downloadUri, downloadExt, curExt, ServiceConverter.GenerateRevisionId(downloadUri), null, false);
+                String newFileUri = officeConverterService.GetConvertedUri(downloadUri, downloadExt, curExt, officeConverterService.GenerateRevisionId(downloadUri), null, false);
                 if (newFileUri.isEmpty()) {
                     newFileName = DocumentManager.GetCorrectName(FileUtility.GetFileNameWithoutExtension(fileName) + downloadExt, userAddress);
                 } else {
@@ -167,7 +184,7 @@ public class TrackManager {
         }
     }
 
-    public static void processForceSave(JSONObject body, String fileName, String userAddress) throws Exception {
+    public void processForceSave(JSONObject body, String fileName, String userAddress) throws Exception {
 
         String downloadUri = (String) body.get("url");
 
@@ -177,7 +194,7 @@ public class TrackManager {
 
         if (!curExt.equals(downloadExt)) {
             try {
-                String newFileUri = ServiceConverter.GetConvertedUri(downloadUri, downloadExt, curExt, ServiceConverter.GenerateRevisionId(downloadUri), null, false);
+                String newFileUri = officeConverterService.GetConvertedUri(downloadUri, downloadExt, curExt, officeConverterService.GenerateRevisionId(downloadUri), null, false);
                 if (newFileUri.isEmpty()) {
                     newFileName = true;
                 } else {
@@ -249,7 +266,7 @@ public class TrackManager {
         connection.disconnect();
     }
 
-    public static void commandRequest(String method, String key) throws Exception {
+    public void commandRequest(String method, String key) throws Exception {
         String DocumentCommandUrl = ConfigManager.GetProperty("files.docservice.url.site") + ConfigManager.GetProperty("files.docservice.url.command");
 
         URL url = new URL(DocumentCommandUrl);
@@ -264,11 +281,11 @@ public class TrackManager {
         {
             Map<String, Object> payloadMap = new HashMap<String, Object>();
             payloadMap.put("payload", params);
-            headerToken = DocumentManager.CreateToken(payloadMap);
+            headerToken = jwtComp.createJWT(payloadMap);
 
             connection.setRequestProperty(DocumentJwtHeader.equals("") ? "Authorization" : DocumentJwtHeader, "Bearer " + headerToken);
 
-            String token = DocumentManager.CreateToken(params);
+            String token = jwtComp.createJWT(params);
             params.put("token", token);
         }
 
@@ -290,10 +307,10 @@ public class TrackManager {
         if (stream == null)
             throw new Exception("Could not get an answer");
 
-        String jsonString = ServiceConverter.ConvertStreamToString(stream);
+        String jsonString = officeConverterService.ConvertStreamToString(stream);
         connection.disconnect();
 
-        JSONObject response = ServiceConverter.ConvertStringToJSON(jsonString);
+        JSONObject response = officeConverterService.ConvertStringToJSON(jsonString);
         if (!response.get("error").toString().equals("0")){
             throw new Exception(response.toJSONString());
         }

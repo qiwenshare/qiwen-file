@@ -1,11 +1,11 @@
 package com.qiwenshare.file.controller;
 
 import cn.hutool.core.bean.BeanUtil;
-import com.alibaba.fastjson.JSON;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.qiwenshare.common.anno.MyLog;
 import com.qiwenshare.common.result.RestResult;
 import com.qiwenshare.common.util.DateUtil;
+import com.qiwenshare.common.util.HashUtils;
 import com.qiwenshare.common.util.security.JwtUser;
 import com.qiwenshare.common.util.security.SessionUtil;
 import com.qiwenshare.file.api.IUserLoginInfoService;
@@ -19,7 +19,6 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.shiro.crypto.hash.SimpleHash;
 import org.springframework.web.bind.annotation.*;
 
 import javax.annotation.Resource;
@@ -68,8 +67,7 @@ public class UserController {
             @Parameter(description = "登录密码") String password){
         RestResult<UserLoginVo> restResult = new RestResult<UserLoginVo>();
         String salt = userService.getSaltByTelephone(telephone);
-        String hashPassword = new SimpleHash("MD5", password, salt, 1024).toHex();
-
+        String hashPassword = HashUtils.hashHex("MD5", password, salt, 1024);
         UserBean result = userService.selectUserByTelephoneAndPassword(telephone, hashPassword);
         if (result == null) {
             return RestResult.fail().message("手机号或密码错误！");
@@ -79,7 +77,7 @@ public class UserController {
         param.put("userId", result.getUserId());
         String token = "";
         try {
-            token = jwtComp.createJWT(JSON.toJSONString(param));
+            token = jwtComp.createJWT(param);
         } catch (Exception e) {
             log.info("登录失败：{}", e);
             return RestResult.fail().message("创建token失败！");
@@ -97,7 +95,6 @@ public class UserController {
         return restResult;
 
     }
-
 
     @Operation(summary = "检查用户登录信息", description = "验证token的有效性", tags = {"user"})
     @GetMapping("/checkuserlogininfo")

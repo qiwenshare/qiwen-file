@@ -5,7 +5,7 @@ import co.elastic.clients.elasticsearch.ElasticsearchClient;
 import co.elastic.clients.elasticsearch.core.SearchResponse;
 import co.elastic.clients.elasticsearch.core.search.HighlighterEncoder;
 import co.elastic.clients.elasticsearch.core.search.Hit;
-import com.alibaba.fastjson.JSON;
+import com.alibaba.fastjson2.JSON;
 import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.qiwenshare.common.anno.MyLog;
@@ -235,7 +235,7 @@ public class FileController {
 
     }
 
-    @Operation(summary = "解压文件", description = "解压缩功能为体验功能，可以解压zip和rar格式的压缩文件，目前只支持本地存储文件解压，部分高版本rar格式不支持。", tags = {"file"})
+    @Operation(summary = "解压文件", description = "解压文件。", tags = {"file"})
     @RequestMapping(value = "/unzipfile", method = RequestMethod.POST)
     @MyLog(operation = "解压文件", module = CURRENT_MODULE)
     @ResponseBody
@@ -264,7 +264,6 @@ public class FileController {
         String oldfilePath = userFile.getFilePath();
         String newfilePath = copyFileDTO.getFilePath();
         String fileName = userFile.getFileName();
-        String extendName = userFile.getExtendName();
         if (userFile.getIsDir() == 1) {
             QiwenFile qiwenFile = new QiwenFile(oldfilePath, fileName, true);
             if (newfilePath.startsWith(qiwenFile.getPath() + QiwenFile.separator) || newfilePath.equals(qiwenFile.getPath())) {
@@ -272,7 +271,7 @@ public class FileController {
             }
         }
 
-        userFileService.userFileCopy(oldfilePath, newfilePath, fileName, extendName, sessionUserBean.getUserId());
+        userFileService.userFileCopy(userFileId, newfilePath,sessionUserBean.getUserId());
         fileDealComp.deleteRepeatSubDirFile(newfilePath, sessionUserBean.getUserId());
         return RestResult.success();
 
@@ -285,11 +284,11 @@ public class FileController {
     public RestResult<String> moveFile(@RequestBody MoveFileDTO moveFileDto) {
 
         JwtUser sessionUserBean =  SessionUtil.getSession();
-
-        String oldfilePath = moveFileDto.getOldFilePath();
+        UserFile userFile = userFileService.getById(moveFileDto.getUserFileId());
+        String oldfilePath = userFile.getFilePath();
         String newfilePath = moveFileDto.getFilePath();
-        String fileName = moveFileDto.getFileName();
-        String extendName = moveFileDto.getExtendName();
+        String fileName = userFile.getFileName();
+        String extendName = userFile.getExtendName();
         if (StringUtil.isEmpty(extendName)) {
             QiwenFile qiwenFile = new QiwenFile(oldfilePath, fileName, true);
             if (newfilePath.startsWith(qiwenFile.getPath() + QiwenFile.separator) || newfilePath.equals(qiwenFile.getPath())) {
@@ -297,7 +296,7 @@ public class FileController {
             }
         }
 
-        userFileService.updateFilepathByFilepath(oldfilePath, newfilePath, fileName, extendName, sessionUserBean.getUserId());
+        userFileService.updateFilepathByUserFileId(moveFileDto.getUserFileId(), newfilePath, sessionUserBean.getUserId());
 
         fileDealComp.deleteRepeatSubDirFile(newfilePath, sessionUserBean.getUserId());
         return RestResult.success();
@@ -325,8 +324,7 @@ public class FileController {
                     return RestResult.fail().message("原路径与目标路径冲突，不能移动");
                 }
             }
-
-            userFileService.updateFilepathByFilepath(userFile.getFilePath(), newfilePath, userFile.getFileName(), userFile.getExtendName(), sessionUserBean.getUserId());
+            userFileService.updateFilepathByUserFileId(userFile.getUserFileId(), newfilePath, sessionUserBean.getUserId());
         }
 
         return RestResult.success().data("批量移动文件成功");

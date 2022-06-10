@@ -152,9 +152,6 @@ INSERT INTO `fileclassification` (`fileClassificationId`, `fileTypeId`, `fileExt
 INSERT INTO `fileclassification` (`fileClassificationId`, `fileTypeId`, `fileExtendName`) VALUES (53, 2, 'css');
 INSERT INTO `fileclassification` (`fileClassificationId`, `fileTypeId`, `fileExtendName`) VALUES (54, 2, 'json');
 
-INSERT INTO `fileclassification` (`fileClassificationId`, `fileTypeId`, `fileExtendName`) VALUES (53, 2, 'md');
-INSERT INTO `fileclassification` (`fileClassificationId`, `fileTypeId`, `fileExtendName`) VALUES (54, 2, 'markdown');
-
 
 INSERT INTO `fileclassification` (`fileClassificationId`, `fileTypeId`, `fileExtendName`) VALUES (55, 3, 'avi');
 INSERT INTO `fileclassification` (`fileClassificationId`, `fileTypeId`, `fileExtendName`) VALUES (56, 3, 'mp4');
@@ -173,4 +170,5 @@ INSERT INTO `fileclassification` (`fileClassificationId`, `fileTypeId`, `fileExt
 INSERT INTO `fileclassification` (`fileClassificationId`, `fileTypeId`, `fileExtendName`) VALUES (68, 4, 'aac');
 INSERT INTO `fileclassification` (`fileClassificationId`, `fileTypeId`, `fileExtendName`) VALUES (69, 4, 'flac');
 
-
+INSERT INTO `fileclassification` (`fileClassificationId`, `fileTypeId`, `fileExtendName`) VALUES (70, 2, 'md');
+INSERT INTO `fileclassification` (`fileClassificationId`, `fileTypeId`, `fileExtendName`) VALUES (71, 2, 'markdown');

@@ -1,6 +1,6 @@
 package com.qiwenshare.file.component;
 
-import com.alibaba.fastjson.JSON;
+import com.alibaba.fastjson2.JSON;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.qiwenshare.file.api.IFiletransferService;
 import com.qiwenshare.file.api.IRecoveryFileService;
