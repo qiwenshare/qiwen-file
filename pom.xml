@@ -6,11 +6,11 @@
     <parent>
         <groupId>com.qiwenshare</groupId>
         <artifactId>qiwenshare</artifactId>
-        <version>1.2.1</version>
+        <version>1.2.2</version>
     </parent>
 
     <artifactId>qiwen-file</artifactId>
-    <version>1.2.1-SNAPSHOT</version>
+    <version>1.2.2-SNAPSHOT</version>
     <name>qiwen-file</name>
     <description>pan.qiwenshare.com</description>
     <packaging>jar</packaging>
@@ -35,7 +35,6 @@
         <dependency>
             <groupId>org.springdoc</groupId>
             <artifactId>springdoc-openapi-ui</artifactId>
-            <version>1.6.1</version>
         </dependency>
 
         <dependency>
@@ -54,10 +53,6 @@
             <groupId>mysql</groupId>
             <artifactId>mysql-connector-java</artifactId>
             <scope>runtime</scope>
-        </dependency>
-        <dependency>
-            <groupId>cn.hutool</groupId>
-            <artifactId>hutool-all</artifactId>
         </dependency>
 
 
@@ -109,7 +104,6 @@
         <dependency>
             <groupId>commons-io</groupId>
             <artifactId>commons-io</artifactId>
-            <version>2.11.0</version>
         </dependency>
 
         <dependency>
@@ -117,20 +111,10 @@
             <artifactId>jaudiotagger</artifactId>
         </dependency>
 
-        <dependency>
-            <groupId>com.github.stuxuhai</groupId>
-            <artifactId>jpinyin</artifactId>
-        </dependency>
-
-
     </dependencies>
 
     <build>
         <plugins>
-<!--            <plugin>-->
-<!--                <groupId>org.springframework.boot</groupId>-->
-<!--                <artifactId>spring-boot-maven-plugin</artifactId>-->
-<!--            </plugin>-->
             <!--排除静态文件-->
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
@@ -192,6 +176,7 @@
                                 <delete dir="${release-path}" />
                                 <copy todir="${release-path}" >
                                     <fileset dir="target/${app-name}/${app-name}">
+                                        <exclude name="**/*-android-*.jar"/>
                                     </fileset>
                                 </copy>
                             </target>

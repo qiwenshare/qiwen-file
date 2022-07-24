@@ -358,53 +358,6 @@ public class DocumentManager
         }
     }
 
-//    public static String GetInternalExtension(FileType fileType)
-//    {
-//        if (fileType.equals(FileType.Word))
-//            return ".docx";
-//
-//        if (fileType.equals(FileType.Cell))
-//            return ".xlsx";
-//
-//        if (fileType.equals(FileType.Slide))
-//            return ".pptx";
-//
-//        return ".docx";
-//    }
-
-//    public static String CreateToken(Map<String, Object> payloadClaims)
-//    {
-//        jwtComp.createJWT(payloadClaims);
-//
-//        try
-//        {
-//            Signer signer = HMACSigner.newSHA256Signer(GetTokenSecret());
-//            JWT jwt = new JWT();
-//            for (String key : payloadClaims.keySet())
-//            {
-//                jwt.addClaim(key, payloadClaims.get(key));
-//            }
-//            return JWT.getEncoder().encode(jwt, signer);
-//        }
-//        catch (Exception e)
-//        {
-//            return "";
-//        }
-//    }
-//
-//    public static JWT ReadToken(String token)
-//    {
-//        try
-//        {
-//            Verifier verifier = HMACVerifier.newVerifier(GetTokenSecret());
-//            return JWT.getDecoder().decode(token, verifier);
-//        }
-//        catch (Exception exception)
-//        {
-//            return null;
-//        }
-//    }
-
     public static Boolean TokenEnabled()
     {
         String secret = GetTokenSecret();

@@ -101,25 +101,6 @@ public class TrackManager {
                 throw new Exception("{\"error\":1,\"message\":\"JWT validation failed\"}");
             }
 
-//            if (jwt.getObject("payload") != null) {
-//                try {
-//                    @SuppressWarnings("unchecked") LinkedHashMap<String, Object> payload =
-//                            (LinkedHashMap<String, Object>)jwt.getObject("payload");
-//
-//                    jwt.claims = payload;
-//                } catch (Exception ex) {
-//                    writer.write("{\"error\":1,\"message\":\"Wrong payload\"}");
-//                    throw ex;
-//                }
-//            }
-//
-//            try {
-//                Gson gson = new Gson();
-//                body = JSONObject.parseObject(gson.toJson(jwt.claims));
-//            } catch (Exception ex) {
-//                writer.write("JSONParser.parse error:" + ex.getMessage());
-//                throw ex;
-//            }
         }
 
         return body;

@@ -7,20 +7,22 @@ import com.baomidou.mybatisplus.annotation.TableName;
 import com.qiwenshare.common.util.DateUtil;
 import com.qiwenshare.file.io.QiwenFile;
 import lombok.Data;
+import lombok.Getter;
 
 import javax.persistence.*;
+import javax.validation.constraints.NotNull;
 
 @Data
 @Table(name = "userfile", uniqueConstraints = {
-        @UniqueConstraint(name = "fileindex", columnNames = { "userId", "filePath", "fileName", "extendName", "deleteFlag", "isDir"})}
-)
+        @UniqueConstraint(name = "fileindex", columnNames = {"userId", "filePath", "fileName", "extendName", "deleteFlag", "isDir"})
+})
 @Entity
 @TableName("userfile")
 public class UserFile {
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
     @TableId(type = IdType.AUTO)
-    @Column(columnDefinition = "varchar(20)")
+    @Column(nullable = false, columnDefinition = "varchar(20)")
     private String userFileId;
 
     @Column(columnDefinition = "bigint(20) comment '用户id'")
