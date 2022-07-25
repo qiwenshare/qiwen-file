@@ -5,7 +5,6 @@ import com.qiwenshare.common.result.RestResult;
 import com.qiwenshare.common.util.security.JwtUser;
 import com.qiwenshare.common.util.security.SessionUtil;
 import com.qiwenshare.file.api.IOperationLogService;
-import com.qiwenshare.file.api.IUserService;
 import com.qiwenshare.file.util.OperationLogUtil;
 import com.qiwenshare.file.vo.user.UserLoginVo;
 import org.aspectj.lang.JoinPoint;

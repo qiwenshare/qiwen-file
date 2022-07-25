@@ -190,6 +190,7 @@ public class AsyncTaskComp {
             saveUserFile.setFileName(fileName);
             userFileMapper.insert(saveUserFile);
         }
+        fileDealComp.restoreParentFilePath(qiwenFile, userFile.getUserId());
 
         return new AsyncResult<String>("saveUnzipFile");
     }
