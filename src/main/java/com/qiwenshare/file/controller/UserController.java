@@ -19,6 +19,7 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.web.bind.annotation.*;
 
 import javax.annotation.Resource;
@@ -114,7 +115,33 @@ public class UserController {
             userLoginInfoService.save(userLoginInfo);
             UserBean user = userService.getById(sessionUserBean.getUserId());
             BeanUtil.copyProperties(user, userLoginVo);
+            if (StringUtils.isEmpty(user.getWxOpenId())) {
+                userLoginVo.setHasWxAuth(false);
+            } else {
+                userLoginVo.setHasWxAuth(true);
+            }
             return RestResult.success().data(userLoginVo);
+
+        } else {
+            return RestResult.fail().message("用户暂未登录");
+        }
+
+    }
+
+    @Operation(summary = "检查微信认证", description = "检查微信认证", tags = {"user"})
+    @GetMapping("/checkWxAuth")
+    @ResponseBody
+    public RestResult<Boolean> checkWxAuth() {
+        JwtUser sessionUserBean = SessionUtil.getSession();
+
+        if (sessionUserBean != null && !"anonymousUser".equals(sessionUserBean.getUsername())) {
+            UserBean user = userService.getById(sessionUserBean.getUserId());
+
+            if (StringUtils.isEmpty(user.getWxOpenId())) {
+                return RestResult.success().data(false);
+            } else {
+                return RestResult.success().data(true);
+            }
 
         } else {
             return RestResult.fail().message("用户暂未登录");

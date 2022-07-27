@@ -47,5 +47,7 @@ public class UserLoginVo {
     private String lastLoginTime;
     @Schema(description = "Token 接口访问凭证")
     private String token;
+    @Schema(description = "是否微信认证")
+    private boolean hasWxAuth;
 
 }

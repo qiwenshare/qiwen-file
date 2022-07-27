@@ -78,6 +78,8 @@ public class UserBean {
     private String modifyTime;
     @Column(columnDefinition = "bigint(20) comment '修改用户id'")
     private Long modifyUserId;
+    @Column(columnDefinition = "varchar(28) comment 'open id'")
+    private String wxOpenId;
 
 
 }

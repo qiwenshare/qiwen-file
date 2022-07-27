@@ -94,13 +94,16 @@ public class UserFileService extends ServiceImpl<UserFileMapper, UserFile> imple
             String repeatFileName = fileDealComp.getRepeatFileName(userFile, userFile.getFilePath());
             userFile.setFileName(repeatFileName);
         }
-        userFileMapper.updateById(userFile);
-
+        try {
+            userFileMapper.updateById(userFile);
+        } catch (Exception e) {
+            log.warn(e.getMessage());
+        }
         //移动子目录
         oldfilePath = new QiwenFile(oldfilePath, fileName, true).getPath();
         newfilePath = new QiwenFile(newfilePath, fileName, true).getPath();
 
-        if (userFile.isDirectory()) { //为空说明是目录，则需要移动子目录
+        if (userFile.isDirectory()) { //如果是目录，则需要移动子目录
             List<UserFile> list = selectUserFileByLikeRightFilePath(oldfilePath, userId);
 
             for (UserFile newUserFile : list) {
@@ -109,7 +112,11 @@ public class UserFileService extends ServiceImpl<UserFileMapper, UserFile> imple
                     String repeatFileName = fileDealComp.getRepeatFileName(newUserFile, newUserFile.getFilePath());
                     newUserFile.setFileName(repeatFileName);
                 }
-                userFileMapper.updateById(newUserFile);
+                try {
+                    userFileMapper.updateById(newUserFile);
+                } catch (Exception e) {
+                    log.warn(e.getMessage());
+                }
             }
         }
 
@@ -127,7 +134,11 @@ public class UserFileService extends ServiceImpl<UserFileMapper, UserFile> imple
             String repeatFileName = fileDealComp.getRepeatFileName(userFile, userFile.getFilePath());
             userFile.setFileName(repeatFileName);
         }
-        userFileMapper.insert(userFile);
+        try {
+            userFileMapper.insert(userFile);
+        } catch (Exception e) {
+            log.warn(e.getMessage());
+        }
 
         oldfilePath = new QiwenFile(oldfilePath, fileName, true).getPath();
         newfilePath = new QiwenFile(newfilePath, fileName, true).getPath();
@@ -139,11 +150,15 @@ public class UserFileService extends ServiceImpl<UserFileMapper, UserFile> imple
             for (UserFile newUserFile : subUserFileList) {
                 newUserFile.setFilePath(newUserFile.getFilePath().replaceFirst(oldfilePath, newfilePath));
                 newUserFile.setUserFileId(IdUtil.getSnowflakeNextIdStr());
-                if (!newUserFile.isFile()) {
+                if (newUserFile.isDirectory()) {
                     String repeatFileName = fileDealComp.getRepeatFileName(newUserFile, newUserFile.getFilePath());
                     newUserFile.setFileName(repeatFileName);
                 }
-                userFileMapper.insert(newUserFile);
+                try {
+                    userFileMapper.insert(newUserFile);
+                } catch (Exception e) {
+                    log.warn(e.getMessage());
+                }
             }
         }
 
