@@ -3,7 +3,6 @@ package com.qiwenshare.file.controller;
 import cn.hutool.core.util.IdUtil;
 import com.alibaba.fastjson2.JSON;
 import com.alibaba.fastjson2.JSONObject;
-import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
 import com.baomidou.mybatisplus.core.toolkit.ClassUtils;
 import com.qiwenshare.common.exception.NotLoginException;
 import com.qiwenshare.common.result.RestResult;
@@ -16,21 +15,26 @@ import com.qiwenshare.file.api.IUserService;
 import com.qiwenshare.file.component.FileDealComp;
 import com.qiwenshare.file.domain.FileBean;
 import com.qiwenshare.file.domain.UserFile;
+import com.qiwenshare.file.domain.user.UserBean;
 import com.qiwenshare.file.dto.file.CreateOfficeFileDTO;
 import com.qiwenshare.file.dto.file.EditOfficeFileDTO;
 import com.qiwenshare.file.dto.file.PreviewOfficeFileDTO;
-import com.qiwenshare.file.helper.ConfigManager;
-import com.qiwenshare.file.util.FileModel;
+import com.qiwenshare.file.office.documentserver.managers.history.HistoryManager;
+import com.qiwenshare.file.office.documentserver.models.enums.Action;
+import com.qiwenshare.file.office.documentserver.models.enums.Type;
+import com.qiwenshare.file.office.documentserver.models.filemodel.FileModel;
+import com.qiwenshare.file.office.entities.User;
+import com.qiwenshare.file.office.services.configurers.FileConfigurer;
+import com.qiwenshare.file.office.services.configurers.wrappers.DefaultFileWrapper;
 import com.qiwenshare.ufop.factory.UFOPFactory;
 import com.qiwenshare.ufop.operation.copy.Copier;
 import com.qiwenshare.ufop.operation.copy.domain.CopyFile;
 import com.qiwenshare.ufop.operation.download.domain.DownloadFile;
-import com.qiwenshare.ufop.operation.write.Writer;
-import com.qiwenshare.ufop.operation.write.domain.WriteFile;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.codec.digest.DigestUtils;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.web.bind.annotation.*;
 
@@ -45,6 +49,7 @@ import java.net.HttpURLConnection;
 import java.net.URL;
 import java.net.URLDecoder;
 import java.util.List;
+import java.util.Locale;
 import java.util.Scanner;
 import java.util.UUID;
 
@@ -67,11 +72,20 @@ public class OfficeController {
     @Value("${ufop.storage-type}")
     private Integer storageType;
 
+    @Value("${files.docservice.url.site}")
+    private String docserviceSite;
+
+    @Value("${files.docservice.url.api}")
+    private String docserviceApiUrl;
+    @Autowired
+    private FileConfigurer<DefaultFileWrapper> fileConfigurer;
 
     @Resource
     IFileService fileService;
     @Resource
     IUserFileService userFileService;
+    @Autowired
+    private HistoryManager historyManager;
 
     @Operation(summary = "创建office文件", description = "创建office文件", tags = {"office"})
     @ResponseBody
@@ -139,28 +153,38 @@ public class OfficeController {
     @Operation(summary = "预览office文件", description = "预览office文件", tags = {"office"})
     @RequestMapping(value = "/previewofficefile", method = RequestMethod.POST)
     @ResponseBody
-    public RestResult<Object> previewOfficeFile(HttpServletRequest request, @RequestBody PreviewOfficeFileDTO previewOfficeFileDTO, @RequestHeader("token") String token) {
+    public RestResult<Object> previewOfficeFile(HttpServletRequest request, @RequestBody PreviewOfficeFileDTO previewOfficeFileDTO) {
         RestResult<Object> result = new RestResult<>();
         try {
 
             JwtUser loginUser = SessionUtil.getSession();
             UserFile userFile = userFileService.getById(previewOfficeFileDTO.getUserFileId());
 
-            String baseUrl = request.getScheme()+"://"+ deploymentHost + ":" + port + request.getContextPath();
-            String query = "?type=show&token="+token;
-            String callbackUrl = baseUrl + "/office/IndexServlet" + query;
-            FileModel file = new FileModel(userFile.getUserFileId(),
-                    userFile.getFileName() + "." + userFile.getExtendName(),
-                    previewOfficeFileDTO.getPreviewUrl(),
-                    userFile.getUploadTime(),
-                    String.valueOf(loginUser.getUserId()),
-                    loginUser.getUsername(),
-                    callbackUrl,
-                    "view");
+
+
+            UserBean userBean = userService.getById(loginUser.getUserId());
+            User user = new User(userBean);
+
+            Action action = Action.view;
+            Type type = Type.desktop;
+            Locale locale = new Locale("zh");
+            FileModel fileModel = fileConfigurer.getFileModel(
+                    DefaultFileWrapper
+                            .builder()
+                            .userFileId(userFile.getUserFileId())
+                            .fileName(userFile.getFileName() + "." + userFile.getExtendName())
+                            .type(type)
+                            .lang(locale.toLanguageTag())
+                            .action(action)
+                            .user(user)
+                            .actionData(previewOfficeFileDTO.getPreviewUrl())
+                            .build()
+            );
 
             JSONObject jsonObject = new JSONObject();
-            jsonObject.put("file",file);
-            jsonObject.put("docserviceApiUrl", ConfigManager.GetProperty("files.docservice.url.site") + ConfigManager.GetProperty("files.docservice.url.api"));
+            jsonObject.put("file",fileModel);
+//            jsonObject.put("fileHistory", historyManager.getHistory(fileModel.getDocument()));  // get file history and add it to the model
+            jsonObject.put("docserviceApiUrl", docserviceSite + docserviceApiUrl);
             jsonObject.put("reportName",userFile.getFileName());
             result.setData(jsonObject);
             result.setCode(200);
@@ -175,32 +199,35 @@ public class OfficeController {
     @Operation(summary = "编辑office文件", description = "编辑office文件", tags = {"office"})
     @ResponseBody
     @RequestMapping(value = "/editofficefile", method = RequestMethod.POST)
-    public RestResult<Object> editOfficeFile(HttpServletRequest request, @RequestBody EditOfficeFileDTO editOfficeFileDTO, @RequestHeader("token") String token) {
+    public RestResult<Object> editOfficeFile(HttpServletRequest request, @RequestBody EditOfficeFileDTO editOfficeFileDTO) {
         RestResult<Object> result = new RestResult<>();
         log.info("editOfficeFile");
         try {
-
             JwtUser loginUser = SessionUtil.getSession();
             UserFile userFile = userFileService.getById(editOfficeFileDTO.getUserFileId());
 
-            String baseUrl = request.getScheme()+"://"+ deploymentHost + ":" + port + request.getContextPath();
 
-            log.info("回调地址baseUrl：" + baseUrl);
-            String query = "?type=edit&userFileId="+userFile.getUserFileId()+"&token="+token;
-            String callbackUrl = baseUrl + "/office/IndexServlet" + query;
+            UserBean userBean = userService.getById(loginUser.getUserId());
+            User user = new User(userBean);
 
-            FileModel file = new FileModel(userFile.getUserFileId(),
-                    userFile.getFileName() + "." + userFile.getExtendName(),
-                    editOfficeFileDTO.getPreviewUrl(),
-                    userFile.getUploadTime(),
-                    String.valueOf(loginUser.getUserId()),
-                    loginUser.getUsername(),
-                    callbackUrl,
-                    "edit");
-
+            Action action = Action.edit;
+            Type type = Type.desktop;
+            Locale locale = new Locale("zh");
+            FileModel fileModel = fileConfigurer.getFileModel(
+                    DefaultFileWrapper
+                            .builder()
+                            .userFileId(userFile.getUserFileId())
+                            .fileName(userFile.getFileName() + "." + userFile.getExtendName())
+                            .type(type)
+                            .lang(locale.toLanguageTag())
+                            .action(action)
+                            .user(user)
+                            .actionData(editOfficeFileDTO.getPreviewUrl())
+                            .build()
+            );
             JSONObject jsonObject = new JSONObject();
-            jsonObject.put("file",file);
-            jsonObject.put("docserviceApiUrl",ConfigManager.GetProperty("files.docservice.url.site") + ConfigManager.GetProperty("files.docservice.url.api"));
+            jsonObject.put("file",fileModel);
+            jsonObject.put("docserviceApiUrl", docserviceSite + docserviceApiUrl);
             jsonObject.put("reportName",userFile.getFileName());
             result.setData(jsonObject);
             result.setCode(200);
@@ -234,7 +261,7 @@ public class OfficeController {
             String type = request.getParameter("type");
             String downloadUri = (String) jsonObj.get("url");
 
-            if("edit".equals(type)){//修改报告
+            if("edit".equals(type)){ //修改报告
                 String userFileId = request.getParameter("userFileId");
                 UserFile userFile = userFileService.getById(userFileId);
                 FileBean fileBean = fileService.getById(userFile.getFileId());
@@ -256,14 +283,14 @@ public class OfficeController {
                 } finally {
 
                     int fileLength = connection.getContentLength();
-                    log.info("当前修改文件大小为：" + Long.valueOf(fileLength));
+                    log.info("当前修改文件大小为：" + (long) fileLength);
 
                     DownloadFile downloadFile = new DownloadFile();
                     downloadFile.setFileUrl(fileBean.getFileUrl());
                     InputStream inputStream = ufopFactory.getDownloader(fileBean.getStorageType()).getInputStream(downloadFile);
                     String md5Str = DigestUtils.md5Hex(inputStream);
 
-                    fileService.updateFileDetail(userFile.getUserFileId(), md5Str, fileLength, userId);
+                    fileService.updateFileDetail(userFile.getUserFileId(), md5Str, fileLength);
                     connection.disconnect();
                 }
             }
@@ -275,6 +302,7 @@ public class OfficeController {
         }else {
             log.debug("状态为：0") ;
             writer.write("{\"error\":" + "0" + "}");
+
         }
     }
 
