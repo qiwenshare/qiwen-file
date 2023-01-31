@@ -77,7 +77,7 @@ public class RecoveryFileController {
     }
 
     @Operation(summary = "回收文件列表", description = "回收文件列表", tags = {"recoveryfile"})
-    @RequestMapping(value = "/list", method = RequestMethod.POST)
+    @RequestMapping(value = "/list", method = RequestMethod.GET)
     @ResponseBody
     public RestResult2<RecoveryFileListVo> getRecoveryFileList() {
         JwtUser sessionUserBean = SessionUtil.getSession();
