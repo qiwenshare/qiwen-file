@@ -11,6 +11,7 @@ import com.qiwenshare.file.domain.RecoveryFile;
 import com.qiwenshare.file.dto.file.DeleteRecoveryFileDTO;
 import com.qiwenshare.file.dto.recoveryfile.BatchDeleteRecoveryFileDTO;
 import com.qiwenshare.file.dto.recoveryfile.RestoreFileDTO;
+import com.qiwenshare.file.util.RestResult2;
 import com.qiwenshare.file.vo.file.RecoveryFileListVo;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -78,14 +79,10 @@ public class RecoveryFileController {
     @Operation(summary = "回收文件列表", description = "回收文件列表", tags = {"recoveryfile"})
     @RequestMapping(value = "/list", method = RequestMethod.POST)
     @ResponseBody
-    public RestResult<List<RecoveryFileListVo>> getRecoveryFileList() {
+    public RestResult2<RecoveryFileListVo> getRecoveryFileList() {
         JwtUser sessionUserBean = SessionUtil.getSession();
-        RestResult<List<RecoveryFileListVo>> restResult = new RestResult<List<RecoveryFileListVo>>();
         List<RecoveryFileListVo> recoveryFileList = recoveryFileService.selectRecoveryFileList(sessionUserBean.getUserId());
-        restResult.setData(recoveryFileList);
-        restResult.setSuccess(true);
-
-        return restResult;
+        return RestResult2.success().dataList(recoveryFileList, recoveryFileList.size());
     }
 
     @Operation(summary = "还原文件", description = "还原文件", tags = {"recoveryfile"})

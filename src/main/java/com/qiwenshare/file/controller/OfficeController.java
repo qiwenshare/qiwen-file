@@ -87,69 +87,6 @@ public class OfficeController {
     @Autowired
     private HistoryManager historyManager;
 
-    @Operation(summary = "创建office文件", description = "创建office文件", tags = {"office"})
-    @ResponseBody
-    @RequestMapping(value = "/createofficefile", method = RequestMethod.POST)
-    public RestResult<Object> createOfficeFile(@RequestBody CreateOfficeFileDTO createOfficeFileDTO) {
-        RestResult<Object> result = new RestResult<>();
-        try{
-
-            JwtUser loginUser = SessionUtil.getSession();
-            String fileName = createOfficeFileDTO.getFileName();
-            String filePath = createOfficeFileDTO.getFilePath();
-            String extendName = createOfficeFileDTO.getExtendName();
-            List<UserFile> userFiles = userFileService.selectSameUserFile(fileName, filePath, extendName, loginUser.getUserId());
-            if (userFiles != null && !userFiles.isEmpty()) {
-                return RestResult.fail().message("同名文件已存在");
-            }
-            String uuid = UUID.randomUUID().toString().replaceAll("-","");
-
-            String templateFilePath = "";
-            if ("docx".equals(extendName)) {
-                templateFilePath = "template/Word.docx";
-            } else if ("xlsx".equals(extendName)) {
-                templateFilePath = "template/Excel.xlsx";
-            } else if ("pptx".equals(extendName)) {
-                templateFilePath = "template/PowerPoint.pptx";
-            }
-            String url2 = ClassUtils.getDefaultClassLoader().getResource("static/" + templateFilePath).getPath();
-            url2 = URLDecoder.decode(url2, "UTF-8");
-            FileInputStream fileInputStream = new FileInputStream(url2);
-            Copier copier = ufopFactory.getCopier();
-            CopyFile copyFile = new CopyFile();
-            copyFile.setExtendName(extendName);
-            String fileUrl = copier.copy(fileInputStream, copyFile);
-
-            FileBean fileBean = new FileBean();
-            fileBean.setFileId(IdUtil.getSnowflakeNextIdStr());
-            fileBean.setFileSize(0L);
-            fileBean.setFileUrl(fileUrl);
-            fileBean.setStorageType(storageType);
-            fileBean.setIdentifier(uuid);
-            fileBean.setCreateTime(DateUtil.getCurrentTime());
-            fileBean.setCreateUserId(loginUser.getUserId());
-            fileBean.setFileStatus(1);
-            boolean saveFlag = fileService.save(fileBean);
-            UserFile userFile = new UserFile();
-            if(saveFlag) {
-                userFile.setUserFileId(IdUtil.getSnowflakeNextIdStr());
-                userFile.setUserId(loginUser.getUserId());
-                userFile.setFileName(fileName);
-                userFile.setFilePath(filePath);
-                userFile.setDeleteFlag(0);
-                userFile.setIsDir(0);
-                userFile.setExtendName(extendName);
-                userFile.setUploadTime(DateUtil.getCurrentTime());
-                userFile.setFileId(fileBean.getFileId());
-                userFileService.save(userFile);
-            }
-            return RestResult.success().message("文件创建成功");
-        } catch (Exception e) {
-            log.error(e.getMessage());
-            return RestResult.fail().message(e.getMessage());
-        }
-    }
-
     @Operation(summary = "预览office文件", description = "预览office文件", tags = {"office"})
     @RequestMapping(value = "/previewofficefile", method = RequestMethod.POST)
     @ResponseBody
