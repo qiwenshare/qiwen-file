@@ -42,7 +42,7 @@ public class User extends AbstractEntity {
     public User(){}
 
     public User(UserBean userBean) {
-        this.id = userBean.getUserId();
+        this.id = String.valueOf(userBean.getUserId());
         this.name = userBean.getUsername();
         this.group = "";
 

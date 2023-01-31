@@ -418,7 +418,7 @@ public class FileController {
 
             String md5Str = fileDealComp.getIdentifierByFile(fileUrl, fileBean.getStorageType());
 
-            fileService.updateFileDetail(userFile.getUserFileId(), md5Str, fileSize, sessionUserBean.getUserId());
+            fileService.updateFileDetail(userFile.getUserFileId(), md5Str, fileSize);
 
 
         } catch (Exception e) {
