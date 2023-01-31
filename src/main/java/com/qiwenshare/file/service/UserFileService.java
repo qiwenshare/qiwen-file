@@ -19,7 +19,7 @@ import com.qiwenshare.file.domain.UserFile;
 import com.qiwenshare.file.io.QiwenFile;
 import com.qiwenshare.file.mapper.RecoveryFileMapper;
 import com.qiwenshare.file.mapper.UserFileMapper;
-import com.qiwenshare.file.vo.file.FileListVo;
+import com.qiwenshare.file.vo.file.FileListVO;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -68,8 +68,8 @@ public class UserFileService extends ServiceImpl<UserFileMapper, UserFile> imple
 
 
     @Override
-    public IPage<FileListVo> userFileList(Long userId, String filePath, Long currentPage, Long pageCount) {
-        Page<FileListVo> page = new Page<>(currentPage, pageCount);
+    public IPage<FileListVO> userFileList(Long userId, String filePath, Long currentPage, Long pageCount) {
+        Page<FileListVO> page = new Page<>(currentPage, pageCount);
         UserFile userFile = new UserFile();
         JwtUser sessionUserBean = SessionUtil.getSession();
         if (userId == null) {
@@ -165,8 +165,8 @@ public class UserFileService extends ServiceImpl<UserFileMapper, UserFile> imple
     }
 
     @Override
-    public IPage<FileListVo> getFileByFileType(Integer fileTypeId, Long currentPage, Long pageCount, long userId) {
-        Page<FileListVo> page = new Page<>(currentPage, pageCount);
+    public IPage<FileListVO> getFileByFileType(Integer fileTypeId, Long currentPage, Long pageCount, long userId) {
+        Page<FileListVO> page = new Page<>(currentPage, pageCount);
 
         UserFile userFile = new UserFile();
         userFile.setUserId(userId);

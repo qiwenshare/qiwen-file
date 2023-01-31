@@ -6,7 +6,6 @@ import com.qiwenshare.file.domain.CommonFile;
 import com.qiwenshare.file.mapper.CommonFileMapper;
 import com.qiwenshare.file.vo.commonfile.CommonFileListVo;
 import com.qiwenshare.file.vo.commonfile.CommonFileUser;
-import com.qiwenshare.file.vo.file.FileListVo;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;

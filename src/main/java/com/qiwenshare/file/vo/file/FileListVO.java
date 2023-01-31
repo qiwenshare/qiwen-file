@@ -4,7 +4,7 @@ import com.qiwenshare.file.domain.Music;
 import lombok.Data;
 
 @Data
-public class FileListVo {
+public class FileListVO {
     private String fileId;
 
     private String timeStampName;

@@ -28,7 +28,7 @@ import com.qiwenshare.file.util.QiwenFileUtil;
 import com.qiwenshare.file.util.RestResult2;
 import com.qiwenshare.file.util.TreeNode;
 import com.qiwenshare.file.vo.file.FileDetailVO;
-import com.qiwenshare.file.vo.file.FileListVo;
+import com.qiwenshare.file.vo.file.FileListVO;
 import com.qiwenshare.file.vo.file.SearchFileVO;
 import com.qiwenshare.ufop.factory.UFOPFactory;
 import com.qiwenshare.ufop.operation.copy.Copier;
@@ -38,6 +38,7 @@ import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.codec.digest.DigestUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.eclipse.jetty.util.StringUtil;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -264,17 +265,20 @@ public class FileController {
     @Operation(summary = "获取文件列表", description = "用来做前台列表展示", tags = {"file"})
     @RequestMapping(value = "/getfilelist", method = RequestMethod.GET)
     @ResponseBody
-    public RestResult2 getFileList(
+    public RestResult2<FileListVO> getFileList(
+            @Parameter(description = "文件类型", required = true) String fileType,
             @Parameter(description = "文件路径", required = true) String filePath,
             @Parameter(description = "当前页", required = true) long currentPage,
             @Parameter(description = "页面数量", required = true) long pageCount){
-
-
-        IPage<FileListVo> fileList = userFileService.userFileList(null, filePath, currentPage, pageCount);
-
-        return RestResult2.success().dataList(fileList.getRecords(), fileList.getTotal());
-
+        if ("0".equals(fileType)) {
+            IPage<FileListVO> fileList = userFileService.userFileList(null, filePath, currentPage, pageCount);
+            return RestResult2.success().dataList(fileList.getRecords(), fileList.getTotal());
+        } else {
+            IPage<FileListVO> fileList = userFileService.getFileByFileType(Integer.valueOf(fileType), currentPage, pageCount, SessionUtil.getSession().getUserId());
+            return RestResult2.success().dataList(fileList.getRecords(), fileList.getTotal());
+        }
     }
+
 
     @Operation(summary = "批量删除文件", description = "批量删除文件", tags = {"file"})
     @RequestMapping(value = "/batchdeletefile", method = RequestMethod.POST)
@@ -401,25 +405,6 @@ public class FileController {
         }
 
         return RestResult.success().data("批量移动文件成功");
-
-    }
-
-
-
-    @Operation(summary = "通过文件类型选择文件", description = "该接口可以实现文件格式分类查看", tags = {"file"})
-    @RequestMapping(value = "/selectfilebyfiletype", method = RequestMethod.GET)
-    @ResponseBody
-    public RestResult2<FileListVo> selectFileByFileType(@Parameter(description = "文件类型", required = true) int fileType,
-                                                                      @Parameter(description = "当前页", required = true) @RequestParam(defaultValue = "1") long currentPage,
-                                                                      @Parameter(description = "页面数量", required = true) @RequestParam(defaultValue = "10") long pageCount) {
-
-        JwtUser sessionUserBean =  SessionUtil.getSession();
-
-        long userId = sessionUserBean.getUserId();
-
-        IPage<FileListVo> result = userFileService.getFileByFileType(fileType, currentPage, pageCount, userId);
-
-        return RestResult2.success().dataList(result.getRecords(), result.getTotal());
 
     }
 
