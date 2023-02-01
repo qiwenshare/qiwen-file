@@ -17,8 +17,8 @@ public class Share {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @TableId(type = IdType.AUTO)
     private Long shareId;
-    @Column(columnDefinition="bigint(20) comment '用户id'")
-    private Long userId;
+    @Column(columnDefinition="varchar(20) comment '用户id'")
+    private String userId;
     @Column(columnDefinition="varchar(30) comment '分享时间'")
     private String shareTime;
     @Column(columnDefinition="varchar(30) comment '失效时间'")

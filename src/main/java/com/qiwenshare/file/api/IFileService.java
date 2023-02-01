@@ -9,7 +9,7 @@ public interface IFileService  extends IService<FileBean> {
     Long getFilePointCount(String fileId);
     void unzipFile(String userFileId, int unzipMode, String filePath);
 
-    void updateFileDetail(String userFileId, String identifier, long fileSize, long modifyUserId);
+    void updateFileDetail(String userFileId, String identifier, long fileSize);
 
     FileDetailVO getFileDetail(String userFileId);
 

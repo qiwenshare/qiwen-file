@@ -9,6 +9,7 @@ import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.qiwenshare.common.exception.QiwenException;
 import com.qiwenshare.common.operation.FileOperation;
 import com.qiwenshare.common.util.DateUtil;
+import com.qiwenshare.common.util.security.SessionUtil;
 import com.qiwenshare.file.api.IFileService;
 import com.qiwenshare.file.component.AsyncTaskComp;
 import com.qiwenshare.file.component.FileDealComp;
@@ -122,14 +123,14 @@ public class FileService extends ServiceImpl<FileMapper, FileBean> implements IF
     }
 
     @Override
-    public void updateFileDetail(String userFileId, String identifier, long fileSize, long modifyUserId) {
+    public void updateFileDetail(String userFileId, String identifier, long fileSize) {
         UserFile userFile = userFileMapper.selectById(userFileId);
         String currentTime = DateUtil.getCurrentTime();
         FileBean fileBean = new FileBean();
         fileBean.setIdentifier(identifier);
         fileBean.setFileSize(fileSize);
         fileBean.setModifyTime(currentTime);
-        fileBean.setModifyUserId(modifyUserId);
+        fileBean.setModifyUserId(SessionUtil.getUserId());
         fileBean.setFileId(userFile.getFileId());
         fileMapper.updateById(fileBean);
         userFile.setUploadTime(currentTime);

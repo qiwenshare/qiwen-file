@@ -45,14 +45,14 @@ public class FileBean {
     @Column(columnDefinition="varchar(25) comment '创建时间'")
     private String createTime;
 
-    @Column(columnDefinition="bigint(20) comment '创建用户id'")
-    private Long createUserId;
+    @Column(columnDefinition="varchar(20) comment '创建用户id'")
+    private String createUserId;
 
     @Column(columnDefinition="varchar(25) comment '修改时间'")
     private String modifyTime;
 
-    @Column(columnDefinition="bigint(20) comment '修改用户id'")
-    private Long modifyUserId;
+    @Column(columnDefinition="varchar(20) comment '修改用户id'")
+    private String modifyUserId;
 
     public FileBean(){
 
@@ -69,7 +69,7 @@ public class FileBean {
 
     }
 
-    public FileBean(String fileUrl, Long fileSize, Integer storageType, String identifier, Long userId) {
+    public FileBean(String fileUrl, Long fileSize, Integer storageType, String identifier, String userId) {
         this.fileId = IdUtil.getSnowflakeNextIdStr();
         this.fileUrl = fileUrl;
         this.fileSize = fileSize;

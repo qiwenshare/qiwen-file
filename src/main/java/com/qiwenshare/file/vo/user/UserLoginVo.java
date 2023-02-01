@@ -8,7 +8,7 @@ import lombok.Data;
 @Schema(name = "用户登录Vo",required = true)
 public class UserLoginVo {
     @Schema(description = "用户id", example = "1")
-    private long userId;
+    private String userId;
     //    @Schema(description = "openId", example = "")
 //    private String openId;
     @Schema(description = "用户名", example = "奇文网盘")
@@ -47,5 +47,7 @@ public class UserLoginVo {
     private String lastLoginTime;
     @Schema(description = "Token 接口访问凭证")
     private String token;
+    @Schema(description = "是否微信认证")
+    private boolean hasWxAuth;
 
 }

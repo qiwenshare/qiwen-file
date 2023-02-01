@@ -83,7 +83,6 @@ public class FiletransferService implements IFiletransferService {
     @Override
     public UploadFileVo uploadFileSpeed(UploadFileDTO uploadFileDTO) {
         UploadFileVo uploadFileVo = new UploadFileVo();
-        JwtUser sessionUserBean = SessionUtil.getSession();
         Map<String, Object> param = new HashMap<>();
         param.put("identifier", uploadFileDTO.getIdentifier());
         List<FileBean> list = fileMapper.selectByMap(param);
@@ -100,7 +99,7 @@ public class FiletransferService implements IFiletransferService {
         if (list != null && !list.isEmpty()) {
             FileBean file = list.get(0);
 
-            UserFile userFile = new UserFile(qiwenFile, sessionUserBean.getUserId(), file.getFileId());
+            UserFile userFile = new UserFile(qiwenFile, SessionUtil.getUserId(), file.getFileId());
             UserFile param1 = QiwenFileUtil.searchQiwenFileParam(userFile);
             List<UserFile> userFileList = userFileMapper.selectList(new QueryWrapper<>(param1));
             if (userFileList.size() <= 0) {
@@ -108,7 +107,7 @@ public class FiletransferService implements IFiletransferService {
                 fileDealComp.uploadESByUserFileId(userFile.getUserFileId());
             }
             if (relativePath.contains("/")) {
-                fileDealComp.restoreParentFilePath(qiwenFile, sessionUserBean.getUserId());
+                fileDealComp.restoreParentFilePath(qiwenFile, SessionUtil.getUserId());
             }
 
             uploadFileVo.setSkipUpload(true);
@@ -131,7 +130,7 @@ public class FiletransferService implements IFiletransferService {
                     uploadTask.setFileName(qiwenFile.getNameNotExtend());
                     uploadTask.setFilePath(qiwenFile.getParent());
                     uploadTask.setExtendName(qiwenFile.getExtendName());
-                    uploadTask.setUserId(sessionUserBean.getUserId());
+                    uploadTask.setUserId(SessionUtil.getUserId());
                     uploadTaskMapper.insert(uploadTask);
                 }
             }
@@ -141,7 +140,7 @@ public class FiletransferService implements IFiletransferService {
     }
 
     @Override
-    public void uploadFile(HttpServletRequest request, UploadFileDTO uploadFileDto, Long userId) {
+    public void uploadFile(HttpServletRequest request, UploadFileDTO uploadFileDto, String userId) {
 
         UploadFile uploadFile = new UploadFile();
         uploadFile.setChunkNumber(uploadFileDto.getChunkNumber());
@@ -467,7 +466,7 @@ public class FiletransferService implements IFiletransferService {
 
 
     @Override
-    public Long selectStorageSizeByUserId(Long userId){
+    public Long selectStorageSizeByUserId(String userId){
         return userFileMapper.selectStorageSizeByUserId(userId);
     }
 }

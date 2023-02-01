@@ -29,7 +29,7 @@ public class OperationLogBean {
      * 用户id
      */
     @Column(columnDefinition="bigint(20) comment '用户id'")
-    private Long userId;
+    private String userId;
 
     /**
      * 操作

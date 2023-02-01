@@ -25,7 +25,7 @@ public class StorageService extends ServiceImpl<StorageMapper, StorageBean> impl
     @Resource
     UserFileMapper userFileMapper;
 
-    public Long getTotalStorageSize(Long userId) {
+    public Long getTotalStorageSize(String userId) {
         LambdaQueryWrapper<StorageBean> lambdaQueryWrapper = new LambdaQueryWrapper<>();
         lambdaQueryWrapper.eq(StorageBean::getUserId, userId);
 
@@ -50,7 +50,7 @@ public class StorageService extends ServiceImpl<StorageMapper, StorageBean> impl
         return totalStorageSize;
     }
 
-    public boolean checkStorage(Long userId, Long fileSize) {
+    public boolean checkStorage(String userId, Long fileSize) {
         LambdaQueryWrapper<StorageBean> lambdaQueryWrapper = new LambdaQueryWrapper<>();
         lambdaQueryWrapper.eq(StorageBean::getUserId, userId);
 

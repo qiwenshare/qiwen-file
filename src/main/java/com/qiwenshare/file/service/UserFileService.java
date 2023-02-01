@@ -19,7 +19,7 @@ import com.qiwenshare.file.domain.UserFile;
 import com.qiwenshare.file.io.QiwenFile;
 import com.qiwenshare.file.mapper.RecoveryFileMapper;
 import com.qiwenshare.file.mapper.UserFileMapper;
-import com.qiwenshare.file.vo.file.FileListVo;
+import com.qiwenshare.file.vo.file.FileListVO;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -46,7 +46,7 @@ public class UserFileService extends ServiceImpl<UserFileMapper, UserFile> imple
 
 
     @Override
-    public List<UserFile> selectUserFileByNameAndPath(String fileName, String filePath, Long userId) {
+    public List<UserFile> selectUserFileByNameAndPath(String fileName, String filePath, String userId) {
         LambdaQueryWrapper<UserFile> lambdaQueryWrapper = new LambdaQueryWrapper<>();
         lambdaQueryWrapper.eq(UserFile::getFileName, fileName)
                 .eq(UserFile::getFilePath, filePath)
@@ -56,7 +56,7 @@ public class UserFileService extends ServiceImpl<UserFileMapper, UserFile> imple
     }
 
     @Override
-    public List<UserFile> selectSameUserFile(String fileName, String filePath, String extendName, Long userId) {
+    public List<UserFile> selectSameUserFile(String fileName, String filePath, String extendName, String userId) {
         LambdaQueryWrapper<UserFile> lambdaQueryWrapper = new LambdaQueryWrapper<>();
         lambdaQueryWrapper.eq(UserFile::getFileName, fileName)
                 .eq(UserFile::getFilePath, filePath)
@@ -68,8 +68,8 @@ public class UserFileService extends ServiceImpl<UserFileMapper, UserFile> imple
 
 
     @Override
-    public IPage<FileListVo> userFileList(Long userId, String filePath, Long currentPage, Long pageCount) {
-        Page<FileListVo> page = new Page<>(currentPage, pageCount);
+    public IPage<FileListVO> userFileList(String userId, String filePath, Long currentPage, Long pageCount) {
+        Page<FileListVO> page = new Page<>(currentPage, pageCount);
         UserFile userFile = new UserFile();
         JwtUser sessionUserBean = SessionUtil.getSession();
         if (userId == null) {
@@ -84,7 +84,7 @@ public class UserFileService extends ServiceImpl<UserFileMapper, UserFile> imple
     }
 
     @Override
-    public void updateFilepathByUserFileId(String userFileId, String newfilePath, long userId) {
+    public void updateFilepathByUserFileId(String userFileId, String newfilePath, String userId) {
         UserFile userFile = userFileMapper.selectById(userFileId);
         String oldfilePath = userFile.getFilePath();
         String fileName = userFile.getFileName();
@@ -94,13 +94,16 @@ public class UserFileService extends ServiceImpl<UserFileMapper, UserFile> imple
             String repeatFileName = fileDealComp.getRepeatFileName(userFile, userFile.getFilePath());
             userFile.setFileName(repeatFileName);
         }
-        userFileMapper.updateById(userFile);
-
+        try {
+            userFileMapper.updateById(userFile);
+        } catch (Exception e) {
+            log.warn(e.getMessage());
+        }
         //移动子目录
         oldfilePath = new QiwenFile(oldfilePath, fileName, true).getPath();
         newfilePath = new QiwenFile(newfilePath, fileName, true).getPath();
 
-        if (userFile.isDirectory()) { //为空说明是目录，则需要移动子目录
+        if (userFile.isDirectory()) { //如果是目录，则需要移动子目录
             List<UserFile> list = selectUserFileByLikeRightFilePath(oldfilePath, userId);
 
             for (UserFile newUserFile : list) {
@@ -109,14 +112,18 @@ public class UserFileService extends ServiceImpl<UserFileMapper, UserFile> imple
                     String repeatFileName = fileDealComp.getRepeatFileName(newUserFile, newUserFile.getFilePath());
                     newUserFile.setFileName(repeatFileName);
                 }
-                userFileMapper.updateById(newUserFile);
+                try {
+                    userFileMapper.updateById(newUserFile);
+                } catch (Exception e) {
+                    log.warn(e.getMessage());
+                }
             }
         }
 
     }
 
     @Override
-    public void userFileCopy(String userFileId, String newfilePath, long userId) {
+    public void userFileCopy(String userFileId, String newfilePath, String userId) {
         UserFile userFile = userFileMapper.selectById(userFileId);
         String oldfilePath = userFile.getFilePath();
         String fileName = userFile.getFileName();
@@ -127,7 +134,11 @@ public class UserFileService extends ServiceImpl<UserFileMapper, UserFile> imple
             String repeatFileName = fileDealComp.getRepeatFileName(userFile, userFile.getFilePath());
             userFile.setFileName(repeatFileName);
         }
-        userFileMapper.insert(userFile);
+        try {
+            userFileMapper.insert(userFile);
+        } catch (Exception e) {
+            log.warn(e.getMessage());
+        }
 
         oldfilePath = new QiwenFile(oldfilePath, fileName, true).getPath();
         newfilePath = new QiwenFile(newfilePath, fileName, true).getPath();
@@ -139,19 +150,23 @@ public class UserFileService extends ServiceImpl<UserFileMapper, UserFile> imple
             for (UserFile newUserFile : subUserFileList) {
                 newUserFile.setFilePath(newUserFile.getFilePath().replaceFirst(oldfilePath, newfilePath));
                 newUserFile.setUserFileId(IdUtil.getSnowflakeNextIdStr());
-                if (!newUserFile.isFile()) {
+                if (newUserFile.isDirectory()) {
                     String repeatFileName = fileDealComp.getRepeatFileName(newUserFile, newUserFile.getFilePath());
                     newUserFile.setFileName(repeatFileName);
                 }
-                userFileMapper.insert(newUserFile);
+                try {
+                    userFileMapper.insert(newUserFile);
+                } catch (Exception e) {
+                    log.warn(e.getMessage());
+                }
             }
         }
 
     }
 
     @Override
-    public IPage<FileListVo> getFileByFileType(Integer fileTypeId, Long currentPage, Long pageCount, long userId) {
-        Page<FileListVo> page = new Page<>(currentPage, pageCount);
+    public IPage<FileListVO> getFileByFileType(Integer fileTypeId, Long currentPage, Long pageCount, String userId) {
+        Page<FileListVO> page = new Page<>(currentPage, pageCount);
 
         UserFile userFile = new UserFile();
         userFile.setUserId(userId);
@@ -159,7 +174,7 @@ public class UserFileService extends ServiceImpl<UserFileMapper, UserFile> imple
     }
 
     @Override
-    public List<UserFile> selectUserFileListByPath(String filePath, Long userId) {
+    public List<UserFile> selectUserFileListByPath(String filePath, String userId) {
         LambdaQueryWrapper<UserFile> lambdaQueryWrapper = new LambdaQueryWrapper<>();
         lambdaQueryWrapper
                 .eq(UserFile::getFilePath, filePath)
@@ -169,7 +184,7 @@ public class UserFileService extends ServiceImpl<UserFileMapper, UserFile> imple
     }
 
     @Override
-    public List<UserFile> selectFilePathTreeByUserId(Long userId) {
+    public List<UserFile> selectFilePathTreeByUserId(String userId) {
         LambdaQueryWrapper<UserFile> lambdaQueryWrapper = new LambdaQueryWrapper<>();
         lambdaQueryWrapper.eq(UserFile::getUserId, userId)
                 .eq(UserFile::getIsDir, 1)
@@ -179,7 +194,7 @@ public class UserFileService extends ServiceImpl<UserFileMapper, UserFile> imple
 
 
     @Override
-    public void deleteUserFile(String userFileId, Long sessionUserId) {
+    public void deleteUserFile(String userFileId, String sessionUserId) {
         UserFile userFile = userFileMapper.selectById(userFileId);
         String uuid = UUID.randomUUID().toString();
         if (userFile.getIsDir() == 1) {
@@ -213,11 +228,11 @@ public class UserFileService extends ServiceImpl<UserFileMapper, UserFile> imple
     }
 
     @Override
-    public List<UserFile> selectUserFileByLikeRightFilePath(String filePath, long userId) {
+    public List<UserFile> selectUserFileByLikeRightFilePath(String filePath, String userId) {
         return userFileMapper.selectUserFileByLikeRightFilePath(filePath, userId);
     }
 
-    private void updateFileDeleteStateByFilePath(String filePath, String deleteBatchNum, Long userId) {
+    private void updateFileDeleteStateByFilePath(String filePath, String deleteBatchNum, String userId) {
         executor.execute(() -> {
             List<UserFile> fileList = selectUserFileByLikeRightFilePath(filePath, userId);
             for (int i = 0; i < fileList.size(); i++) {

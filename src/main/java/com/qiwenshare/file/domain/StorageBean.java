@@ -22,8 +22,8 @@ public class StorageBean {
     @TableId(type = IdType.AUTO)
     private Long storageId;
 
-    @Column(columnDefinition="bigint(20)")
-    private Long userId;
+    @Column(columnDefinition="varchar(20)")
+    private String userId;
 
     @Column(columnDefinition="bigint(20) comment '占用存储大小'")
     private Long storageSize;
@@ -40,7 +40,7 @@ public class StorageBean {
 
     }
 
-    public StorageBean(long userId) {
+    public StorageBean(String userId) {
         this.userId = userId;
     }
 

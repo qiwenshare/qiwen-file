@@ -6,7 +6,7 @@
 
 <mapper namespace="com.qiwenshare.file.mapper.UserFileMapper">
 
-    <select id="selectPageVo" parameterType="com.qiwenshare.file.domain.UserFile" resultType="com.qiwenshare.file.vo.file.FileListVo">
+    <select id="selectPageVo" parameterType="com.qiwenshare.file.domain.UserFile" resultType="com.qiwenshare.file.vo.file.FileListVO">
         select * from userfile a
         left join image on a.fileId = image.fileId
         left join file on file.fileId = a.fileId
@@ -47,7 +47,7 @@
         where (filePath = #{filePath} or filePath like concat(#{filePath},'/%')) and userId = #{userId} and deleteFlag = 0
     </select>
 
-    <select id="selectStorageSizeByUserId" resultType="java.lang.Long" parameterType="java.lang.Long">
+    <select id="selectStorageSizeByUserId" resultType="java.lang.Long" parameterType="java.lang.String">
         SELECT SUM(fileSize) FROM userfile
         LEFT JOIN file ON file.fileId = userfile.fileId
         WHERE userfile.userId = #{userId}

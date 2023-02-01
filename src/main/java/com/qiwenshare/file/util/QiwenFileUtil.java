@@ -8,7 +8,7 @@ import com.qiwenshare.file.io.QiwenFile;
 public class QiwenFileUtil {
 
 
-    public static UserFile getQiwenDir(long userId, String filePath, String fileName) {
+    public static UserFile getQiwenDir(String userId, String filePath, String fileName) {
         UserFile userFile = new UserFile();
         userFile.setUserFileId(IdUtil.getSnowflakeNextIdStr());
         userFile.setUserId(userId);
@@ -23,7 +23,7 @@ public class QiwenFileUtil {
         return userFile;
     }
 
-    public static UserFile getQiwenFile(long userId, String fileId, String filePath, String fileName, String extendName) {
+    public static UserFile getQiwenFile(String userId, String fileId, String filePath, String fileName, String extendName) {
         UserFile userFile = new UserFile();
         userFile.setUserFileId(IdUtil.getSnowflakeNextIdStr());
         userFile.setUserId(userId);

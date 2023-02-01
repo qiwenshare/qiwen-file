@@ -17,7 +17,7 @@ import com.qiwenshare.file.dto.commonfile.CommonFileDTO;
 import com.qiwenshare.file.io.QiwenFile;
 import com.qiwenshare.file.vo.commonfile.CommonFileListVo;
 import com.qiwenshare.file.vo.commonfile.CommonFileUser;
-import com.qiwenshare.file.vo.file.FileListVo;
+import com.qiwenshare.file.vo.file.FileListVO;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -82,7 +82,7 @@ public class CommonFileController {
     @RequestMapping(value = "/getCommonFileByUser", method = RequestMethod.GET)
     @ResponseBody
     public RestResult<CommonFileListVo> getCommonFileByUser(
-            @Parameter(description = "用户id", required = true) Long userId){
+            @Parameter(description = "用户id", required = true) String userId){
         JwtUser sessionUserBean =  SessionUtil.getSession();
         List<CommonFileListVo> commonFileVo = commonFileService.selectCommonFileByUser(userId, sessionUserBean.getUserId());
 
@@ -93,7 +93,7 @@ public class CommonFileController {
     @Operation(summary = "获取共享空间中某个用户的文件列表", description = "用来做前台列表展示", tags = {"file"})
     @RequestMapping(value = "/commonFileList", method = RequestMethod.GET)
     @ResponseBody
-    public RestResult<FileListVo> commonFileList(
+    public RestResult<FileListVO> commonFileList(
             @Parameter(description = "用户id", required = true) Long commonFileId,
             @Parameter(description = "文件路径", required = true) String filePath,
             @Parameter(description = "当前页", required = true) long currentPage,
@@ -102,7 +102,7 @@ public class CommonFileController {
         CommonFile commonFile = commonFileService.getById(commonFileId);
         UserFile userFile = userFileService.getById(commonFile.getUserFileId());
         QiwenFile qiwenFile = new QiwenFile(userFile.getFilePath(), filePath, true);
-        IPage<FileListVo> fileList = userFileService.userFileList(userFile.getUserId(), qiwenFile.getPath(), currentPage, pageCount);
+        IPage<FileListVO> fileList = userFileService.userFileList(userFile.getUserId(), qiwenFile.getPath(), currentPage, pageCount);
 
         return RestResult.success().data(fileList);
 

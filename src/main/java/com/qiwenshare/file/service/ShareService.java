@@ -25,7 +25,7 @@ public class ShareService extends ServiceImpl<ShareMapper, Share> implements ISh
     ShareMapper shareMapper;
 
     @Override
-    public List<ShareListVO> selectShareList(ShareListDTO shareListDTO, Long userId) {
+    public List<ShareListVO> selectShareList(ShareListDTO shareListDTO, String userId) {
         Long beginCount = (shareListDTO.getCurrentPage() - 1) * shareListDTO.getPageCount();
         return shareMapper.selectShareList(shareListDTO.getShareFilePath(),
                 shareListDTO.getShareBatchNum(),
@@ -33,7 +33,7 @@ public class ShareService extends ServiceImpl<ShareMapper, Share> implements ISh
     }
 
     @Override
-    public int selectShareListTotalCount(ShareListDTO shareListDTO, Long userId) {
+    public int selectShareListTotalCount(ShareListDTO shareListDTO, String userId) {
         return shareMapper.selectShareListTotalCount(shareListDTO.getShareFilePath(), shareListDTO.getShareBatchNum(), userId);
     }
 }

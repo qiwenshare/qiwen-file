@@ -76,7 +76,7 @@ public class FiletransferController {
 
         JwtUser sessionUserBean = SessionUtil.getSession();
 
-        boolean isCheckSuccess = storageService.checkStorage(sessionUserBean.getUserId(), uploadFileDto.getTotalSize());
+        boolean isCheckSuccess = storageService.checkStorage(SessionUtil.getUserId(), uploadFileDto.getTotalSize());
         if (!isCheckSuccess) {
             return RestResult.fail().message("存储空间不足");
         }

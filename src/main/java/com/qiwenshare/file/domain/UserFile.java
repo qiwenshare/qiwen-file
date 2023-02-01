@@ -26,7 +26,7 @@ public class UserFile {
     private String userFileId;
 
     @Column(columnDefinition = "bigint(20) comment '用户id'")
-    private Long userId;
+    private String userId;
 
     @Column(columnDefinition="varchar(20) comment '文件id'")
     private String fileId;
@@ -56,7 +56,7 @@ public class UserFile {
     private String deleteBatchNum;
 
     public UserFile() {};
-    public UserFile(QiwenFile qiwenFile, long userId, String fileId) {
+    public UserFile(QiwenFile qiwenFile, String userId, String fileId) {
         this.userFileId = IdUtil.getSnowflakeNextIdStr();
         this.userId = userId;
         this.fileId = fileId;

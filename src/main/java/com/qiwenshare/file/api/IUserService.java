@@ -10,7 +10,7 @@ import java.util.List;
 public interface IUserService extends IService<UserBean> {
 
 
-    Long getUserIdByToken(String token);
+    String getUserIdByToken(String token);
 
 
     /**
@@ -24,7 +24,7 @@ public interface IUserService extends IService<UserBean> {
 
 
     UserBean findUserInfoByTelephone(String telephone);
-    List<Role> selectRoleListByUserId(long userId);
+    List<Role> selectRoleListByUserId(String userId);
     String getSaltByTelephone(String telephone);
     UserBean selectUserByTelephoneAndPassword(String username, String password);
 

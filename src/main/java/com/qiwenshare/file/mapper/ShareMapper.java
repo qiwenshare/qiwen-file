@@ -8,6 +8,6 @@ import java.util.List;
 
 public interface ShareMapper  extends BaseMapper<Share> {
 
-    List<ShareListVO> selectShareList(String shareFilePath,String shareBatchNum, Long beginCount, Long pageCount, Long userId);
-    int selectShareListTotalCount(String shareFilePath,String shareBatchNum, Long userId);
+    List<ShareListVO> selectShareList(String shareFilePath,String shareBatchNum, Long beginCount, Long pageCount, String userId);
+    int selectShareListTotalCount(String shareFilePath,String shareBatchNum, String userId);
 }

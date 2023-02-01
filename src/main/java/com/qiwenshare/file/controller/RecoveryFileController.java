@@ -76,16 +76,12 @@ public class RecoveryFileController {
     }
 
     @Operation(summary = "回收文件列表", description = "回收文件列表", tags = {"recoveryfile"})
-    @RequestMapping(value = "/list", method = RequestMethod.POST)
+    @RequestMapping(value = "/list", method = RequestMethod.GET)
     @ResponseBody
-    public RestResult<List<RecoveryFileListVo>> getRecoveryFileList() {
+    public RestResult<RecoveryFileListVo> getRecoveryFileList() {
         JwtUser sessionUserBean = SessionUtil.getSession();
-        RestResult<List<RecoveryFileListVo>> restResult = new RestResult<List<RecoveryFileListVo>>();
         List<RecoveryFileListVo> recoveryFileList = recoveryFileService.selectRecoveryFileList(sessionUserBean.getUserId());
-        restResult.setData(recoveryFileList);
-        restResult.setSuccess(true);
-
-        return restResult;
+        return RestResult.success().dataList(recoveryFileList, recoveryFileList.size());
     }
 
     @Operation(summary = "还原文件", description = "还原文件", tags = {"recoveryfile"})

@@ -6,7 +6,6 @@ import com.qiwenshare.file.domain.CommonFile;
 import com.qiwenshare.file.mapper.CommonFileMapper;
 import com.qiwenshare.file.vo.commonfile.CommonFileListVo;
 import com.qiwenshare.file.vo.commonfile.CommonFileUser;
-import com.qiwenshare.file.vo.file.FileListVo;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -23,12 +22,12 @@ public class CommonFileService extends ServiceImpl<CommonFileMapper, CommonFile>
     CommonFileMapper commonFileMapper;
 
     @Override
-    public List<CommonFileUser> selectCommonFileUser(Long userId) {
+    public List<CommonFileUser> selectCommonFileUser(String userId) {
         return commonFileMapper.selectCommonFileUser(userId);
     }
 
     @Override
-    public List<CommonFileListVo> selectCommonFileByUser(Long userId, Long sessionUserId) {
+    public List<CommonFileListVo> selectCommonFileByUser(String userId, String sessionUserId) {
         return commonFileMapper.selectCommonFileByUser(userId, sessionUserId);
     }
 

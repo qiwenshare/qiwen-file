@@ -43,7 +43,7 @@ public class RecoveryFileService  extends ServiceImpl<RecoveryFileMapper, Recove
     }
 
     @Override
-    public void restorefile(String deleteBatchNum, String filePath, Long sessionUserId) {
+    public void restorefile(String deleteBatchNum, String filePath, String sessionUserId) {
 
         LambdaUpdateWrapper<UserFile> userFileLambdaUpdateWrapper = new LambdaUpdateWrapper<>();
         userFileLambdaUpdateWrapper.set(UserFile::getDeleteFlag, 0)
@@ -62,7 +62,7 @@ public class RecoveryFileService  extends ServiceImpl<RecoveryFileMapper, Recove
     }
 
     @Override
-    public List<RecoveryFileListVo> selectRecoveryFileList(Long userId) {
+    public List<RecoveryFileListVo> selectRecoveryFileList(String userId) {
         return recoveryFileMapper.selectRecoveryFileList(userId);
     }
 }

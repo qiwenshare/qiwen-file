@@ -24,6 +24,6 @@ public class UserLoginInfo {
     private Long userLoginId;
     @Column(columnDefinition = "varchar(30) comment '用户登录日期'")
     private String userloginDate;
-    @Column(columnDefinition = "bigint(20) comment '用户id'")
-    private Long userId;
+    @Column(columnDefinition = "varchar(20) comment '用户id'")
+    private String userId;
 }
