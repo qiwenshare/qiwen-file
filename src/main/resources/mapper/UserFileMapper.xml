@@ -47,7 +47,7 @@
         where (filePath = #{filePath} or filePath like concat(#{filePath},'/%')) and userId = #{userId} and deleteFlag = 0
     </select>
 
-    <select id="selectStorageSizeByUserId" resultType="java.lang.Long" parameterType="java.lang.Long">
+    <select id="selectStorageSizeByUserId" resultType="java.lang.Long" parameterType="java.lang.String">
         SELECT SUM(fileSize) FROM userfile
         LEFT JOIN file ON file.fileId = userfile.fileId
         WHERE userfile.userId = #{userId}
