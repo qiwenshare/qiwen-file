@@ -34,6 +34,7 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.codec.digest.DigestUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.web.bind.annotation.*;
@@ -182,8 +183,8 @@ public class OfficeController {
     @ResponseBody
     public void IndexServlet(HttpServletResponse response, HttpServletRequest request) throws IOException {
         String token = request.getParameter("token");
-        Long userId = userService.getUserIdByToken(token);
-        if (userId == null) {
+        String userId = userService.getUserIdByToken(token);
+        if (StringUtils.isEmpty(userId)) {
             throw new NotLoginException();
         }
 

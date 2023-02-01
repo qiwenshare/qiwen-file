@@ -16,7 +16,7 @@ public interface IFiletransferService {
 
     UploadFileVo uploadFileSpeed(UploadFileDTO uploadFileDTO);
 
-    void uploadFile(HttpServletRequest request, UploadFileDTO UploadFileDto, Long userId);
+    void uploadFile(HttpServletRequest request, UploadFileDTO UploadFileDto, String userId);
 
     void downloadFile(HttpServletResponse httpServletResponse, DownloadFileDTO downloadFileDTO);
     void downloadUserFileList(HttpServletResponse httpServletResponse, String filePath, String fileName, List<String> userFileIds);
@@ -24,5 +24,5 @@ public interface IFiletransferService {
     void previewPictureFile(HttpServletResponse httpServletResponse, PreviewDTO previewDTO);
     void deleteFile(FileBean fileBean);
 
-    Long selectStorageSizeByUserId(Long userId);
+    Long selectStorageSizeByUserId(String userId);
 }

@@ -5,15 +5,12 @@ import com.qiwenshare.common.result.RestResult;
 import com.qiwenshare.file.api.INoticeService;
 import com.qiwenshare.file.domain.Notice;
 import com.qiwenshare.file.dto.notice.NoticeListDTO;
-import com.qiwenshare.file.util.RestResult2;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.web.bind.annotation.*;
 
 import javax.annotation.Resource;
-import java.util.HashMap;
-import java.util.Map;
 
 @Tag(name = "公告管理")
 @RestController
@@ -31,7 +28,7 @@ public class NoticeController {
     @Operation(summary = "得到所有的公告列表", tags = {"公告管理"})
     @RequestMapping(value = "/list", method = RequestMethod.GET)
     @ResponseBody
-    public RestResult2<NoticeListDTO> selectUserList(@Parameter(description = "当前页，从1开始")  @RequestParam(defaultValue = "1") int page,
+    public RestResult<NoticeListDTO> selectUserList(@Parameter(description = "当前页，从1开始")  @RequestParam(defaultValue = "1") int page,
                                           @Parameter(description = "页大小")  @RequestParam(defaultValue = "10") int pageSize,
                                           @Parameter(description = "标题") @RequestParam(required = false) String title,
                                           @Parameter(description = "发布者")  @RequestParam(required = false) Long publisher,
@@ -47,7 +44,7 @@ public class NoticeController {
         noticeListDTO.setEndTime(endTime);
         IPage<Notice> noticeIPage = noticeService.selectUserPage(noticeListDTO);
 
-        return RestResult2.success().dataList(noticeIPage.getRecords(), noticeIPage.getTotal());
+        return RestResult.success().dataList(noticeIPage.getRecords(), noticeIPage.getTotal());
     }
 
     @Operation(summary = "查询公告详情", tags = {"公告管理"})

@@ -79,7 +79,7 @@ public class WebLogAcpect {
             boolean isSuccess = ((RestResult) ret).getSuccess();
             String errorMessage = ((RestResult) ret).getMessage();
             JwtUser sessionUser = SessionUtil.getSession();
-            Long userId = 0L;
+            String userId = "";
             if (sessionUser != null) {
                 userId = sessionUser.getUserId();
             }

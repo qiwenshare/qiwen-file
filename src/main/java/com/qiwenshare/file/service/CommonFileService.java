@@ -22,12 +22,12 @@ public class CommonFileService extends ServiceImpl<CommonFileMapper, CommonFile>
     CommonFileMapper commonFileMapper;
 
     @Override
-    public List<CommonFileUser> selectCommonFileUser(Long userId) {
+    public List<CommonFileUser> selectCommonFileUser(String userId) {
         return commonFileMapper.selectCommonFileUser(userId);
     }
 
     @Override
-    public List<CommonFileListVo> selectCommonFileByUser(Long userId, Long sessionUserId) {
+    public List<CommonFileListVo> selectCommonFileByUser(String userId, String sessionUserId) {
         return commonFileMapper.selectCommonFileByUser(userId, sessionUserId);
     }
 

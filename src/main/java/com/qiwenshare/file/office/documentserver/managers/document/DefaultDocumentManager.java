@@ -51,10 +51,6 @@ public class DefaultDocumentManager implements DocumentManager {
     private String storageFolder;
     @Value("${files.storage}")
     private String filesStorage;
-    @Value("${url.track}")
-    private String trackUrl;
-    @Value("${url.download}")
-    private String downloadUrl;
 
     @Autowired
     private FileStorageMutator storageMutator;
@@ -150,21 +146,8 @@ public class DefaultDocumentManager implements DocumentManager {
 
     // get URL to download a file
     public String getDownloadUrl(String fileName, Boolean isServer) {
-        String serverPath = storagePathBuilder.getServerUrl(isServer);
-        String storageAddress = storagePathBuilder.getStorageLocation();
-        try
-        {
-            String userAddress = isServer ? "&userAddress=" + URLEncoder.encode(storageAddress, java.nio.charset.StandardCharsets.UTF_8.toString()) : "";
-            String query = downloadUrl+"?fileName="
-                    + URLEncoder.encode(fileName, java.nio.charset.StandardCharsets.UTF_8.toString())
-                    + userAddress;
 
-            return serverPath + query;
-        }
-        catch (UnsupportedEncodingException e)
-        {
-            return "";
-        }
+        return "";
     }
 
     // get file information

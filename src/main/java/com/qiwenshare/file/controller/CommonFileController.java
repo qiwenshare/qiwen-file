@@ -82,7 +82,7 @@ public class CommonFileController {
     @RequestMapping(value = "/getCommonFileByUser", method = RequestMethod.GET)
     @ResponseBody
     public RestResult<CommonFileListVo> getCommonFileByUser(
-            @Parameter(description = "用户id", required = true) Long userId){
+            @Parameter(description = "用户id", required = true) String userId){
         JwtUser sessionUserBean =  SessionUtil.getSession();
         List<CommonFileListVo> commonFileVo = commonFileService.selectCommonFileByUser(userId, sessionUserBean.getUserId());
 

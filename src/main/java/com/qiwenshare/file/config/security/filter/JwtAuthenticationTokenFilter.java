@@ -45,7 +45,7 @@ public class JwtAuthenticationTokenFilter extends OncePerRequestFilter {
         String token = request.getHeader("token");
         if (StringUtils.isNotBlank(token) && !"undefined".equals(token)) {
 
-            Long userId = userService.getUserIdByToken(token);
+            String userId = userService.getUserIdByToken(token);
 
             // 验证
             if (userId != null && SecurityContextHolder.getContext().getAuthentication() == null) {

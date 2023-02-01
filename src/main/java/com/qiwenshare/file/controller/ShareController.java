@@ -19,7 +19,6 @@ import com.qiwenshare.file.domain.ShareFile;
 import com.qiwenshare.file.domain.UserFile;
 import com.qiwenshare.file.dto.sharefile.*;
 import com.qiwenshare.file.io.QiwenFile;
-import com.qiwenshare.file.util.RestResult2;
 import com.qiwenshare.file.vo.share.ShareFileListVO;
 import com.qiwenshare.file.vo.share.ShareFileVO;
 import com.qiwenshare.file.vo.share.ShareListVO;
@@ -114,7 +113,7 @@ public class ShareController {
         JwtUser sessionUserBean = SessionUtil.getSession();
         List<ShareFile> fileList = JSON.parseArray(saveShareFileDTO.getFiles(), ShareFile.class);
         String savefilePath = saveShareFileDTO.getFilePath();
-        Long userId = sessionUserBean.getUserId();
+        String userId = sessionUserBean.getUserId();
 
         List<UserFile> saveUserFileList = new ArrayList<>();
         for (ShareFile shareFile : fileList) {
@@ -151,27 +150,27 @@ public class ShareController {
     @Operation(summary = "查看已分享列表", description = "查看已分享列表", tags = {"share"})
     @GetMapping(value = "/shareList")
     @ResponseBody
-    public RestResult2<ShareListVO> shareList(ShareListDTO shareListDTO) {
+    public RestResult<ShareListVO> shareList(ShareListDTO shareListDTO) {
         JwtUser sessionUserBean = SessionUtil.getSession();
         List<ShareListVO> shareList = shareService.selectShareList(shareListDTO, sessionUserBean.getUserId());
 
         int total = shareService.selectShareListTotalCount(shareListDTO, sessionUserBean.getUserId());
 
-        return RestResult2.success().dataList(shareList, total);
+        return RestResult.success().dataList(shareList, total);
     }
 
 
     @Operation(summary = "分享文件列表", description = "分享列表", tags = {"share"})
     @GetMapping(value = "/sharefileList")
     @ResponseBody
-    public RestResult2<ShareFileListVO> shareFileList(ShareFileListDTO shareFileListBySecretDTO) {
+    public RestResult<ShareFileListVO> shareFileList(ShareFileListDTO shareFileListBySecretDTO) {
         String shareBatchNum = shareFileListBySecretDTO.getShareBatchNum();
         String shareFilePath = shareFileListBySecretDTO.getShareFilePath();
         List<ShareFileListVO> list = shareFileService.selectShareFileList(shareBatchNum, shareFilePath);
         for (ShareFileListVO shareFileListVO : list) {
             shareFileListVO.setShareFilePath(shareFilePath);
         }
-        return RestResult2.success().dataList(list, list.size());
+        return RestResult.success().dataList(list, list.size());
     }
 
     @Operation(summary = "分享类型", description = "可用此接口判断是否需要提取码", tags = {"share"})

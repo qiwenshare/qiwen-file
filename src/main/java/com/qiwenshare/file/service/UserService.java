@@ -1,5 +1,6 @@
 package com.qiwenshare.file.service;
 
+import cn.hutool.core.util.IdUtil;
 import com.alibaba.fastjson2.JSON;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
@@ -42,7 +43,7 @@ public class UserService extends ServiceImpl<UserMapper, UserBean> implements IU
     JwtComp jwtComp;
 
     @Override
-    public Long getUserIdByToken(String token) {
+    public String getUserIdByToken(String token) {
         Claims c = null;
         if (StringUtils.isEmpty(token)) {
             return null;
@@ -97,6 +98,7 @@ public class UserService extends ServiceImpl<UserMapper, UserBean> implements IU
 
         userBean.setPassword(newPassword);
         userBean.setRegisterTime(DateUtil.getCurrentTime());
+        userBean.setUserId(IdUtil.getSnowflakeNextIdStr());
         int result = userMapper.insertUser(userBean);
         userMapper.insertUserRole(userBean.getUserId(), 2);
         if (result == 1) {
@@ -132,7 +134,7 @@ public class UserService extends ServiceImpl<UserMapper, UserBean> implements IU
     }
 
     @Override
-    public List<Role> selectRoleListByUserId(long userId) {
+    public List<Role> selectRoleListByUserId(String userId) {
         return userMapper.selectRoleListByUserId(userId);
     }
 

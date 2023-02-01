@@ -92,7 +92,7 @@ public class FileDealComp {
         String fileName = userFile.getFileName();
         String extendName = userFile.getExtendName();
         Integer deleteFlag = userFile.getDeleteFlag();
-        Long userId = userFile.getUserId();
+        String userId = userFile.getUserId();
         int isDir = userFile.getIsDir();
         LambdaQueryWrapper<UserFile> lambdaQueryWrapper = new LambdaQueryWrapper<>();
         lambdaQueryWrapper.eq(UserFile::getFilePath, savefilePath)
@@ -138,7 +138,7 @@ public class FileDealComp {
      *
      * @param sessionUserId
      */
-    public void restoreParentFilePath(QiwenFile qiwenFile, Long sessionUserId) {
+    public void restoreParentFilePath(QiwenFile qiwenFile, String sessionUserId) {
 
         if (qiwenFile.isFile()) {
             qiwenFile = qiwenFile.getParentFile();
@@ -178,7 +178,7 @@ public class FileDealComp {
      * @param filePath
      * @param sessionUserId
      */
-    public void deleteRepeatSubDirFile(String filePath, Long sessionUserId) {
+    public void deleteRepeatSubDirFile(String filePath, String sessionUserId) {
         log.debug("删除子目录："+filePath);
         LambdaQueryWrapper<UserFile> lambdaQueryWrapper = new LambdaQueryWrapper<>();
 
@@ -339,14 +339,14 @@ public class FileDealComp {
         log.debug(JSON.toJSONString(userFile));
         if ("undefined".equals(shareBatchNum)  || StringUtils.isEmpty(shareBatchNum)) {
 
-            Long userId = userService.getUserIdByToken(token);
+            String userId = userService.getUserIdByToken(token);
             log.debug(JSON.toJSONString("当前登录session用户id：" + userId));
             if (userId == null) {
                 return false;
             }
             log.debug("文件所属用户id：" + userFile.getUserId());
             log.debug("登录用户id:" + userId);
-            if (userFile.getUserId().longValue() != userId) {
+            if (!userFile.getUserId().equals(userId)) {
                 log.info("用户id不一致，权限校验失败");
                 return false;
             }
@@ -422,7 +422,7 @@ public class FileDealComp {
         writer1.write(inputStream, writeFile);
     }
 
-    public boolean isDirExist(String fileName, String filePath, long userId){
+    public boolean isDirExist(String fileName, String filePath, String userId){
         LambdaQueryWrapper<UserFile> lambdaQueryWrapper = new LambdaQueryWrapper<>();
         lambdaQueryWrapper.eq(UserFile::getFileName, fileName)
                 .eq(UserFile::getFilePath, QiwenFile.formatPath(filePath))

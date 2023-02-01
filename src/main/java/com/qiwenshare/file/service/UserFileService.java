@@ -46,7 +46,7 @@ public class UserFileService extends ServiceImpl<UserFileMapper, UserFile> imple
 
 
     @Override
-    public List<UserFile> selectUserFileByNameAndPath(String fileName, String filePath, Long userId) {
+    public List<UserFile> selectUserFileByNameAndPath(String fileName, String filePath, String userId) {
         LambdaQueryWrapper<UserFile> lambdaQueryWrapper = new LambdaQueryWrapper<>();
         lambdaQueryWrapper.eq(UserFile::getFileName, fileName)
                 .eq(UserFile::getFilePath, filePath)
@@ -56,7 +56,7 @@ public class UserFileService extends ServiceImpl<UserFileMapper, UserFile> imple
     }
 
     @Override
-    public List<UserFile> selectSameUserFile(String fileName, String filePath, String extendName, Long userId) {
+    public List<UserFile> selectSameUserFile(String fileName, String filePath, String extendName, String userId) {
         LambdaQueryWrapper<UserFile> lambdaQueryWrapper = new LambdaQueryWrapper<>();
         lambdaQueryWrapper.eq(UserFile::getFileName, fileName)
                 .eq(UserFile::getFilePath, filePath)
@@ -68,7 +68,7 @@ public class UserFileService extends ServiceImpl<UserFileMapper, UserFile> imple
 
 
     @Override
-    public IPage<FileListVO> userFileList(Long userId, String filePath, Long currentPage, Long pageCount) {
+    public IPage<FileListVO> userFileList(String userId, String filePath, Long currentPage, Long pageCount) {
         Page<FileListVO> page = new Page<>(currentPage, pageCount);
         UserFile userFile = new UserFile();
         JwtUser sessionUserBean = SessionUtil.getSession();
@@ -84,7 +84,7 @@ public class UserFileService extends ServiceImpl<UserFileMapper, UserFile> imple
     }
 
     @Override
-    public void updateFilepathByUserFileId(String userFileId, String newfilePath, long userId) {
+    public void updateFilepathByUserFileId(String userFileId, String newfilePath, String userId) {
         UserFile userFile = userFileMapper.selectById(userFileId);
         String oldfilePath = userFile.getFilePath();
         String fileName = userFile.getFileName();
@@ -123,7 +123,7 @@ public class UserFileService extends ServiceImpl<UserFileMapper, UserFile> imple
     }
 
     @Override
-    public void userFileCopy(String userFileId, String newfilePath, long userId) {
+    public void userFileCopy(String userFileId, String newfilePath, String userId) {
         UserFile userFile = userFileMapper.selectById(userFileId);
         String oldfilePath = userFile.getFilePath();
         String fileName = userFile.getFileName();
@@ -165,7 +165,7 @@ public class UserFileService extends ServiceImpl<UserFileMapper, UserFile> imple
     }
 
     @Override
-    public IPage<FileListVO> getFileByFileType(Integer fileTypeId, Long currentPage, Long pageCount, long userId) {
+    public IPage<FileListVO> getFileByFileType(Integer fileTypeId, Long currentPage, Long pageCount, String userId) {
         Page<FileListVO> page = new Page<>(currentPage, pageCount);
 
         UserFile userFile = new UserFile();
@@ -174,7 +174,7 @@ public class UserFileService extends ServiceImpl<UserFileMapper, UserFile> imple
     }
 
     @Override
-    public List<UserFile> selectUserFileListByPath(String filePath, Long userId) {
+    public List<UserFile> selectUserFileListByPath(String filePath, String userId) {
         LambdaQueryWrapper<UserFile> lambdaQueryWrapper = new LambdaQueryWrapper<>();
         lambdaQueryWrapper
                 .eq(UserFile::getFilePath, filePath)
@@ -184,7 +184,7 @@ public class UserFileService extends ServiceImpl<UserFileMapper, UserFile> imple
     }
 
     @Override
-    public List<UserFile> selectFilePathTreeByUserId(Long userId) {
+    public List<UserFile> selectFilePathTreeByUserId(String userId) {
         LambdaQueryWrapper<UserFile> lambdaQueryWrapper = new LambdaQueryWrapper<>();
         lambdaQueryWrapper.eq(UserFile::getUserId, userId)
                 .eq(UserFile::getIsDir, 1)
@@ -194,7 +194,7 @@ public class UserFileService extends ServiceImpl<UserFileMapper, UserFile> imple
 
 
     @Override
-    public void deleteUserFile(String userFileId, Long sessionUserId) {
+    public void deleteUserFile(String userFileId, String sessionUserId) {
         UserFile userFile = userFileMapper.selectById(userFileId);
         String uuid = UUID.randomUUID().toString();
         if (userFile.getIsDir() == 1) {
@@ -228,11 +228,11 @@ public class UserFileService extends ServiceImpl<UserFileMapper, UserFile> imple
     }
 
     @Override
-    public List<UserFile> selectUserFileByLikeRightFilePath(String filePath, long userId) {
+    public List<UserFile> selectUserFileByLikeRightFilePath(String filePath, String userId) {
         return userFileMapper.selectUserFileByLikeRightFilePath(filePath, userId);
     }
 
-    private void updateFileDeleteStateByFilePath(String filePath, String deleteBatchNum, Long userId) {
+    private void updateFileDeleteStateByFilePath(String filePath, String deleteBatchNum, String userId) {
         executor.execute(() -> {
             List<UserFile> fileList = selectUserFileByLikeRightFilePath(filePath, userId);
             for (int i = 0; i < fileList.size(); i++) {

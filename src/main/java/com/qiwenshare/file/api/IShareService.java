@@ -12,6 +12,6 @@ import org.apache.ibatis.annotations.Param;
 import java.util.List;
 
 public interface IShareService  extends IService<Share> {
-    List<ShareListVO> selectShareList(ShareListDTO shareListDTO, Long userId);
-    int selectShareListTotalCount(ShareListDTO shareListDTO, Long userId);
+    List<ShareListVO> selectShareList(ShareListDTO shareListDTO, String userId);
+    int selectShareListTotalCount(ShareListDTO shareListDTO, String userId);
 }

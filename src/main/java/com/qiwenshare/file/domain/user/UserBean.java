@@ -19,10 +19,10 @@ import javax.persistence.*;
 public class UserBean {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(columnDefinition = "bigint(20)")
+    @GeneratedValue(strategy = GenerationType.AUTO)
+    @Column(columnDefinition = "varchar(20)")
     @TableId(type = IdType.AUTO)
-    private Long userId;
+    private String userId;
 
     @Column(columnDefinition = "varchar(30) comment '用户名'")
     private String username;

@@ -130,7 +130,7 @@ public class FileService extends ServiceImpl<FileMapper, FileBean> implements IF
         fileBean.setIdentifier(identifier);
         fileBean.setFileSize(fileSize);
         fileBean.setModifyTime(currentTime);
-        fileBean.setModifyUserId(SessionUtil.getSession().getUserId());
+        fileBean.setModifyUserId(SessionUtil.getUserId());
         fileBean.setFileId(userFile.getFileId());
         fileMapper.updateById(fileBean);
         userFile.setUploadTime(currentTime);

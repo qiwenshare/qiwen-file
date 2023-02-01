@@ -25,7 +25,6 @@ import com.qiwenshare.file.domain.UserFile;
 import com.qiwenshare.file.dto.file.*;
 import com.qiwenshare.file.io.QiwenFile;
 import com.qiwenshare.file.util.QiwenFileUtil;
-import com.qiwenshare.file.util.RestResult2;
 import com.qiwenshare.file.util.TreeNode;
 import com.qiwenshare.file.vo.file.FileDetailVO;
 import com.qiwenshare.file.vo.file.FileListVO;
@@ -82,7 +81,7 @@ public class FileController {
 
         try {
 
-            Long userId = SessionUtil.getSession().getUserId();
+            String userId = SessionUtil.getUserId();
             String filePath = createFileDTO.getFilePath();
             String fileName = createFileDTO.getFileName();
             String extendName = createFileDTO.getExtendName();
@@ -149,7 +148,7 @@ public class FileController {
     @ResponseBody
     public RestResult<String> createFold(@Valid @RequestBody CreateFoldDTO createFoldDto) {
 
-        Long userId = SessionUtil.getSession().getUserId();
+        String userId = SessionUtil.getSession().getUserId();
         String filePath = createFoldDto.getFilePath();
 
 
@@ -170,7 +169,7 @@ public class FileController {
     @GetMapping(value = "/search")
     @MyLog(operation = "文件搜索", module = CURRENT_MODULE)
     @ResponseBody
-    public RestResult2<SearchFileVO> searchFile(SearchFileDTO searchFileDTO) {
+    public RestResult<SearchFileVO> searchFile(SearchFileDTO searchFileDTO) {
         JwtUser sessionUserBean =  SessionUtil.getSession();
 
         int currentPage = (int)searchFileDTO.getCurrentPage() - 1;
@@ -226,7 +225,7 @@ public class FileController {
             searchFileVOList.add(searchFileVO);
             asyncTaskComp.checkESUserFileId(searchFileVO.getUserFileId());
         }
-        return RestResult2.success().dataList(searchFileVOList, searchFileVOList.size());
+        return RestResult.success().dataList(searchFileVOList, searchFileVOList.size());
     }
 
 
@@ -265,17 +264,17 @@ public class FileController {
     @Operation(summary = "获取文件列表", description = "用来做前台列表展示", tags = {"file"})
     @RequestMapping(value = "/getfilelist", method = RequestMethod.GET)
     @ResponseBody
-    public RestResult2<FileListVO> getFileList(
+    public RestResult<FileListVO> getFileList(
             @Parameter(description = "文件类型", required = true) String fileType,
             @Parameter(description = "文件路径", required = true) String filePath,
             @Parameter(description = "当前页", required = true) long currentPage,
             @Parameter(description = "页面数量", required = true) long pageCount){
         if ("0".equals(fileType)) {
             IPage<FileListVO> fileList = userFileService.userFileList(null, filePath, currentPage, pageCount);
-            return RestResult2.success().dataList(fileList.getRecords(), fileList.getTotal());
+            return RestResult.success().dataList(fileList.getRecords(), fileList.getTotal());
         } else {
             IPage<FileListVO> fileList = userFileService.getFileByFileType(Integer.valueOf(fileType), currentPage, pageCount, SessionUtil.getSession().getUserId());
-            return RestResult2.success().dataList(fileList.getRecords(), fileList.getTotal());
+            return RestResult.success().dataList(fileList.getRecords(), fileList.getTotal());
         }
     }
 
