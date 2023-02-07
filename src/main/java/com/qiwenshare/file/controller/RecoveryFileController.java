@@ -60,10 +60,10 @@ public class RecoveryFileController {
     @MyLog(operation = "批量删除回收文件", module = CURRENT_MODULE)
     @ResponseBody
     public RestResult<String> batchDeleteRecoveryFile(@RequestBody BatchDeleteRecoveryFileDTO batchDeleteRecoveryFileDTO) {
-        JwtUser sessionUserBean = SessionUtil.getSession();
-        List<RecoveryFile> recoveryFileList = JSON.parseArray(batchDeleteRecoveryFileDTO.getRecoveryFileIds(), RecoveryFile.class);
-        for (RecoveryFile recoveryFile : recoveryFileList) {
-            RecoveryFile recoveryFile1 = recoveryFileService.getById(recoveryFile.getRecoveryFileId());
+        String userFileIds = batchDeleteRecoveryFileDTO.getUserFileIds();
+        String[] userFileIdList = userFileIds.split(",");
+        for (String userFileId : userFileIdList) {
+            RecoveryFile recoveryFile1 = recoveryFileService.getById(userFileId);
 
             if (recoveryFile1 != null) {
                 asyncTaskComp.deleteUserFile(recoveryFile1.getUserFileId());
