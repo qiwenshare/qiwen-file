@@ -284,14 +284,11 @@ public class FileController {
     @MyLog(operation = "批量删除文件", module = CURRENT_MODULE)
     @ResponseBody
     public RestResult<String> deleteImageByIds(@RequestBody BatchDeleteFileDTO batchDeleteFileDto) {
-
-        JwtUser sessionUserBean =  SessionUtil.getSession();
-        List<UserFile> userFiles = JSON.parseArray(batchDeleteFileDto.getFiles(), UserFile.class);
-        DigestUtils.md5Hex("data");
-        for (UserFile userFile : userFiles) {
-
-            userFileService.deleteUserFile(userFile.getUserFileId(),sessionUserBean.getUserId());
-            fileDealComp.deleteESByUserFileId(userFile.getUserFileId());
+        String userFileIds = batchDeleteFileDto.getUserFileIds();
+        String[] userFileIdList = userFileIds.split(",");
+        for (String userFileId : userFileIdList) {
+            userFileService.deleteUserFile(userFileId, SessionUtil.getUserId());
+            fileDealComp.deleteESByUserFileId(userFileId);
         }
 
         return RestResult.success().message("批量删除文件成功");
@@ -332,23 +329,25 @@ public class FileController {
     @MyLog(operation = "文件复制", module = CURRENT_MODULE)
     @ResponseBody
     public RestResult<String> copyFile(@RequestBody CopyFileDTO copyFileDTO) {
-
-        JwtUser sessionUserBean =  SessionUtil.getSession();
-
-        String userFileId = copyFileDTO.getUserFileId();
-        UserFile userFile = userFileService.getById(userFileId);
-        String oldfilePath = userFile.getFilePath();
-        String newfilePath = copyFileDTO.getFilePath();
-        String fileName = userFile.getFileName();
-        if (userFile.getIsDir() == 1) {
-            QiwenFile qiwenFile = new QiwenFile(oldfilePath, fileName, true);
-            if (newfilePath.startsWith(qiwenFile.getPath() + QiwenFile.separator) || newfilePath.equals(qiwenFile.getPath())) {
-                return RestResult.fail().message("原路径与目标路径冲突，不能复制");
+        String userId = SessionUtil.getUserId();
+        String filePath = copyFileDTO.getFilePath();
+        String userFileIds = copyFileDTO.getUserFileIds();
+        String[] userFileIdArr = userFileIds.split(",");
+        for (String userFileId : userFileIdArr) {
+            UserFile userFile = userFileService.getById(userFileId);
+            String oldfilePath = userFile.getFilePath();
+            String fileName = userFile.getFileName();
+            if (userFile.isDirectory()) {
+                QiwenFile qiwenFile = new QiwenFile(oldfilePath, fileName, true);
+                if (filePath.startsWith(qiwenFile.getPath() + QiwenFile.separator) || filePath.equals(qiwenFile.getPath())) {
+                    return RestResult.fail().message("原路径与目标路径冲突，不能复制");
+                }
             }
+
+            userFileService.userFileCopy(SessionUtil.getUserId(), userFileId, filePath);
+            fileDealComp.deleteRepeatSubDirFile(filePath, userId);
         }
 
-        userFileService.userFileCopy(userFileId, newfilePath,sessionUserBean.getUserId());
-        fileDealComp.deleteRepeatSubDirFile(newfilePath, sessionUserBean.getUserId());
         return RestResult.success();
 
     }
@@ -387,13 +386,14 @@ public class FileController {
 
         JwtUser sessionUserBean =  SessionUtil.getSession();
 
-        String files = batchMoveFileDto.getFiles();
+
         String newfilePath = batchMoveFileDto.getFilePath();
 
-        List<UserFile> fileList = JSON.parseArray(files, UserFile.class);
+        String userFileIds = batchMoveFileDto.getUserFileIds();
+        String[] userFileIdArr = userFileIds.split(",");
 
-        for (UserFile userFile : fileList) {
-           
+        for (String userFileId : userFileIdArr) {
+            UserFile userFile = userFileService.getById(userFileId);
             if (StringUtil.isEmpty(userFile.getExtendName())) {
                 QiwenFile qiwenFile = new QiwenFile(userFile.getFilePath(), userFile.getFileName(), true);
                 if (newfilePath.startsWith(qiwenFile.getPath() + QiwenFile.separator) || newfilePath.equals(qiwenFile.getPath())) {
