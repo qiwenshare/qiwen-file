@@ -1,6 +1,7 @@
 package com.qiwenshare.file.controller;
 
 import com.alibaba.fastjson2.JSON;
+import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.qiwenshare.common.anno.MyLog;
 import com.qiwenshare.common.result.RestResult;
 import com.qiwenshare.common.util.security.JwtUser;
@@ -46,12 +47,11 @@ public class RecoveryFileController {
     @RequestMapping(value = "/deleterecoveryfile", method = RequestMethod.POST)
     @ResponseBody
     public RestResult<String> deleteRecoveryFile(@RequestBody DeleteRecoveryFileDTO deleteRecoveryFileDTO) {
-        JwtUser sessionUserBean = SessionUtil.getSession();
-        RecoveryFile recoveryFile = recoveryFileService.getById(deleteRecoveryFileDTO.getRecoveryFileId());
+        RecoveryFile recoveryFile = recoveryFileService.getOne(new QueryWrapper<RecoveryFile>().lambda().eq(RecoveryFile::getUserFileId, deleteRecoveryFileDTO.getUserFileId()));
 
         asyncTaskComp.deleteUserFile(recoveryFile.getUserFileId());
 
-        recoveryFileService.removeById(deleteRecoveryFileDTO.getRecoveryFileId());
+        recoveryFileService.removeById(recoveryFile.getRecoveryFileId());
         return RestResult.success().data("删除成功");
     }
 
@@ -60,10 +60,10 @@ public class RecoveryFileController {
     @MyLog(operation = "批量删除回收文件", module = CURRENT_MODULE)
     @ResponseBody
     public RestResult<String> batchDeleteRecoveryFile(@RequestBody BatchDeleteRecoveryFileDTO batchDeleteRecoveryFileDTO) {
-        JwtUser sessionUserBean = SessionUtil.getSession();
-        List<RecoveryFile> recoveryFileList = JSON.parseArray(batchDeleteRecoveryFileDTO.getRecoveryFileIds(), RecoveryFile.class);
-        for (RecoveryFile recoveryFile : recoveryFileList) {
-            RecoveryFile recoveryFile1 = recoveryFileService.getById(recoveryFile.getRecoveryFileId());
+        String userFileIds = batchDeleteRecoveryFileDTO.getUserFileIds();
+        String[] userFileIdList = userFileIds.split(",");
+        for (String userFileId : userFileIdList) {
+            RecoveryFile recoveryFile1 = recoveryFileService.getById(userFileId);
 
             if (recoveryFile1 != null) {
                 asyncTaskComp.deleteUserFile(recoveryFile1.getUserFileId());

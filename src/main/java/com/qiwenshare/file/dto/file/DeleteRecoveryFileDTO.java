@@ -6,7 +6,7 @@ import lombok.Data;
 @Data
 @Schema(name = "删除回收文件DTO",required = true)
 public class DeleteRecoveryFileDTO {
-    @Schema(description = "回收文件id")
-    private Long recoveryFileId;
+    @Schema(description = "用户文件id", required = true)
+    private String userFileId;
 
 }
