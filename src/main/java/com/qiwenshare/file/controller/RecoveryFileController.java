@@ -63,12 +63,12 @@ public class RecoveryFileController {
         String userFileIds = batchDeleteRecoveryFileDTO.getUserFileIds();
         String[] userFileIdList = userFileIds.split(",");
         for (String userFileId : userFileIdList) {
-            RecoveryFile recoveryFile1 = recoveryFileService.getById(userFileId);
+            RecoveryFile recoveryFile = recoveryFileService.getOne(new QueryWrapper<RecoveryFile>().lambda().eq(RecoveryFile::getUserFileId, userFileId));
 
-            if (recoveryFile1 != null) {
-                asyncTaskComp.deleteUserFile(recoveryFile1.getUserFileId());
+            if (recoveryFile != null) {
+                asyncTaskComp.deleteUserFile(recoveryFile.getUserFileId());
 
-                recoveryFileService.removeById(recoveryFile1.getRecoveryFileId());
+                recoveryFileService.removeById(recoveryFile.getRecoveryFileId());
             }
 
         }
