@@ -28,7 +28,7 @@ public class OperationLogBean {
     /**
      * 用户id
      */
-    @Column(columnDefinition="bigint(20) comment '用户id'")
+    @Column(columnDefinition="varchar(20) comment '用户id'")
     private String userId;
 
     /**
