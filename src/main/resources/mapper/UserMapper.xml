@@ -11,9 +11,9 @@
         VALUES (#{userId}, #{username},#{salt}, #{password}, #{telephone}, #{sex}, #{imageUrl}, #{registerTime}, 1);
     </insert>
 
-    <insert id="insertUserRole" parameterType="Long">
+    <insert id="insertUserRole">
         INSERT INTO user_role (userId, roleId)
-        VALUES (#{param1}, #{param2});
+        VALUES (#{userId}, #{roleId});
     </insert>
 
     <select id="selectRoleListByUserId" resultType="com.qiwenshare.file.domain.user.Role">

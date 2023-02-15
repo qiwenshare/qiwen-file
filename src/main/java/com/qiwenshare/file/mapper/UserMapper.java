@@ -10,7 +10,7 @@ import java.util.List;
 public interface UserMapper extends BaseMapper<UserBean> {
     int insertUser(UserBean userBean);
 
-    int insertUserRole(String userId, long roleId);
+    int insertUserRole(@Param("userId") String userId, @Param("roleId") long roleId);
 
     List<Role>  selectRoleListByUserId(@Param("userId") String userId);
 
