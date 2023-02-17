@@ -1,5 +1,6 @@
 package com.qiwenshare.file.service;
 
+import cn.hutool.core.util.StrUtil;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
@@ -264,7 +265,7 @@ public class FiletransferService implements IFiletransferService {
     public void downloadFile(HttpServletResponse httpServletResponse, DownloadFileDTO downloadFileDTO) {
         UserFile userFile = userFileMapper.selectById(downloadFileDTO.getUserFileId());
 
-        if (userFile.getIsDir() == 0) {
+        if (userFile.isFile()) {
 
             FileBean fileBean = fileMapper.selectById(userFile.getFileId());
             Downloader downloader = ufopFactory.getDownloader(fileBean.getStorageType());
@@ -309,7 +310,7 @@ public class FiletransferService implements IFiletransferService {
         try {
             for (String userFileId : userFileIds) {
                 UserFile userFile1 = userFileMapper.selectById(userFileId);
-                if (userFile1.getIsDir() == 0) {
+                if (userFile1.isFile()) {
                     FileBean fileBean = fileMapper.selectById(userFile1.getFileId());
                     Downloader downloader = ufopFactory.getDownloader(fileBean.getStorageType());
                     if (downloader == null) {
@@ -321,7 +322,7 @@ public class FiletransferService implements IFiletransferService {
                     InputStream inputStream = downloader.getInputStream(downloadFile);
                     BufferedInputStream bis = new BufferedInputStream(inputStream);
                     try {
-                        QiwenFile qiwenFile = new QiwenFile(userFile1.getFilePath().replaceFirst(filePath, ""), userFile1.getFileName() + "." + userFile1.getExtendName(), false);
+                        QiwenFile qiwenFile = new QiwenFile(StrUtil.removePrefix(userFile1.getFilePath(), filePath), userFile1.getFileName() + "." + userFile1.getExtendName(), false);
                         zos.putNextEntry(new ZipEntry(qiwenFile.getPath()));
 
                         byte[] buffer = new byte[1024];
@@ -342,7 +343,7 @@ public class FiletransferService implements IFiletransferService {
                         }
                     }
                 } else {
-                    QiwenFile qiwenFile = new QiwenFile(userFile1.getFilePath(), userFile1.getFileName(), true);
+                    QiwenFile qiwenFile = new QiwenFile(StrUtil.removePrefix(userFile1.getFilePath(), filePath), userFile1.getFileName(), true);
                     // 空文件夹的处理
                     zos.putNextEntry(new ZipEntry(qiwenFile.getPath() + QiwenFile.separator));
                     // 没有文件，不需要文件的copy
