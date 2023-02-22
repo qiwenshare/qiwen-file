@@ -216,15 +216,17 @@ public class FiletransferController {
         httpServletResponse.addHeader("Content-Disposition", "fileName=" + fileName);// 设置文件名
         String mime = MimeUtils.getMime(userFile.getExtendName());
         httpServletResponse.setHeader("Content-Type", mime);
+        if (UFOPUtils.isImageFile(userFile.getExtendName())) {
+            httpServletResponse.setHeader("cache-control", "public");
+        }
 
         FileBean fileBean = fileService.getById(userFile.getFileId());
-        if ((UFOPUtils.isVideoFile(userFile.getExtendName()) || "mp3".equalsIgnoreCase(userFile.getExtendName()) || "flac".equalsIgnoreCase(userFile.getExtendName()))
-                && !"true".equals(previewDTO.getIsMin())) {
+        if (UFOPUtils.isVideoFile(userFile.getExtendName()) || "mp3".equalsIgnoreCase(userFile.getExtendName()) || "flac".equalsIgnoreCase(userFile.getExtendName())) {
             //获取从那个字节开始读取文件
             String rangeString = httpServletRequest.getHeader("Range");
             int start = 0;
             if (StringUtils.isNotBlank(rangeString)) {
-                start = Integer.valueOf(rangeString.substring(rangeString.indexOf("=") + 1, rangeString.indexOf("-")));
+                start = Integer.parseInt(rangeString.substring(rangeString.indexOf("=") + 1, rangeString.indexOf("-")));
             }
 
             Downloader downloader = ufopFactory.getDownloader(fileBean.getStorageType());
@@ -232,7 +234,12 @@ public class FiletransferController {
             downloadFile.setFileUrl(fileBean.getFileUrl());
             Range range = new Range();
             range.setStart(start);
-            range.setLength(1024 * 1024 * 1);
+
+            if (start + 1024 * 1024 * 1 >= fileBean.getFileSize().intValue()) {
+                range.setLength(fileBean.getFileSize().intValue() - start);
+            } else {
+                range.setLength(1024 * 1024 * 1);
+            }
             downloadFile.setRange(range);
             InputStream inputStream = downloader.getInputStream(downloadFile);
 
@@ -240,6 +247,7 @@ public class FiletransferController {
             try {
 
                 //返回码需要为206，代表只处理了部分请求，响应了部分数据
+
                 httpServletResponse.setStatus(HttpServletResponse.SC_PARTIAL_CONTENT);
                 // 每次请求只返回1MB的视频流
 
