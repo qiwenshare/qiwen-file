@@ -123,12 +123,14 @@ public class UserFileService extends ServiceImpl<UserFileMapper, UserFile> imple
     }
 
     @Override
-    public void userFileCopy(String userFileId, String newfilePath, String userId) {
+    public void userFileCopy(String userId, String userFileId, String newfilePath) {
         UserFile userFile = userFileMapper.selectById(userFileId);
         String oldfilePath = userFile.getFilePath();
+        String oldUserId = userFile.getUserId();
         String fileName = userFile.getFileName();
 
         userFile.setFilePath(newfilePath);
+        userFile.setUserId(userId);
         userFile.setUserFileId(IdUtil.getSnowflakeNextIdStr());
         if (userFile.getIsDir() == 0) {
             String repeatFileName = fileDealComp.getRepeatFileName(userFile, userFile.getFilePath());
@@ -144,8 +146,8 @@ public class UserFileService extends ServiceImpl<UserFileMapper, UserFile> imple
         newfilePath = new QiwenFile(newfilePath, fileName, true).getPath();
 
 
-        if (userFile.isDirectory()) { //为null说明是目录，则需要移动子目录
-            List<UserFile> subUserFileList = userFileMapper.selectUserFileByLikeRightFilePath(oldfilePath, userId);
+        if (userFile.isDirectory()) {
+            List<UserFile> subUserFileList = userFileMapper.selectUserFileByLikeRightFilePath(oldfilePath, oldUserId);
 
             for (UserFile newUserFile : subUserFileList) {
                 newUserFile.setFilePath(newUserFile.getFilePath().replaceFirst(oldfilePath, newfilePath));
@@ -154,6 +156,7 @@ public class UserFileService extends ServiceImpl<UserFileMapper, UserFile> imple
                     String repeatFileName = fileDealComp.getRepeatFileName(newUserFile, newUserFile.getFilePath());
                     newUserFile.setFileName(repeatFileName);
                 }
+                newUserFile.setUserId(userId);
                 try {
                     userFileMapper.insert(newUserFile);
                 } catch (Exception e) {

@@ -126,7 +126,7 @@ public class ShareController {
                 log.info("查询文件列表：" + JSON.toJSONString(userfileList));
                 String filePath = userFile.getFilePath();
                 userfileList.forEach(p->{
-                    p.setUserFileId(null);
+                    p.setUserFileId(IdUtil.getSnowflakeNextIdStr());
                     p.setUserId(userId);
                     p.setFilePath(p.getFilePath().replaceFirst(filePath + "/" + fileName, savefilePath + "/" + savefileName));
                     saveUserFileList.add(p);

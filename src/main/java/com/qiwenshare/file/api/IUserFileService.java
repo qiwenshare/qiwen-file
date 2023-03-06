@@ -14,7 +14,7 @@ public interface IUserFileService extends IService<UserFile> {
 
     IPage<FileListVO> userFileList(String userId, String filePath, Long beginCount, Long pageCount);
     void updateFilepathByUserFileId(String userFileId, String newfilePath, String userId);
-    void userFileCopy(String userFileId, String newfilePath, String userId);
+    void userFileCopy(String userId, String userFileId, String newfilePath);
 
     IPage<FileListVO> getFileByFileType(Integer fileTypeId, Long currentPage, Long pageCount, String userId);
     List<UserFile> selectUserFileListByPath(String filePath, String userId);
