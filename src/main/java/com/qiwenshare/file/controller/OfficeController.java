@@ -94,7 +94,8 @@ public class OfficeController {
     public RestResult<Object> previewOfficeFile(HttpServletRequest request, @RequestBody PreviewOfficeFileDTO previewOfficeFileDTO) {
         RestResult<Object> result = new RestResult<>();
         try {
-
+            String token = request.getHeader("token");
+            String previewUrl = request.getScheme() + "://" + deploymentHost + ":" + port + "/filetransfer/preview?userFileId=" + previewOfficeFileDTO.getUserFileId() + "&isMin=false&shareBatchNum=undefined&extractionCode=undefined&token=" + token;
             JwtUser loginUser = SessionUtil.getSession();
             UserFile userFile = userFileService.getById(previewOfficeFileDTO.getUserFileId());
 
@@ -114,7 +115,7 @@ public class OfficeController {
                             .lang(locale.toLanguageTag())
                             .action(action)
                             .user(user)
-                            .actionData(previewOfficeFileDTO.getPreviewUrl())
+                            .actionData(previewUrl)
                             .build()
             );
 
@@ -138,6 +139,8 @@ public class OfficeController {
     @RequestMapping(value = "/editofficefile", method = RequestMethod.POST)
     public RestResult<Object> editOfficeFile(HttpServletRequest request, @RequestBody EditOfficeFileDTO editOfficeFileDTO) {
         RestResult<Object> result = new RestResult<>();
+        String token = request.getHeader("token");
+        String previewUrl = request.getScheme() + "://" + deploymentHost + ":" + port + "/filetransfer/preview?userFileId=" + editOfficeFileDTO.getUserFileId() + "&isMin=false&shareBatchNum=undefined&extractionCode=undefined&token=" + token;
         log.info("editOfficeFile");
         try {
             JwtUser loginUser = SessionUtil.getSession();
@@ -158,7 +161,7 @@ public class OfficeController {
                             .lang(locale.toLanguageTag())
                             .action(action)
                             .user(user)
-                            .actionData(editOfficeFileDTO.getPreviewUrl())
+                            .actionData(previewUrl)
                             .build()
             );
             JSONObject jsonObject = new JSONObject();
