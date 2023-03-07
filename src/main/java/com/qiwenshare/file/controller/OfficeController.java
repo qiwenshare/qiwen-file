@@ -109,8 +109,7 @@ public class OfficeController {
             FileModel fileModel = fileConfigurer.getFileModel(
                     DefaultFileWrapper
                             .builder()
-                            .userFileId(userFile.getUserFileId())
-                            .fileName(userFile.getFileName() + "." + userFile.getExtendName())
+                            .userFile(userFile)
                             .type(type)
                             .lang(locale.toLanguageTag())
                             .action(action)
@@ -154,8 +153,7 @@ public class OfficeController {
             FileModel fileModel = fileConfigurer.getFileModel(
                     DefaultFileWrapper
                             .builder()
-                            .userFileId(userFile.getUserFileId())
-                            .fileName(userFile.getFileName() + "." + userFile.getExtendName())
+                            .userFile(userFile)
                             .type(type)
                             .lang(locale.toLanguageTag())
                             .action(action)

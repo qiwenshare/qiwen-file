@@ -18,6 +18,7 @@
 
 package com.qiwenshare.file.office.services.configurers.implementations;
 
+import com.qiwenshare.file.domain.UserFile;
 import com.qiwenshare.file.office.documentserver.managers.document.DocumentManager;
 import com.qiwenshare.file.office.documentserver.models.filemodel.Document;
 import com.qiwenshare.file.office.documentserver.models.filemodel.Permission;
@@ -49,7 +50,9 @@ public class DefaultDocumentConfigurer implements DocumentConfigurer<DefaultDocu
     private ServiceConverter serviceConverter;
 
     public void configure(Document document, DefaultDocumentWrapper wrapper){  // define the document configurer
-        String fileName = wrapper.getFileName();  // get the fileName parameter from the document wrapper
+        UserFile userFile = wrapper.getUserFile();
+
+        String fileName = userFile.getFileName() + "." + userFile.getExtendName();  // get the fileName parameter from the document wrapper
         Permission permission = wrapper.getPermission();  // get the permission parameter from the document wrapper
 
         document.setTitle(fileName);  // set the title to the document config
@@ -58,9 +61,7 @@ public class DefaultDocumentConfigurer implements DocumentConfigurer<DefaultDocu
         document.getInfo().setFavorite(wrapper.getFavorite());  // set the favorite parameter to the document config
 
         String key =  serviceConverter.  // get the document key
-                        generateRevisionId(storagePathBuilder.getStorageLocation()
-                        + "/" + fileName + "/"
-                        + new File(storagePathBuilder.getFileLocation(fileName)).lastModified());
+                        generateRevisionId(userFile.getUserFileId() + userFile.getUploadTime());
 
         document.setKey(key);  // set the key to the document config
         document.setPermissions(permission);  // set the permission parameters to the document config
