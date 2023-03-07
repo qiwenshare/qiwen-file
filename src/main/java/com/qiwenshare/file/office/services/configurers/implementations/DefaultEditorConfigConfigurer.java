@@ -19,6 +19,7 @@
 package com.qiwenshare.file.office.services.configurers.implementations;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.qiwenshare.file.domain.UserFile;
 import com.qiwenshare.file.office.documentserver.managers.document.DocumentManager;
 import com.qiwenshare.file.office.documentserver.managers.template.TemplateManager;
 import com.qiwenshare.file.office.documentserver.models.enums.Action;
@@ -70,12 +71,14 @@ public class DefaultEditorConfigConfigurer implements EditorConfigConfigurer<Def
 //        if (wrapper.getActionData() != null) {  // check if the actionData is not empty in the editorConfig wrapper
 //            config.setActionLink(objectMapper.readValue(wrapper.getActionData(), (JavaType) new TypeToken<HashMap<String, Object>>() { }.getType()));  // set actionLink to the editorConfig
 //        }
-        String fileName = wrapper.getFileName();  // set the fileName parameter from the editorConfig wrapper
-        String fileExt = fileUtility.getFileExtension(fileName);
+//        String fileName = wrapper.getFileName();  // set the fileName parameter from the editorConfig wrapper
+        UserFile userFile = wrapper.getUserFile();
+//        String fileExt = fileUtility.getFileExtension(fileName);
+        String fileName = userFile.getFileName() + "." + userFile.getExtendName();
         boolean userIsAnon = wrapper.getUser().getName().equals("Anonymous");  // check if the user from the editorConfig wrapper is anonymous or not
 
         config.setTemplates(userIsAnon ? null : templateManager.createTemplates(fileName));  // set a template to the editorConfig if the user is not anonymous
-        config.setCallbackUrl(documentManager.getCallback(wrapper.getUserFileId()));  // set the callback URL to the editorConfig
+        config.setCallbackUrl(documentManager.getCallback(userFile.getUserFileId()));  // set the callback URL to the editorConfig
         config.setCreateUrl(userIsAnon ? null : documentManager.getCreateUrl(fileName, false));  // set the document URL where it will be created to the editorConfig if the user is not anonymous
         config.setLang(wrapper.getLang());  // set the language to the editorConfig
         Boolean canEdit = wrapper.getCanEdit();  // check if the file of the specified type can be edited or not

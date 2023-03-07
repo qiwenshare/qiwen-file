@@ -18,6 +18,7 @@
 
 package com.qiwenshare.file.office.services.configurers.wrappers;
 
+import com.qiwenshare.file.domain.UserFile;
 import com.qiwenshare.file.office.documentserver.models.filemodel.Permission;
 import lombok.Builder;
 import lombok.Getter;
@@ -26,7 +27,7 @@ import lombok.Getter;
 @Builder
 public class DefaultDocumentWrapper {
     private Permission permission;
-    private String fileName;
+    private UserFile userFile;
     private Boolean favorite;
     private String previewUrl;
 }

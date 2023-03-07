@@ -18,6 +18,7 @@
 
 package com.qiwenshare.file.office.services.configurers.wrappers;
 
+import com.qiwenshare.file.domain.UserFile;
 import com.qiwenshare.file.office.documentserver.models.enums.Action;
 import com.qiwenshare.file.office.documentserver.models.enums.Type;
 import com.qiwenshare.file.office.entities.User;
@@ -29,8 +30,7 @@ import lombok.Setter;
 @Builder
 @Setter
 public class DefaultFileWrapper {
-    private String userFileId;
-    private String fileName;
+    private UserFile userFile;
     private Type type;
     private User user;
     private String lang;
