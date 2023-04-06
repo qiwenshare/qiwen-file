@@ -28,6 +28,7 @@ import com.qiwenshare.ufop.operation.write.domain.WriteFile;
 import com.qiwenshare.ufop.util.UFOPUtils;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.codec.digest.DigestUtils;
+import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.jaudiotagger.audio.AudioFile;
@@ -80,7 +81,7 @@ public class FileDealComp {
 
     /**
      * 获取重复文件名
-     *
+     * <p>
      * 场景1: 文件还原时，在 savefilePath 路径下，保存 测试.txt 文件重名，则会生成 测试(1).txt
      * 场景2： 上传文件时，在 savefilePath 路径下，保存 测试.txt 文件重名，则会生成 测试(1).txt
      *
@@ -91,39 +92,38 @@ public class FileDealComp {
     public String getRepeatFileName(UserFile userFile, String savefilePath) {
         String fileName = userFile.getFileName();
         String extendName = userFile.getExtendName();
-        Integer deleteFlag = userFile.getDeleteFlag();
+
         String userId = userFile.getUserId();
         int isDir = userFile.getIsDir();
         LambdaQueryWrapper<UserFile> lambdaQueryWrapper = new LambdaQueryWrapper<>();
         lambdaQueryWrapper.eq(UserFile::getFilePath, savefilePath)
-                .eq(UserFile::getDeleteFlag, deleteFlag)
+                .eq(UserFile::getDeleteFlag, 0)
                 .eq(UserFile::getUserId, userId)
                 .eq(UserFile::getFileName, fileName)
                 .eq(UserFile::getIsDir, isDir);
-        if (userFile.getIsDir() == 0) {
+        if (userFile.isFile()) {
             lambdaQueryWrapper.eq(UserFile::getExtendName, extendName);
         }
         List<UserFile> list = userFileMapper.selectList(lambdaQueryWrapper);
-        if (list == null) {
+        if (CollectionUtils.isEmpty(list)) {
             return fileName;
         }
-        if (list.isEmpty()) {
-            return fileName;
-        }
+
         int i = 0;
 
-        while (list != null && !list.isEmpty()) {
+        while (!CollectionUtils.isEmpty(list)) {
             i++;
             LambdaQueryWrapper<UserFile> lambdaQueryWrapper1 = new LambdaQueryWrapper<>();
             lambdaQueryWrapper1.eq(UserFile::getFilePath, savefilePath)
-                    .eq(UserFile::getDeleteFlag, deleteFlag)
+                    .eq(UserFile::getDeleteFlag, 0)
                     .eq(UserFile::getUserId, userId)
                     .eq(UserFile::getFileName, fileName + "(" + i + ")")
                     .eq(UserFile::getIsDir, isDir);
-            if (userFile.getIsDir() == 0) {
+            if (userFile.isFile()) {
                 lambdaQueryWrapper1.eq(UserFile::getExtendName, extendName);
             }
             list = userFileMapper.selectList(lambdaQueryWrapper1);
+
         }
 
         return fileName + "(" + i + ")";
@@ -132,7 +132,7 @@ public class FileDealComp {
 
     /**
      * 还原父文件路径
-     *
+     * <p>
      * 1、回收站文件还原操作会将文件恢复到原来的路径下,当还原文件的时候，如果父目录已经不存在了，则需要把父母录给还原
      * 2、上传目录
      *
@@ -143,7 +143,7 @@ public class FileDealComp {
         if (qiwenFile.isFile()) {
             qiwenFile = qiwenFile.getParentFile();
         }
-        while(qiwenFile.getParent() != null) {
+        while (qiwenFile.getParent() != null) {
             String fileName = qiwenFile.getName();
             String parentFilePath = qiwenFile.getParent();
 
@@ -173,13 +173,14 @@ public class FileDealComp {
 
     /**
      * 删除重复的子目录文件
-     *
+     * <p>
      * 当还原目录的时候，如果其子目录在文件系统中已存在，则还原之后进行去重操作
+     *
      * @param filePath
      * @param sessionUserId
      */
     public void deleteRepeatSubDirFile(String filePath, String sessionUserId) {
-        log.debug("删除子目录："+filePath);
+        log.debug("删除子目录：" + filePath);
         LambdaQueryWrapper<UserFile> lambdaQueryWrapper = new LambdaQueryWrapper<>();
 
         lambdaQueryWrapper.select(UserFile::getFileName, UserFile::getFilePath)
@@ -197,7 +198,7 @@ public class FileDealComp {
                     .eq(UserFile::getFileName, userFile.getFileName())
                     .eq(UserFile::getDeleteFlag, "0");
             List<UserFile> userFiles = userFileMapper.selectList(lambdaQueryWrapper1);
-            for (int i = 0; i < userFiles.size() - 1; i ++) {
+            for (int i = 0; i < userFiles.size() - 1; i++) {
                 userFileMapper.deleteById(userFiles.get(i).getUserFileId());
             }
         }
@@ -205,6 +206,7 @@ public class FileDealComp {
 
     /**
      * 组织一个树目录节点，文件移动的时候使用
+     *
      * @param treeNode
      * @param id
      * @param filePath
@@ -258,20 +260,21 @@ public class FileDealComp {
 
     /**
      * 判断该路径在树节点中是否已经存在
+     *
      * @param childrenTreeNodes
      * @param path
      * @return
      */
-    public boolean isExistPath(List<TreeNode> childrenTreeNodes, String path){
+    public boolean isExistPath(List<TreeNode> childrenTreeNodes, String path) {
         boolean isExistPath = false;
 
         try {
-            for (int i = 0; i < childrenTreeNodes.size(); i++){
-                if (path.equals(childrenTreeNodes.get(i).getLabel())){
+            for (TreeNode childrenTreeNode : childrenTreeNodes) {
+                if (path.equals(childrenTreeNode.getLabel())) {
                     isExistPath = true;
                 }
             }
-        }catch (Exception e){
+        } catch (Exception e) {
             e.printStackTrace();
         }
 
@@ -409,8 +412,7 @@ public class FileDealComp {
         DownloadFile downloadFile = new DownloadFile();
         downloadFile.setFileUrl(fileUrl);
         InputStream inputStream = ufopFactory.getDownloader(storageType).getInputStream(downloadFile);
-        String md5Str = DigestUtils.md5Hex(inputStream);
-        return md5Str;
+        return DigestUtils.md5Hex(inputStream);
     }
 
     public void saveFileInputStream(int storageType, String fileUrl, InputStream inputStream) throws IOException {
@@ -422,7 +424,7 @@ public class FileDealComp {
         writer1.write(inputStream, writeFile);
     }
 
-    public boolean isDirExist(String fileName, String filePath, String userId){
+    public boolean isDirExist(String fileName, String filePath, String userId) {
         LambdaQueryWrapper<UserFile> lambdaQueryWrapper = new LambdaQueryWrapper<>();
         lambdaQueryWrapper.eq(UserFile::getFileName, fileName)
                 .eq(UserFile::getFilePath, QiwenFile.formatPath(filePath))
@@ -524,7 +526,7 @@ public class FileDealComp {
 
                 if (StringUtils.isEmpty(music.getLyrics())) {
                     try {
-                        
+
                         String lyc = MusicUtils.getLyc(music.getArtist(), music.getTitle(), music.getAlbum());
                         music.setLyrics(lyc);
                     } catch (Exception e) {

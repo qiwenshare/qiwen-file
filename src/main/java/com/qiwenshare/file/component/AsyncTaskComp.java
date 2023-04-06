@@ -25,7 +25,6 @@ import org.springframework.stereotype.Component;
 import javax.annotation.Resource;
 import java.io.File;
 import java.io.FileInputStream;
-import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.List;
@@ -40,8 +39,6 @@ import java.util.concurrent.Future;
 @Component
 @Async("asyncTaskExecutor")
 public class AsyncTaskComp {
-    @Resource
-    IUserFileService userFileService;
 
     @Resource
     IRecoveryFileService recoveryFileService;
@@ -62,16 +59,15 @@ public class AsyncTaskComp {
     public Long getFilePointCount(String fileId) {
         LambdaQueryWrapper<UserFile> lambdaQueryWrapper = new LambdaQueryWrapper<>();
         lambdaQueryWrapper.eq(UserFile::getFileId, fileId);
-        long count = userFileMapper.selectCount(lambdaQueryWrapper);
-        return count;
+        return userFileMapper.selectCount(lambdaQueryWrapper);
     }
 
     public Future<String> deleteUserFile(String userFileId) {
-        UserFile userFile = userFileService.getById(userFileId);
+        UserFile userFile = userFileMapper.selectById(userFileId);
         if (userFile.getIsDir() == 1) {
             LambdaQueryWrapper<UserFile> userFileLambdaQueryWrapper = new LambdaQueryWrapper<>();
             userFileLambdaQueryWrapper.eq(UserFile::getDeleteBatchNum, userFile.getDeleteBatchNum());
-            List<UserFile> list = userFileService.list(userFileLambdaQueryWrapper);
+            List<UserFile> list = userFileMapper.selectList(userFileLambdaQueryWrapper);
             recoveryFileService.deleteUserFileByDeleteBatchNum(userFile.getDeleteBatchNum());
             for (UserFile userFileItem : list) {
 
@@ -103,7 +99,7 @@ public class AsyncTaskComp {
             }
         }
 
-        return new AsyncResult<String>("deleteUserFile");
+        return new AsyncResult<>("deleteUserFile");
     }
 
     public Future<String> checkESUserFileId(String userFileId) {
@@ -111,7 +107,7 @@ public class AsyncTaskComp {
         if (userFile == null) {
             fileDealComp.deleteESByUserFileId(userFileId);
         }
-        return new AsyncResult<String>("checkUserFileId");
+        return new AsyncResult<>("checkUserFileId");
     }
 
 
@@ -128,8 +124,6 @@ public class AsyncTaskComp {
             try {
                 fis = new FileInputStream(currentFile);
                 md5Str = DigestUtils.md5Hex(fis);
-            } catch (FileNotFoundException e) {
-                e.printStackTrace();
             } catch (IOException e) {
                 e.printStackTrace();
             } finally {
@@ -192,7 +186,7 @@ public class AsyncTaskComp {
         }
         fileDealComp.restoreParentFilePath(qiwenFile, userFile.getUserId());
 
-        return new AsyncResult<String>("saveUnzipFile");
+        return new AsyncResult<>("saveUnzipFile");
     }
 
 
