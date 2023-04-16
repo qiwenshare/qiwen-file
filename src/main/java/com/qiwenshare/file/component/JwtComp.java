@@ -29,8 +29,7 @@ public class JwtComp {
 		// 本地的密码解码
 		byte[] encodedKey = Base64.decodeBase64(jwtProperties.getSecret());
 		// 根据给定的字节数组使用AES加密算法构造一个密钥
-		SecretKey key = new SecretKeySpec(encodedKey, 0, encodedKey.length, "AES");
-		return key;
+        return new SecretKeySpec(encodedKey, 0, encodedKey.length, "AES");
 	}
  
 	// 创建jwt
@@ -61,10 +60,9 @@ public class JwtComp {
 	// 解密jwt
 	public Claims parseJWT(String jwt) throws Exception {
 		SecretKey key = generalKey(); // 签名秘钥，和生成的签名的秘钥一模一样
-		Claims claims = Jwts.parser() // 得到DefaultJwtParser
-				.setSigningKey(key) // 设置签名的秘钥
-				.parseClaimsJws(jwt).getBody(); // 设置需要解析的jwt
-		return claims;
+        return Jwts.parser() // 得到DefaultJwtParser
+                .setSigningKey(key) // 设置签名的秘钥
+                .parseClaimsJws(jwt).getBody();
 	}
 
  
