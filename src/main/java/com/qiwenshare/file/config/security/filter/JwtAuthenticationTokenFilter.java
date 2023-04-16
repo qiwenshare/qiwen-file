@@ -1,5 +1,6 @@
 package com.qiwenshare.file.config.security.filter;
 
+import com.qiwenshare.common.exception.NotLoginException;
 import com.qiwenshare.common.exception.QiwenException;
 import com.qiwenshare.file.service.SysParamService;
 import com.qiwenshare.file.service.UserService;
@@ -19,13 +20,29 @@ import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
+import java.util.Arrays;
+import java.util.List;
 
 /**
  * Jwt过滤器（第一个过滤器）：获取用户token，查询用户信息拼装到security中，以便后续filter使用
  */
 @Component
 public class JwtAuthenticationTokenFilter extends OncePerRequestFilter {
-
+    private String[] ignoreUri = {"/user/register",
+            "/user/login",
+            "/user/checkuserlogininfo",
+            "/filetransfer/downloadfile",
+            "/filetransfer/preview",
+            "/share/sharefileList",
+            "/share/sharetype",
+            "/share/checkextractioncode",
+            "/share/checkendtime",
+            "/notice/list",
+            "/notice/detail",
+            "/param/grouplist",
+            "/error/**",
+            "/swagger-ui.html",
+    };
     @Autowired
     private UserService userService;
     @Resource
@@ -42,13 +59,21 @@ public class JwtAuthenticationTokenFilter extends OncePerRequestFilter {
             throw new QiwenException(999999, "脚本未初始化，请在数据库执行数据初始化脚本，存放路径： '/resources/import.sql'！");
         }
 
+        List<String> ignoreUriList = Arrays.asList(ignoreUri);
+        if (ignoreUriList.contains(request.getRequestURI())) {
+            chain.doFilter(request, response);
+            return;
+        }
         String token = request.getHeader("token");
-        if (StringUtils.isNotBlank(token) && !"undefined".equals(token)) {
-
+        if (StringUtils.isEmpty(token)) {
+            throw new NotLoginException("用户未登录");
+        } else {
             String userId = userService.getUserIdByToken(token);
-
+            if (userId == null) {
+                throw new NotLoginException("用户未登录");
+            }
             // 验证
-            if (userId != null && SecurityContextHolder.getContext().getAuthentication() == null) {
+            if (SecurityContextHolder.getContext().getAuthentication() == null) {
                 UserDetails userDetails = userService.loadUserByUsername(String.valueOf(userId));
                 if (userDetails.isEnabled()) {
                     UsernamePasswordAuthenticationToken usernamePasswordAuthenticationToken = new UsernamePasswordAuthenticationToken(
