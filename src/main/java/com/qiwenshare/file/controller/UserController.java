@@ -100,20 +100,20 @@ public class UserController {
     @Operation(summary = "检查用户登录信息", description = "验证token的有效性", tags = {"user"})
     @GetMapping("/checkuserlogininfo")
     @ResponseBody
-    public RestResult<UserLoginVo> checkUserLoginInfo() {
+    public RestResult<UserLoginVo> checkUserLoginInfo(@RequestHeader("token") String token) {
         UserLoginVo userLoginVo = new UserLoginVo();
-        JwtUser sessionUserBean = SessionUtil.getSession();
+        String userId = userService.getUserIdByToken(token);
 
-        if (sessionUserBean != null && !"anonymousUser".equals(sessionUserBean.getUsername())) {
+        if (StringUtils.isNotEmpty(userId)) {
             LambdaQueryWrapper<UserLoginInfo> lambdaQueryWrapper = new LambdaQueryWrapper<>();
-            lambdaQueryWrapper.eq(UserLoginInfo::getUserId, sessionUserBean.getUserId());
+            lambdaQueryWrapper.eq(UserLoginInfo::getUserId, userId);
             lambdaQueryWrapper.likeRight(UserLoginInfo::getUserloginDate, DateUtil.getCurrentTime().substring(0, 10));
             userLoginInfoService.remove(lambdaQueryWrapper);
             UserLoginInfo userLoginInfo = new UserLoginInfo();
-            userLoginInfo.setUserId(sessionUserBean.getUserId());
+            userLoginInfo.setUserId(userId);
             userLoginInfo.setUserloginDate(DateUtil.getCurrentTime());
             userLoginInfoService.save(userLoginInfo);
-            UserBean user = userService.getById(sessionUserBean.getUserId());
+            UserBean user = userService.getById(userId);
             BeanUtil.copyProperties(user, userLoginVo);
             if (StringUtils.isEmpty(user.getWxOpenId())) {
                 userLoginVo.setHasWxAuth(false);
