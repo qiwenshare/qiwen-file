@@ -54,6 +54,14 @@ public class UserFile {
 
     @Column(columnDefinition = "varchar(50) comment '删除批次号'")
     private String deleteBatchNum;
+    @Column(columnDefinition="varchar(30) comment '创建时间'")
+    private String createTime;
+    @Column(columnDefinition="varchar(20) comment '创建用户id'")
+    private String createUserId;
+    @Column(columnDefinition="varchar(30) comment '修改时间'")
+    private String modifyTime;
+    @Column(columnDefinition="varchar(20) comment '修改用户id'")
+    private String modifyUserId;
 
     public UserFile() {};
     public UserFile(QiwenFile qiwenFile, String userId, String fileId) {
@@ -64,7 +72,10 @@ public class UserFile {
         this.fileName = qiwenFile.getNameNotExtend();
         this.extendName = qiwenFile.getExtendName();
         this.isDir = qiwenFile.isDirectory() ? 1 : 0;
-        this.uploadTime = DateUtil.getCurrentTime();
+        String currentTime = DateUtil.getCurrentTime();
+        this.setUploadTime(currentTime);
+        this.setCreateUserId(userId);
+        this.setCreateTime(currentTime);
         this.deleteFlag = 0;
     }
 

@@ -134,6 +134,8 @@ public class FileService extends ServiceImpl<FileMapper, FileBean> implements IF
         fileBean.setFileId(userFile.getFileId());
         fileMapper.updateById(fileBean);
         userFile.setUploadTime(currentTime);
+        userFile.setModifyTime(currentTime);
+        userFile.setModifyUserId(SessionUtil.getUserId());
         userFileMapper.updateById(userFile);
     }
 

@@ -7,6 +7,7 @@ import com.alibaba.fastjson2.JSON;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.qiwenshare.common.util.DateUtil;
 import com.qiwenshare.common.util.MusicUtils;
+import com.qiwenshare.common.util.security.SessionUtil;
 import com.qiwenshare.file.api.IShareFileService;
 import com.qiwenshare.file.api.IShareService;
 import com.qiwenshare.file.api.IUserService;
@@ -404,6 +405,8 @@ public class FileDealComp {
         fileMapper.insert(fileBean);
         userFile.setFileId(fileBean.getFileId());
         userFile.setUploadTime(DateUtil.getCurrentTime());
+        userFile.setModifyTime(DateUtil.getCurrentTime());
+        userFile.setModifyUserId(SessionUtil.getUserId());
         userFileMapper.updateById(userFile);
         return fileUrl;
     }
