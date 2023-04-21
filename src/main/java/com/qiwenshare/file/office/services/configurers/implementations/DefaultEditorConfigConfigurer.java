@@ -86,7 +86,10 @@ public class DefaultEditorConfigConfigurer implements EditorConfigConfigurer<Def
         config.setCoEditing(action.equals(Action.view) && userIsAnon ? new HashMap<String, Object>()  {{ 
             put("mode", "strict");
             put("change", false);
-        }} : null);
+        }} : new HashMap<String, Object>()  {{
+            put("mode", "fast");
+            put("change", true);
+        }});
 
         defaultCustomizationConfigurer.configure(config.getCustomization(), DefaultCustomizationWrapper.builder()  // define the customization configurer
                 .action(action)

@@ -42,6 +42,7 @@ public class JwtAuthenticationTokenFilter extends OncePerRequestFilter {
             "/param/grouplist",
             "/error/**",
             "/swagger-ui.html",
+            "/office/IndexServlet"
     };
     @Autowired
     private UserService userService;
