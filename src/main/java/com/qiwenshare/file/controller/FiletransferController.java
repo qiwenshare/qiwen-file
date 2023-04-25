@@ -146,7 +146,24 @@ public class FiletransferController {
     @RequestMapping(value = "/batchDownloadFile", method = RequestMethod.GET)
     @MyLog(operation = "批量下载文件", module = CURRENT_MODULE)
     @ResponseBody
-    public void batchDownloadFile(HttpServletResponse httpServletResponse, BatchDownloadFileDTO batchDownloadFileDTO) {
+    public void batchDownloadFile(HttpServletRequest httpServletRequest, HttpServletResponse httpServletResponse, BatchDownloadFileDTO batchDownloadFileDTO) {
+        Cookie[] cookieArr = httpServletRequest.getCookies();
+        String token = "";
+        if (cookieArr != null) {
+            for (Cookie cookie : cookieArr) {
+                if ("token".equals(cookie.getName())) {
+                    token = cookie.getValue();
+                }
+            }
+        }
+        boolean authResult = fileDealComp.checkAuthDownloadAndPreview(batchDownloadFileDTO.getShareBatchNum(),
+                batchDownloadFileDTO.getExtractionCode(),
+                token,
+                batchDownloadFileDTO.getUserFileIds(), null);
+        if (!authResult) {
+            log.error("没有权限下载！！！");
+            return;
+        }
 
         String files = batchDownloadFileDTO.getUserFileIds();
         String[] userFileIdStrs = files.split(",");

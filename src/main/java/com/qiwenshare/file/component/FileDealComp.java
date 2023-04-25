@@ -214,18 +214,18 @@ public class FileDealComp {
      * @param nodeNameQueue
      * @return
      */
-    public TreeNode insertTreeNode(TreeNode treeNode, long id, String filePath, Queue<String> nodeNameQueue){
+    public TreeNode insertTreeNode(TreeNode treeNode, long id, String filePath, Queue<String> nodeNameQueue) {
 
         List<TreeNode> childrenTreeNodes = treeNode.getChildren();
         String currentNodeName = nodeNameQueue.peek();
-        if (currentNodeName == null){
+        if (currentNodeName == null) {
             return treeNode;
         }
 
         QiwenFile qiwenFile = new QiwenFile(filePath, currentNodeName, true);
         filePath = qiwenFile.getPath();
 
-        if (!isExistPath(childrenTreeNodes, currentNodeName)){  //1、判断有没有该子节点，如果没有则插入
+        if (!isExistPath(childrenTreeNodes, currentNodeName)) {  //1、判断有没有该子节点，如果没有则插入
             //插入
             TreeNode resultTreeNode = new TreeNode();
 
@@ -235,7 +235,7 @@ public class FileDealComp {
 
             childrenTreeNodes.add(resultTreeNode);
 
-        }else{  //2、如果有，则跳过
+        } else {  //2、如果有，则跳过
             nodeNameQueue.poll();
         }
 
@@ -243,7 +243,7 @@ public class FileDealComp {
             for (int i = 0; i < childrenTreeNodes.size(); i++) {
 
                 TreeNode childrenTreeNode = childrenTreeNodes.get(i);
-                if (currentNodeName.equals(childrenTreeNode.getLabel())){
+                if (currentNodeName.equals(childrenTreeNode.getLabel())) {
                     childrenTreeNode = insertTreeNode(childrenTreeNode, id * 10, filePath, nodeNameQueue);
                     childrenTreeNodes.remove(i);
                     childrenTreeNodes.add(childrenTreeNode);
@@ -251,7 +251,7 @@ public class FileDealComp {
                 }
 
             }
-        }else{
+        } else {
             treeNode.setChildren(childrenTreeNodes);
         }
 
@@ -313,7 +313,7 @@ public class FileDealComp {
     }
 
     public void deleteESByUserFileId(String userFileId) {
-        exec.execute(()->{
+        exec.execute(() -> {
             try {
                 elasticsearchClient.delete(d -> d
                         .index("filesearch")
@@ -328,54 +328,60 @@ public class FileDealComp {
 
     /**
      * 根据用户传入的参数，判断是否有下载或者预览权限
+     *
      * @return
      */
     public boolean checkAuthDownloadAndPreview(String shareBatchNum,
                                                String extractionCode,
                                                String token,
-                                               String userFileId,
+                                               String userFileIds,
                                                Integer platform) {
-        log.debug("权限检查开始：shareBatchNum:{}, extractionCode:{}, token:{}, userFileId{}" , shareBatchNum, extractionCode, token, userFileId);
+        log.debug("权限检查开始：shareBatchNum:{}, extractionCode:{}, token:{}, userFileIds{}", shareBatchNum, extractionCode, token, userFileIds);
         if (platform != null && platform == 2) {
             return true;
         }
-        UserFile userFile = userFileMapper.selectById(userFileId);
-        log.debug(JSON.toJSONString(userFile));
-        if ("undefined".equals(shareBatchNum)  || StringUtils.isEmpty(shareBatchNum)) {
+        String[] userFileIdArr = userFileIds.split(",");
+        for (String userFileId : userFileIdArr) {
 
-            String userId = userService.getUserIdByToken(token);
-            log.debug(JSON.toJSONString("当前登录session用户id：" + userId));
-            if (userId == null) {
-                return false;
-            }
-            log.debug("文件所属用户id：" + userFile.getUserId());
-            log.debug("登录用户id:" + userId);
-            if (!userFile.getUserId().equals(userId)) {
-                log.info("用户id不一致，权限校验失败");
-                return false;
-            }
-        } else {
-            Map<String, Object> param = new HashMap<>();
-            param.put("shareBatchNum", shareBatchNum);
-            List<Share> shareList = shareService.listByMap(param);
-            //判断批次号
-            if (shareList.size() <= 0) {
-                log.info("分享批次号不存在，权限校验失败");
-                return false;
-            }
-            Integer shareType = shareList.get(0).getShareType();
-            if (1 == shareType) {
-                //判断提取码
-                if (!shareList.get(0).getExtractionCode().equals(extractionCode)) {
-                    log.info("提取码错误，权限校验失败");
+            UserFile userFile = userFileMapper.selectById(userFileId);
+            log.debug(JSON.toJSONString(userFile));
+            if ("undefined".equals(shareBatchNum) || StringUtils.isEmpty(shareBatchNum)) {
+
+                String userId = userService.getUserIdByToken(token);
+                log.debug(JSON.toJSONString("当前登录session用户id：" + userId));
+                if (userId == null) {
                     return false;
                 }
-            }
-            param.put("userFileId", userFileId);
-            List<ShareFile> shareFileList = shareFileService.listByMap(param);
-            if (shareFileList.size() <= 0) {
-                log.info("用户id和分享批次号不匹配，权限校验失败");
-                return false;
+                log.debug("文件所属用户id：" + userFile.getUserId());
+                log.debug("登录用户id:" + userId);
+                if (!userFile.getUserId().equals(userId)) {
+                    log.info("用户id不一致，权限校验失败");
+                    return false;
+                }
+            } else {
+                Map<String, Object> param = new HashMap<>();
+                param.put("shareBatchNum", shareBatchNum);
+                List<Share> shareList = shareService.listByMap(param);
+                //判断批次号
+                if (shareList.size() <= 0) {
+                    log.info("分享批次号不存在，权限校验失败");
+                    return false;
+                }
+                Integer shareType = shareList.get(0).getShareType();
+                if (1 == shareType) {
+                    //判断提取码
+                    if (!shareList.get(0).getExtractionCode().equals(extractionCode)) {
+                        log.info("提取码错误，权限校验失败");
+                        return false;
+                    }
+                }
+                param.put("userFileId", userFileId);
+                List<ShareFile> shareFileList = shareFileService.listByMap(param);
+                if (shareFileList.size() <= 0) {
+                    log.info("用户id和分享批次号不匹配，权限校验失败");
+                    return false;
+                }
+
             }
 
         }
@@ -385,6 +391,7 @@ public class FileDealComp {
     /**
      * 拷贝文件
      * 场景：修改的文件被多处引用时，需要重新拷贝一份，然后在新的基础上修改
+     *
      * @param fileBean
      * @param userFile
      * @return
