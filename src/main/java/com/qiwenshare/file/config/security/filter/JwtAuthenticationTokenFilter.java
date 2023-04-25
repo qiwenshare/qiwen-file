@@ -32,6 +32,7 @@ public class JwtAuthenticationTokenFilter extends OncePerRequestFilter {
             "/user/login",
             "/user/checkuserlogininfo",
             "/filetransfer/downloadfile",
+            "/filetransfer/batchDownloadFile",
             "/filetransfer/preview",
             "/share/sharefileList",
             "/share/sharetype",
