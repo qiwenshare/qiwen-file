@@ -13,9 +13,9 @@ import javax.persistence.*;
 @TableName("sharefile")
 public class ShareFile {
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @GeneratedValue(strategy = GenerationType.AUTO)
     @TableId(type = IdType.AUTO)
-    private Long shareFileId;
+    private String shareFileId;
 
     @Column(columnDefinition="varchar(50) comment '分享批次号'")
     private String shareBatchNum;

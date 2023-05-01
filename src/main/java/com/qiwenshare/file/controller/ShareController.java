@@ -54,17 +54,18 @@ public class ShareController {
     @PostMapping(value = "/sharefile")
     @MyLog(operation = "分享文件", module = CURRENT_MODULE)
     @ResponseBody
-    public RestResult<ShareFileVO> shareFile( @RequestBody ShareFileDTO shareSecretDTO) {
+    public RestResult<ShareFileVO> shareFile( @RequestBody ShareFileDTO shareFileDTO) {
         ShareFileVO shareSecretVO = new ShareFileVO();
         JwtUser sessionUserBean = SessionUtil.getSession();
 
         String uuid = UUID.randomUUID().toString().replace("-", "");
         Share share = new Share();
-        BeanUtil.copyProperties(shareSecretDTO, share);
+        share.setShareId(IdUtil.getSnowflakeNextIdStr());
+        BeanUtil.copyProperties(shareFileDTO, share);
         share.setShareTime(DateUtil.getCurrentTime());
         share.setUserId(sessionUserBean.getUserId());
         share.setShareStatus(0);
-        if (shareSecretDTO.getShareType() == 1) {
+        if (shareFileDTO.getShareType() == 1) {
             String extractionCode = RandomUtil.randomNumbers(6);
             share.setExtractionCode(extractionCode);
             shareSecretVO.setExtractionCode(share.getExtractionCode());
@@ -73,10 +74,11 @@ public class ShareController {
         share.setShareBatchNum(uuid);
         shareService.save(share);
 
-        List<ShareFile> fileList = JSON.parseArray(shareSecretDTO.getFiles(), ShareFile.class);
         List<ShareFile> saveFileList = new ArrayList<>();
-        for (ShareFile shareFile : fileList) {
-            UserFile userFile = userFileService.getById(shareFile.getUserFileId());
+        String userFileIds = shareFileDTO.getUserFileIds();
+        String[] userFileIdList = userFileIds.split(",");
+        for (String userFileId : userFileIdList) {
+            UserFile userFile = userFileService.getById(userFileId);
             if (userFile.getUserId().compareTo(sessionUserBean.getUserId()) != 0) {
                 return RestResult.fail().message("您只能分享自己的文件");
             }
@@ -85,12 +87,16 @@ public class ShareController {
                 List<UserFile> userfileList = userFileService.selectUserFileByLikeRightFilePath(qiwenFile.getPath(), sessionUserBean.getUserId());
                 for (UserFile userFile1 : userfileList) {
                     ShareFile shareFile1 = new ShareFile();
+                    shareFile1.setShareFileId(IdUtil.getSnowflakeNextIdStr());
                     shareFile1.setUserFileId(userFile1.getUserFileId());
                     shareFile1.setShareBatchNum(uuid);
                     shareFile1.setShareFilePath(userFile1.getFilePath().replaceFirst(userFile.getFilePath().equals("/") ? "" : userFile.getFilePath(), ""));
                     saveFileList.add(shareFile1);
                 }
             }
+            ShareFile shareFile = new ShareFile();
+            shareFile.setShareFileId(IdUtil.getSnowflakeNextIdStr());
+            shareFile.setUserFileId(userFileId);
             shareFile.setShareFilePath("/");
             shareFile.setShareBatchNum(uuid);
             saveFileList.add(shareFile);

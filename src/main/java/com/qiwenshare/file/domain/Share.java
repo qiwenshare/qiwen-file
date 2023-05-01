@@ -14,9 +14,9 @@ import java.util.UUID;
 @TableName("share")
 public class Share {
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @GeneratedValue(strategy = GenerationType.AUTO)
     @TableId(type = IdType.AUTO)
-    private Long shareId;
+    private String shareId;
     @Column(columnDefinition="varchar(20) comment '用户id'")
     private String userId;
     @Column(columnDefinition="varchar(30) comment '分享时间'")
