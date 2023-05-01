@@ -132,7 +132,8 @@ public class FileController {
                 userFile.setExtendName(extendName);
                 userFile.setUploadTime(DateUtil.getCurrentTime());
                 userFile.setFileId(fileBean.getFileId());
-
+                userFile.setCreateTime(DateUtil.getCurrentTime());
+                userFile.setCreateUserId(SessionUtil.getUserId());
                 userFileService.save(userFile);
             }
             return RestResult.success().message("文件创建成功");

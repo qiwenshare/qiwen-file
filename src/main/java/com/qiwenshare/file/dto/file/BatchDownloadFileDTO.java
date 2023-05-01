@@ -8,5 +8,9 @@ import lombok.Data;
 public class BatchDownloadFileDTO {
     @Schema(description="文件集合", required = true)
     private String userFileIds;
+    @Schema(description="批次号")
+    private String shareBatchNum;
+    @Schema(description="提取码")
+    private String extractionCode;
 
 }

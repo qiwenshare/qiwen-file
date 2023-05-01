@@ -2,6 +2,7 @@ package com.qiwenshare.file.util;
 
 import cn.hutool.core.util.IdUtil;
 import com.qiwenshare.common.util.DateUtil;
+import com.qiwenshare.common.util.security.SessionUtil;
 import com.qiwenshare.file.domain.UserFile;
 import com.qiwenshare.file.io.QiwenFile;
 
@@ -18,6 +19,8 @@ public class QiwenFileUtil {
         userFile.setExtendName(null);
         userFile.setIsDir(1);
         userFile.setUploadTime(DateUtil.getCurrentTime());
+        userFile.setCreateUserId(SessionUtil.getUserId());
+        userFile.setCreateTime(DateUtil.getCurrentTime());
         userFile.setDeleteFlag(0);
         userFile.setDeleteBatchNum(null);
         return userFile;
@@ -33,6 +36,8 @@ public class QiwenFileUtil {
         userFile.setExtendName(extendName);
         userFile.setIsDir(0);
         userFile.setUploadTime(DateUtil.getCurrentTime());
+        userFile.setCreateTime(DateUtil.getCurrentTime());
+        userFile.setCreateUserId(SessionUtil.getUserId());
         userFile.setDeleteFlag(0);
         userFile.setDeleteBatchNum(null);
         return userFile;

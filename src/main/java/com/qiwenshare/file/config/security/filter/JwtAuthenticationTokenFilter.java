@@ -32,6 +32,7 @@ public class JwtAuthenticationTokenFilter extends OncePerRequestFilter {
             "/user/login",
             "/user/checkuserlogininfo",
             "/filetransfer/downloadfile",
+            "/filetransfer/batchDownloadFile",
             "/filetransfer/preview",
             "/share/sharefileList",
             "/share/sharetype",
@@ -42,6 +43,7 @@ public class JwtAuthenticationTokenFilter extends OncePerRequestFilter {
             "/param/grouplist",
             "/error/**",
             "/swagger-ui.html",
+            "/office/IndexServlet"
     };
     @Autowired
     private UserService userService;
