@@ -6,7 +6,9 @@ import com.qiwenshare.file.config.security.filter.UrlFilterInvocationSecurityMet
 import com.qiwenshare.file.config.security.handle.JwtAccessDeniedHandler;
 import com.qiwenshare.file.config.security.manager.UrlAccessDecisionManager;
 import com.qiwenshare.file.service.UserService;
+import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;
 import org.springframework.security.config.annotation.ObjectPostProcessor;
@@ -14,6 +16,7 @@ import org.springframework.security.config.annotation.authentication.builders.Au
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter;
 import org.springframework.security.config.http.SessionCreationPolicy;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.NoOpPasswordEncoder;
 import org.springframework.security.web.access.intercept.FilterSecurityInterceptor;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
@@ -135,5 +138,8 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
             }
         };
     }
-
+    @Bean
+    public InitializingBean initializingBean(){
+        return () -> SecurityContextHolder.setStrategyName(SecurityContextHolder.MODE_INHERITABLETHREADLOCAL);
+    }
 }
