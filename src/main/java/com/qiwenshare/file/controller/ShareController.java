@@ -5,6 +5,7 @@ import cn.hutool.core.util.IdUtil;
 import cn.hutool.core.util.RandomUtil;
 import com.alibaba.fastjson2.JSON;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
+import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.qiwenshare.common.anno.MyLog;
 import com.qiwenshare.common.result.RestResult;
 import com.qiwenshare.common.util.DateUtil;
@@ -117,34 +118,43 @@ public class ShareController {
     public RestResult saveShareFile(@RequestBody SaveShareFileDTO saveShareFileDTO) {
 
         JwtUser sessionUserBean = SessionUtil.getSession();
-        List<ShareFile> fileList = JSON.parseArray(saveShareFileDTO.getFiles(), ShareFile.class);
+//        List<ShareFile> fileList = JSON.parseArray(saveShareFileDTO.getFiles(), ShareFile.class);
         String savefilePath = saveShareFileDTO.getFilePath();
         String userId = sessionUserBean.getUserId();
-
+        String[] userFileIdArr = saveShareFileDTO.getUserFileIds().split(",");
         List<UserFile> saveUserFileList = new ArrayList<>();
-        for (ShareFile shareFile : fileList) {
-            UserFile userFile = userFileService.getById(shareFile.getUserFileId());
+        for (String userFileId : userFileIdArr) {
+
+
+            UserFile userFile = userFileService.getById(userFileId);
             String fileName = userFile.getFileName();
+            String filePath = userFile.getFilePath();
+
+            UserFile userFile2 = new UserFile();
+            BeanUtil.copyProperties(userFile, userFile2);
+
             String savefileName = fileDealComp.getRepeatFileName(userFile, savefilePath);
 
             if (userFile.getIsDir() == 1) {
-                List<UserFile> userfileList = userFileService.selectUserFileByLikeRightFilePath(new QiwenFile(userFile.getFilePath(), userFile.getFileName(), true).getPath(), userFile.getUserId());
-                log.info("查询文件列表：" + JSON.toJSONString(userfileList));
-                String filePath = userFile.getFilePath();
-                userfileList.forEach(p->{
-                    p.setUserFileId(IdUtil.getSnowflakeNextIdStr());
-                    p.setUserId(userId);
-                    p.setFilePath(p.getFilePath().replaceFirst(filePath + "/" + fileName, savefilePath + "/" + savefileName));
-                    saveUserFileList.add(p);
-                    log.info("当前文件：" + JSON.toJSONString(p));
+                ShareFile shareFile = shareFileService.getOne(new QueryWrapper<ShareFile>().lambda().eq(ShareFile::getUserFileId, userFileId).eq(ShareFile::getShareBatchNum, saveShareFileDTO.getShareBatchNum()));
+                List<ShareFile> shareFileList = shareFileService.list(new QueryWrapper<ShareFile>().lambda().eq(ShareFile::getShareBatchNum, saveShareFileDTO.getShareBatchNum()).likeRight(ShareFile::getShareFilePath, QiwenFile.formatPath(shareFile.getShareFilePath() +"/"+ fileName)));
 
-                });
+
+
+                for (ShareFile shareFile1 : shareFileList) {
+                    UserFile userFile1 = userFileService.getById(shareFile1.getUserFileId());
+                    userFile1.setUserFileId(IdUtil.getSnowflakeNextIdStr());
+                    userFile1.setUserId(userId);
+                    userFile1.setFilePath(userFile1.getFilePath().replaceFirst(QiwenFile.formatPath(filePath + "/" + fileName), QiwenFile.formatPath(savefilePath + "/" + savefileName)));
+                    saveUserFileList.add(userFile1);
+                    log.info("当前文件：" + JSON.toJSONString(userFile1));
+                }
             }
-            userFile.setUserFileId(IdUtil.getSnowflakeNextIdStr());
-            userFile.setUserId(userId);
-            userFile.setFilePath(savefilePath);
-            userFile.setFileName(savefileName);
-            saveUserFileList.add(userFile);
+            userFile2.setUserFileId(IdUtil.getSnowflakeNextIdStr());
+            userFile2.setUserId(userId);
+            userFile2.setFilePath(savefilePath);
+            userFile2.setFileName(savefileName);
+            saveUserFileList.add(userFile2);
 
         }
         log.info("----------" + JSON.toJSONString(saveUserFileList));

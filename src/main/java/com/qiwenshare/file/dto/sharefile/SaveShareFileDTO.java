@@ -6,8 +6,10 @@ import lombok.Data;
 @Data
 @Schema(name = "保存分享文件DTO",required = true)
 public class SaveShareFileDTO {
-    @Schema(description="文件集合", example = "[{\"userFileId\":12},{\"userFileId\":13}]")
-    private String files;
-    @Schema(description = "文件路径")
+    @Schema(description="用户文件id集合", required = true)
+    private String userFileIds;
+    @Schema(description = "文件路径", required = true)
     private String filePath;
+    @Schema(description = "分享批次号", required = true)
+    private String shareBatchNum;
 }
