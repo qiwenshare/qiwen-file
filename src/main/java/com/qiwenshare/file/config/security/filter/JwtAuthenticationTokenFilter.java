@@ -11,6 +11,7 @@ import org.springframework.security.authentication.UsernamePasswordAuthenticatio
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.web.authentication.WebAuthenticationDetailsSource;
+import org.springframework.security.web.util.matcher.AntPathRequestMatcher;
 import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
 
@@ -41,10 +42,17 @@ public class JwtAuthenticationTokenFilter extends OncePerRequestFilter {
             "/notice/list",
             "/notice/detail",
             "/param/grouplist",
-            "/error/**",
+
             "/swagger-ui.html",
             "/office/IndexServlet"
     };
+    private String[] antWhiteUri = {"/*.html",
+            "/**/*.html",
+            "/**/*.css",
+            "/**/*.js",
+            "/swagger-ui/**",
+            "/webSocket/**",
+            "/error/**",};
     @Autowired
     private UserService userService;
     @Resource
@@ -59,6 +67,14 @@ public class JwtAuthenticationTokenFilter extends OncePerRequestFilter {
         String version = sysParamService.getValue("version");
         if (!qiwenVersion.equals(version)) {
             throw new QiwenException(999999, "脚本未初始化，请在数据库执行数据初始化脚本，存放路径： '/resources/import.sql'！");
+        }
+        List<String> antWhiteUriList = Arrays.asList(antWhiteUri);
+        for (String antWhiteUri : antWhiteUriList) {
+            AntPathRequestMatcher regexRequestMatcher = new AntPathRequestMatcher(antWhiteUri, "GET", true);
+            if (regexRequestMatcher.matches(request)) {
+                chain.doFilter(request, response);
+                return;
+            }
         }
 
         List<String> ignoreUriList = Arrays.asList(ignoreUri);
