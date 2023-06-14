@@ -8,6 +8,6 @@ import com.qiwenshare.file.vo.share.ShareFileListVO;
 import java.util.List;
 
 public interface IShareFileService extends IService<ShareFile> {
-    void batchInsertShareFile(List<ShareFile> shareFiles);
+
     List<ShareFileListVO> selectShareFileList(String shareBatchNum, String filePath);
 }
