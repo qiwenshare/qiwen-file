@@ -6,15 +6,6 @@
 
 <mapper namespace="com.qiwenshare.file.mapper.ShareFileMapper">
 
-
-    <insert id="batchInsertShareFile" parameterType="java.util.List">
-        INSERT ignore INTO sharefile (shareBatchNum, userFileId, shareFilePath)
-        VALUES
-        <foreach collection="list" item="file" index="index" separator=",">
-        (#{file.shareBatchNum}, #{file.userFileId}, #{file.shareFilePath})
-        </foreach>
-    </insert>
-
     <select id="selectShareFileList" resultType="com.qiwenshare.file.vo.share.ShareFileListVO">
         select * from sharefile a
         LEFT JOIN share ON share.shareBatchNum = a.shareBatchNum

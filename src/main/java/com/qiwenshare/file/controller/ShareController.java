@@ -104,7 +104,7 @@ public class ShareController {
 
 
         }
-        shareFileService.batchInsertShareFile(saveFileList);
+        shareFileService.saveBatch(saveFileList);
         shareSecretVO.setShareBatchNum(uuid);
 
         return RestResult.success().data(shareSecretVO);

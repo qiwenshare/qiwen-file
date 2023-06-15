@@ -26,12 +26,6 @@ import java.util.List;
 public class ShareFileService extends ServiceImpl<ShareFileMapper, ShareFile> implements IShareFileService {
     @Resource
     ShareFileMapper shareFileMapper;
-    @Resource
-    UserFileMapper userFileMapper;
-    @Override
-    public void batchInsertShareFile(List<ShareFile> shareFiles) {
-        shareFileMapper.batchInsertShareFile(shareFiles);
-    }
 
     @Override
     public List<ShareFileListVO> selectShareFileList(String shareBatchNum, String filePath) {
