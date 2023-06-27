@@ -40,7 +40,10 @@ stages:
       - step: deploy@agent
         name: deploy_agent
         displayName: 主机部署
-        hostGroupID: qiwen
+        hostGroupID:
+          ID: qiwen
+          hostID:
+            - 31b5a824-3a61-422e-80b6-d5606fcac92a
         deployArtifact:
           - source: build
             name: qiwen-file
