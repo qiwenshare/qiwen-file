@@ -6,11 +6,11 @@
     <parent>
         <groupId>com.qiwenshare</groupId>
         <artifactId>qiwenshare</artifactId>
-        <version>1.2.3</version>
+        <version>1.2.7</version>
     </parent>
 
     <artifactId>qiwen-file</artifactId>
-    <version>1.2.2-SNAPSHOT</version>
+    <version>1.2.7-SNAPSHOT</version>
     <name>qiwen-file</name>
     <description>pan.qiwenshare.com</description>
     <packaging>jar</packaging>

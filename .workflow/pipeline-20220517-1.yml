@@ -40,7 +40,10 @@ stages:
       - step: deploy@agent
         name: deploy_agent
         displayName: 主机部署
-        hostGroupID: qiwen
+        hostGroupID:
+          ID: qiwen
+          hostID:
+            - 4e449710-088b-4e36-acd7-bcf7958ffcda
         deployArtifact:
           - source: build
             name: qiwen-file
@@ -50,7 +53,7 @@ stages:
           - '# 请在此输入部署脚本，如启动Java应用如下'
           - '# nohup java -jar test.jar > nohup.out &'
           - cd ~/gitee_go/deploy/qiwen-file
-          - rm -r bin/ conf/ lib/ log/
+          - rm -rf bin/ conf/ lib/ log/
           - tar -zxvf qiwen-file.tar.gz
           - rm qiwen-file.tar.gz
           - cp -r ~/gitee_go/deploy/qiwen-file/release/* ~/gitee_go/deploy/qiwen-file
