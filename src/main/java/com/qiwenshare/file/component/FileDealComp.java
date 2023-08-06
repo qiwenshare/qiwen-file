@@ -78,7 +78,7 @@ public class FileDealComp {
     @Autowired
     private ElasticsearchClient elasticsearchClient;
 
-    public static Executor exec = Executors.newFixedThreadPool(10);
+    public static Executor exec = Executors.newFixedThreadPool(20);
 
     /**
      * 获取重复文件名
@@ -160,11 +160,7 @@ public class FileDealComp {
                 try {
                     userFileMapper.insert(userFile);
                 } catch (Exception e) {
-                    if (e.getMessage().contains("Duplicate entry")) {
-                        //ignore
-                    } else {
-                        log.error(e.getMessage());
-                    }
+                    //ignore
                 }
             }
             qiwenFile = new QiwenFile(parentFilePath, true);
@@ -285,15 +281,15 @@ public class FileDealComp {
 
 
     public void uploadESByUserFileId(String userFileId) {
+        exec.execute(()->{
+            try {
 
-        try {
-
-            Map<String, Object> param = new HashMap<>();
-            param.put("userFileId", userFileId);
-            List<UserFile> userfileResult = userFileMapper.selectByMap(param);
-            if (userfileResult != null && userfileResult.size() > 0) {
-                FileSearch fileSearch = new FileSearch();
-                BeanUtil.copyProperties(userfileResult.get(0), fileSearch);
+                Map<String, Object> param = new HashMap<>();
+                param.put("userFileId", userFileId);
+                List<UserFile> userfileResult = userFileMapper.selectByMap(param);
+                if (userfileResult != null && userfileResult.size() > 0) {
+                    FileSearch fileSearch = new FileSearch();
+                    BeanUtil.copyProperties(userfileResult.get(0), fileSearch);
                 /*if (fileSearch.getIsDir() == 0) {
 
                     Reader reader = ufopFactory.getReader(fileSearch.getStorageType());
@@ -304,11 +300,13 @@ public class FileDealComp {
                     fileSearch.setContent(content);
 
                 }*/
-                elasticsearchClient.index(i -> i.index("filesearch").id(fileSearch.getUserFileId()).document(fileSearch));
+                    elasticsearchClient.index(i -> i.index("filesearch").id(fileSearch.getUserFileId()).document(fileSearch));
+                }
+            } catch (Exception e) {
+                log.debug("ES更新操作失败，请检查配置");
             }
-        } catch (Exception e) {
-            log.debug("ES更新操作失败，请检查配置");
-        }
+        });
+
 
     }
 

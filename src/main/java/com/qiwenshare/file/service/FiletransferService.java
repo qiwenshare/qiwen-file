@@ -49,6 +49,8 @@ import java.util.Base64;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.Executor;
+import java.util.concurrent.Executors;
 import java.util.stream.Collectors;
 import java.util.zip.Adler32;
 import java.util.zip.CheckedOutputStream;
@@ -79,7 +81,7 @@ public class FiletransferService implements IFiletransferService {
 
     @Resource
     PictureFileMapper pictureFileMapper;
-
+    public static Executor exec = Executors.newFixedThreadPool(20);
 
     @Override
     public UploadFileVo uploadFileSpeed(UploadFileDTO uploadFileDTO) {
@@ -99,16 +101,25 @@ public class FiletransferService implements IFiletransferService {
 
         if (list != null && !list.isEmpty()) {
             FileBean file = list.get(0);
-
             UserFile userFile = new UserFile(qiwenFile, SessionUtil.getUserId(), file.getFileId());
-            UserFile param1 = QiwenFileUtil.searchQiwenFileParam(userFile);
-            List<UserFile> userFileList = userFileMapper.selectList(new QueryWrapper<>(param1));
-            if (userFileList.size() <= 0) {
+
+            try {
+                userFileMapper.insert(userFile);
+                fileDealComp.uploadESByUserFileId(userFile.getUserFileId());
+            } catch (Exception e) {
+                log.warn("文件冲突重命名处理: {}", e.getMessage());
+                String fileName = fileDealComp.getRepeatFileName(userFile, userFile.getFilePath());
+                userFile.setFileName(fileName);
                 userFileMapper.insert(userFile);
                 fileDealComp.uploadESByUserFileId(userFile.getUserFileId());
             }
+
             if (relativePath.contains("/")) {
-                fileDealComp.restoreParentFilePath(qiwenFile, SessionUtil.getUserId());
+                QiwenFile finalQiwenFile = qiwenFile;
+                exec.execute(()->{
+                    fileDealComp.restoreParentFilePath(finalQiwenFile, SessionUtil.getUserId());
+                });
+
             }
 
             uploadFileVo.setSkipUpload(true);
@@ -182,21 +193,25 @@ public class FiletransferService implements IFiletransferService {
                 UserFile userFile = new UserFile(qiwenFile, userId, fileBean.getFileId());
 
 
-
-                UserFile param = QiwenFileUtil.searchQiwenFileParam(userFile);
-                List<UserFile> userFileList = userFileMapper.selectList(new QueryWrapper<>(param));
-                if (userFileList.size() > 0) {
+                try {
+                    userFileMapper.insert(userFile);
+                    fileDealComp.uploadESByUserFileId(userFile.getUserFileId());
+                } catch (Exception e) {
+                    log.warn("文件冲突重命名处理: {}", e.getMessage());
                     String fileName = fileDealComp.getRepeatFileName(userFile, userFile.getFilePath());
                     userFile.setFileName(fileName);
+                    userFileMapper.insert(userFile);
+                    fileDealComp.uploadESByUserFileId(userFile.getUserFileId());
                 }
-                userFileMapper.insert(userFile);
+
 
                 if (relativePath.contains("/")) {
-                    fileDealComp.restoreParentFilePath(qiwenFile, userId);
+                    QiwenFile finalQiwenFile = qiwenFile;
+                    exec.execute(()->{
+                        fileDealComp.restoreParentFilePath(finalQiwenFile, userId);
+                    });
+
                 }
-
-                fileDealComp.uploadESByUserFileId(userFile.getUserFileId());
-
 
                 LambdaQueryWrapper<UploadTaskDetail> lambdaQueryWrapper = new LambdaQueryWrapper<>();
                 lambdaQueryWrapper.eq(UploadTaskDetail::getIdentifier, uploadFileDto.getIdentifier());
