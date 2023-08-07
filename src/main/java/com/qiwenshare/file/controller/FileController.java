@@ -7,7 +7,9 @@ import co.elastic.clients.elasticsearch.core.SearchResponse;
 import co.elastic.clients.elasticsearch.core.search.HighlighterEncoder;
 import co.elastic.clients.elasticsearch.core.search.Hit;
 import com.alibaba.fastjson2.JSON;
+import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
+import com.baomidou.mybatisplus.core.conditions.update.UpdateWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.qiwenshare.common.anno.MyLog;
 import com.qiwenshare.common.exception.QiwenException;
@@ -51,6 +53,10 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.net.URLDecoder;
 import java.util.*;
+import java.util.concurrent.Executor;
+import java.util.concurrent.Executors;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 @Tag(name = "file", description = "该接口为文件接口，主要用来做一些文件的基本操作，如创建目录，删除，移动，复制等。")
 @RestController
@@ -72,6 +78,9 @@ public class FileController {
     private ElasticsearchClient elasticsearchClient;
     @Value("${ufop.storage-type}")
     private Integer storageType;
+
+    public static Executor executor = Executors.newFixedThreadPool(20);
+
     public static final String CURRENT_MODULE = "文件接口";
 
     @Operation(summary = "创建文件", description = "创建文件", tags = {"file"})
@@ -287,8 +296,12 @@ public class FileController {
     public RestResult<String> deleteImageByIds(@RequestBody BatchDeleteFileDTO batchDeleteFileDto) {
         String userFileIds = batchDeleteFileDto.getUserFileIds();
         String[] userFileIdList = userFileIds.split(",");
+        userFileService.update(new UpdateWrapper<UserFile>().lambda().set(UserFile::getDeleteFlag, 1).in(UserFile::getUserFileId, Arrays.asList(userFileIdList)));
         for (String userFileId : userFileIdList) {
-            userFileService.deleteUserFile(userFileId, SessionUtil.getUserId());
+            executor.execute(()->{
+                    userFileService.deleteUserFile(userFileId, SessionUtil.getUserId());
+            });
+
             fileDealComp.deleteESByUserFileId(userFileId);
         }
 

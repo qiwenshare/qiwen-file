@@ -1,6 +1,7 @@
 package com.qiwenshare.file.service;
 
 import cn.hutool.core.util.StrUtil;
+import com.alibaba.fastjson2.JSON;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
@@ -35,6 +36,7 @@ import com.qiwenshare.ufop.operation.upload.domain.UploadFileResult;
 import com.qiwenshare.ufop.util.UFOPUtils;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.io.IOUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -107,11 +109,8 @@ public class FiletransferService implements IFiletransferService {
                 userFileMapper.insert(userFile);
                 fileDealComp.uploadESByUserFileId(userFile.getUserFileId());
             } catch (Exception e) {
-                log.warn("文件冲突重命名处理: {}", e.getMessage());
-                String fileName = fileDealComp.getRepeatFileName(userFile, userFile.getFilePath());
-                userFile.setFileName(fileName);
-                userFileMapper.insert(userFile);
-                fileDealComp.uploadESByUserFileId(userFile.getUserFileId());
+                log.warn("极速上传文件冲突重命名处理: {}", JSON.toJSONString(userFile));
+
             }
 
             if (relativePath.contains("/")) {
@@ -187,8 +186,12 @@ public class FiletransferService implements IFiletransferService {
             if (UploadFileStatusEnum.SUCCESS.equals(uploadFileResult.getStatus())){
                 FileBean fileBean = new FileBean(uploadFileResult);
                 fileBean.setCreateUserId(userId);
-                fileMapper.insert(fileBean);
-
+                try {
+                    fileMapper.insert(fileBean);
+                } catch (Exception e) {
+                    log.warn("identifier Duplicate: {}", fileBean.getIdentifier());
+                    fileBean = fileMapper.selectOne(new QueryWrapper<FileBean>().lambda().eq(FileBean::getIdentifier, fileBean.getIdentifier()));
+                }
 
                 UserFile userFile = new UserFile(qiwenFile, userId, fileBean.getFileId());
 
@@ -197,11 +200,21 @@ public class FiletransferService implements IFiletransferService {
                     userFileMapper.insert(userFile);
                     fileDealComp.uploadESByUserFileId(userFile.getUserFileId());
                 } catch (Exception e) {
-                    log.warn("文件冲突重命名处理: {}", e.getMessage());
-                    String fileName = fileDealComp.getRepeatFileName(userFile, userFile.getFilePath());
-                    userFile.setFileName(fileName);
-                    userFileMapper.insert(userFile);
-                    fileDealComp.uploadESByUserFileId(userFile.getUserFileId());
+                    UserFile userFile1 = userFileMapper.selectOne(new QueryWrapper<UserFile>().lambda()
+                            .eq(UserFile::getUserId, userFile.getUserId())
+                            .eq(UserFile::getFilePath, userFile.getFilePath())
+                            .eq(UserFile::getFileName, userFile.getFileName())
+                            .eq(UserFile::getExtendName, userFile.getExtendName())
+                            .eq(UserFile::getDeleteFlag, userFile.getDeleteFlag())
+                            .eq(UserFile::getIsDir, userFile.getIsDir()));
+                    FileBean file1 = fileMapper.selectById(userFile1.getFileId());
+                    if (!StringUtils.equals(fileBean.getIdentifier(), file1.getIdentifier())) {
+                        log.warn("文件冲突重命名处理: {}", JSON.toJSONString(userFile1));
+                        String fileName = fileDealComp.getRepeatFileName(userFile, userFile.getFilePath());
+                        userFile.setFileName(fileName);
+                        userFileMapper.insert(userFile);
+                        fileDealComp.uploadESByUserFileId(userFile.getUserFileId());
+                    }
                 }
 
 
