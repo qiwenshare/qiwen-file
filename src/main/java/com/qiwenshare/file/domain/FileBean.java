@@ -39,7 +39,7 @@ public class FileBean {
     @Column(columnDefinition="int(1) comment '存储类型'")
     private Integer storageType;
 
-    @Column(columnDefinition="varchar(32) comment 'md5唯一标识'")
+    @Column(columnDefinition="varchar(200) comment 'md5唯一标识'")
     private String identifier;
 
     @Column(columnDefinition="varchar(25) comment '创建时间'")
