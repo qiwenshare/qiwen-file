@@ -42,7 +42,7 @@ public class JwtAuthenticationTokenFilter extends OncePerRequestFilter {
             "/notice/list",
             "/notice/detail",
             "/param/grouplist",
-
+            "/v3/api-docs",
             "/swagger-ui.html",
             "/office/IndexServlet"
     };
