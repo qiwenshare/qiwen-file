@@ -55,6 +55,7 @@ import java.net.URLDecoder;
 import java.util.*;
 import java.util.concurrent.Executor;
 import java.util.concurrent.Executors;
+import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -262,7 +263,8 @@ public class FileController {
             List<UserFile> list = userFileService.selectUserFileByLikeRightFilePath(new QiwenFile(userFile.getFilePath(), userFile.getFileName(), true).getPath(), sessionUserBean.getUserId());
 
             for (UserFile newUserFile : list) {
-                newUserFile.setFilePath(newUserFile.getFilePath().replaceFirst(new QiwenFile(userFile.getFilePath(), userFile.getFileName(), userFile.getIsDir() == 1).getPath(),
+                String escapedPattern = Pattern.quote(new QiwenFile(userFile.getFilePath(), userFile.getFileName(), userFile.getIsDir() == 1).getPath());
+                newUserFile.setFilePath(newUserFile.getFilePath().replaceFirst(escapedPattern,
                         new QiwenFile(userFile.getFilePath(), renameFileDto.getFileName(), userFile.getIsDir() == 1).getPath()));
                 userFileService.updateById(newUserFile);
             }
