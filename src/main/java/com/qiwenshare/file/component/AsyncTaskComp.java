@@ -75,12 +75,16 @@ public class AsyncTaskComp {
 
                 if (filePointCount != null && filePointCount == 0 && userFileItem.getIsDir() == 0) {
                     FileBean fileBean = fileMapper.selectById(userFileItem.getFileId());
-                    try {
-                        filetransferService.deleteFile(fileBean);
-                        fileMapper.deleteById(fileBean.getFileId());
-                    } catch (Exception e) {
-                        log.error("删除本地文件失败：" + JSON.toJSONString(fileBean));
+                    if (fileBean != null) {
+                        try {
+                            filetransferService.deleteFile(fileBean);
+                            fileMapper.deleteById(fileBean.getFileId());
+                        } catch (Exception e) {
+                            log.error("删除本地文件失败：" + JSON.toJSONString(fileBean));
+                        }
                     }
+
+
                 }
             }
         } else {
@@ -145,7 +149,7 @@ public class AsyncTaskComp {
                     String saveFileUrl = ufopFactory.getCopier().copy(fileInputStream, createFile);
 
                     FileBean tempFileBean = new FileBean(saveFileUrl, currentFile.length(), storageType, md5Str, userFile.getUserId());
-;
+
                     fileMapper.insert(tempFileBean);
                     fileId = tempFileBean.getFileId();
                 }

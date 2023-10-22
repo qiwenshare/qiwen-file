@@ -18,17 +18,17 @@ public class QiwenFile {
     private boolean isDirectory;
 
     public QiwenFile(String pathname, boolean isDirectory) {
-        if (StringUtils.isEmpty(pathname)) {
-            throw new QiwenException("file name format error，pathname:" + pathname);
-        }
+//        if (StringUtils.isEmpty(pathname)) {
+//            throw new QiwenException("file name format error，pathname:" + pathname);
+//        }
         this.path = formatPath(pathname);
         this.isDirectory = isDirectory;
     }
 
     public QiwenFile(String parent, String child, boolean isDirectory) {
-        if (StringUtils.isEmpty(child)) {
-            throw new QiwenException("file name format error，parent:" + parent +", child:" + child);
-        }
+//        if (StringUtils.isEmpty(child)) {
+//            throw new QiwenException("file name format error，parent:" + parent +", child:" + child);
+//        }
         if (parent != null) {
             String parentPath = separator.equals(formatPath(parent)) ? "" : formatPath(parent);
             String childPath = formatPath(child);
@@ -46,6 +46,9 @@ public class QiwenFile {
         path = UFOPUtils.pathSplitFormat(path);
         if ("/".equals(path)) {
             return path;
+        }
+        if (!path.startsWith(separator)) {
+            path = separator + path;
         }
         if (path.endsWith("/")) {
             int length = path.length();

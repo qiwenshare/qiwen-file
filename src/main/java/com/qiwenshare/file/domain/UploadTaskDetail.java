@@ -37,6 +37,6 @@ public class UploadTaskDetail {
     @Column(columnDefinition="bigint(10) comment '文件总大小'")
     private Integer totalSize;
 
-    @Column(columnDefinition="varchar(32) comment '文件md5唯一标识'")
+    @Column(columnDefinition="varchar(200) comment '文件md5唯一标识'")
     private String identifier;
 }

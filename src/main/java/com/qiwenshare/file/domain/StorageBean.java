@@ -11,7 +11,9 @@ import javax.persistence.*;
  * 存储信息类
  */
 @Data
-@Table(name = "storage")
+@Table(name = "storage", uniqueConstraints = {
+        @UniqueConstraint(name = "userid_index", columnNames = {"userId"})
+})
 @Entity
 @TableName("storage")
 public class StorageBean {

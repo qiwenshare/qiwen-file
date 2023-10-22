@@ -21,6 +21,7 @@ import com.qiwenshare.file.mapper.RecoveryFileMapper;
 import com.qiwenshare.file.mapper.UserFileMapper;
 import com.qiwenshare.file.vo.file.FileListVO;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.collections4.CollectionUtils;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -30,6 +31,7 @@ import java.util.List;
 import java.util.UUID;
 import java.util.concurrent.Executor;
 import java.util.concurrent.Executors;
+import java.util.stream.Collectors;
 
 @Slf4j
 @Service
@@ -212,12 +214,11 @@ public class UserFileService extends ServiceImpl<UserFileMapper, UserFile> imple
             updateFileDeleteStateByFilePath(filePath, uuid, sessionUserId);
 
         } else {
-            UserFile userFileTemp = userFileMapper.selectById(userFileId);
             LambdaUpdateWrapper<UserFile> userFileLambdaUpdateWrapper = new LambdaUpdateWrapper<>();
             userFileLambdaUpdateWrapper.set(UserFile::getDeleteFlag, RandomUtil.randomInt(1, FileConstant.deleteFileRandomSize))
                     .set(UserFile::getDeleteTime, DateUtil.getCurrentTime())
                     .set(UserFile::getDeleteBatchNum, uuid)
-                    .eq(UserFile::getUserFileId, userFileTemp.getUserFileId());
+                    .eq(UserFile::getUserFileId, userFileId);
             userFileMapper.update(null, userFileLambdaUpdateWrapper);
         }
 
@@ -238,17 +239,20 @@ public class UserFileService extends ServiceImpl<UserFileMapper, UserFile> imple
     private void updateFileDeleteStateByFilePath(String filePath, String deleteBatchNum, String userId) {
         executor.execute(() -> {
             List<UserFile> fileList = selectUserFileByLikeRightFilePath(filePath, userId);
-            for (int i = 0; i < fileList.size(); i++) {
-                UserFile userFileTemp = fileList.get(i);
+            List<String> userFileIds = fileList.stream().map(UserFile::getUserFileId).collect(Collectors.toList());
+
                 //标记删除标志
+            if (CollectionUtils.isNotEmpty(userFileIds)) {
                 LambdaUpdateWrapper<UserFile> userFileLambdaUpdateWrapper1 = new LambdaUpdateWrapper<>();
                 userFileLambdaUpdateWrapper1.set(UserFile::getDeleteFlag, RandomUtil.randomInt(FileConstant.deleteFileRandomSize))
                         .set(UserFile::getDeleteTime, DateUtil.getCurrentTime())
                         .set(UserFile::getDeleteBatchNum, deleteBatchNum)
-                        .eq(UserFile::getUserFileId, userFileTemp.getUserFileId())
+                        .in(UserFile::getUserFileId, userFileIds)
                         .eq(UserFile::getDeleteFlag, 0);
                 userFileMapper.update(null, userFileLambdaUpdateWrapper1);
-
+            }
+            for (String userFileId : userFileIds) {
+                fileDealComp.deleteESByUserFileId(userFileId);
             }
         });
     }

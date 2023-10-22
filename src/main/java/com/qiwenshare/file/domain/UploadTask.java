@@ -22,7 +22,7 @@ public class UploadTask {
     @Column(columnDefinition = "bigint(20) comment '用户id'")
     private String userId;
 
-    @Column(columnDefinition="varchar(32) comment 'md5唯一标识'")
+    @Column(columnDefinition="varchar(200) comment 'md5唯一标识'")
     private String identifier;
 
     @Column(columnDefinition="varchar(100) comment '文件名称'")

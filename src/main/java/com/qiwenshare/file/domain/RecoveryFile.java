@@ -8,7 +8,9 @@ import lombok.Data;
 import javax.persistence.*;
 
 @Data
-@Table(name = "recoveryfile")
+@Table(name = "recoveryfile", uniqueConstraints = {
+        @UniqueConstraint(name = "user_file_id_index3", columnNames = {"userFileId"})
+})
 @Entity
 @TableName("recoveryfile")
 public class RecoveryFile {
